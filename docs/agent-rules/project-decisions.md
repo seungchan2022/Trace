@@ -18,8 +18,6 @@ This file records defaults until the user chooses otherwise.
 
 ## Decisions the User May Need to Make Later
 
-These are not blockers for setup:
-
 - What problem the app solves
 - Main user flow
 - Whether data is local-only or synced
@@ -33,4 +31,3 @@ These are not blockers for setup:
 
 - If a decision affects architecture, privacy, persistence, account creation, cost, or App Store behavior, ask the user.
 - If a decision is only local code style or project organization, choose the documented default and update this file.
-- Keep decisions reversible until product requirements are clear.

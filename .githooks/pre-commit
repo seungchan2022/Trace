@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+branch="$(git symbolic-ref --quiet --short HEAD || true)"
+
+if [ "$branch" = "main" ]; then
+  echo "Commit blocked: do not commit directly on main." >&2
+  echo "Create a feature branch first, for example: git switch -c codex/<topic>" >&2
+  exit 1
+fi

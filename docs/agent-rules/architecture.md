@@ -13,14 +13,6 @@ Trace/
   Tests/
 ```
 
-The exact Xcode group layout can change after the project is created. Keep the intent stable:
-
-- `App`: app entry point, root scene, app-level composition
-- `Features`: user-facing flows and screens
-- `Shared`: reusable models, services, UI components, utilities
-- `Resources`: assets, strings, previews, fixtures
-- `Tests`: unit and UI tests
-
 ## Boundaries
 
 - Each feature should own its screens and feature-specific state.
@@ -36,6 +28,6 @@ The exact Xcode group layout can change after the project is created. Keep the i
 
 ## Evolution
 
-- Start simple. Do not introduce modularization, dependency injection containers, or custom architecture frameworks before the app needs them.
-- When a file grows too large, split by responsibility rather than by arbitrary line count.
+- Start simple.
+- Do not introduce modularization, dependency injection containers, or custom architecture frameworks before the app needs them.
 - Document architecture decisions that affect future work in `docs/agent-rules/project-decisions.md`.

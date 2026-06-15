@@ -28,7 +28,3 @@
 - `ios-ettrace-performance`: capture and interpret ETTrace profiles
 - `ios-memgraph-leaks`: capture and inspect memgraphs and leaks
 - `ios-app-intents`: Shortcuts, Siri, Spotlight, widgets, and controls
-
-## Skill Loading Rule
-
-When a skill applies, read its `SKILL.md` before acting. If the skill references additional files, read only the relevant referenced files.
