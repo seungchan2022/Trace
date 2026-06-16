@@ -10,7 +10,7 @@ if grep -i '^Co-Authored-By:' "$msg_file" >/dev/null; then
 fi
 
 if ! printf '%s' "$first_line" | grep -E '^(feat|fix|docs|refactor|test|chore|style|perf): .{1,50}$' >/dev/null; then
-  echo "Commit blocked: first line must be 'tag: Title' with an allowed tag and <= 50 chars." >&2
+  echo "Commit blocked: first line must be 'tag: 한국어 제목' with an allowed tag and <= 50 chars." >&2
   exit 1
 fi
 

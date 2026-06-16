@@ -16,6 +16,7 @@
 
 - Default branch: `main`
 - Feature branches should use `<type>/<short-description-kebab-case>`.
+- Do not include `codex` in branch names.
 - Make a feature branch before committing repository changes.
 - Keep one branch focused on one coherent change.
 
@@ -35,10 +36,10 @@ Allowed branch prefixes:
 Use this format:
 
 ```text
-tag: Short imperative title
+tag: 한국어 제목
 
-Three to four lines explaining why this change exists,
-what scope it covers, and any relevant verification or risk.
+변경 이유와 범위를 설명하는 한국어 본문 3~4줄.
+무엇을 왜 바꿨는지, 검증이나 위험 요소가 있으면 함께 적는다.
 ```
 
 Guidelines:
@@ -46,6 +47,7 @@ Guidelines:
 - First line: 50 characters is ideal, 72 maximum.
 - Do not use vague messages such as `update`, `fix`, or `changes`.
 - Use one of these tags: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`, `perf`.
+- The tag stays in English; the title and body should be written in Korean.
 - Do not end the title with a period.
 - Do not use `Co-Authored-By:`.
 - Commit only after verification appropriate to the change.
@@ -54,11 +56,11 @@ Guidelines:
 Example:
 
 ```text
-feat: Add login screen
+feat: 로그인 화면 추가
 
-- Implement SwiftUI login view
-- Bind authentication state through the ViewModel
-- Connect token persistence through Keychain-backed service
+- SwiftUI 기반 로그인 화면을 추가한다
+- 인증 상태는 ViewModel을 통해 바인딩한다
+- 토큰 저장은 Keychain 기반 서비스와 연결한다
 ```
 
 ## Before Commit

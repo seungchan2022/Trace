@@ -10,10 +10,20 @@
 이 폴더의 `daily-retro.md`를 복사:
 
 ```bash
-cp docs/codex-port/daily-retro.md ~/.codex/prompts/daily-retro.md
+cp docs/codex-prompts/daily-retro.md ~/.codex/prompts/daily-retro.md
 ```
 
 → 이후 Codex에서 `/daily-retro` 또는 `/daily-retro 260615`로 호출.
+
+## 1-1. trace-init 프롬프트 등록
+
+내장 `/init`과 이름 충돌을 피하기 위해 `trace-init.md`로 복사:
+
+```bash
+cp docs/codex-prompts/trace-init.md ~/.codex/prompts/trace-init.md
+```
+
+→ 이후 Codex에서 `/trace-init`으로 호출.
 
 ---
 
