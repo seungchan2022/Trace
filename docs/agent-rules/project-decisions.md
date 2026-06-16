@@ -9,7 +9,12 @@ This file records defaults until the user chooses otherwise.
 - Platform: iOS
 - Language: Swift
 - UI framework: SwiftUI
-- Minimum iOS version: iOS 17+
+- Minimum iOS version: iOS 17.0
+- Xcode project: `Trace.xcodeproj`
+- Xcode scheme: `Trace`
+- Bundle identifier: `com.luke.Trace`
+- Test targets: `TraceTests`, `TraceUITests`
+- Test framework: XCTest
 - Presentation architecture: MVVM
 - Dependency injection: `DependencyContainer` with protocol-based services
 - Architecture direction: Clean Architecture boundaries inside a feature-first app
@@ -27,7 +32,6 @@ This file records defaults until the user chooses otherwise.
 - Whether data is local-only or synced
 - Whether login is required
 - Privacy constraints
-- Minimum supported iOS version
 - App icon/name/subtitle
 - Whether TestFlight, App Store release, or private use is the target
 

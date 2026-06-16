@@ -7,6 +7,15 @@
 - Build iOS Apps: SwiftUI, Xcode, Simulator, performance, memory workflows
 - GitHub: repository, issue, PR, and review workflows when needed
 - XcodeBuildMCP: configured globally as `XcodeBuildMCP` for simulator, UI automation, debugging, and logging
+- Playwright MCP: configured globally for browser-backed checks when needed
+- Sequential Thinking MCP: configured globally for structured reasoning support when needed
+
+## Custom Prompts
+
+- `/trace-init`: restore Trace session state at the start of a new chat.
+- `/daily-retro`: summarize the day and capture lessons or follow-up work.
+
+These are Codex custom prompts, not skills. They are registered under `~/.codex/prompts/` and may require a Codex restart or new session after edits.
 
 ## Required Skill Use
 

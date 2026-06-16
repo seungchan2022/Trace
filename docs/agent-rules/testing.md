@@ -25,15 +25,15 @@ touch .git/trace-verify-lint.ok
 
 Do not create these stamps unless the corresponding command actually passed in the current working tree.
 
-Use these in order when available:
+Use these in order:
 
 ```bash
-xcodebuild -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 17' build
-xcodebuild -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 17' test
+xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' build
+xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' test
 swiftlint
 ```
 
-The exact scheme and simulator may change after the Xcode project is created. Update this file when they are known.
+If the `iPhone 17` / `iOS 26.5` simulator is unavailable, use `xcrun simctl list devices available` or XcodeBuildMCP to select an available iOS simulator, then keep the project and scheme arguments unchanged.
 SwiftLint is configured by `.swiftlint.yml`.
 
 ## Unit Tests
