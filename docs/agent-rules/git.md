@@ -5,7 +5,8 @@
 - Do not push unless the user explicitly approves that exact push in the current conversation.
 - The final push must be performed by the user. Agents must not run `git push`, even after preparing a branch.
 - Do not commit on `main`.
-- Do not run `git commit` until the user reviews the staged diff and explicitly approves the commit.
+- Agents may run `git commit` after the user asks for commits to be created.
+- Do not merge into `main` unless the user explicitly asks for that exact local merge.
 - Do not force push unless the user explicitly approves force push and names the branch.
 - Do not use `git add -A` or `git add .`; stage files explicitly by path.
 - Do not run destructive git commands such as `git reset --hard`, branch deletion, or history rewrite unless explicitly requested.
@@ -98,7 +99,8 @@ This repository uses local hooks:
 
 - `.githooks/pre-commit`: blocks commits on `main`, scans staged files for common secrets and unsafe Swift patterns
 - `.githooks/commit-msg`: blocks invalid commit messages and `Co-Authored-By:`
-- `.githooks/pre-push`: blocks all pushes so the user performs the final push manually
+- `.githooks/pre-push`: 기본 차단, 사용자는 `ALLOW_PUSH=1 git push ...`로 수동 push 가능
+- `.githooks/pre-merge-commit`: blocks merge commits while currently on `main`
 - `.githooks/pre-rebase`: blocks rebasing `main`
 - `.swiftlint.yml`: makes force unwrap/cast/try and implicitly unwrapped optionals lint errors
 

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+branch="$(git symbolic-ref --quiet --short HEAD || true)"
+
+if [ "$branch" = "main" ]; then
+  echo "Merge blocked: do not merge directly into main from an agent session." >&2
+  echo "The user must explicitly perform or approve the final main integration." >&2
+  exit 1
+fi

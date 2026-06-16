@@ -10,7 +10,7 @@ This file is the required entry point for agents working in this repository.
 - Do not force push unless the user explicitly asks for force push and names the target branch.
 - Do not rewrite history, reset shared branches, or discard user changes without explicit approval.
 - The final push must be performed by the user. Agents may prepare changes, commits, and instructions, but must not run `git push`.
-- Do not run `git commit` until the user reviews the staged diff and explicitly approves the commit.
+- Agents may run `git commit` after the user asks for commits to be created.
 - Do not use `git add -A` or `git add .`; stage files explicitly by path.
 
 These rules override all other workflow convenience.
@@ -54,5 +54,5 @@ Read the relevant rule file before making changes:
 4. Use Superpowers for brainstorming, planning, debugging, TDD, review, and verification when applicable.
 5. Use Build iOS Apps skills for SwiftUI, simulator, Xcode, performance, and memory workflows.
 6. Stage files explicitly by path and show the staged diff before asking for commit approval.
-7. Commit only after user approval, with a message that follows `docs/agent-rules/git.md`.
+7. Commit only after the user asks for commits, with a message that follows `docs/agent-rules/git.md`.
 8. Never push. The user performs the final push.
