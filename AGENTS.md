@@ -4,18 +4,14 @@ This file is the required entry point for agents working in this repository.
 
 ## Non-Negotiable Git Safety
 
-- Never push without explicit user approval in the current conversation.
-- Never commit directly on `main`.
-- Create a feature branch before committing any repository change.
-- Do not force push unless the user explicitly asks for force push and names the target branch.
-- Do not rewrite history, reset shared branches, or discard user changes without explicit approval.
-- The final push must be performed by the user. Agents may prepare changes, commits, and instructions, but must not run `git push`.
-- Agents must not push. Agents must not commit directly on `main`.
-- Local `main` fast-forward integration may be performed only when the user explicitly asks for it.
-- Agents may run `git commit` after the user asks for commits to be created.
-- Do not use `git add -A` or `git add .`; stage files explicitly by path.
+These hard-stops apply even before you open `docs/agent-rules/git.md`:
 
-These rules override all other workflow convenience.
+- Never push. The final push is the user's; agents must not run `git push`.
+- Never commit directly on `main`; create a feature branch first.
+- No force push, history rewrite, or `git reset --hard` on shared branches without explicit, branch-named approval.
+- Stage files explicitly by path; never `git add -A` or `git add .`.
+
+Full git rules — commit format, integration/merge flow, branch hygiene — live in `docs/agent-rules/git.md`. These hard-stops override all other workflow convenience.
 
 ## Project
 

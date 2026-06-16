@@ -51,6 +51,5 @@ These are Codex custom prompts, not skills. They are registered under `~/.codex/
 
 ## Git Safety Integration
 
-- Skills and plugins do not override repository Git safety rules.
-- Even if a skill suggests pushing, creating a PR, or finishing a branch, do not push from the agent.
-- The user performs the final push manually.
+- Skills and plugins never override the repository Git safety rules in `docs/agent-rules/git.md`.
+- Even if a skill suggests pushing, creating a PR, or finishing a branch, do not push or integrate without explicit user approval; the user performs the final push.
