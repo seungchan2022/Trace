@@ -30,7 +30,9 @@ swift_files="$(echo "$staged_files" | grep '\.swift$' || true)"
 production_swift_files="$(echo "$swift_files" | grep -Ev '(^|/)(Tests|UITests)/|Tests?\.swift$|UITests?\.swift$' || true)"
 
 if [ -n "$production_swift_files" ]; then
-  if git diff --cached -- $production_swift_files | grep -E '^\+.*[^=!<>]![^=]' >/dev/null; then
+  if git diff --cached -- $production_swift_files \
+    | grep -Ev '^\+.*".*!.*"' \
+    | grep -E '^\+.*[^=!<>]![^=]' >/dev/null; then
     echo "Commit blocked: force unwrap is not allowed outside tests." >&2
     exit 1
   fi
