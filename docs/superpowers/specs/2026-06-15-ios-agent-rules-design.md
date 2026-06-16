@@ -12,7 +12,7 @@ Git safety is the first rule:
 
 - no agent-run push; the user performs the final push manually
 - no commit directly on `main`
-- no commit before the user reviews the staged diff and approves
+- commits may be created by the agent after the user asks for commits
 - no force push without explicit branch-specific approval
 - no destructive git operation without explicit approval
 - no `git add -A` or `git add .`
