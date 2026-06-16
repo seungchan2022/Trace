@@ -44,6 +44,7 @@ Read the relevant rule file before making changes:
 
 - Do not start implementation from guesses. If product behavior is unclear, choose a conservative default and record it in `project-decisions.md`, or ask the user when the choice changes architecture, data ownership, privacy, or cost.
 - Keep changes small and reviewable.
+- 한 작업 세션은 하나의 브랜치에서 진행하고(커밋은 여러 번 가능), 통합이 끝난 브랜치는 즉시 삭제한다. 같은 작업을 새 브랜치로 다시 만들지 않는다. 상세는 `docs/agent-rules/git.md`.
 - Prefer native Apple APIs and SwiftUI patterns before adding dependencies.
 - Before claiming work is complete, run the relevant verification command and report the exact command and result.
 - For reusable mistakes or lessons found during review, run `ce-compound` or document the lesson so the same issue is not repeated.

@@ -20,6 +20,8 @@
 - Do not include `codex` in branch names.
 - Make a feature branch before committing repository changes.
 - Keep one branch focused on one coherent change.
+- 한 작업 세션은 하나의 브랜치에서 진행하고, 그 안에서 커밋을 여러 번 나눠서 한다.
+  커밋마다 새 브랜치를 만들지 않는다. 커밋이 늘어나는 것은 메시지로 구분하면 된다.
 
 Allowed branch prefixes:
 
@@ -117,9 +119,26 @@ git config core.hooksPath .githooks
   2. `git rebase main`
   3. `git switch main`
   4. `git merge --ff-only <work-branch>`
+  5. `git branch -d <work-branch>`  ← 통합이 끝난 브랜치는 즉시 삭제한다.
 - Do not rebase `main`; rebase the work branch onto `main`.
 - Do not create merge commits for normal solo work; use fast-forward merge after rebase.
 - Resolve conflicts file by file; do not use blanket `--ours` or `--theirs`.
+- 통합 후 브랜치를 삭제하지 않으면, 끝난 작업이 그래프에 갈래로 남는다. 4단계까지만 하고 멈추지 말 것.
+- 이미 다른 브랜치에 있는 작업을, 새 브랜치를 만들어 처음부터 다시 만들지 말 것.
+  같은 작업은 기존 작업 브랜치를 이어가거나 `git rebase`로 갱신한다. 새 브랜치에 중복 커밋하면
+  같은 변경이 두 갈래로 갈라지고, 한쪽이 버려진 채 남는다.
+
+### 통합 헬퍼
+
+위 1~5단계를 한 번에 수행하는 스크립트:
+
+```bash
+scripts/trace-integrate.sh [work-branch]   # 인자 생략 시 현재 브랜치
+```
+
+rebase → `--ff-only` 통합 → 브랜치 삭제까지 자동으로 처리하며, 통합 루프를 항상 닫는다.
+push는 수행하지 않는다(정책상 사용자가 직접). 충돌이 나면 해당 단계에서 멈추므로
+파일 단위로 해결한 뒤 다시 실행한다.
 
 ## Verification Stamps
 
