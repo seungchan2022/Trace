@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+echo "Push blocked: repository policy requires the user to perform the final push manually." >&2
+echo "Review the branch and run the push yourself if you approve it." >&2
+exit 1

@@ -3,38 +3,87 @@
 ## Mandatory Safety Rules
 
 - Do not push unless the user explicitly approves that exact push in the current conversation.
+- The final push must be performed by the user. Agents must not run `git push`, even after preparing a branch.
 - Do not commit on `main`.
+- Do not run `git commit` until the user reviews the staged diff and explicitly approves the commit.
 - Do not force push unless the user explicitly approves force push and names the branch.
+- Do not use `git add -A` or `git add .`; stage files explicitly by path.
 - Do not run destructive git commands such as `git reset --hard`, branch deletion, or history rewrite unless explicitly requested.
 - Do not discard user changes.
+- Do not include `Co-Authored-By:` lines in commit messages.
 
 ## Branches
 
 - Default branch: `main`
-- Feature branches should use `codex/` unless the user asks for another prefix.
+- Feature branches should use `<type>/<short-description-kebab-case>`.
 - Make a feature branch before committing repository changes.
 - Keep one branch focused on one coherent change.
 
+Allowed branch prefixes:
+
+| Prefix | Purpose | Example |
+|---|---|---|
+| `feature/` | New feature | `feature/login-view` |
+| `fix/` | Bug fix | `fix/feed-crash` |
+| `refactor/` | Refactor | `refactor/extract-service` |
+| `chore/` | Setup and maintenance | `chore/bump-deps` |
+| `docs/` | Documentation | `docs/agent-rules` |
+| `test/` | Test-only changes | `test/auth-service` |
+
 ## Commits
 
-Use short, imperative English commit messages:
+Use this format:
 
 ```text
-Add iOS agent rule index
-Configure SwiftUI project scaffolding
-Fix simulator launch verification
+tag: Short imperative title
+
+Three to four lines explaining why this change exists,
+what scope it covers, and any relevant verification or risk.
 ```
 
 Guidelines:
 
 - First line: 50 characters is ideal, 72 maximum.
 - Do not use vague messages such as `update`, `fix`, or `changes`.
+- Use one of these tags: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`, `perf`.
+- Do not end the title with a period.
+- Do not use `Co-Authored-By:`.
 - Commit only after verification appropriate to the change.
 - Do not mix unrelated changes in one commit.
 
+Example:
+
+```text
+feat: Add login screen
+
+- Implement SwiftUI login view
+- Bind authentication state through the ViewModel
+- Connect token persistence through Keychain-backed service
+```
+
+## Before Commit
+
+All three must pass before a commit is allowed:
+
+1. Build passes.
+2. Tests pass.
+3. Lint passes.
+
+Checklist:
+
+- [ ] Build passes (`xcodebuild build` or package equivalent)
+- [ ] Tests pass (`xcodebuild test` or `swift test`)
+- [ ] Lint passes (`swiftlint`)
+- [ ] Commit message follows the required format
+- [ ] Change is one logical unit
+- [ ] No secrets are staged
+- [ ] No unintended files are staged
+
 ## Pull Requests
 
-When creating a PR, include:
+PR rules are optional while this is a solo project. Add formal PR/review rules when collaboration starts.
+
+When creating a PR later, include:
 
 - Summary: what changed and why
 - Test plan: exact commands or manual checks
@@ -43,10 +92,34 @@ When creating a PR, include:
 
 ## Local Guard
 
-This repository uses a local pre-commit hook in `.githooks/pre-commit` to block commits on `main`.
+This repository uses local hooks:
+
+- `.githooks/pre-commit`: blocks commits on `main`, scans staged files for common secrets and unsafe Swift patterns
+- `.githooks/commit-msg`: blocks invalid commit messages and `Co-Authored-By:`
+- `.githooks/pre-push`: blocks all pushes so the user performs the final push manually
+- `.githooks/pre-rebase`: blocks rebasing `main`
+- `.swiftlint.yml`: makes force unwrap/cast/try and implicitly unwrapped optionals lint errors
 
 Enable it with:
 
 ```bash
 git config core.hooksPath .githooks
 ```
+
+## Merge Strategy
+
+- Do not commit directly on `main`.
+- Work on a feature branch.
+- When ready, the user decides whether to fast-forward merge locally or push the branch manually.
+- Do not rebase `main`.
+- Resolve conflicts file by file; do not use blanket `--ours` or `--theirs`.
+
+## Verification Stamps
+
+For Swift or Xcode project changes, `pre-commit` requires local verification stamps:
+
+- `.git/trace-verify-build.ok`
+- `.git/trace-verify-test.ok`
+- `.git/trace-verify-lint.ok`
+
+These stamps represent build, test, and lint passing in the current working tree. After the Xcode project exists, use the commands in `docs/agent-rules/testing.md` and update the stamps only after each command succeeds.

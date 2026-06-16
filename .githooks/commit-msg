@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+
+msg_file="$1"
+first_line="$(sed -n '1p' "$msg_file")"
+
+if grep -i '^Co-Authored-By:' "$msg_file" >/dev/null; then
+  echo "Commit blocked: Co-Authored-By lines are not allowed." >&2
+  exit 1
+fi
+
+if ! printf '%s' "$first_line" | grep -E '^(feat|fix|docs|refactor|test|chore|style|perf): .{1,50}$' >/dev/null; then
+  echo "Commit blocked: first line must be 'tag: Title' with an allowed tag and <= 50 chars." >&2
+  exit 1
+fi
+
+if printf '%s' "$first_line" | grep '\.$' >/dev/null; then
+  echo "Commit blocked: title must not end with a period." >&2
+  exit 1
+fi
+
+body_lines="$(sed '1d' "$msg_file" | sed '/^[[:space:]]*$/d' | wc -l | tr -d ' ')"
+
+if [ "$body_lines" -lt 3 ] || [ "$body_lines" -gt 4 ]; then
+  echo "Commit blocked: include a body of 3 to 4 non-empty lines explaining reason and scope." >&2
+  exit 1
+fi

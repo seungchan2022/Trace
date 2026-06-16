@@ -9,7 +9,11 @@ This file records defaults until the user chooses otherwise.
 - Platform: iOS
 - Language: Swift
 - UI framework: SwiftUI
-- Minimum iOS version: decide when the Xcode project is created
+- Minimum iOS version: iOS 17+
+- Presentation architecture: MVVM
+- Dependency injection: `DependencyContainer` with protocol-based services
+- Architecture direction: Clean Architecture boundaries inside a feature-first app
+- Modularization: not active yet, but code should be structured so features and shared layers can later move into Swift Package modules
 - Persistence: undecided
 - Backend: none by default
 - Authentication: none by default

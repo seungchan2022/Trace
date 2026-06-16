@@ -10,15 +10,21 @@ Use `AGENTS.md` as the short entry point and keep detailed rules under `docs/age
 
 Git safety is the first rule:
 
-- no push without explicit user approval
+- no agent-run push; the user performs the final push manually
 - no commit directly on `main`
+- no commit before the user reviews the staged diff and approves
 - no force push without explicit branch-specific approval
 - no destructive git operation without explicit approval
+- no `git add -A` or `git add .`
 
-Add `.githooks/pre-commit` and configure `core.hooksPath` so local commits on `main` are blocked by git itself.
+Add `.githooks/pre-commit`, `.githooks/commit-msg`, and `.githooks/pre-push`, then configure `core.hooksPath`.
+
+The iOS rules target iOS 17+, SwiftUI, MVVM, Clean Architecture boundaries, future modularization readiness, protocol-based dependency injection, Codable data models, Swift modern concurrency, Keychain for sensitive data, and 90% coverage.
 
 ## Verification
 
 - confirm the hook blocks commits on `main`
+- confirm pre-push blocks agent-run pushes
+- confirm commit-msg blocks invalid messages and `Co-Authored-By:`
 - confirm rule files exist
 - confirm git status before any push

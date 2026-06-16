@@ -6,6 +6,7 @@
 - Compound Engineering: code review, documentation of reusable learnings, workflow utilities
 - Build iOS Apps: SwiftUI, Xcode, Simulator, performance, memory workflows
 - GitHub: repository, issue, PR, and review workflows when needed
+- XcodeBuildMCP: configured globally as `XcodeBuildMCP` for simulator, UI automation, debugging, and logging
 
 ## Required Skill Use
 
@@ -16,6 +17,7 @@
 - Use `superpowers:verification-before-completion` before claiming completion.
 - Use `superpowers:requesting-code-review` for major work and before merge.
 - Use `ce-compound` after review when the work exposed a reusable mistake, lesson, or pattern.
+- Use `ce-compound` when a workflow rule is updated because of an agent mistake.
 
 ## iOS Skill Index
 
@@ -28,3 +30,18 @@
 - `ios-ettrace-performance`: capture and interpret ETTrace profiles
 - `ios-memgraph-leaks`: capture and inspect memgraphs and leaks
 - `ios-app-intents`: Shortcuts, Siri, Spotlight, widgets, and controls
+
+## Xcode MCP
+
+- Use the `XcodeBuildMCP` MCP server for Xcode project discovery, simulator control, build/run, UI inspection, screenshots, logging, and debugging.
+- The server is configured in `~/.codex/config.toml` as:
+  - command: `npx`
+  - args: `-y xcodebuildmcp@latest mcp`
+  - workflows: `simulator,ui-automation,debugging,logging`
+- Restart Codex after MCP config changes so the server tools become available.
+
+## Git Safety Integration
+
+- Skills and plugins do not override repository Git safety rules.
+- Even if a skill suggests pushing, creating a PR, or finishing a branch, do not push from the agent.
+- The user performs the final push manually.

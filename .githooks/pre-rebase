@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+branch="$(git symbolic-ref --quiet --short HEAD || true)"
+
+if [ "$branch" = "main" ]; then
+  echo "Rebase blocked: do not rebase main directly." >&2
+  echo "Rebase a feature branch onto main instead." >&2
+  exit 1
+fi

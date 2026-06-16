@@ -5,6 +5,55 @@ branch="$(git symbolic-ref --quiet --short HEAD || true)"
 
 if [ "$branch" = "main" ]; then
   echo "Commit blocked: do not commit directly on main." >&2
-  echo "Create a feature branch first, for example: git switch -c codex/<topic>" >&2
+  echo "Create a feature branch first, for example: git switch -c feature/<topic>" >&2
   exit 1
+fi
+
+staged_files="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+if [ -z "$staged_files" ]; then
+  exit 0
+fi
+
+echo "$staged_files" | while IFS= read -r file; do
+  case "$file" in
+    *.pem|*.key|*.mobileprovision|*.p12|*.cer|*.env|.env|*.xcconfig)
+      if [ "$file" != "Secrets.example.xcconfig" ]; then
+        echo "Commit blocked: possible secret file staged: $file" >&2
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+swift_files="$(echo "$staged_files" | grep '\.swift$' || true)"
+production_swift_files="$(echo "$swift_files" | grep -Ev '(^|/)(Tests|UITests)/|Tests?\.swift$|UITests?\.swift$' || true)"
+
+if [ -n "$production_swift_files" ]; then
+  if git diff --cached -- $production_swift_files | grep -E '^\+.*[^=!<>]![^=]' >/dev/null; then
+    echo "Commit blocked: force unwrap is not allowed outside tests." >&2
+    exit 1
+  fi
+
+  if git diff --cached -- $production_swift_files | grep -E '^\+.*as!' >/dev/null; then
+    echo "Commit blocked: force cast is not allowed." >&2
+    exit 1
+  fi
+
+  if git diff --cached -- $production_swift_files | grep -E '^\+.*try!' >/dev/null; then
+    echo "Commit blocked: force try is not allowed." >&2
+    exit 1
+  fi
+fi
+
+requires_verification="$(echo "$staged_files" | grep -E '(\.swift$|Package\.swift$|\.xcodeproj/|\.xcworkspace/|project\.pbxproj$)' || true)"
+
+if [ -n "$requires_verification" ]; then
+  for stamp in .git/trace-verify-build.ok .git/trace-verify-test.ok .git/trace-verify-lint.ok; do
+    if [ ! -f "$stamp" ]; then
+      echo "Commit blocked: missing verification stamp $stamp." >&2
+      echo "Run the documented build, test, and lint checks before committing code or project changes." >&2
+      exit 1
+    fi
+  done
 fi

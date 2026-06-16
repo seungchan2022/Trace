@@ -6,10 +6,12 @@ xcuserdata/
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint
+*.pbxuser
+!default.pbxuser
 
 # Swift Package Manager
 .build/
-Package.resolved
+.swiftpm/
 
 # macOS
 .DS_Store
@@ -22,3 +24,8 @@ Package.resolved
 # Secrets
 *.env
 .env.*
+*.xcconfig
+!Secrets.example.xcconfig
+*.pem
+*.key
+*.mobileprovision
