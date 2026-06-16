@@ -41,7 +41,7 @@ git log --oneline -5
 ### 4. 진행 중 작업 감지 (resume)
 
 - 브랜치명에서 작업 키워드 추출 (예: `feature/login-view` → 로그인 화면).
-- 미커밋 파일 + 최근 변경된 `docs/superpowers/specs/*`, `docs/retro/*`를 연결해
+- 미커밋 파일 + 최근 변경된 `docs/superpowers/specs/*`, `history/*`를 연결해
   "직전에 뭘 하고 있었는지" 한 문장으로 재구성한다.
 
 ### 5. 훅 배선 점검

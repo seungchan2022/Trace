@@ -102,8 +102,11 @@ Mermaid 임베드(MCP 불필요, 브라우저 렌더):
 
 ## Phase 7 — 저장 및 보고
 
-- 마크다운: `docs/retro/{YYMMDD}_daily_retro.md`
-- HTML: `docs/retro/{YYMMDD}_daily_retro.html`
+- 마크다운: `history/{YYMMDD}_daily_retro.md`
+- HTML: `history/{YYMMDD}_daily_retro.html`
+- HTML 생성 후 반드시 브라우저로 연다:
+  - Codex Browser가 있으면 `file://{절대경로}`로 열고 사용자에게 보이게 한다.
+  - Codex Browser를 사용할 수 없으면 OS 기본 브라우저로 열거나, 불가능한 이유와 직접 열 파일 경로를 보고한다.
 - 파일 경로 안내 + 설정 반영 제안 항목 함께 보고.
 
 ## 출력 규칙

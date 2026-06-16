@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>260616 Daily Retro</title>
+  <style>
+    :root {
+      --bg:#FDF6F0;
+      --text:#2D2926;
+      --accent:#D97706;
+      --accent-light:#FEF3C7;
+      --heading:#92400E;
+      --border:#E5D5C5;
+      --code-bg:#FFF7ED;
+      --card-bg:#FFFFFF;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+    main {
+      width: min(100%, 480px);
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+    h1, h2, h3 {
+      color: var(--heading);
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+    h1 {
+      margin: 0 0 18px;
+      font-size: 2rem;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 1.28rem;
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 1.02rem;
+    }
+    p { margin: 0 0 12px; }
+    .lede {
+      padding: 16px;
+      background: var(--accent-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .card {
+      margin: 14px 0;
+      padding: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    ul {
+      margin: 8px 0 16px;
+      padding-left: 20px;
+    }
+    li { margin: 5px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: block;
+      overflow-x: auto;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      min-width: 120px;
+    }
+    th {
+      color: var(--heading);
+      background: var(--accent-light);
+      white-space: nowrap;
+    }
+    code {
+      padding: 2px 5px;
+      background: var(--code-bg);
+      border-radius: 5px;
+      font-size: 0.92em;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .mermaid {
+      background: var(--card-bg);
+      text-align: center;
+    }
+    .meta {
+      margin-bottom: 20px;
+      color: var(--accent);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'base' });
+  </script>
+</head>
+<body>
+  <main>
+    <h1>260616 Daily Retro</h1>
+    <div class="meta">Trace 세팅과 에이전트 작업 흐름을 정리한 날</div>
+    <p class="lede">오늘은 앱을 구현하기보다, 앱을 안전하게 만들기 위한 바닥을 놓았다. 완벽한 세팅을 기다리기보다 시작 가능한 기준선을 만들고, 실제 작업을 하며 Trace에 맞게 계속 조정하기로 했다.</p>
+
+    <h2>오늘 뭘 했나</h2>
+    <p>Trace라는 새 iOS 앱을 시작하기 전에 개발 환경과 에이전트 작업 흐름을 정리했다. 이전 Claude Code 프로젝트에서는 멘토에게 받은 하네스 엔지니어링 자료와 세팅을 많이 활용했지만, 이번에는 그 경험을 그대로 복사하지 않고 Trace에 맞게 다시 조립해보려고 했다.</p>
+    <p>Superpowers, Compound Engineering, Build iOS Apps, XcodeBuildMCP를 설치하고, iOS 17.0+, SwiftUI, MVVM, Clean Architecture 방향의 규칙을 문서화했다. `/trace-init`, `/daily-retro`, compact/history 설정도 넣어서 세션이 끊겨도 다시 이어갈 수 있게 했다.</p>
+    <p>이후 Xcode 기본 프로젝트를 만들고, 중첩된 구조를 repo 루트 기준으로 정리했다. `Trace.xcodeproj`, `Trace/`, `TraceTests/`, `TraceUITests/`가 루트에 오도록 맞췄고, 배포 타깃도 iOS 17.0으로 낮췄다.</p>
+
+    <h2>핵심 의사결정</h2>
+    <div class="card">
+      <h3>범용 하네스 위에서 시작하기</h3>
+      <p>직접 하네스를 처음부터 만들기보다 Superpowers와 Compound Engineering 같은 범용 도구를 먼저 적용했다. 이전 프로젝트의 설정을 그대로 복사하면 Trace에 맞지 않는 규칙까지 가져올 수 있어서, 이번에는 적용 후 덜어내는 방향을 택했다.</p>
+    </div>
+    <div class="card">
+      <h3>완벽한 세팅보다 시작 가능한 기준선</h3>
+      <p>아직 앱 기능이 없기 때문에 지금 구조와 규칙이 완벽한지 알 수 없다. 그래서 완벽한 하네스를 먼저 만들기보다, 안전한 기본값을 만들고 실제 작업에서 불편한 부분을 계속 조정하기로 했다.</p>
+    </div>
+    <div class="card">
+      <h3>Git 강제성은 push와 main 커밋에 집중</h3>
+      <p>처음에는 commit, push, merge, rebase까지 넓게 막았지만 checkout과 merge 흐름에서 혼란이 생겼다. 커밋은 로컬 기록이라 고칠 수 있지만, push는 원격 상태를 바꾸므로 더 강하게 막아야 한다는 기준이 생겼다.</p>
+    </div>
+    <div class="card">
+      <h3>Xcode 기본 프로젝트로 시작</h3>
+      <p>아직 모듈 경계가 없기 때문에 Tuist나 XcodeGen은 미뤘다. 기본 Xcode 프로젝트로 시작하고, 기능이 커져 구조가 보이면 모듈화를 검토하는 편이 낫다고 판단했다.</p>
+    </div>
+
+    <h2>의사결정 흐름</h2>
+    <pre class="mermaid">flowchart TD
+  A["이전 프로젝트의 하네스 경험"] --> B["Trace에 맞는 기준선 만들기"]
+  B --> C["Superpowers / Compound Engineering 적용"]
+  B --> D["iOS 17.0 SwiftUI Xcode 프로젝트 생성"]
+  B --> E["Git 안전장치 설계"]
+  E --> F["처음: push/commit/merge/rebase까지 강하게 차단"]
+  F --> G["실제 checkout/merge 흐름에서 과한 강제성 체감"]
+  G --> H["최종 기준: push와 main 직접 커밋만 강제"]
+  H --> I["앱 기획으로 이동"]</pre>
+
+    <h2>인사이트</h2>
+    <p>세팅은 정답을 맞히는 문제가 아니었다. 이전 프로젝트에서 좋았던 하네스도 새 프로젝트에 그대로 들어오면 과할 수 있다. 반대로 처음에는 약해 보이는 규칙도 실제 작업을 하다 보면 충분할 수 있다.</p>
+    <p>오늘 특히 Git 훅에서 이걸 많이 느꼈다. 안전장치는 문제의 원인을 더 쉽게 찾게 해야지, 모든 문제를 훅 때문인지 의심하게 만들면 안 된다. 앞으로는 정말 되돌리기 어려운 위험만 먼저 기계로 막고, 나머지는 문서와 습관으로 관리하는 쪽이 맞다.</p>
+
+    <h2>배운 것</h2>
+    <ul>
+      <li>Codex 커스텀 프롬프트는 스킬이 아니라 호출형 프롬프트다.</li>
+      <li>하네스 엔지니어링은 복붙보다 프로젝트별 조정이 중요하다.</li>
+      <li>Xcode 기본 프로젝트도 생성 직후 repo 구조에 맞게 확인해야 한다.</li>
+      <li>Git 훅은 많을수록 좋은 게 아니라 위험 경계에 정확히 있어야 한다.</li>
+      <li>로컬 커밋과 원격 push는 위험도가 다르다.</li>
+    </ul>
+
+    <h2>느낀 점</h2>
+    <p>오늘 세팅이 완벽한지는 아직 모르겠다. 실제 앱을 만들면서 맞지 않는 부분이 보일 것이다. 그래도 완벽하게 준비하려고 계속 멈춰 있는 것보다는, 지금 정도의 안전한 바닥을 만들고 앱 기획으로 넘어가는 편이 낫다.</p>
+    <p>제일 첫 세팅은 확실히 힘들다. 하지만 오늘은 이전 프로젝트의 방식을 그대로 가져오지 않고, 왜 필요한지 다시 생각해봤다는 점에서 의미가 있었다.</p>
+
+    <h2>내일 할 일</h2>
+    <ul>
+      <li>Trace 앱 기획 시작</li>
+      <li>해결하려는 문제와 주요 사용자 정리</li>
+      <li>첫 MVP 범위 결정</li>
+      <li>필요하면 `project-decisions.md` 업데이트</li>
+      <li>최종 push는 사용자가 `ALLOW_PUSH=1 git push origin main`으로 직접 수행</li>
+    </ul>
+
+    <h2>반복 실수 → 기계화</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>문제 유형</th>
+          <th>오늘 드러난 문제</th>
+          <th>반영 제안</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>워크플로우 이탈</td>
+          <td>Git 훅이 과해져 정상 흐름까지 헷갈림</td>
+          <td>위험 경계만 훅으로 강제</td>
+        </tr>
+        <tr>
+          <td>반복적 실수</td>
+          <td>문자열 안의 느낌표가 force unwrap으로 오탐됨</td>
+          <td>pre-commit 훅 수정 완료</td>
+        </tr>
+        <tr>
+          <td>도구 부족</td>
+          <td>다음 세션에서 상태 복원이 필요함</td>
+          <td>`/trace-init` 사용</td>
+        </tr>
+        <tr>
+          <td>새 규칙 필요</td>
+          <td>앱 기획 결정이 흩어질 수 있음</td>
+          <td>`project-decisions.md` 업데이트</td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>
