@@ -39,6 +39,7 @@ Read the relevant rule file before making changes:
 - Testing and verification rules: `docs/agent-rules/testing.md`
 - Skill and plugin usage rules: `docs/agent-rules/skills.md`
 - Current project decisions and defaults: `docs/agent-rules/project-decisions.md`
+- Documentation and rule-file authoring: `docs/agent-rules/authoring.md`
 
 ## Working Rules
 
@@ -48,6 +49,7 @@ Read the relevant rule file before making changes:
 - Prefer native Apple APIs and SwiftUI patterns before adding dependencies.
 - Before claiming work is complete, run the relevant verification command and report the exact command and result.
 - For reusable mistakes or lessons found during review, run `ce-compound` or document the lesson so the same issue is not repeated.
+- Before creating or editing any rule or documentation file under `docs/agent-rules/`, read `docs/agent-rules/authoring.md` and follow its structure (lean entry point, one rule one home, index over duplication).
 
 ## Required Workflow
 
