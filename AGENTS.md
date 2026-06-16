@@ -10,6 +10,7 @@ This file is the required entry point for agents working in this repository.
 - Do not force push unless the user explicitly asks for force push and names the target branch.
 - Do not rewrite history, reset shared branches, or discard user changes without explicit approval.
 - The final push must be performed by the user. Agents may prepare changes, commits, and instructions, but must not run `git push`.
+- Agents must not merge into `main`; the user performs final local main integration when needed.
 - Agents may run `git commit` after the user asks for commits to be created.
 - Do not use `git add -A` or `git add .`; stage files explicitly by path.
 

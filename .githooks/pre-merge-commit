@@ -3,8 +3,12 @@ set -eu
 
 branch="$(git symbolic-ref --quiet --short HEAD || true)"
 
+if [ "${ALLOW_MAIN_MERGE:-}" = "1" ]; then
+  exit 0
+fi
+
 if [ "$branch" = "main" ]; then
-  echo "Merge blocked: do not merge directly into main from an agent session." >&2
-  echo "The user must explicitly perform or approve the final main integration." >&2
+  echo "Merge blocked: main 통합은 명시적 수동 merge만 허용합니다." >&2
+  echo "승인 시:  ALLOW_MAIN_MERGE=1 git merge --ff-only <branch>" >&2
   exit 1
 fi

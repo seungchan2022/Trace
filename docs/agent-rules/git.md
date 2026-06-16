@@ -6,7 +6,8 @@
 - The final push must be performed by the user. Agents must not run `git push`, even after preparing a branch.
 - Do not commit on `main`.
 - Agents may run `git commit` after the user asks for commits to be created.
-- Do not merge into `main` unless the user explicitly asks for that exact local merge.
+- Agents must not merge into `main`.
+- The user may manually integrate a reviewed branch into `main` with an explicit fast-forward merge.
 - Do not force push unless the user explicitly approves force push and names the branch.
 - Do not use `git add -A` or `git add .`; stage files explicitly by path.
 - Do not run destructive git commands such as `git reset --hard`, branch deletion, or history rewrite unless explicitly requested.
@@ -100,8 +101,8 @@ This repository uses local hooks:
 - `.githooks/pre-commit`: blocks commits on `main`, scans staged files for common secrets and unsafe Swift patterns
 - `.githooks/commit-msg`: blocks invalid commit messages and `Co-Authored-By:`
 - `.githooks/pre-push`: 기본 차단, 사용자는 `ALLOW_PUSH=1 git push ...`로 수동 push 가능
-- `.githooks/pre-merge-commit`: blocks merge commits while currently on `main`
-- `.githooks/pre-rebase`: blocks rebasing `main`
+- `.githooks/pre-merge-commit`: blocks `main` merge commits by default; users may run `ALLOW_MAIN_MERGE=1 git merge --ff-only <branch>` for explicit local integration
+- `.githooks/pre-rebase`: blocks rebasing `main`; feature branches may still be rebased onto `main`
 - `.swiftlint.yml`: makes force unwrap/cast/try and implicitly unwrapped optionals lint errors
 
 Enable it with:
@@ -114,8 +115,13 @@ git config core.hooksPath .githooks
 
 - Do not commit directly on `main`.
 - Work on a feature branch.
-- When ready, the user decides whether to fast-forward merge locally or push the branch manually.
-- Do not rebase `main`.
+- Recommended local integration flow:
+  1. `git switch <work-branch>`
+  2. `git rebase main`
+  3. `git switch main`
+  4. `ALLOW_MAIN_MERGE=1 git merge --ff-only <work-branch>`
+- Do not rebase `main`; rebase the work branch onto `main`.
+- Do not create merge commits for normal solo work; use fast-forward merge after rebase.
 - Resolve conflicts file by file; do not use blanket `--ours` or `--theirs`.
 
 ## Verification Stamps
