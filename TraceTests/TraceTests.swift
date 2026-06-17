@@ -1,37 +1,65 @@
-//
-//  TraceTests.swift
-//  TraceTests
-//
-//  Created by 승찬 on 6/16/26.
-//
-
 import XCTest
+@testable import Trace
 
-final class TraceTests: XCTestCase {
+@MainActor
+final class CoursePlannerPageViewModelTests: XCTestCase {
+    func testFirstTapSelectsStartOnly() async {
+        let service = FakeCoursePlanningService()
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service)
+        let start = CourseCoordinate(latitude: 37.5665, longitude: 126.9780)
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        await viewModel.handleMapTap(at: start)
+
+        XCTAssertEqual(viewModel.startCoordinate?.latitude, start.latitude)
+        XCTAssertNil(viewModel.destinationCoordinate)
+        XCTAssertNil(viewModel.course)
+        XCTAssertEqual(service.requestCount, 0)
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    func testSecondTapRequestsRouteAndPublishesDistance() async {
+        let service = FakeCoursePlanningService()
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service)
+        let start = CourseCoordinate(latitude: 37.5665, longitude: 126.9780)
+        let destination = CourseCoordinate(latitude: 37.5700, longitude: 126.9820)
+
+        await viewModel.handleMapTap(at: start)
+        await viewModel.handleMapTap(at: destination)
+
+        XCTAssertEqual(viewModel.destinationCoordinate?.latitude, destination.latitude)
+        XCTAssertEqual(viewModel.course?.distanceMeters, 1200)
+        XCTAssertEqual(viewModel.distanceText, "1.20 km")
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertEqual(service.requestCount, 1)
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-        // XCTest Documentation
-        // https://developer.apple.com/documentation/xctest
-    }
+    func testRouteFailureShowsErrorAndDoesNotPublishRoute() async {
+        let service = FakeCoursePlanningService()
+        service.result = .failure(CoursePlanningError.routeNotFound)
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service)
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        measure {
-            // Put the code you want to measure the time of here.
+        await viewModel.handleMapTap(at: CourseCoordinate(latitude: 37.5665, longitude: 126.9780))
+        await viewModel.handleMapTap(at: CourseCoordinate(latitude: 37.5700, longitude: 126.9820))
+
+        XCTAssertNil(viewModel.course)
+        XCTAssertEqual(viewModel.errorMessage, "도보 경로를 찾을 수 없습니다.")
+    }
+}
+
+@MainActor
+private final class FakeCoursePlanningService: CoursePlanningServiceProtocol {
+    var requestCount = 0
+    var result: Result<PlannedCourse, Error>?
+
+    func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
+        requestCount += 1
+
+        if let result {
+            return try result.get()
         }
-    }
 
+        return PlannedCourse(
+            coordinates: [start, destination],
+            distanceMeters: 1200
+        )
+    }
 }
