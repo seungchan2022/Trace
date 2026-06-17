@@ -15,17 +15,22 @@
 - `/trace-init`: restore Trace session state at the start of a new chat.
 - `/daily-retro`: summarize the day and capture lessons or follow-up work.
 
-These are Codex custom prompts, not skills. They are registered under `~/.codex/prompts/` and may require a Codex restart or new session after edits.
+These are custom prompts, not skills. The canonical sources live in `docs/prompts/`.
+Codex registers them by copying into `~/.codex/prompts/` (may need a restart/new session after edits);
+Claude Code reads them via `.claude/commands/` symlinks (no copy). See `docs/prompts/setup-codex.md` and `setup-claude.md`,
+and `docs/agent-rules/dual-tool.md` for the shared-vs-tool-specific split.
 
 ## Required Skill Use
 
 - Use `superpowers:brainstorming` before creative product or feature work.
 - Use `superpowers:writing-plans` before multi-step implementation.
+- Implement a written plan task-by-task, never ad hoc: use `superpowers:executing-plans` / `superpowers:subagent-driven-development` where the tool has them, otherwise follow the same plan file step by step. Either way, tick each plan checkbox (`- [ ]` → `- [x]`) the moment its step completes — this is the cross-tool handoff channel, and it does not depend on any skill being installed; see `docs/agent-rules/dual-tool.md`.
 - Use `superpowers:test-driven-development` for bug fixes and behavior changes where tests are practical.
 - Use `superpowers:systematic-debugging` before fixing bugs or unexpected behavior.
 - Use `superpowers:verification-before-completion` before claiming completion.
 - Use `superpowers:requesting-code-review` for major work and before merge.
-- Use `ce-compound` after review when the work exposed a reusable mistake, lesson, or pattern.
+- **Compound step (required at the end of every execute-review cycle).** Immediately after `superpowers:requesting-code-review` feedback is resolved and verified, and as the closing step of `superpowers:finishing-a-development-branch`, check whether the execute-review cycle exposed any mistake, repeated issue, surprising constraint, or reusable lesson. If yes, run `ce-compound` (use `ce-compound mode:headless` for skill-to-skill/automated runs) before moving on or marking the checkpoint complete. Capture: what happened, why, what signal would have caught it earlier, and the concrete rule/check/pattern to reuse. Do not use it for generic summaries.
+  - This rule supplies the integration that Codex's `openai-curated` superpowers has built in but obra superpowers (v6.x, installed on Claude Code) does not call automatically. Keep it in the rules, not in the plugin's SKILL.md, so it survives plugin updates and applies in both tools.
 - Use `ce-compound` when a workflow rule is updated because of an agent mistake.
 
 ## iOS Skill Index
@@ -43,11 +48,12 @@ These are Codex custom prompts, not skills. They are registered under `~/.codex/
 ## Xcode MCP
 
 - Use the `XcodeBuildMCP` MCP server for Xcode project discovery, simulator control, build/run, UI inspection, screenshots, logging, and debugging.
-- The server is configured in `~/.codex/config.toml` as:
+- Server configuration (per tool; each tool registers MCP separately):
   - command: `npx`
   - args: `-y xcodebuildmcp@latest mcp`
   - workflows: `simulator,ui-automation,debugging,logging`
-- Restart Codex after MCP config changes so the server tools become available.
+  - Codex: `~/.codex/config.toml` `[mcp_servers.*]`; Claude Code: `claude mcp add`. See `docs/prompts/setup-codex.md` / `setup-claude.md`.
+- Restart the tool after MCP config changes so the server tools become available.
 
 ## Git Safety Integration
 
