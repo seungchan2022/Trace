@@ -34,6 +34,15 @@ Ask: does the agent need this *before* it would naturally open the detail file?
 - Yes (safety hard-stops): keep it in the entry point.
 - No (procedure, format, steps, naming, examples): detail file only.
 
+## Planning and spec document language
+
+- Write user-reviewed planning documents, product specs, MVP designs, and
+  `docs/superpowers/specs/` documents in Korean by default.
+- Keep code identifiers, API names, class names, commands, and file paths in
+  their original language.
+- Use English only when the document is primarily for external tooling or when
+  the user explicitly asks for English.
+
 ## Adding a new rule or skill file
 
 1. Create the file under `docs/agent-rules/` with a single domain.

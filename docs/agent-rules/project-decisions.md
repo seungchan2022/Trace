@@ -17,23 +17,33 @@ This file records defaults until the user chooses otherwise.
 - Test framework: XCTest
 - Presentation architecture: MVVM
 - Dependency injection: `DependencyContainer` with protocol-based services
-- Architecture direction: Clean Architecture boundaries inside a feature-first app
-- Modularization: not active yet, but code should be structured so features and shared layers can later move into Swift Package modules
+- Architecture direction: page-first MVVM presentation with Clean Architecture boundaries
+- Modularization: not active yet, but code should be structured so `Domain`, `Application`, `Infrastructure`, and `Pages` can later move into Swift Package modules
 - Persistence: undecided
 - Backend: none by default
 - Authentication: none by default
 - Analytics: none by default
 - Monetization: none by default
+- Product focus: plan a running route before the run, not record completed runs
+- First MVP: tap start and destination on a map, show an actual walking route and total distance
+- Course planning provider for MVP: Apple `MapKit` / `MKDirections` with `.walking`
+- Course planning provider architecture: port-and-adapter via `CoursePlanningServiceProtocol`
+- Course planning domain boundary: course planning models live under `Trace/Domain/CoursePlanning/Entity`; course planning protocols live under `Trace/Domain/CoursePlanning/Protocol`
+- Course planning infrastructure boundary: concrete provider adapters live under `Trace/Infrastructure/CoursePlanning/{Provider}`
+- Course planner page boundary: page code lives under `Trace/Pages/CoursePlannerPage`; page-only subviews live under `UIComponent` and use `{PageName}Page+{Role}Component.swift` filenames
+- Course planner state: iOS 17+ Observation API with `@Observable`, not `ObservableObject` / `@Published`
+- Course planner concurrency: Swift 6 style `async`/`await` with `@MainActor` UI state isolation
+- Planning/spec document language: Korean by default
 
 ## Decisions the User May Need to Make Later
 
-- What problem the app solves
-- Main user flow
 - Whether data is local-only or synced
 - Whether login is required
 - Privacy constraints
 - App icon/name/subtitle
 - Whether TestFlight, App Store release, or private use is the target
+- When to replace `MapKit` with a Korea-focused map/routing provider
+- When to add course saving after the route planner MVP works
 
 ## Decision Policy
 

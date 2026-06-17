@@ -19,7 +19,11 @@
 - Keep views small and composable.
 - Use declarative SwiftUI patterns.
 - Use local `@State` for view-local state.
-- Use `@Observable` for ViewModels and shared observable state where appropriate.
+- For iOS 17+ ViewModels and shared observable state, prefer the Observation API:
+  `@Observable` plus `@State` ownership in SwiftUI views.
+- Do not introduce new `ObservableObject`, `@Published`, `@StateObject`, or
+  `@ObservedObject` patterns unless interoperability with legacy code or an
+  older deployment target requires them.
 - Use `.task { await loadData() }` for view-scoped asynchronous loading.
 - Use ViewModels for presentation state, side effects, service calls, permission requests, and network event handling.
 - Views should declare UI, bind state, and forward user actions.
@@ -61,12 +65,16 @@
 
 ## Concurrency
 
+- Write new asynchronous Swift code for Swift 6 concurrency checking.
 - Prefer Swift modern concurrency over classic GCD for new asynchronous code.
 - Consider `async`/`await`, `Task`, `TaskGroup`, `AsyncSequence`, actors, and `Sendable` first.
 - Use `DispatchQueue.async`, `DispatchGroup`, `DispatchSemaphore`, or manual queue hopping only for compatibility, callback bridging, or a clear performance reason.
 - Prefer `@MainActor`, `MainActor.run`, or actor isolation over `DispatchQueue.main.async`.
 - Wrap callback APIs with `withCheckedContinuation` or `withCheckedThrowingContinuation` when creating async call sites.
 - Prefer task cancellation propagation over GCD work item cancellation.
+- Keep UI state mutation on `@MainActor`.
+- Mark value types that cross concurrency boundaries as `Sendable` when their
+  stored properties support it.
 
 ## Xcode
 
