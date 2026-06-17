@@ -1,6 +1,8 @@
-# 하루 회고 생성 (Codex 커스텀 프롬프트)
+# 하루 회고 생성 (공용 프롬프트)
 
-> 이 파일을 `~/.codex/prompts/daily-retro.md`에 복사하면 Codex에서 `/daily-retro`로 호출된다.
+> 이 절차는 Codex와 Claude Code **양쪽에서 `/daily-retro`로 호출**된다.
+> - Codex: 이 파일을 `~/.codex/prompts/daily-retro.md`에 복사해 등록 (`docs/prompts/setup-codex.md` 참고).
+> - Claude Code: `.claude/commands/daily-retro.md`가 이 파일을 가리키므로 별도 복사 없이 인식된다.
 > `/daily-retro` 또는 `/daily-retro YYMMDD` (인자 없으면 오늘 날짜).
 > 독자: 개인 기록 + 멘토/면접관에게 보여줄 수준.
 
@@ -21,8 +23,8 @@
 - **mermaid 다이어그램**: MCP 불필요. 항상 CDN 임베드(`<pre class="mermaid">`)로 브라우저가 렌더한다.
   mermaid 검증용 MCP가 있다면 임베드 전에 문법만 점검해도 좋다.
 
-> 어떤 MCP가 켜져 있는지는 `~/.codex/config.toml`의 `[mcp_servers.*]`로 확인.
-> 추가 방법은 같은 폴더의 `codex-setup.md` 참고.
+> 어떤 MCP가 켜져 있는지는 도구의 MCP 설정에서 확인한다 (Codex `~/.codex/config.toml`의 `[mcp_servers.*]`,
+> Claude Code `claude mcp list` 또는 설정). 추가 방법은 `docs/prompts/setup-codex.md` / `setup-claude.md` 참고.
 
 ## Phase 1 — 데이터 수집 (생략 금지, 추측 금지)
 
@@ -96,7 +98,7 @@ Mermaid 임베드(MCP 불필요, 브라우저 렌더):
 | 반복적 실수 | `.githooks/` (pre-commit 등) |
 | 워크플로우 이탈 | `docs/agent-rules/*.md` 수정 |
 | 새 규칙 필요 | `docs/agent-rules/` 추가 |
-| 도구 부족 | `~/.codex/config.toml`에 MCP 추가 (`codex-setup.md` 참고) |
+| 도구 부족 | 도구의 MCP 설정에 추가 (`docs/prompts/setup-codex.md` / `setup-claude.md` 참고) |
 
 원칙: **"같은 문제가 두 번 나면, 문서가 아니라 기계(hook/MCP)로 막는다."**
 
@@ -105,8 +107,8 @@ Mermaid 임베드(MCP 불필요, 브라우저 렌더):
 - 마크다운: `history/{YYMMDD}_daily_retro.md`
 - HTML: `history/{YYMMDD}_daily_retro.html`
 - HTML 생성 후 반드시 브라우저로 연다:
-  - Codex Browser가 있으면 `file://{절대경로}`로 열고 사용자에게 보이게 한다.
-  - Codex Browser를 사용할 수 없으면 OS 기본 브라우저로 열거나, 불가능한 이유와 직접 열 파일 경로를 보고한다.
+  - 브라우저 도구(Codex Browser, Playwright MCP 등)가 있으면 `file://{절대경로}`로 열어 사용자에게 보이게 한다.
+  - 없으면 OS 기본 브라우저로 열거나(`open {경로}`), 불가능한 이유와 직접 열 파일 경로를 보고한다.
 - 파일 경로 안내 + 설정 반영 제안 항목 함께 보고.
 
 ## 출력 규칙

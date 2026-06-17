@@ -36,6 +36,7 @@ Read the relevant rule file before making changes:
 - Skill and plugin usage rules: `docs/agent-rules/skills.md`
 - Current project decisions and defaults: `docs/agent-rules/project-decisions.md`
 - Documentation and rule-file authoring: `docs/agent-rules/authoring.md`
+- Working across Codex and Claude Code (handoff, shared vs tool-specific setup): `docs/agent-rules/dual-tool.md`
 
 ## Working Rules
 

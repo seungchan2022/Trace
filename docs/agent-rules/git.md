@@ -17,7 +17,7 @@
 
 - Default branch: `main`
 - Feature branches should use `<type>/<short-description-kebab-case>`.
-- Do not include `codex` in branch names.
+- Do not include tool names such as `codex` or `claude` in branch names. Name branches by the work, not the tool that did it.
 - Make a feature branch before committing repository changes.
 - Keep one branch focused on one coherent change.
 - 한 작업 세션은 하나의 브랜치에서 진행하고, 그 안에서 커밋을 여러 번 나눠서 한다.

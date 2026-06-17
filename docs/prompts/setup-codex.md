@@ -1,6 +1,9 @@
 # Codex 설정 복사용 스니펫
 
-> 이 파일의 내용을 직접 `~/.codex/config.toml`(전역) 또는 프로젝트 `.codex/config.toml`에 복사한다.
+> **Codex 전용 셋업.** Claude Code 셋업은 같은 폴더의 `setup-claude.md`를 본다.
+> 공용 프롬프트(`trace-init.md`, `daily-retro.md`)는 도구 중립이며, Codex는 `~/.codex/prompts/`로 **복사**해야 호출된다
+> (Claude Code는 `.claude/commands/` 심볼릭으로 자동 인식 — 복사 불필요).
+> 아래 config 스니펫은 `~/.codex/config.toml`(전역) 또는 프로젝트 `.codex/config.toml`에 복사한다.
 > ⚠️ `~/.codex/config.toml`은 **모든 Codex 프로젝트에 적용**된다. Trace에만 적용하려면 프로젝트 단위 config를 쓴다.
 
 ---
@@ -10,7 +13,7 @@
 이 폴더의 `daily-retro.md`를 복사:
 
 ```bash
-cp docs/codex-prompts/daily-retro.md ~/.codex/prompts/daily-retro.md
+cp docs/prompts/daily-retro.md ~/.codex/prompts/daily-retro.md
 ```
 
 → 이후 Codex에서 `/daily-retro` 또는 `/daily-retro 260615`로 호출.
@@ -20,7 +23,7 @@ cp docs/codex-prompts/daily-retro.md ~/.codex/prompts/daily-retro.md
 내장 `/init`과 이름 충돌을 피하기 위해 `trace-init.md`로 복사:
 
 ```bash
-cp docs/codex-prompts/trace-init.md ~/.codex/prompts/trace-init.md
+cp docs/prompts/trace-init.md ~/.codex/prompts/trace-init.md
 ```
 
 → 이후 Codex에서 `/trace-init`으로 호출.
