@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **상태(2026-06-17): 완료.** 이후 `2026-06-17-folder-restructure-course-planning` 플랜으로 `Domain/CoursePlanning` 구조와 `Course*` 네이밍으로 개편됨. 아래의 `RoutePlanningService`·`Trace/Features/…` 등 경로·타입명은 당시 구현 기준이며, 최신 구조는 그 플랜과 `docs/agent-rules/architecture.md`를 따른다.
+
 **Goal:** 지도에서 출발지와 도착지를 탭하면 실제 도보 경로와 총 거리를 보여주는 Trace 첫 MVP 화면을 만든다.
 
 **Architecture:** MVVM을 유지하고 경로 계산은 `RoutePlanningService` 포트 뒤로 숨긴다. 첫 구현은 `MapKitRoutePlanningService` 어댑터를 사용하되, UI 테스트에서는 가짜 라우팅 서비스를 주입할 수 있게 앱 시작 구성을 분리한다. 상태 관리는 iOS 17+ Observation API의 `@Observable`을 사용하고, Swift 6 동시성 기준에 맞게 UI 상태와 MVP 라우팅 포트는 `@MainActor` 경계에서 다룬다.
@@ -46,7 +48,7 @@
 - Create: `Trace/Features/RoutePlanner/Domain/RoutePlanningService.swift`
 - Test: `TraceTests/TraceTests.swift`
 
-- [ ] **Step 1: 실패하는 ViewModel 테스트의 기반 타입을 먼저 작성한다**
+- [x] **Step 1: 실패하는 ViewModel 테스트의 기반 타입을 먼저 작성한다**
 
 `TraceTests/TraceTests.swift`를 아래처럼 교체한다. 이 시점에는 타입이 없으므로 컴파일 실패가 기대된다.
 
@@ -89,7 +91,7 @@ private final class FakeRoutePlanningService: RoutePlanningService {
 }
 ```
 
-- [ ] **Step 2: 테스트 실패를 확인한다**
+- [x] **Step 2: 테스트 실패를 확인한다**
 
 Run:
 
@@ -99,7 +101,7 @@ xcodebuild test -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 1
 
 Expected: `RoutePlanningService`, `PlannedRoute`, `RoutePlannerViewModel` 타입이 없어 컴파일 실패.
 
-- [ ] **Step 3: `PlannedRoute`를 추가한다**
+- [x] **Step 3: `PlannedRoute`를 추가한다**
 
 `Trace/Features/RoutePlanner/Domain/PlannedRoute.swift`
 
@@ -119,7 +121,7 @@ extension CLLocationCoordinate2D: @retroactive Equatable {
 }
 ```
 
-- [ ] **Step 4: `RoutePlanningService`를 추가한다**
+- [x] **Step 4: `RoutePlanningService`를 추가한다**
 
 `Trace/Features/RoutePlanner/Domain/RoutePlanningService.swift`
 
@@ -138,7 +140,7 @@ enum RoutePlanningError: Error, Equatable {
 }
 ```
 
-- [ ] **Step 5: 테스트를 다시 실행해 다음 실패를 확인한다**
+- [x] **Step 5: 테스트를 다시 실행해 다음 실패를 확인한다**
 
 Run:
 
@@ -156,7 +158,7 @@ Expected: `RoutePlannerViewModel` 타입이 없어 컴파일 실패.
 - Create: `Trace/Features/RoutePlanner/Presentation/RoutePlannerViewModel.swift`
 - Modify: `TraceTests/TraceTests.swift`
 
-- [ ] **Step 1: ViewModel 테스트를 확장한다**
+- [x] **Step 1: ViewModel 테스트를 확장한다**
 
 `TraceTests/TraceTests.swift`에 아래 테스트를 추가한다.
 
@@ -221,7 +223,7 @@ private final class FakeRoutePlanningService: RoutePlanningService {
 }
 ```
 
-- [ ] **Step 2: 테스트 실패를 확인한다**
+- [x] **Step 2: 테스트 실패를 확인한다**
 
 Run:
 
@@ -231,7 +233,7 @@ xcodebuild test -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 1
 
 Expected: `RoutePlannerViewModel` 없음 또는 속성/메서드 없음으로 실패.
 
-- [ ] **Step 3: ViewModel을 구현한다**
+- [x] **Step 3: ViewModel을 구현한다**
 
 `Trace/Features/RoutePlanner/Presentation/RoutePlannerViewModel.swift`
 
@@ -295,7 +297,7 @@ final class RoutePlannerViewModel {
 }
 ```
 
-- [ ] **Step 4: 단위 테스트 통과를 확인한다**
+- [x] **Step 4: 단위 테스트 통과를 확인한다**
 
 Run:
 
@@ -312,7 +314,7 @@ Expected: `TEST SUCCEEDED`.
 **Files:**
 - Create: `Trace/Features/RoutePlanner/Infrastructure/MapKitRoutePlanningService.swift`
 
-- [ ] **Step 1: 어댑터를 구현한다**
+- [x] **Step 1: 어댑터를 구현한다**
 
 `Trace/Features/RoutePlanner/Infrastructure/MapKitRoutePlanningService.swift`
 
@@ -353,7 +355,7 @@ final class MapKitRoutePlanningService: RoutePlanningService {
 }
 ```
 
-- [ ] **Step 2: 빌드로 컴파일을 확인한다**
+- [x] **Step 2: 빌드로 컴파일을 확인한다**
 
 Run:
 
@@ -373,7 +375,7 @@ Expected: `BUILD SUCCEEDED`.
 - Modify: `Trace/TraceApp.swift`
 - Modify: `Trace/ContentView.swift`
 
-- [ ] **Step 1: 앱 환경 구성을 추가한다**
+- [x] **Step 1: 앱 환경 구성을 추가한다**
 
 `Trace/App/DependencyContainer.swift`
 
@@ -414,7 +416,7 @@ private final class UITestingRoutePlanningService: RoutePlanningService {
 }
 ```
 
-- [ ] **Step 2: SwiftUI 지도 화면을 추가한다**
+- [x] **Step 2: SwiftUI 지도 화면을 추가한다**
 
 `Trace/Features/RoutePlanner/Presentation/RoutePlannerView.swift`
 
@@ -497,7 +499,7 @@ struct RoutePlannerView: View {
 }
 ```
 
-- [ ] **Step 3: 앱 첫 화면을 교체한다**
+- [x] **Step 3: 앱 첫 화면을 교체한다**
 
 `Trace/TraceApp.swift`
 
@@ -540,7 +542,7 @@ struct ContentView: View {
 }
 ```
 
-- [ ] **Step 4: 빌드한다**
+- [x] **Step 4: 빌드한다**
 
 Run:
 
@@ -557,7 +559,7 @@ Expected: `BUILD SUCCEEDED`.
 **Files:**
 - Replace: `TraceUITests/TraceUITests.swift`
 
-- [ ] **Step 1: UI 테스트를 작성한다**
+- [x] **Step 1: UI 테스트를 작성한다**
 
 `TraceUITests/TraceUITests.swift`
 
@@ -610,7 +612,7 @@ private extension XCUIElement {
 }
 ```
 
-- [ ] **Step 2: UI 테스트를 실행한다**
+- [x] **Step 2: UI 테스트를 실행한다**
 
 Run:
 
@@ -627,7 +629,7 @@ Expected: `TEST SUCCEEDED`. Simulator에서 앱이 실행되고 지도 영역을
 **Files:**
 - No file changes
 
-- [ ] **Step 1: 앱을 Simulator에서 실행한다**
+- [x] **Step 1: 앱을 Simulator에서 실행한다**
 
 Run:
 
@@ -637,7 +639,7 @@ xcodebuild build -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 
 
 Expected: `BUILD SUCCEEDED`.
 
-- [ ] **Step 2: 실제 앱을 실행해 확인한다**
+- [x] **Step 2: 실제 앱을 실행해 확인한다**
 
 XcodeBuildMCP 또는 Xcode에서 앱을 실행한다.
 
@@ -658,7 +660,7 @@ XcodeBuildMCP 또는 Xcode에서 앱을 실행한다.
 **Files:**
 - Modify if needed: files changed by prior tasks only
 
-- [ ] **Step 1: 전체 테스트를 실행한다**
+- [x] **Step 1: 전체 테스트를 실행한다**
 
 Run:
 
@@ -668,7 +670,7 @@ xcodebuild test -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 1
 
 Expected: `TEST SUCCEEDED`.
 
-- [ ] **Step 2: SwiftLint를 실행한다**
+- [x] **Step 2: SwiftLint를 실행한다**
 
 Run:
 
@@ -678,7 +680,7 @@ swiftlint
 
 Expected: no errors.
 
-- [ ] **Step 3: 상태를 확인한다**
+- [x] **Step 3: 상태를 확인한다**
 
 Run:
 
@@ -688,7 +690,7 @@ git status --short
 
 Expected: 의도한 구현 파일, 테스트 파일, 문서 파일만 변경됨.
 
-- [ ] **Step 4: 사용자가 커밋을 요청한 경우에만 명시적 경로로 stage/commit한다**
+- [x] **Step 4: 사용자가 커밋을 요청한 경우에만 명시적 경로로 stage/commit한다**
 
 Run only after user asks for a commit:
 
