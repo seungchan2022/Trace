@@ -34,6 +34,8 @@ This file records defaults until the user chooses otherwise.
 - Course planner state: iOS 17+ Observation API with `@Observable`, not `ObservableObject` / `@Published`
 - Course planner concurrency: Swift 6 style `async`/`await` with `@MainActor` UI state isolation
 - Planning/spec document language: Korean by default
+- Development tooling: Codex and Claude Code are used interchangeably across sessions; rules, prompts, plans, and git are shared in the repo, while only the entry file (`AGENTS.md` / `CLAUDE.md`) and the command directory are tool-specific. See `docs/agent-rules/dual-tool.md`.
+- Workflow plugins: `superpowers`, `compound-engineering`, and `XcodeBuildMCP` are installed in both tools; every execute→review cycle ends with `ce-compound` to capture reusable lessons. See `docs/agent-rules/skills.md` and `docs/prompts/setup-claude.md`.
 
 ## Decisions the User May Need to Make Later
 
