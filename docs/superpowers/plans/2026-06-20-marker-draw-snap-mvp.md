@@ -17,6 +17,20 @@
 - 경로 형상은 영속 저장하지 않음(저장은 범위 밖).
 - 커밋은 경로별 명시 스테이징(`git add <path>`); `git add -A`/`.` 금지. 푸시 금지.
 - 구현은 `main`에서 분기한 `feature/marker-draw-snap` 브랜치에서. 결정/스펙/플랜 문서는 별도 커밋.
+- 프로덕션 Swift에 force unwrap(`!`)·force cast(`as!`)·force try(`try!`) 금지(pre-commit 훅·swiftlint 차단). `guard let`/옵셔널 바인딩 사용. 테스트 파일은 훅 예외.
+
+### 검증·커밋 프로토콜 (모든 코드 태스크 공통)
+
+`.swift`/프로젝트 파일 커밋 전 순서대로 실행하고, 각 성공 후 스탬프 생성(없으면 pre-commit 훅이 커밋 차단):
+
+```bash
+xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16' build && touch .git/trace-verify-build.ok
+xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16' test && touch .git/trace-verify-test.ok
+swiftlint && touch .git/trace-verify-lint.ok
+```
+
+- 시뮬레이터는 **iPhone 16**(이 머신 가용). testing.md 기본 iPhone 17/iOS 26.5는 없음.
+- 각 태스크의 "xcodebuild test ..." 스텝은 위 프로토콜로 대체해 실행한다. 커밋은 `scripts/trace-commit.sh -m "..." -- <path>...`로 경로 명시.
 
 참고 스펙: `docs/superpowers/specs/2026-06-20-marker-draw-snap-mvp-design.md`. 용어: **포인트**=탭한 지점, **마커**=손으로 그린 경로.
 
@@ -106,13 +120,14 @@ import Foundation
 /// 라우팅 호출 수를 제한해 스로틀을 피하고, 시작/끝 좌표는 항상 보존한다.
 enum DrawnPathSampler {
     static func sample(_ raw: [CourseCoordinate], minSpacingMeters: Double = 120) -> [CourseCoordinate] {
-        guard let first = raw.first else { return [] }
-        var result = [first]
-        for point in raw.dropFirst() where result.last!.distanceMeters(to: point) >= minSpacingMeters {
+        guard var last = raw.first else { return [] }
+        var result = [last]
+        for point in raw.dropFirst() where last.distanceMeters(to: point) >= minSpacingMeters {
             result.append(point)
+            last = point
         }
-        if let last = raw.last, result.last! != last {
-            result.append(last)
+        if let actualLast = raw.last, actualLast != last {
+            result.append(actualLast)
         }
         return result
     }
