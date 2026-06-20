@@ -5,7 +5,7 @@ import XCTest
 final class CoursePlannerPageViewModelTests: XCTestCase {
     func testFirstTapSelectsStartOnly() async {
         let service = FakeCoursePlanningService()
-        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service)
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: FakeLocationService())
         let start = CourseCoordinate(latitude: 37.5665, longitude: 126.9780)
 
         await viewModel.handleMapTap(at: start)
@@ -18,7 +18,7 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
 
     func testSecondTapRequestsRouteAndPublishesDistance() async {
         let service = FakeCoursePlanningService()
-        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service)
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: FakeLocationService())
         let start = CourseCoordinate(latitude: 37.5665, longitude: 126.9780)
         let destination = CourseCoordinate(latitude: 37.5700, longitude: 126.9820)
 
@@ -35,13 +35,35 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
     func testRouteFailureShowsErrorAndDoesNotPublishRoute() async {
         let service = FakeCoursePlanningService()
         service.result = .failure(CoursePlanningError.routeNotFound)
-        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service)
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: FakeLocationService())
 
         await viewModel.handleMapTap(at: CourseCoordinate(latitude: 37.5665, longitude: 126.9780))
         await viewModel.handleMapTap(at: CourseCoordinate(latitude: 37.5700, longitude: 126.9820))
 
         XCTAssertNil(viewModel.course)
         XCTAssertEqual(viewModel.errorMessage, "도보 경로를 찾을 수 없습니다.")
+    }
+
+    func testBootstrapSetsCameraToCurrentLocation() async {
+        let service = FakeCoursePlanningService()
+        let location = FakeLocationService()
+        location.result = .success(CourseCoordinate(latitude: 37.4979, longitude: 127.0276))
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: location)
+
+        await viewModel.bootstrapLocation()
+
+        XCTAssertEqual(viewModel.initialCameraCoordinate?.latitude, 37.4979)
+    }
+
+    func testBootstrapFallsBackWhenLocationDenied() async {
+        let service = FakeCoursePlanningService()
+        let location = FakeLocationService()
+        location.result = .failure(LocationError.denied)
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: location)
+
+        await viewModel.bootstrapLocation()
+
+        XCTAssertEqual(viewModel.initialCameraCoordinate?.latitude, 37.5666) // 서울시청 폴백
     }
 }
 
@@ -62,4 +84,10 @@ private final class FakeCoursePlanningService: CoursePlanningServiceProtocol {
             distanceMeters: 1200
         )
     }
+}
+
+@MainActor
+private final class FakeLocationService: LocationServiceProtocol {
+    var result: Result<CourseCoordinate, Error> = .success(CourseCoordinate(latitude: 37.4979, longitude: 127.0276))
+    func currentLocation() async throws -> CourseCoordinate { try result.get() }
 }

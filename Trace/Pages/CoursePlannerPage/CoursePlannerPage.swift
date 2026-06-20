@@ -4,8 +4,14 @@ import SwiftUI
 struct CoursePlannerPage: View {
     @State private var viewModel: CoursePlannerPageViewModel
 
-    init(coursePlanningService: CoursePlanningServiceProtocol) {
-        _viewModel = State(initialValue: CoursePlannerPageViewModel(coursePlanningService: coursePlanningService))
+    init(
+        coursePlanningService: CoursePlanningServiceProtocol,
+        locationService: LocationServiceProtocol
+    ) {
+        _viewModel = State(initialValue: CoursePlannerPageViewModel(
+            coursePlanningService: coursePlanningService,
+            locationService: locationService
+        ))
     }
 
     var body: some View {
@@ -72,7 +78,10 @@ struct CoursePlannerPage: View {
 }
 
 #Preview {
-    CoursePlannerPage(coursePlanningService: DependencyContainer.uiTesting().coursePlanningService)
+    CoursePlannerPage(
+        coursePlanningService: DependencyContainer.uiTesting().coursePlanningService,
+        locationService: DependencyContainer.uiTesting().locationService
+    )
 }
 
 private extension CLLocationCoordinate2D {

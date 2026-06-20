@@ -9,16 +9,30 @@ final class CoursePlannerPageViewModel {
     private(set) var course: PlannedCourse?
     private(set) var isLoading = false
     private(set) var errorMessage: String?
+    private(set) var initialCameraCoordinate: CourseCoordinate?
 
     private let coursePlanningService: CoursePlanningServiceProtocol
+    private let locationService: LocationServiceProtocol
 
-    init(coursePlanningService: CoursePlanningServiceProtocol) {
+    init(
+        coursePlanningService: CoursePlanningServiceProtocol,
+        locationService: LocationServiceProtocol
+    ) {
         self.coursePlanningService = coursePlanningService
+        self.locationService = locationService
     }
 
     var distanceText: String? {
         guard let course else { return nil }
         return String(format: "%.2f km", course.distanceMeters / 1000)
+    }
+
+    func bootstrapLocation() async {
+        do {
+            initialCameraCoordinate = try await locationService.currentLocation()
+        } catch {
+            initialCameraCoordinate = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
+        }
     }
 
     func handleMapTap(at coordinate: CourseCoordinate) async {

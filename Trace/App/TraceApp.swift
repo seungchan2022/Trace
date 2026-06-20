@@ -21,7 +21,10 @@ struct TraceApp: App {
 
     var body: some Scene {
         WindowGroup {
-            CoursePlannerPage(coursePlanningService: container.coursePlanningService)
+            CoursePlannerPage(
+                coursePlanningService: container.coursePlanningService,
+                locationService: container.locationService
+            )
         }
     }
 }
