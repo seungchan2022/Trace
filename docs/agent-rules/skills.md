@@ -33,6 +33,12 @@ and `docs/agent-rules/dual-tool.md` for the shared-vs-tool-specific split.
   - This rule supplies the integration that Codex's `openai-curated` superpowers has built in but obra superpowers (v6.x, installed on Claude Code) does not call automatically. Keep it in the rules, not in the plugin's SKILL.md, so it survives plugin updates and applies in both tools.
 - Use `ce-compound` when a workflow rule is updated because of an agent mistake.
 
+## Asking the User Decisions
+
+- When proposing options or asking the user to make a decision, ask **in chat as plain text** using an `A / B / C` list, and mark the recommended option with `(추천)`. Do not use the built-in interview/question UI (e.g. the `AskUserQuestion` tool or any skill's structured-question prompt) for this.
+- This applies to essentially every time you propose something or ask the user to choose, including inside `superpowers:brainstorming` and other skills that would otherwise pop a structured question UI. The skill flow still applies — only its asking mechanism changes to A/B/C chat.
+- Kept here (not in any plugin SKILL.md) so it survives plugin updates and applies in both Codex and Claude Code. Established 2026-06-20 at user request.
+
 ## iOS Skill Index
 
 - `swiftui-ui-patterns`: SwiftUI screen composition, navigation, state, controls
