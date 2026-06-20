@@ -2,13 +2,22 @@ import Foundation
 
 struct DependencyContainer {
     let coursePlanningService: CoursePlanningServiceProtocol
+    let locationService: LocationServiceProtocol
 
+    @MainActor
     static func live() -> DependencyContainer {
-        DependencyContainer(coursePlanningService: MapKitCoursePlanningService())
+        DependencyContainer(
+            coursePlanningService: MapKitCoursePlanningService(),
+            locationService: CoreLocationService()
+        )
     }
 
+    @MainActor
     static func uiTesting() -> DependencyContainer {
-        DependencyContainer(coursePlanningService: UITestingCoursePlanningService())
+        DependencyContainer(
+            coursePlanningService: UITestingCoursePlanningService(),
+            locationService: UITestingLocationService()
+        )
     }
 }
 
@@ -32,5 +41,11 @@ private final class UITestingCoursePlanningService: CoursePlanningServiceProtoco
             ],
             distanceMeters: 1200
         )
+    }
+}
+
+private final class UITestingLocationService: LocationServiceProtocol {
+    func currentLocation() async throws -> CourseCoordinate {
+        CourseCoordinate(latitude: 37.5666, longitude: 126.9784) // 서울시청 고정
     }
 }
