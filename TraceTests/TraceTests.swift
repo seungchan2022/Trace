@@ -96,6 +96,30 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
         XCTAssertNotNil(viewModel.errorMessage)
     }
 
+    func testAppendStrokeFailureKeepsPreviousCourse() async {
+        let service = FakeCoursePlanningService()
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: FakeLocationService())
+
+        // 1. 성공적으로 첫 스트로크 추가 → course 생성 확인
+        await viewModel.appendStroke([
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+            CourseCoordinate(latitude: 37.52, longitude: 127.00),
+        ])
+        XCTAssertNotNil(viewModel.course, "첫 스트로크 후 course가 생성되어야 합니다")
+
+        // 2. 서비스를 실패 모드로 전환 후 두 번째 스트로크 추가
+        service.result = .failure(CoursePlanningError.requestFailed)
+        await viewModel.appendStroke([
+            CourseCoordinate(latitude: 37.53, longitude: 127.00),
+            CourseCoordinate(latitude: 37.54, longitude: 127.00),
+        ])
+
+        // 3. 기존 course가 유지되고 에러 메시지가 설정되었는지 검증
+        XCTAssertNotNil(viewModel.course, "스냅 실패 시 기존 course가 유지되어야 합니다")
+        XCTAssertNotNil(viewModel.errorMessage, "스냅 실패 시 에러 메시지가 설정되어야 합니다")
+    }
+
     func testToggleDrawingModeFlips() {
         let viewModel = CoursePlannerPageViewModel(coursePlanningService: FakeCoursePlanningService(), locationService: FakeLocationService())
         XCTAssertFalse(viewModel.isDrawingMode)
