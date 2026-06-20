@@ -7,7 +7,8 @@ final class CoreLocationService: NSObject, LocationServiceProtocol, CLLocationMa
     private var continuation: CheckedContinuation<CourseCoordinate, Error>?
 
     func currentLocation() async throws -> CourseCoordinate {
-        try await withCheckedThrowingContinuation { continuation in
+        guard continuation == nil else { throw LocationError.unavailable }
+        return try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
             manager.delegate = self
             switch manager.authorizationStatus {
