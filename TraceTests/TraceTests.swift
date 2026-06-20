@@ -65,6 +65,55 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.initialCameraCoordinate?.latitude, 37.5666) // 서울시청 폴백
     }
+
+    func testAppendStrokeSnapsAndPublishesCourse() async {
+        let service = FakeCoursePlanningService()
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: FakeLocationService())
+        let stroke = [
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+            CourseCoordinate(latitude: 37.52, longitude: 127.00),
+        ]
+
+        await viewModel.appendStroke(stroke)
+
+        XCTAssertNotNil(viewModel.course)
+        XCTAssertEqual(viewModel.drawnStrokes.count, 1)
+        XCTAssertNil(viewModel.errorMessage)
+    }
+
+    func testAppendStrokeFailureSetsErrorAndKeepsNoCourse() async {
+        let service = FakeCoursePlanningService()
+        service.result = .failure(CoursePlanningError.requestFailed)
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: FakeLocationService())
+
+        await viewModel.appendStroke([
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+        ])
+
+        XCTAssertNil(viewModel.course)
+        XCTAssertNotNil(viewModel.errorMessage)
+    }
+
+    func testToggleDrawingModeFlips() {
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: FakeCoursePlanningService(), locationService: FakeLocationService())
+        XCTAssertFalse(viewModel.isDrawingMode)
+        viewModel.toggleDrawingMode()
+        XCTAssertTrue(viewModel.isDrawingMode)
+    }
+
+    func testClearResetsState() async {
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: FakeCoursePlanningService(), locationService: FakeLocationService())
+        await viewModel.appendStroke([
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+        ])
+        viewModel.clear()
+        XCTAssertNil(viewModel.course)
+        XCTAssertTrue(viewModel.drawnStrokes.isEmpty)
+        XCTAssertNil(viewModel.errorMessage)
+    }
 }
 
 @MainActor

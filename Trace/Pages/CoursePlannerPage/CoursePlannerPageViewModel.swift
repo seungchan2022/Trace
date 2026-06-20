@@ -10,6 +10,8 @@ final class CoursePlannerPageViewModel {
     private(set) var isLoading = false
     private(set) var errorMessage: String?
     private(set) var initialCameraCoordinate: CourseCoordinate?
+    private(set) var isDrawingMode = false
+    private(set) var drawnStrokes: [[CourseCoordinate]] = []
 
     private let coursePlanningService: CoursePlanningServiceProtocol
     private let locationService: LocationServiceProtocol
@@ -49,6 +51,23 @@ final class CoursePlannerPageViewModel {
         await calculateCourse()
     }
 
+    func toggleDrawingMode() {
+        isDrawingMode.toggle()
+    }
+
+    func appendStroke(_ stroke: [CourseCoordinate]) async {
+        guard stroke.count >= 2 else { return }
+        drawnStrokes.append(stroke)
+        await recomputeSnappedCourse()
+    }
+
+    func clear() {
+        drawnStrokes = []
+        course = nil
+        errorMessage = nil
+        isLoading = false
+    }
+
     private func calculateCourse() async {
         guard let startCoordinate, let destinationCoordinate else { return }
 
@@ -64,6 +83,21 @@ final class CoursePlannerPageViewModel {
             errorMessage = "경로를 계산할 수 없습니다."
         }
 
+        isLoading = false
+    }
+
+    private func recomputeSnappedCourse() async {
+        let allPoints = drawnStrokes.flatMap { $0 }
+        let sampled = DrawnPathSampler.sample(allPoints)
+        guard sampled.count >= 2 else { course = nil; return }
+
+        isLoading = true
+        errorMessage = nil
+        do {
+            course = try await coursePlanningService.snappedRoute(through: sampled)
+        } catch {
+            errorMessage = "경로를 계산할 수 없습니다."
+        }
         isLoading = false
     }
 }
