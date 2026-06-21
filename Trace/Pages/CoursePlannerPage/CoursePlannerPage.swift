@@ -17,26 +17,24 @@ struct CoursePlannerPage: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            mapView
-                .accessibilityIdentifier("coursePlanner.map")
-
-            VStack {
+        mapView
+            .accessibilityIdentifier("coursePlanner.map")
+            .safeAreaInset(edge: .top) {
                 controls
-                Spacer()
+            }
+            .safeAreaInset(edge: .bottom) {
                 statusPanel
             }
-        }
-        .task {
-            await viewModel.bootstrapLocation()
-            if let center = viewModel.initialCameraCoordinate {
-                cameraPosition = .region(MKCoordinateRegion(
-                    center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
-                    latitudinalMeters: 1000,
-                    longitudinalMeters: 1000
-                ))
+            .task {
+                await viewModel.bootstrapLocation()
+                if let center = viewModel.initialCameraCoordinate {
+                    cameraPosition = .region(MKCoordinateRegion(
+                        center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
+                        latitudinalMeters: 1000,
+                        longitudinalMeters: 1000
+                    ))
+                }
             }
-        }
     }
 
     private var mapView: some View {
