@@ -146,6 +146,51 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.course)
     }
 
+    /// clear() 호출 후 아직 진행 중인 recompute가 완료되어도
+    /// course를 부활시키지 않는다 (phantom-course 방지).
+    func testClearInvalidatesInFlightRecompute() async {
+        let gatedService = GatedCoursePlanningService()
+        let viewModel = CoursePlannerPageViewModel(
+            coursePlanningService: gatedService,
+            locationService: FakeLocationService()
+        )
+        // 충분한 간격의 좌표 2개 → DrawnPathSampler가 둘 다 보존 → route 1회 호출
+        let stroke = [
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+        ]
+
+        // 1) appendStroke를 자식 Task로 실행 — route 호출에서 일시정지됨
+        let appendTask = Task { @MainActor in
+            await viewModel.appendStroke(stroke)
+        }
+
+        // 2) 페이크가 route 안에서 일시정지될 때까지 대기
+        while gatedService.isSuspended == false {
+            await Task.yield()
+        }
+
+        // 3) clear() → recomputeGeneration 증가, course = nil
+        viewModel.clear()
+
+        // 4) 게이트 열기 → route가 결과를 반환하지만 세대 불일치로 적용되지 않아야 함
+        let staleCourse = PlannedCourse(
+            coordinates: [
+                CourseCoordinate(latitude: 37.50, longitude: 127.00),
+                CourseCoordinate(latitude: 37.51, longitude: 127.00),
+            ],
+            distanceMeters: 500
+        )
+        gatedService.openGate(returning: staleCourse)
+
+        // 5) 자식 Task 완료 대기
+        await appendTask.value
+
+        // 6) 검증: course가 nil로 유지되고 strokes가 비어 있어야 함
+        XCTAssertNil(viewModel.course, "clear() 이후 완료된 recompute가 course를 부활시키면 안 됩니다")
+        XCTAssertTrue(viewModel.drawnStrokes.isEmpty, "clear()가 strokes를 비워야 합니다")
+    }
+
     func testClearResetsState() async {
         let viewModel = CoursePlannerPageViewModel(coursePlanningService: FakeCoursePlanningService(), locationService: FakeLocationService())
         await viewModel.appendStroke([
@@ -158,6 +203,31 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
     }
 }
+
+// MARK: - 게이트 기반 레이스 테스트용 페이크
+
+@MainActor
+private final class GatedCoursePlanningService: CoursePlanningServiceProtocol {
+    private(set) var isSuspended = false
+    private var gateContinuation: CheckedContinuation<PlannedCourse, any Error>?
+
+    func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.gateContinuation = continuation
+            self.isSuspended = true
+        }
+    }
+
+    /// 게이트를 열어 대기 중인 route 호출을 완료시킨다.
+    func openGate(returning course: PlannedCourse) {
+        guard let continuation = gateContinuation else { return }
+        gateContinuation = nil
+        isSuspended = false
+        continuation.resume(returning: course)
+    }
+}
+
+// MARK: - 기존 테스트용 페이크
 
 @MainActor
 private final class FakeCoursePlanningService: CoursePlanningServiceProtocol {

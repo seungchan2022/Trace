@@ -15,6 +15,7 @@ final class CoursePlannerPageViewModel {
 
     private let coursePlanningService: CoursePlanningServiceProtocol
     private let locationService: LocationServiceProtocol
+    private var recomputeGeneration = 0
 
     init(
         coursePlanningService: CoursePlanningServiceProtocol,
@@ -65,6 +66,7 @@ final class CoursePlannerPageViewModel {
         guard drawnStrokes.isEmpty == false else { return }
         drawnStrokes.removeLast()
         if drawnStrokes.isEmpty {
+            recomputeGeneration += 1
             course = nil
             errorMessage = nil
         } else {
@@ -73,6 +75,7 @@ final class CoursePlannerPageViewModel {
     }
 
     func clear() {
+        recomputeGeneration += 1
         drawnStrokes = []
         course = nil
         errorMessage = nil
@@ -102,11 +105,16 @@ final class CoursePlannerPageViewModel {
         let sampled = DrawnPathSampler.sample(allPoints)
         guard sampled.count >= 2 else { course = nil; return }
 
+        recomputeGeneration += 1
+        let generation = recomputeGeneration
         isLoading = true
         errorMessage = nil
         do {
-            course = try await coursePlanningService.snappedRoute(through: sampled)
+            let snapped = try await coursePlanningService.snappedRoute(through: sampled)
+            guard generation == recomputeGeneration else { return }
+            course = snapped
         } catch {
+            guard generation == recomputeGeneration else { return }
             errorMessage = "경로를 계산할 수 없습니다."
         }
         isLoading = false
