@@ -2,7 +2,9 @@ import MapKit
 import SwiftUI
 
 struct CoursePlannerPage: View {
-    @State private var viewModel: CoursePlannerPageViewModel
+    @State var viewModel: CoursePlannerPageViewModel
+    @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var currentStroke: [CourseCoordinate] = []
 
     init(
         coursePlanningService: CoursePlanningServiceProtocol,
@@ -19,16 +21,35 @@ struct CoursePlannerPage: View {
             mapView
                 .accessibilityIdentifier("coursePlanner.map")
 
-            statusPanel
+            VStack {
+                controls
+                Spacer()
+                statusPanel
+            }
+        }
+        .task {
+            await viewModel.bootstrapLocation()
+            if let center = viewModel.initialCameraCoordinate {
+                cameraPosition = .region(MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
+                    latitudinalMeters: 1000,
+                    longitudinalMeters: 1000
+                ))
+            }
         }
     }
 
     private var mapView: some View {
         MapReader { proxy in
-            Map {
+            Map(position: $cameraPosition) {
                 if let course = viewModel.course {
                     MapPolyline(coordinates: course.coordinates.map(CLLocationCoordinate2D.init))
                         .stroke(.blue, lineWidth: 6)
+                }
+
+                if currentStroke.count > 1 {
+                    MapPolyline(coordinates: currentStroke.map(CLLocationCoordinate2D.init))
+                        .stroke(.orange, lineWidth: 4)
                 }
 
                 if let start = viewModel.startCoordinate {
@@ -44,11 +65,26 @@ struct CoursePlannerPage: View {
             .gesture(
                 SpatialTapGesture()
                     .onEnded { value in
+                        guard viewModel.isDrawingMode == false else { return }
                         guard let coordinate = proxy.convert(value.location, from: .local) else { return }
                         Task {
                             await viewModel.handleMapTap(at: CourseCoordinate(coordinate))
                         }
                     }
+            )
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        if let coord = proxy.convert(value.location, from: .local) {
+                            currentStroke.append(CourseCoordinate(coord))
+                        }
+                    }
+                    .onEnded { _ in
+                        let stroke = currentStroke
+                        currentStroke = []
+                        Task { await viewModel.appendStroke(stroke) }
+                    },
+                including: viewModel.isDrawingMode ? .gesture : .subviews
             )
         }
     }
