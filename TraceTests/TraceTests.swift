@@ -127,6 +127,25 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.isDrawingMode)
     }
 
+    func testUndoRemovesLastStroke() async {
+        let viewModel = CoursePlannerPageViewModel(coursePlanningService: FakeCoursePlanningService(), locationService: FakeLocationService())
+        await viewModel.appendStroke([
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+        ])
+        await viewModel.appendStroke([
+            CourseCoordinate(latitude: 37.52, longitude: 127.00),
+            CourseCoordinate(latitude: 37.53, longitude: 127.00),
+        ])
+
+        await viewModel.undoLastStroke()
+        XCTAssertEqual(viewModel.drawnStrokes.count, 1)
+
+        await viewModel.undoLastStroke()
+        XCTAssertTrue(viewModel.drawnStrokes.isEmpty)
+        XCTAssertNil(viewModel.course)
+    }
+
     func testClearResetsState() async {
         let viewModel = CoursePlannerPageViewModel(coursePlanningService: FakeCoursePlanningService(), locationService: FakeLocationService())
         await viewModel.appendStroke([

@@ -61,6 +61,17 @@ final class CoursePlannerPageViewModel {
         await recomputeSnappedCourse()
     }
 
+    func undoLastStroke() async {
+        guard drawnStrokes.isEmpty == false else { return }
+        drawnStrokes.removeLast()
+        if drawnStrokes.isEmpty {
+            course = nil
+            errorMessage = nil
+        } else {
+            await recomputeSnappedCourse()
+        }
+    }
+
     func clear() {
         drawnStrokes = []
         course = nil
