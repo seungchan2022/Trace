@@ -67,7 +67,7 @@ git config core.hooksPath
 
 ### 6. 백로그 확인 + 사용 가능한 도구 + 다음 단계 제안
 
-- **먼저 `docs/backlog.md`의 open 항목을 확인**한다. 새 슬라이스는 backlog에서 다룰 항목을 고르는 것으로 시작한다(작고 명확하면 spec/plan 바로, 결정·모호하면 brainstorm). 단 강제 큐가 아니라 **메뉴** — 사용자가 새 기능을 먼저 하자고 하면 그쪽으로 간다. backlog가 없거나 비어 있으면 넘어간다.
+- **먼저 `docs/backlog.md`의 open 항목을 확인**한다. 새 마일스톤은 backlog에서 다룰 항목을 고르는 것으로 시작한다(작고 명확하면 spec/plan 바로, 결정·모호하면 brainstorm). backlog 항목은 마일스톤 후보이며, 묶어서 MVP를 구성하거나 기존 MVP에 편입한다(`docs/agent-rules/workflow.md`). 단 강제 큐가 아니라 **메뉴** — 사용자가 새 기능을 먼저 하자고 하면 그쪽으로 간다. backlog가 없거나 비어 있으면 넘어간다.
 - 설치된 워크플로: Superpowers(브레인스토밍·플랜·TDD·디버깅·리뷰·검증), Compound Engineering, Build iOS Apps, XcodeBuildMCP.
 - 호출 방식은 도구마다 다를 수 있으나(스킬/프롬프트/MCP), **개념은 동일**하다. 재개한 작업 성격에 맞는 다음 단계를 제안한다:
   - 새 기능/제품 고민 → 브레인스토밍 (`superpowers:brainstorming` 등)

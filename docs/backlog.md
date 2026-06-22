@@ -1,8 +1,8 @@
 # Backlog
 
 실기기 테스트·리뷰에서 나온 개선/수정 후보와 미룬 기술부채를 모으는 곳.
-**규칙:** 새 슬라이스는 여기서 항목을 골라 시작한다(작고 명확하면 spec/plan 바로, 결정·모호하면 brainstorm). 큐가 아니라 **메뉴** — 새 기능을 먼저 해도 된다. 캡처/소비 흐름은 `docs/agent-rules/testing.md`·`skills.md` 참고.
-상태: `open`(미착수) / `planned`(슬라이스 잡힘) / `done`(완료).
+**규칙:** backlog 항목은 **마일스톤 후보**다 — 묶어서 새 MVP를 구성하거나 기존 MVP의 마일스톤으로 편입한다(작고 명확하면 spec/plan 바로, 결정·모호하면 brainstorm). 큐가 아니라 **메뉴** — 새 기능을 먼저 해도 된다. 단위·흐름은 `docs/agent-rules/workflow.md`, 현재 위치는 `docs/roadmap.md`, 캡처/소비 흐름은 `testing.md`·`skills.md` 참고.
+상태: `open`(미착수) / `planned`(마일스톤 잡힘) / `done`(완료).
 
 ## 마커 그리기 + 스냅 MVP (2026-06-20) 실기기 피드백
 
