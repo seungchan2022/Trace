@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **완료(소급 확인, 2026-06-22):** 이 슬라이스는 구현·실기기 검증까지 끝났다(그리기 제스처·스냅·전용 오버레이 레이어 — 근거 커밋 `54f6c77`, `8590ba2`). 아래 Task별 `- [ ]` 체크박스는 작업 당시 실시간 갱신되지 않았을 뿐 실제로는 완료 상태다. MVP1 아카이빙 시 체크박스를 일괄 복원하지 않고 이 노트로 갈음한다. 남은 후속(MKDirections 스로틀 완화 등)은 `docs/backlog.md` 참고.
+
 **Goal:** 현재 위치로 시작하는 지도에서 마커(손으로 그린 경로)를 실제 도보 길에 스냅해 거리와 함께 보여준다.
 
 **Architecture:** 기존 포트-어댑터 + MVVM(@Observable). 그린 좌표를 순수 함수로 다운샘플(`DrawnPathSampler`)한 뒤, `CoursePlanningServiceProtocol`의 기본 구현 `snappedRoute(through:)`가 인접 점마다 `route(from:to:)`(MapKit `MKDirections .walking`)를 호출해 이어붙인다. MapKit/CoreLocation 타입은 뷰·인프라에만 가둔다.
