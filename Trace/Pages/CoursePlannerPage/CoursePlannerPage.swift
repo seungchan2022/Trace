@@ -5,6 +5,7 @@ struct CoursePlannerPage: View {
     @State var viewModel: CoursePlannerPageViewModel
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var currentStroke: [CourseCoordinate] = []
+    @State private var currentStrokePoints: [CGPoint] = []
 
     init(
         coursePlanningService: CoursePlanningServiceProtocol,
@@ -45,11 +46,6 @@ struct CoursePlannerPage: View {
                         .stroke(.blue, lineWidth: 6)
                 }
 
-                if currentStroke.count > 1 {
-                    MapPolyline(coordinates: currentStroke.map(CLLocationCoordinate2D.init))
-                        .stroke(.orange, lineWidth: 4)
-                }
-
                 if let start = viewModel.startCoordinate {
                     Marker("출발", systemImage: "figure.run", coordinate: CLLocationCoordinate2D(start))
                         .tint(.green)
@@ -59,6 +55,15 @@ struct CoursePlannerPage: View {
                     Marker("도착", systemImage: "flag.checkered", coordinate: CLLocationCoordinate2D(destination))
                         .tint(.red)
                 }
+            }
+            .overlay {
+                Canvas { context, _ in
+                    guard currentStrokePoints.count > 1 else { return }
+                    var path = Path()
+                    path.addLines(currentStrokePoints)
+                    context.stroke(path, with: .color(.orange), lineWidth: 4)
+                }
+                .allowsHitTesting(false)
             }
             .gesture(
                 SpatialTapGesture()
@@ -73,6 +78,7 @@ struct CoursePlannerPage: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
+                        currentStrokePoints.append(value.location)
                         if let coord = proxy.convert(value.location, from: .local) {
                             currentStroke.append(CourseCoordinate(coord))
                         }
@@ -80,6 +86,7 @@ struct CoursePlannerPage: View {
                     .onEnded { _ in
                         let stroke = currentStroke
                         currentStroke = []
+                        currentStrokePoints = []
                         Task { await viewModel.appendStroke(stroke) }
                     },
                 including: viewModel.isDrawingMode ? .gesture : .subviews
