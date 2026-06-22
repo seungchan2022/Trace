@@ -30,9 +30,11 @@ swift_files="$(echo "$staged_files" | grep '\.swift$' || true)"
 production_swift_files="$(echo "$swift_files" | grep -Ev '(^|/)(Tests|UITests)/|Tests?\.swift$|UITests?\.swift$' || true)"
 
 if [ -n "$production_swift_files" ]; then
+  # Force unwrap / IUO = a postfix '!' right after an identifier, ')', ']' or '?'.
+  # Must NOT flag prefix boolean negation ('!foo', '!a.isEmpty') or comparisons ('!=', '!==').
   if git diff --cached -- $production_swift_files \
     | grep -Ev '^\+.*".*!.*"' \
-    | grep -E '^\+.*[^=!<>]![^=]' >/dev/null; then
+    | grep -E '^\+.*[]A-Za-z0-9_)?]!([^=]|$)' >/dev/null; then
     echo "Commit blocked: force unwrap is not allowed outside tests." >&2
     exit 1
   fi
