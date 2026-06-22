@@ -96,9 +96,6 @@ struct CoursePlannerPage: View {
 
     private var statusPanel: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("pts: \(currentStrokePoints.count)")
-                .font(.caption.monospacedDigit())
-                .accessibilityIdentifier("coursePlanner.debugCount")
             if viewModel.isLoading {
                 Text("경로 계산 중")
                     .accessibilityIdentifier("coursePlanner.loading")
