@@ -63,7 +63,23 @@ struct CoursePlannerPage: View {
                     path.addLines(currentStrokePoints)
                     context.stroke(path, with: .color(.orange), lineWidth: 4)
                 }
-                .allowsHitTesting(false)
+                .contentShape(Rectangle())
+                .allowsHitTesting(viewModel.isDrawingMode)
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            currentStrokePoints.append(value.location)
+                            if let coord = proxy.convert(value.location, from: .local) {
+                                currentStroke.append(CourseCoordinate(coord))
+                            }
+                        }
+                        .onEnded { _ in
+                            let stroke = currentStroke
+                            currentStroke = []
+                            currentStrokePoints = []
+                            Task { await viewModel.appendStroke(stroke) }
+                        }
+                )
             }
             .gesture(
                 SpatialTapGesture()
@@ -75,27 +91,14 @@ struct CoursePlannerPage: View {
                         }
                     }
             )
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        currentStrokePoints.append(value.location)
-                        if let coord = proxy.convert(value.location, from: .local) {
-                            currentStroke.append(CourseCoordinate(coord))
-                        }
-                    }
-                    .onEnded { _ in
-                        let stroke = currentStroke
-                        currentStroke = []
-                        currentStrokePoints = []
-                        Task { await viewModel.appendStroke(stroke) }
-                    },
-                including: viewModel.isDrawingMode ? .gesture : .subviews
-            )
         }
     }
 
     private var statusPanel: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Text("pts: \(currentStrokePoints.count)")
+                .font(.caption.monospacedDigit())
+                .accessibilityIdentifier("coursePlanner.debugCount")
             if viewModel.isLoading {
                 Text("경로 계산 중")
                     .accessibilityIdentifier("coursePlanner.loading")
