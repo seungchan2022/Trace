@@ -104,8 +104,8 @@ Mermaid 임베드(MCP 불필요, 브라우저 렌더):
 
 ## Phase 7 — 저장 및 보고
 
-- 마크다운: `history/{YYMMDD}_daily_retro.md`
-- HTML: `history/{YYMMDD}_daily_retro.html`
+- 마크다운: `history/daily-retro/{YYMMDD}_daily_retro.md`
+- HTML: `history/daily-retro/{YYMMDD}_daily_retro.html`
 - HTML 생성 후 반드시 브라우저로 연다:
   - 브라우저 도구(Codex Browser, Playwright MCP 등)가 있으면 `file://{절대경로}`로 열어 사용자에게 보이게 한다.
   - 없으면 OS 기본 브라우저로 열거나(`open {경로}`), 불가능한 이유와 직접 열 파일 경로를 보고한다.

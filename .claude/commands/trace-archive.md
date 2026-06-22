@@ -1,0 +1,1 @@
+../../docs/prompts/trace-archive.md

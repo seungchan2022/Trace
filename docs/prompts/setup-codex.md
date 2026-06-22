@@ -28,6 +28,18 @@ cp docs/prompts/trace-init.md ~/.codex/prompts/trace-init.md
 
 → 이후 Codex에서 `/trace-init`으로 호출.
 
+## 1-2. trace-archive · trace-study 프롬프트 등록
+
+MVP 완료 후 아카이빙·학습 정리 커맨드:
+
+```bash
+cp docs/prompts/trace-archive.md ~/.codex/prompts/trace-archive.md
+cp docs/prompts/trace-study.md   ~/.codex/prompts/trace-study.md
+```
+
+→ 이후 Codex에서 `/trace-archive`, `/trace-study`로 호출.
+단위·흐름 규칙은 `docs/agent-rules/workflow.md` 참고.
+
 ---
 
 ## 2. 컨텍스트 보존 (컴팩션)

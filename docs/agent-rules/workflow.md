@@ -1,0 +1,95 @@
+# Workflow Rules — MVP · 마일스톤 단위와 아카이빙
+
+Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐름.
+이 파일은 superpowers 워크플로 **위에 얹는 얇은 레이어**(단위 명명 + 아카이빙 + 학습)만
+규정한다. spec/plan/구현/리뷰 자체는 superpowers가 수행하며, 이 파일이 그것을 대체하지 않는다.
+
+## 작업 단위 (4계층)
+
+| 단위 | 크기 | 산출물 / 위치 | 누가 만드나 |
+|---|---|---|---|
+| Step | TDD 한 바퀴 (실패→구현→통과) | plan 내부 체크박스 | superpowers |
+| Task | 한 컴포넌트/한 책임 | plan 내부 섹션 | superpowers (`writing-plans`) |
+| **마일스톤** | 기능 한 조각 = superpowers **1사이클**(brainstorm→spec→plan→구현→커밋). 보통 브랜치 1개, 며칠 분량 | `docs/superpowers/specs/` + `plans/` 각 1개 | superpowers |
+| **MVP** | 사용자 가치를 완결하는 덩어리 = 마일스톤 여러 개의 묶음 | `docs/roadmap.md` 항목 → 완료 시 `history/<mvp>/` | 이 워크플로 |
+
+- 마일스톤 = "superpowers 한 사이클이 끝나면 완결되는 단위". 그 사이클 안에 brainstorm·리뷰·검증이
+  이미 들어 있으므로, **별도의 마일스톤 리뷰 장치를 두지 않는다.**
+- **Task를 마일스톤으로 승격하지 않는다** (plan ↔ 마일스톤 계층이 중복돼 복잡해진다).
+
+## 흐름: top-down (MVP를 먼저 세우고, 마일스톤을 채운다)
+
+1. **MVP 킥오프** — 새 MVP는 "무엇을 만들지"부터 정한다.
+   `superpowers:brainstorming`의 decompose 기능으로 MVP 범위를 마일스톤들로 쪼개고,
+   `docs/roadmap.md`에 "MVP-N + 마일스톤 체크리스트"로 등록한다.
+   목록은 **잠정** — 진행하며 조정 가능(빡빡하게 다 확정하지 않는다).
+2. **마일스톤 루프** — roadmap의 마일스톤을 하나씩:
+   - `superpowers:brainstorming` → `docs/superpowers/specs/<날짜>-<슬러그>-design.md`
+   - `superpowers:writing-plans` → `docs/superpowers/plans/<날짜>-<슬러그>.md`
+   - `superpowers:executing-plans` → 구현·리뷰·검증·커밋 (feature 브랜치 1개)
+   - 완료 시 `docs/roadmap.md`의 해당 마일스톤을 `[x]`로 갱신.
+3. **MVP 완료** — roadmap의 그 MVP 마일스톤이 모두 `[x]`면:
+   - `/trace-archive` — spec+plan을 `history/<mvp>/`로 아카이빙.
+   - `/trace-study` — 학습 정리 (선택, 권장).
+
+> MVP는 "나중에 묶는 라벨"이 아니라 **"먼저 세우는 우산"**이다. 시작 시점에 묶음 기준이
+> 정해지므로, 마일스톤을 다 만든 뒤 "이걸 어느 MVP로 묶지?"를 고민하는 사후 분류 문제가 없다.
+
+## 리뷰·분석을 끼우는 지점 (권장)
+
+워크플로 사이에 리뷰/분석을 넣어 결함을 일찍 잡는다. **도구는 새로 만들지 않는다** — 이미 설치된
+superpowers / compound-engineering을 해당 지점에서 호출한다. 강제(훅)는 아니며, 변경 규모·위험에
+비례해 고른다(매번 전부 거치는 게 아니다).
+
+| 워크플로 지점 | 권장 호출 (이미 설치됨) | 무엇을 잡나 |
+|---|---|---|
+| MVP 킥오프(로드맵·마일스톤 분해) 직후 | `ce-doc-review` 또는 `ce-adversarial-document-reviewer` | 기획·로드맵의 구조 결함 (구현 전이 수정비용 최저) |
+| 마일스톤 spec 완료 시 | `ce-doc-review` | 설계 구멍·전제 오류 |
+| 기술 결정 갈림길 | `superpowers:brainstorming`(2~3안 비교) + `ce-ideate` | 대안 비교 없이 한 길로 가는 것 |
+| 아키텍처/외부 조사 필요 | `ce-architecture-strategist` · `ce-best-practices-researcher` · `ce-web-researcher` | 구조 이해 부족·바퀴 재발명 |
+| **구현 후 · 커밋 전** (가장 중요) | `superpowers:requesting-code-review` + `/code-review` (적대적: `ce-adversarial-reviewer`) | 코드 결함·회귀 |
+| 막힐 때(버그·재현 안 됨) | `superpowers:systematic-debugging` | 추측 기반 수정 |
+
+- **커밋 전 코드리뷰**는 빠뜨리지 않는다(통증이 가장 큰 지점). 지금은 규칙으로 강하게 권장하고,
+  반복적으로 빠지면 그때 `.githooks`/훅으로 하드 강제를 검토한다.
+- 하드 강제를 전면 도입하지 않는 이유: Claude Code엔 "단계(Step)" 이벤트가 없어 **중간 단계의
+  무조건 강제는 구조적으로 불가**하고(커밋 등 도구 시점만 훅으로 막을 수 있음), 솔로 개발에 과한
+  자동 게이트는 무한루프·거짓양성 마찰을 부른다. 통증이 실측되면 그 지점만 최소로 막는다.
+
+## 단계 표시 (가시화)
+
+마일스톤 작업 중에는 응답에 현재 위치를 한 줄로 표시해 "어디까지 탔는지" 보이게 한다
+(frank의 `Step N/9` 경량판 — 강제가 아니라 관례). 위 리뷰 지점을 거쳤는지/건너뛰었는지도 이 표시로 드러난다.
+
+```
+[지금: MVP{N} · 마일스톤 '{슬러그}' — {기획 | 기획 리뷰 | 플랜 | 구현 | 커밋 전 코드리뷰}]
+```
+
+- `docs/roadmap.md`가 "어느 마일스톤"인지의 출처, 이 한 줄이 "그 마일스톤 안 어디인지"를 보여준다.
+
+## 새 MVP를 정하는 기준
+
+- 하나의 사용자 시나리오/가치를 완결하는가 (예: "러닝 코스 계획").
+- 마일스톤 **2~5개** 규모 (그보다 커지면 MVP를 쪼갠다).
+- `docs/backlog.md` 항목은 **마일스톤 후보**다 — 묶어서 새 MVP를 구성하거나, 기존 MVP의
+  마일스톤으로 편입한다.
+
+## 아카이빙 (실행 절차: `docs/prompts/trace-archive.md`)
+
+- **트리거**: MVP의 모든 마일스톤 완료.
+- **동작**: 완료된 spec+plan을 `git mv`로 `history/mvpN/`(예: `history/mvp1/`)로 이동 + 완료 회고 1편 +
+  `history/INDEX.md` 갱신 + `docs/roadmap.md` done 처리.
+- `docs/superpowers/specs|plans/` 루트에는 **진행 중 마일스톤 문서만** 남긴다.
+- **엣지케이스(소급 정리)**: 코드는 완료됐는데 plan 체크박스가 비어 있으면, 체크박스를 전부
+  복원하지 말고 plan 상단에 "완료(소급 확인) — 근거 커밋" 한 줄 노트 + done 표시 후 아카이빙한다.
+
+## 학습 (실행 절차: `docs/prompts/trace-study.md`)
+
+- 완료된 MVP를 "흐름 + 개념" 산문과 셀프 퀴즈로 `history/<mvp>/concepts.md`에 정리한다.
+- 목적: "어떻게 만들었나"를 면접/실무에서 **자기 언어로 설명**할 수 있게 체화하는 것.
+
+## frank에서 가져오지 않은 것 (의도적 제외)
+
+`active_*.txt` 상태머신(→ `docs/roadmap.md` 한 장으로 대체), KPI 2층 게이트, 3자 토론,
+critical-review 자동호출, PreToolUse 훅. 솔로 iOS 점진 개발에는 과한 기계장치다.
+필요해지면 그때 단일 도메인 규칙으로 추가한다.

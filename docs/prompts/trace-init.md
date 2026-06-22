@@ -10,7 +10,7 @@
 
 - 두 도구 모두 세션 시작 시 진입 파일을 자동 로드한다 (Codex `AGENTS.md`, Claude Code `CLAUDE.md` → `AGENTS.md` 심볼릭).
   따라서 init은 규칙을 다시 읽지 않고, 진입 파일이 다루지 않는 **동적 상태(git·미결 결정·진행 중 작업)**만 복원한다.
-- Trace의 상태는 KPI/마일스톤 파일이 아니라 **git + `docs/agent-rules/project-decisions.md` + 진행 중 플랜의 체크박스**에 있다.
+- Trace의 상태는 frank식 KPI/상태머신 파일이 아니라 **git + `docs/agent-rules/project-decisions.md` + `docs/roadmap.md`(MVP/마일스톤 위치) + 진행 중 플랜의 체크박스**에 있다.
   도구별 메모리(Claude `~/.claude/.../memory/`, Codex `~/.codex/memories`)는 **상대 도구가 못 보므로 핸드오프 상태로 신뢰하지 않는다.**
 
 ## 수행 절차
@@ -18,7 +18,7 @@
 ### 1. 룰 인덱스 sanity 체크
 
 진입 파일(`AGENTS.md` 및 그를 가리키는 `CLAUDE.md`)과 아래 파일들이 존재하는지만 확인 (내용 재독은 불필요):
-`docs/agent-rules/`의 `git.md` · `ios-swift.md` · `architecture.md` · `testing.md` · `skills.md` · `project-decisions.md` · `dual-tool.md`.
+`docs/agent-rules/`의 `workflow.md` · `git.md` · `ios-swift.md` · `architecture.md` · `testing.md` · `skills.md` · `project-decisions.md` · `dual-tool.md`.
 빠진 파일이 있으면 보고한다.
 
 ### 2. Git 상태 복원
@@ -49,6 +49,9 @@ git log --oneline -5
 - ⚠️ 코드는 작성됐는데 체크박스가 안 켜져 있는 등 **플랜과 워킹 트리가 어긋나면 경고**한다 (상대 도구가 장님 상태로 재시작하는 원인).
 - 미커밋 파일 + 최근 변경된 `docs/superpowers/specs/*`, `history/*`를 연결해
   "직전에 뭘 하고 있었는지" 한 문장으로 재구성한다.
+- **MVP/마일스톤 위치 복원**: `docs/roadmap.md`를 읽어 현재 어느 MVP의 어느 마일스톤 단계인지
+  (진행 중/완료/아카이빙 대기) 파악한다. 마일스톤이 전부 `[x]`인데 아카이빙 안 된 MVP가 있으면
+  "**`/trace-archive` 대기**"로 보고한다. 단위·흐름 규칙은 `docs/agent-rules/workflow.md`.
 
 ### 5. 훅 배선 점검
 
@@ -88,6 +91,7 @@ git config core.hooksPath
 # 재개 지점
 - 진행 중: {브랜치+변경+플랜 체크박스로 재구성한 한 문장}
 - 플랜 진행률: {Task N/M 완료, 다음 단계 / 플랜 없으면 "없음", 플랜↔코드 불일치 시 ⚠️}
+- MVP/마일스톤: {roadmap.md 기준 현재 MVP·마일스톤 단계, 아카이빙 대기면 ⚠️ /trace-archive, 없으면 "없음"}
 - 미결 결정: {project-decisions.md에서 곧 정할 것, 없으면 "없음"}
 - 백로그: {docs/backlog.md open 항목 수 + 핵심 1~2개, 없으면 "없음"}
 - 다음 액션 추천: {스킬/명령}
