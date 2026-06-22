@@ -39,7 +39,7 @@ struct CoursePlannerPage: View {
 
     private var mapView: some View {
         MapReader { proxy in
-            Map(position: $cameraPosition) {
+            Map(position: $cameraPosition, interactionModes: viewModel.isDrawingMode ? [] : .all) {
                 if let course = viewModel.course {
                     MapPolyline(coordinates: course.coordinates.map(CLLocationCoordinate2D.init))
                         .stroke(.blue, lineWidth: 6)
