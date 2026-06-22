@@ -35,3 +35,24 @@ adapter only to wire a tool up.
   primary handoff channel `trace-init` reads to rebuild "done up to Task N, resume at N+1".
 - Code committed without its plan checkbox ticked makes the next tool restart blind. If plan
   and working tree disagree, fix the markers before switching tools.
+
+## When to consult the advisor (Claude Code)
+
+This is an agent-behavior rule about **when the agent calls the advisor** — not tool
+config. Which main model, effort level, and advisor the user runs are per-tool runtime
+settings the user applies with `/model`, `/effort`, and `/advisor`; they are not set
+here and not committed.
+
+Context the rule assumes: the user runs a cheap main model with an Opus advisor, so
+the agent leans on the advisor at hard moments instead of asking the user to switch models.
+
+- Consult the advisor **only at decision points** — before committing to an approach,
+  when an error keeps recurring, and before declaring a task complete. **Not every turn.**
+  The user may override in-prompt with "consult the advisor" / "no need to ask the advisor".
+- The advisor **advises only; the main model still writes the code.** For a rare
+  generation-heavy spike where advice cannot substitute for output quality, flag it to
+  the user (who may switch to Opus briefly) rather than shipping weaker output.
+- For one-off deeper reasoning on a single turn, put `ultrathink` in the prompt — only
+  that keyword is recognized; "think" / "think hard" are passed through as ordinary text.
+- Each advisor call re-sends the full transcript to Opus uncached, so it gets pricier as
+  a session grows — another reason to consult sparingly, at decision points only.
