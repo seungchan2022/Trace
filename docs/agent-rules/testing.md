@@ -59,6 +59,7 @@ SwiftLint is configured by `.swiftlint.yml`.
 - User real-device sign-off is required before a release (TestFlight or App Store), not for every branch merge. Pure logic, refactors, docs, and non-UI changes are exempt.
 - The checklist must target what the simulator and tests cannot: real permission prompts and GPS, true touch/gesture feel, region-specific behavior (e.g., Korea map/routing quality), performance under real network, and intent-match (does the built feature match the intended UX).
 - Save the feature-specific checklist as `docs/qa/YYYY-MM-DD-<feature>-device-checklist.md` and hand it to the user. Use the template below.
+- Capture feedback from manual testing into `docs/backlog.md`: genuinely broken behavior is fixed in the current session, but intent-mismatches and improvements are recorded as backlog items (where/now/desired) and deferred to a later slice — do not expand the current slice to chase them. The backlog is consumed at slice start; see `docs/agent-rules/skills.md`.
 
 ### Real-Device Checklist Template
 

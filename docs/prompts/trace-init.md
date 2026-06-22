@@ -62,8 +62,9 @@ git config core.hooksPath
   ```
   (이게 pre-commit/commit-msg/pre-push 가드를 켠다 — git.md 참고. 도구와 무관하게 리포 단위로 공유된다.)
 
-### 6. 사용 가능한 도구 + 다음 단계 제안
+### 6. 백로그 확인 + 사용 가능한 도구 + 다음 단계 제안
 
+- **먼저 `docs/backlog.md`의 open 항목을 확인**한다. 새 슬라이스는 backlog에서 다룰 항목을 고르는 것으로 시작한다(작고 명확하면 spec/plan 바로, 결정·모호하면 brainstorm). 단 강제 큐가 아니라 **메뉴** — 사용자가 새 기능을 먼저 하자고 하면 그쪽으로 간다. backlog가 없거나 비어 있으면 넘어간다.
 - 설치된 워크플로: Superpowers(브레인스토밍·플랜·TDD·디버깅·리뷰·검증), Compound Engineering, Build iOS Apps, XcodeBuildMCP.
 - 호출 방식은 도구마다 다를 수 있으나(스킬/프롬프트/MCP), **개념은 동일**하다. 재개한 작업 성격에 맞는 다음 단계를 제안한다:
   - 새 기능/제품 고민 → 브레인스토밍 (`superpowers:brainstorming` 등)
@@ -88,6 +89,7 @@ git config core.hooksPath
 - 진행 중: {브랜치+변경+플랜 체크박스로 재구성한 한 문장}
 - 플랜 진행률: {Task N/M 완료, 다음 단계 / 플랜 없으면 "없음", 플랜↔코드 불일치 시 ⚠️}
 - 미결 결정: {project-decisions.md에서 곧 정할 것, 없으면 "없음"}
+- 백로그: {docs/backlog.md open 항목 수 + 핵심 1~2개, 없으면 "없음"}
 - 다음 액션 추천: {스킬/명령}
 ```
 

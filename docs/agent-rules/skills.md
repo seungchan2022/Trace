@@ -22,6 +22,7 @@ and `docs/agent-rules/dual-tool.md` for the shared-vs-tool-specific split.
 
 ## Required Skill Use
 
+- Start a new slice by reviewing `docs/backlog.md` and selecting what this slice addresses — backlog items are an input to brainstorming, not a forced queue (a new feature can be chosen instead). Small, well-specified items may skip straight to spec/plan; decision-heavy or ambiguous ones go through `superpowers:brainstorming`. Manual-test feedback is captured back into the backlog; see `docs/agent-rules/testing.md`.
 - Use `superpowers:brainstorming` before creative product or feature work.
 - Use `superpowers:writing-plans` before multi-step implementation.
 - Implement a written plan task-by-task, never ad hoc: use `superpowers:executing-plans` / `superpowers:subagent-driven-development` where the tool has them, otherwise follow the same plan file step by step. Either way, tick each plan checkbox (`- [ ]` → `- [x]`) the moment its step completes — this is the cross-tool handoff channel, and it does not depend on any skill being installed; see `docs/agent-rules/dual-tool.md`.
