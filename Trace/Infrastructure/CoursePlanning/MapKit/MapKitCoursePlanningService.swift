@@ -3,10 +3,15 @@ import Foundation
 import MapKit
 
 final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
+    private var cache: [String: PlannedCourse] = [:]
+
     func route(
         from start: CourseCoordinate,
         to destination: CourseCoordinate
     ) async throws -> PlannedCourse {
+        let key = cacheKey(from: start, to: destination)
+        if let cached = cache[key] { return cached }
+
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: MKPlacemark(coordinate: CLLocationCoordinate2D(start)))
         request.destination = MKMapItem(placemark: MKPlacemark(coordinate: CLLocationCoordinate2D(destination)))
@@ -27,15 +32,28 @@ final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
                 range: NSRange(location: 0, length: route.polyline.pointCount)
             )
 
-            return PlannedCourse(
+            let result = PlannedCourse(
                 coordinates: coordinates.map(CourseCoordinate.init),
                 distanceMeters: route.distance
             )
+            cache[key] = result
+            return result
         } catch let error as CoursePlanningError {
             throw error
         } catch {
             throw CoursePlanningError.requestFailed
         }
+    }
+
+    private func cacheKey(from start: CourseCoordinate, to end: CourseCoordinate) -> String {
+        let s = "\(round(start.latitude, 5)),\(round(start.longitude, 5))"
+        let e = "\(round(end.latitude, 5)),\(round(end.longitude, 5))"
+        return "\(s)->\(e)"
+    }
+
+    private func round(_ value: Double, _ places: Int) -> Double {
+        let m = pow(10.0, Double(places))
+        return (value * m).rounded() / m
     }
 }
 
