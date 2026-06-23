@@ -31,8 +31,8 @@ struct CoursePlannerPage: View {
                 if let center = viewModel.initialCameraCoordinate {
                     cameraPosition = .region(MKCoordinateRegion(
                         center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
-                        latitudinalMeters: 100,
-                        longitudinalMeters: 100
+                        latitudinalMeters: 500,
+                        longitudinalMeters: 500
                     ))
                 }
             }
