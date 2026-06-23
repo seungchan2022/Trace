@@ -56,13 +56,24 @@ struct CoursePlannerPage: View {
                         .stroke(.blue, lineWidth: 6)
                 }
 
-                if let start = viewModel.startCoordinate {
-                    Marker("출발", systemImage: "figure.run", coordinate: CLLocationCoordinate2D(start))
-                        .tint(.green)
+                // 탭 모드: startCoordinate/destinationCoordinate 기반
+                if viewModel.interactionMode == .tap {
+                    if let start = viewModel.startCoordinate {
+                        Marker("출발", systemImage: "figure.run", coordinate: CLLocationCoordinate2D(start))
+                            .tint(.green)
+                    }
+                    if let destination = viewModel.destinationCoordinate {
+                        Marker("도착", systemImage: "flag.checkered", coordinate: CLLocationCoordinate2D(destination))
+                            .tint(.red)
+                    }
                 }
 
-                if let destination = viewModel.destinationCoordinate {
-                    Marker("도착", systemImage: "flag.checkered", coordinate: CLLocationCoordinate2D(destination))
+                // 그리기 모드: course의 첫/끝 좌표 기반
+                if viewModel.interactionMode == .draw, let course = viewModel.course,
+                   let first = course.coordinates.first, let last = course.coordinates.last {
+                    Marker("출발", systemImage: "figure.run", coordinate: CLLocationCoordinate2D(first))
+                        .tint(.green)
+                    Marker("도착", systemImage: "flag.checkered", coordinate: CLLocationCoordinate2D(last))
                         .tint(.red)
                 }
             }

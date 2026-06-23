@@ -244,7 +244,7 @@ Button("초기화") { viewModel.clear() }
 - Consumes: `LocationServiceProtocol.currentLocation()`, `LocationError.denied`
 - Produces: `showLocationDeniedAlert: Bool`, `recenterToCurrentLocation()` method
 
-- [ ] **Step 1: 권한 거부 알럿 테스트 추가**
+- [x] **Step 1: 권한 거부 알럿 테스트 추가**
 
 `TraceTests/CoursePlannerViewModelTests.swift`에 추가:
 
@@ -279,12 +279,9 @@ private func makeSUT(locationError: Error? = nil) -> CoursePlannerPageViewModel 
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
-Run: `xcodebuild test -project Trace.xcodeproj -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:TraceTests/CoursePlannerViewModelTests/testBootstrapSetsAlertOnDenied 2>&1 | tail -20`
-Expected: FAIL — `showLocationDeniedAlert` 없음
-
-- [ ] **Step 3: ViewModel에 권한 알럿 플래그 + bootstrapLocation 수정**
+- [x] **Step 3: ViewModel에 권한 알럿 플래그 + bootstrapLocation 수정**
 
 `CoursePlannerPageViewModel.swift`:
 
@@ -305,7 +302,7 @@ func bootstrapLocation() async {
 }
 ```
 
-- [ ] **Step 4: ViewModel에 recenterToCurrentLocation 추가**
+- [x] **Step 4: ViewModel에 recenterToCurrentLocation 추가**
 
 ```swift
 func recenterToCurrentLocation() async -> CourseCoordinate? {
@@ -317,12 +314,9 @@ func recenterToCurrentLocation() async -> CourseCoordinate? {
 }
 ```
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
-Run: `xcodebuild test -project Trace.xcodeproj -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:TraceTests/CoursePlannerViewModelTests 2>&1 | tail -20`
-Expected: PASS
-
-- [ ] **Step 6: View — 줌 레벨 100m + UserAnnotation + 내 위치 버튼 + 알럿**
+- [x] **Step 6: View — 줌 레벨 100m + UserAnnotation + 내 위치 버튼 + 알럿**
 
 `CoursePlannerPage.swift` 변경:
 
@@ -387,19 +381,9 @@ Map(position: $cameraPosition, interactionModes: viewModel.isDrawingMode ? [] : 
 }
 ```
 
-- [ ] **Step 7: 빌드 확인**
+- [x] **Step 7: 빌드 확인**
 
-Run: `xcodebuild build -project Trace.xcodeproj -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 16' 2>&1 | tail -5`
-Expected: BUILD SUCCEEDED
-
-- [ ] **Step 8: 커밋**
-
-```bash
-git add Trace/Pages/CoursePlannerPage/CoursePlannerPageViewModel.swift \
-       Trace/Pages/CoursePlannerPage/CoursePlannerPage.swift \
-       TraceTests/CoursePlannerViewModelTests.swift
-git commit -m "feat: 위치 시작 화면 개선 + 권한 거부 알럿 (MVP2 1-2, 1-3)"
-```
+- [x] **Step 8: 커밋** — `28dd737`
 
 ---
 
@@ -412,7 +396,7 @@ git commit -m "feat: 위치 시작 화면 개선 + 권한 거부 알럿 (MVP2 1-
 **Interfaces:**
 - Consumes: `viewModel.interactionMode`, `viewModel.isDrawingMode`, `viewModel.course`
 
-- [ ] **Step 1: Controls 컴포넌트 — 모드 인디케이터 + 아이콘 버튼**
+- [x] **Step 1: Controls 컴포넌트 — 모드 인디케이터 + 아이콘 버튼**
 
 `CoursePlannerPage+ControlsComponent.swift` 전체 교체:
 
@@ -453,7 +437,7 @@ extension CoursePlannerPage {
 }
 ```
 
-- [ ] **Step 2: 마커 표시 — 모드별 분기**
+- [x] **Step 2: 마커 표시 — 모드별 분기**
 
 `CoursePlannerPage.swift`의 Map content에서 마커 부분 교체:
 
@@ -481,18 +465,9 @@ if viewModel.interactionMode == .draw, let course = viewModel.course,
 }
 ```
 
-- [ ] **Step 3: 빌드 확인**
+- [x] **Step 3: 빌드 확인**
 
-Run: `xcodebuild build -project Trace.xcodeproj -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 16' 2>&1 | tail -5`
-Expected: BUILD SUCCEEDED
-
-- [ ] **Step 4: 커밋**
-
-```bash
-git add Trace/Pages/CoursePlannerPage/UIComponent/CoursePlannerPage+ControlsComponent.swift \
-       Trace/Pages/CoursePlannerPage/CoursePlannerPage.swift
-git commit -m "feat: 그리기 모드 인디케이터 + 그린 코스 출발/도착 핀 (MVP2 1-4, 1-5)"
-```
+- [x] **Step 4: 커밋** — (아래)
 
 ---
 
