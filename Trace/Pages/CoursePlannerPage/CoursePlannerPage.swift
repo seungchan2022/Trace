@@ -108,7 +108,7 @@ struct CoursePlannerPage: View {
                     .font(.title2.weight(.semibold))
                     .accessibilityIdentifier("coursePlanner.distance")
             } else {
-                Text("지도에서 출발지를 선택하세요")
+                Text(viewModel.isDrawingMode ? "경로를 그려주세요" : "지도에서 출발지를 선택하세요")
                     .accessibilityIdentifier("coursePlanner.prompt")
             }
         }

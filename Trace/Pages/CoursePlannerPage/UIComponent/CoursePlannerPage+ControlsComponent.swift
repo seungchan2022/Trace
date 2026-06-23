@@ -13,7 +13,10 @@ extension CoursePlannerPage {
                 .accessibilityIdentifier("coursePlanner.undo")
 
             Button("초기화") { viewModel.clear() }
-                .disabled(viewModel.drawnStrokes.isEmpty)
+                .disabled(
+                    viewModel.startCoordinate == nil
+                    && viewModel.drawnStrokes.isEmpty
+                )
                 .accessibilityIdentifier("coursePlanner.clear")
         }
         .buttonStyle(.borderedProminent)

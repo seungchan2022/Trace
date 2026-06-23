@@ -1,6 +1,11 @@
 import Foundation
 import Observation
 
+enum InteractionMode: Equatable {
+    case tap
+    case draw
+}
+
 @MainActor
 @Observable
 final class CoursePlannerPageViewModel {
@@ -10,7 +15,7 @@ final class CoursePlannerPageViewModel {
     private(set) var isLoading = false
     private(set) var errorMessage: String?
     private(set) var initialCameraCoordinate: CourseCoordinate?
-    private(set) var isDrawingMode = false
+    private(set) var interactionMode: InteractionMode = .tap
     private(set) var drawnStrokes: [[CourseCoordinate]] = []
 
     private let coursePlanningService: CoursePlanningServiceProtocol
@@ -24,6 +29,8 @@ final class CoursePlannerPageViewModel {
         self.coursePlanningService = coursePlanningService
         self.locationService = locationService
     }
+
+    var isDrawingMode: Bool { interactionMode == .draw }
 
     var distanceText: String? {
         guard let course else { return nil }
@@ -53,7 +60,20 @@ final class CoursePlannerPageViewModel {
     }
 
     func toggleDrawingMode() {
-        isDrawingMode.toggle()
+        switch interactionMode {
+        case .tap:
+            startCoordinate = nil
+            destinationCoordinate = nil
+            course = nil
+            errorMessage = nil
+            interactionMode = .draw
+        case .draw:
+            recomputeGeneration += 1
+            drawnStrokes = []
+            course = nil
+            errorMessage = nil
+            interactionMode = .tap
+        }
     }
 
     func appendStroke(_ stroke: [CourseCoordinate]) async {
@@ -76,6 +96,8 @@ final class CoursePlannerPageViewModel {
 
     func clear() {
         recomputeGeneration += 1
+        startCoordinate = nil
+        destinationCoordinate = nil
         drawnStrokes = []
         course = nil
         errorMessage = nil
