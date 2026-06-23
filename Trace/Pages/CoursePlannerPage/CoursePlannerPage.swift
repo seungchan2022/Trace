@@ -31,16 +31,26 @@ struct CoursePlannerPage: View {
                 if let center = viewModel.initialCameraCoordinate {
                     cameraPosition = .region(MKCoordinateRegion(
                         center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
-                        latitudinalMeters: 1000,
-                        longitudinalMeters: 1000
+                        latitudinalMeters: 100,
+                        longitudinalMeters: 100
                     ))
                 }
+            }
+            .alert("위치 권한이 필요합니다", isPresented: $viewModel.showLocationDeniedAlert) {
+                Button("설정으로 이동") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                Button("닫기", role: .cancel) {}
             }
     }
 
     private var mapView: some View {
         MapReader { proxy in
             Map(position: $cameraPosition, interactionModes: viewModel.isDrawingMode ? [] : .all) {
+                UserAnnotation()
+
                 if let course = viewModel.course {
                     MapPolyline(coordinates: course.coordinates.map(CLLocationCoordinate2D.init))
                         .stroke(.blue, lineWidth: 6)
@@ -80,6 +90,25 @@ struct CoursePlannerPage: View {
                             Task { await viewModel.appendStroke(stroke) }
                         }
                 )
+            }
+            .overlay(alignment: .bottomTrailing) {
+                Button {
+                    Task {
+                        if let location = await viewModel.recenterToCurrentLocation() {
+                            cameraPosition = .region(MKCoordinateRegion(
+                                center: CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude),
+                                latitudinalMeters: 100,
+                                longitudinalMeters: 100
+                            ))
+                        }
+                    }
+                } label: {
+                    Image(systemName: "location.fill")
+                        .font(.title2)
+                        .padding(12)
+                        .background(.regularMaterial, in: Circle())
+                }
+                .padding()
             }
             .gesture(
                 SpatialTapGesture()

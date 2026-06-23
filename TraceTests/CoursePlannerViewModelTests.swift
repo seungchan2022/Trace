@@ -3,10 +3,12 @@ import XCTest
 
 @MainActor
 final class CoursePlannerViewModelTests: XCTestCase {
-    private func makeSUT() -> CoursePlannerPageViewModel {
-        CoursePlannerPageViewModel(
+    private func makeSUT(locationError: Error? = nil) -> CoursePlannerPageViewModel {
+        let locationService = StubLocationService()
+        locationService.stubbedError = locationError
+        return CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
-            locationService: StubLocationService()
+            locationService: locationService
         )
     }
 
@@ -62,6 +64,22 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertTrue(sut.drawnStrokes.isEmpty)
         XCTAssertNil(sut.course)
         XCTAssertNil(sut.errorMessage)
+    }
+
+    // MARK: - Location permission
+
+    func testBootstrapSetsAlertOnDenied() async {
+        let sut = makeSUT(locationError: LocationError.denied)
+        await sut.bootstrapLocation()
+        XCTAssertTrue(sut.showLocationDeniedAlert)
+        XCTAssertNotNil(sut.initialCameraCoordinate) // 서울시청 폴백
+    }
+
+    func testBootstrapNoAlertOnSuccess() async {
+        let sut = makeSUT()
+        await sut.bootstrapLocation()
+        XCTAssertFalse(sut.showLocationDeniedAlert)
+        XCTAssertNotNil(sut.initialCameraCoordinate)
     }
 
     // MARK: - Race condition: tap→draw toggle during in-flight route calculation

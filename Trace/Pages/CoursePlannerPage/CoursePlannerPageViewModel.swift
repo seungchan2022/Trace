@@ -17,6 +17,7 @@ final class CoursePlannerPageViewModel {
     private(set) var initialCameraCoordinate: CourseCoordinate?
     private(set) var interactionMode: InteractionMode = .tap
     private(set) var drawnStrokes: [[CourseCoordinate]] = []
+    var showLocationDeniedAlert = false
 
     private let coursePlanningService: CoursePlanningServiceProtocol
     private let locationService: LocationServiceProtocol
@@ -40,8 +41,19 @@ final class CoursePlannerPageViewModel {
     func bootstrapLocation() async {
         do {
             initialCameraCoordinate = try await locationService.currentLocation()
+        } catch LocationError.denied {
+            showLocationDeniedAlert = true
+            initialCameraCoordinate = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
         } catch {
             initialCameraCoordinate = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
+        }
+    }
+
+    func recenterToCurrentLocation() async -> CourseCoordinate? {
+        do {
+            return try await locationService.currentLocation()
+        } catch {
+            return nil
         }
     }
 
