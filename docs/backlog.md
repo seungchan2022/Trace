@@ -15,3 +15,4 @@
 ## 기술부채
 
 - [ ] **MKDirections 스로틀 완화** *(다음 MVP 1순위)* — *now:* 편집마다 전체 재라우팅 → 60초당 50요청 한계(`GEOErrorDomain Code=-3`) / *desired:* ① 라우팅한 구간 캐싱(새 구간만) ② 샘플 간격↑/디바운스 ③ 근본책: 맵매칭 제공자(Tmap/Valhalla, 1요청). `project-decisions.md`의 MapKit 교체 트리거와 연결. `open`
+- [ ] **테스트 시뮬레이터 iOS 버전 전략** — *now:* iOS 18.5에서 `@Observable` malloc 크래시 발생해 iOS 26.5로 우회 중 / *desired:* 최소 지원 버전(iOS 17) 근처 런타임에서도 테스트. iOS 17 런타임 설치 또는 배포 전 멀티버전 테스트 전략 결정 필요. 상세: `docs/solutions/workflow-issues/ios18-observable-malloc-crash.md`. `open`

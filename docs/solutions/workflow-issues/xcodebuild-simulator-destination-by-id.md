@@ -5,7 +5,7 @@ category: workflow-issues
 module: Build/Test workflow
 problem_type: workflow_issue
 component: development_workflow
-severity: low
+severity: critical
 applies_when:
   - "xcodebuild build/test에 -destination을 지정할 때"
   - "\"platform=iOS Simulator,name=iPhone NN\" 형태가 destination 해석 실패로 빌드/테스트가 멈출 때"
@@ -34,9 +34,18 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 
 `project-decisions.md`/`testing.md`가 기준 시뮬레이터(iPhone 17/iOS 26.5 등)를 명시하더라도, 그게 머신에 없으면 가용 udid로 폴백하는 게 규칙이다. 프로젝트·스킴 인자는 그대로 둔다.
 
+**추가 규칙 (2026-06-23 사고 이후):**
+
+- 세션당 시뮬레이터 UDID는 하나만 사용. 실패 시 다른 시뮬레이터로 재시도 금지.
+- 동시에 여러 xcodebuild 프로세스 실행 금지.
+- 시뮬레이터 무응답 시: `pkill -f "xcodebuild.*Trace"` → `xcrun simctl shutdown all` → 같은 UDID로 재부팅.
+- 다른 UDID로 전환하는 것은 복구가 아니라 좀비 누적의 원인이다.
+
+전체 규칙은 `docs/agent-rules/testing.md`의 "Simulator Discipline" 섹션 참조.
+
 ## Why This Matters
 
-`name=` 모호성으로 인한 실패는 코드와 무관한데도 빌드/테스트 사이클을 통째로 막아 시간을 잡아먹는다. udid는 정확히 하나의 기기를 가리키므로 해석이 결정적이다. CI/자동화·서브에이전트 작업에서 특히 중요(반복 실패의 원인).
+`name=` 모호성 또는 시뮬레이터 전환 재시도로 인해 좀비 xcodebuild 프로세스와 부팅된 시뮬레이터가 수십 개 누적되면 시스템 리소스가 고갈되어 모든 빌드/테스트가 무한 로딩에 걸린다. 2026-06-23에 이 문제로 사용자가 작업 세션을 잃었다. udid는 정확히 하나의 기기를 가리키므로 해석이 결정적이다.
 
 ## When to Apply
 

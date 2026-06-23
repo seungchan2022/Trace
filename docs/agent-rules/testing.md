@@ -1,5 +1,50 @@
 # Testing and Verification Rules
 
+## Simulator Discipline (필수)
+
+**시뮬레이터는 세션 전체에서 단 하나만 사용한다.** 이 규칙은 모든 에이전트·서브에이전트에 적용된다.
+
+### 절대 금지
+
+- `name=` 기반 destination 사용 금지 — 동일 이름 시뮬레이터가 iOS 버전별로 여러 개 존재하여 매칭이 모호해짐
+- 테스트/빌드 실패 시 다른 시뮬레이터로 재시도 금지 — 실패 원인은 시뮬레이터가 아니라 코드임
+- 동시에 여러 xcodebuild 프로세스 실행 금지 — 이전 빌드/테스트가 끝나기 전에 새 빌드를 시작하지 않는다
+- 시뮬레이터가 응답하지 않을 때 다른 시뮬레이터로 전환 금지 — 아래 복구 절차를 따른다
+
+### 기준 시뮬레이터 선택 절차
+
+세션 시작 시 한 번만 실행:
+
+```bash
+# 1) iOS 26+ 런타임의 iPhone을 선택 (iOS 18.x는 @Observable malloc 버그로 테스트 크래시 발생)
+xcrun simctl list devices available | grep "iPhone"
+# 출력 예: iPhone 17 Pro (D887D0A4-...) (Shutdown)  ← iOS 26.5
+
+# 2) 선택한 UDID를 세션 전체에서 고정
+SIM_UDID="D887D0A4-074C-4AFB-8D08-D87329D0EFD4"
+```
+
+한번 선택하면 세션이 끝날 때까지 이 UDID만 사용한다. 절대 중간에 바꾸지 않는다.
+
+> **iOS 18.x 런타임 금지 (2026-06-23 확인):** iOS 18.5에서 `@Observable` 객체 해제 시 `malloc: pointer being freed was not allocated` (고정 주소 `0x25237aac0`)가 발생해 테스트 프로세스가 크래시 → xcodebuild가 재시작을 반복하는 무한 루프. iOS 26.x에서는 동일 코드가 정상 동작. 이 버그가 수정될 때까지 iOS 26+ 런타임만 사용한다.
+
+### 시뮬레이터 무응답/무한 로딩 복구
+
+시뮬레이터가 멈추거나 xcodebuild가 타임아웃되면:
+
+```bash
+# 1) 걸린 xcodebuild 먼저 종료
+pkill -f "xcodebuild.*Trace"
+
+# 2) 모든 시뮬레이터 종료
+xcrun simctl shutdown all
+
+# 3) 같은 UDID로 재부팅하여 재시도 (다른 시뮬레이터로 바꾸지 않는다)
+xcrun simctl boot $SIM_UDID
+```
+
+다른 UDID로 전환하는 것은 복구가 아니라 좀비 누적의 원인이다.
+
 ## Baseline
 
 Before claiming completion, run the strongest practical verification for the change.
@@ -28,12 +73,14 @@ Do not create these stamps unless the corresponding command actually passed in t
 Use these in order:
 
 ```bash
-xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' build
-xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' test
+# SIM_UDID는 위 "기준 시뮬레이터 선택 절차"에서 고정한 값을 사용
+xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination "platform=iOS Simulator,id=$SIM_UDID" build
+xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination "platform=iOS Simulator,id=$SIM_UDID" -parallel-testing-enabled NO test
 swiftlint
 ```
 
-If the `iPhone 17` / `iOS 26.5` simulator is unavailable, use `xcrun simctl list devices available` or XcodeBuildMCP to select an available iOS simulator, then keep the project and scheme arguments unchanged.
+`-parallel-testing-enabled NO`는 필수 — 없으면 xcodebuild가 시뮬레이터를 자동 복제(clone)해 테스트를 병렬 실행하며, 복제된 시뮬레이터에서 앱 런칭 실패(`FBSOpenApplicationServiceErrorDomain`)가 발생한다.
+
 SwiftLint is configured by `.swiftlint.yml`.
 
 ## Unit Tests

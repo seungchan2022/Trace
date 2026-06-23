@@ -67,7 +67,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
     // MARK: - Race condition: tap→draw toggle during in-flight route calculation
 
     func testToggleDuringRouteCalculationDiscardsStaleCourse() async {
-        let service = StubCoursePlanningService()
+        let service = BlockingCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
             locationService: StubLocationService()
@@ -107,28 +107,32 @@ private final class StubCoursePlanningService: CoursePlanningServiceProtocol {
     var stubbedResult: PlannedCourse?
     var stubbedError: Error?
 
-    private var routeEnteredContinuation: CheckedContinuation<Void, Never>?
-    private var routeReleaseContinuation: CheckedContinuation<Void, Never>?
-
     func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
         routeCallCount += 1
-
-        // Signal that route() has been entered
-        if let continuation = routeEnteredContinuation {
-            continuation.resume()
-            routeEnteredContinuation = nil
-        }
-
-        // Wait for release signal
-        await withCheckedContinuation { continuation in
-            routeReleaseContinuation = continuation
-        }
-
         if let error = stubbedError { throw error }
         return stubbedResult ?? PlannedCourse(
             coordinates: [start, destination],
             distanceMeters: 100
         )
+    }
+}
+
+@MainActor
+private final class BlockingCoursePlanningService: CoursePlanningServiceProtocol {
+    private var routeEnteredContinuation: CheckedContinuation<Void, Never>?
+    private var routeReleaseContinuation: CheckedContinuation<Void, Never>?
+
+    func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
+        if let continuation = routeEnteredContinuation {
+            continuation.resume()
+            routeEnteredContinuation = nil
+        }
+
+        await withCheckedContinuation { continuation in
+            routeReleaseContinuation = continuation
+        }
+
+        return PlannedCourse(coordinates: [start, destination], distanceMeters: 100)
     }
 
     func waitUntilRouteEntered() async {
