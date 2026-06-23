@@ -15,10 +15,10 @@
 
 ## MVP 목록
 
-### MVP2 — UX 개선 + 스로틀 완화   (상태: ✅ 완료 · 아카이빙 대기)
+### MVP2 — UX 개선 + 스로틀 완화   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp2/`](history/mvp2/))
 
 > MVP1 실기기 피드백 반영: 상호작용 모델 정리, 위치 UX, 모드 표시, 스로틀 완화.
-> 실기기 피드백: [`docs/qa/2026-06-23-mvp2-ux-throttle-device-checklist.md`](../qa/2026-06-23-mvp2-ux-throttle-device-checklist.md)
+> 회고: [`260623_mvp2_completion_retro`](history/mvp2/260623_mvp2_completion_retro.md)
 
 - [x] **ux-polish** — 단일 모드 전환, 위치 시작 화면, 권한 알럿, 모드 표시, 코스 핀
 - [x] **throttle-mitigation** — 구간 캐시 + 디바운스

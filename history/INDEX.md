@@ -20,3 +20,16 @@
 | 플랜 | [marker-draw-snap 플랜](mvp1/2026-06-20-marker-draw-snap-mvp.md) | Task 1~6 (소급 완료), 스파이크로 스위트스폿 실측 |
 | QA | [실기기 체크리스트](mvp1/2026-06-20-marker-draw-snap-device-checklist.md) | 마커-스냅 실기기 검증 항목 |
 | 회고 | [MVP1 완료 회고](mvp1/260622_mvp1_completion_retro.md) | Keep/Problem/Surprise, 기술부채, 다음 방향 |
+
+---
+
+## MVP2 — UX 개선 + 스로틀 완화 (2026-06-23)
+
+> MVP1 실기기 피드백 반영: 단일 모드 전환, 위치 UX, 모드 표시, 구간 캐시, 디바운스. 마일스톤 2개.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [MVP2 설계](mvp2/2026-06-23-mvp2-ux-throttle-design.md) | UX 개선 6항목 + 스로틀 완화 요구사항 |
+| 플랜 | [MVP2 플랜](mvp2/2026-06-23-mvp2-ux-throttle.md) | Task 1~6, TDD ViewModel→View→캐시→디바운스→검증 |
+| QA | [실기기 체크리스트](mvp2/2026-06-23-mvp2-ux-throttle-device-checklist.md) | 9플로우 36항목 실기기 검증 |
+| 회고 | [MVP2 완료 회고](mvp2/260623_mvp2_completion_retro.md) | Keep/Problem/Surprise, iOS 18 버그 대응, 기술부채 |
