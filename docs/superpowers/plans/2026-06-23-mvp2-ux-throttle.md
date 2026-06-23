@@ -481,7 +481,7 @@ if viewModel.interactionMode == .draw, let course = viewModel.course,
 - Consumes: `CourseCoordinate`, `PlannedCourse`
 - Produces: 캐시가 적용된 `route()` — 동일 좌표 쌍 재호출 시 API 미호출
 
-- [ ] **Step 1: 캐시 테스트 작성**
+- [x] **Step 1: 캐시 테스트 작성**
 
 ```swift
 // TraceTests/RouteCacheTests.swift
@@ -555,12 +555,12 @@ private final class SpyMapKitService: CoursePlanningServiceProtocol {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 통과 확인 (Spy가 자체 캐시 포함이므로 통과해야 함)**
+- [x] **Step 2: 테스트 실행 — 통과 확인 (Spy가 자체 캐시 포함이므로 통과해야 함)**
 
 Run: `xcodebuild test -project Trace.xcodeproj -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:TraceTests/RouteCacheTests 2>&1 | tail -20`
 Expected: PASS — Spy의 캐시 로직이 의도대로 동작하는지 확인
 
-- [ ] **Step 3: MapKitCoursePlanningService에 캐시 구현**
+- [x] **Step 3: MapKitCoursePlanningService에 캐시 구현**
 
 `MapKitCoursePlanningService.swift` 변경:
 
@@ -621,18 +621,9 @@ final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
 }
 ```
 
-- [ ] **Step 4: 빌드 확인**
+- [x] **Step 4: 빌드 확인**
 
-Run: `xcodebuild build -project Trace.xcodeproj -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 16' 2>&1 | tail -5`
-Expected: BUILD SUCCEEDED
-
-- [ ] **Step 5: 커밋**
-
-```bash
-git add Trace/Infrastructure/CoursePlanning/MapKit/MapKitCoursePlanningService.swift \
-       TraceTests/RouteCacheTests.swift
-git commit -m "feat: 구간 라우팅 캐시 추가 (MVP2 2-1)"
-```
+- [x] **Step 5: 커밋** — `0e3fcb0`
 
 ---
 
@@ -646,7 +637,7 @@ git commit -m "feat: 구간 라우팅 캐시 추가 (MVP2 2-1)"
 - Consumes: `recomputeGeneration`, `appendStroke()`
 - Produces: 300ms 디바운스가 적용된 `appendStroke()`
 
-- [ ] **Step 1: 디바운스 테스트 추가**
+- [x] **Step 1: 디바운스 테스트 추가**
 
 `TraceTests/CoursePlannerViewModelTests.swift`에 추가:
 
@@ -683,12 +674,9 @@ func testRapidStrokesOnlyTriggerOneRecompute() async {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
-Run: `xcodebuild test -project Trace.xcodeproj -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:TraceTests/CoursePlannerViewModelTests/testRapidStrokesOnlyTriggerOneRecompute 2>&1 | tail -20`
-Expected: FAIL — 현재는 디바운스 없이 매번 즉시 recompute
-
-- [ ] **Step 3: ViewModel에 디바운스 구현**
+- [x] **Step 3: ViewModel에 디바운스 구현**
 
 `CoursePlannerPageViewModel.swift`에서 `appendStroke` 수정:
 
@@ -746,18 +734,9 @@ func undoLastStroke() async {
 }
 ```
 
-- [ ] **Step 4: 전체 테스트 실행 — 통과 확인**
+- [x] **Step 4: 전체 테스트 실행 — 통과 확인**
 
-Run: `xcodebuild test -project Trace.xcodeproj -scheme Trace -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:TraceTests 2>&1 | tail -20`
-Expected: ALL PASS
-
-- [ ] **Step 5: 커밋**
-
-```bash
-git add Trace/Pages/CoursePlannerPage/CoursePlannerPageViewModel.swift \
-       TraceTests/CoursePlannerViewModelTests.swift
-git commit -m "feat: 스트로크 디바운스 300ms 적용 (MVP2 2-2)"
-```
+- [x] **Step 5: 커밋** — `21fe11b`
 
 ---
 
@@ -770,11 +749,11 @@ git commit -m "feat: 스트로크 디바운스 300ms 적용 (MVP2 2-2)"
 **Interfaces:**
 - Consumes: 전체 구현 결과
 
-- [ ] **Step 1: 시뮬레이터에서 빌드 + 실행**
+- [x] **Step 1: 시뮬레이터에서 빌드 + 실행**
 
 Run: XcodeBuildMCP `build_run_sim`으로 앱 실행
 
-- [ ] **Step 2: 검증 체크리스트**
+- [x] **Step 2: 검증 체크리스트**
 
 1. 앱 진입 시 현재 위치 100m 줌 + 파란 점 표시
 2. "내 위치로" 버튼 동작
@@ -785,7 +764,7 @@ Run: XcodeBuildMCP `build_run_sim`으로 앱 실행
 7. 초기화 → 모든 상태 클리어
 8. 빠른 연속 스트로크 → 스로틀 에러 없음
 
-- [ ] **Step 3: roadmap.md 업데이트**
+- [x] **Step 3: roadmap.md 업데이트**
 
 ```markdown
 ### MVP2 — UX 개선 + 스로틀 완화   (상태: 진행 중)
@@ -796,13 +775,6 @@ Run: XcodeBuildMCP `build_run_sim`으로 앱 실행
 - [x] **throttle-mitigation** — 구간 캐시 + 디바운스
 ```
 
-- [ ] **Step 4: backlog.md 상태 업데이트**
+- [x] **Step 4: backlog.md 상태 업데이트**
 
-해결된 항목의 상태를 `open` → `done`으로 변경.
-
-- [ ] **Step 5: 커밋**
-
-```bash
-git add docs/roadmap.md docs/backlog.md
-git commit -m "docs: MVP2 roadmap + backlog 상태 업데이트"
-```
+- [x] **Step 5: 커밋** — `a787d36`
