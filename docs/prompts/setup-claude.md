@@ -68,3 +68,12 @@ claude mcp add XcodeBuildMCP -s project \
 
 - 인계 상태는 **git + `project-decisions.md` + 플랜 체크박스**에만 둔다. Claude/Codex **메모리는 상대가 못 보므로** 신뢰하지 않는다.
 - 플랜 체크박스(`- [ ]` → `- [x]`)는 **작업 중 실시간 갱신**한다. 세션은 토큰 소진으로 갑자기 죽으므로 이게 유일한 인계 메모다.
+
+## 컨텍스트 보존 (컴팩션)
+
+Codex(`setup-codex.md` §2)와 달리 Claude Code는 컴팩션을 거의 설정하지 않는다 — 대부분 네이티브로 처리되기 때문이다.
+
+- **자동 압축: 기본 ON** (`autoCompactEnabled`, 컨텍스트가 한계에 근접하면 자동 요약). 압축 시점을 바꾸는 임계값 설정은 없다(켜기/끄기만). 끄려면 `settings.json`에 `"autoCompactEnabled": false` 또는 env `DISABLE_AUTO_COMPACT`. Sonnet은 200K 창이라 Opus(1M)보다 압축이 자주 걸린다.
+- **트랜스크립트: 네이티브 자동 저장**(`~/.claude/projects/...`, `--resume`/`--continue`로 복원). 별도 백업 훅 불필요 — frank의 PreCompact 백업 훅 동기는 이미 충족된다.
+- **압축 시 보존 지시(Codex `compact_prompt` 대응): 네이티브 미지원.** settings의 `compactPrompt`는 공식 스키마에 없어 무시된다(오픈 이슈 #14160). frank에서 복사하지 말 것.
+- 그래서 보존은 압축 요약에 기대지 않고 **상태 외부화**로 한다: 진행은 플랜 체크박스, 결정·피드백은 `project-decisions.md`, 현재 위치는 `docs/roadmap.md`. 압축/새 세션 후 `CLAUDE.md`가 재로드되고 `/trace-init`으로 복원한다. frank는 `active_*.txt` + UserPromptSubmit 훅으로 이 재진입을 자동화했으나, Trace는 그 훅 묶음을 의도적으로 버리고 `/trace-init` 수동 호출로 대체했다(`history`의 2026-06-22 회고). 상세 `docs/agent-rules/dual-tool.md`.
