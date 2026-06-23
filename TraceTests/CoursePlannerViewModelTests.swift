@@ -63,6 +63,40 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.course)
         XCTAssertNil(sut.errorMessage)
     }
+
+    // MARK: - Race condition: tap→draw toggle during in-flight route calculation
+
+    func testToggleDuringRouteCalculationDiscardsStaleCourse() async {
+        let service = StubCoursePlanningService()
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+
+        // Set start coordinate
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        XCTAssertNotNil(sut.startCoordinate)
+
+        // Begin route calculation without awaiting (suspends in route())
+        let calculateTask = Task {
+            await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        }
+
+        // Wait until route() is executing
+        await service.waitUntilRouteEntered()
+
+        // Toggle mode while route is in flight (bumps recomputeGeneration)
+        sut.toggleDrawingMode()
+        XCTAssertEqual(sut.interactionMode, .draw)
+        XCTAssertNil(sut.course)
+
+        // Allow route() to complete
+        service.resumeRoute()
+        await calculateTask.value
+
+        // Course should remain nil because generation guard rejected the stale result
+        XCTAssertNil(sut.course)
+    }
 }
 
 // MARK: - Test Doubles
@@ -73,13 +107,41 @@ private final class StubCoursePlanningService: CoursePlanningServiceProtocol {
     var stubbedResult: PlannedCourse?
     var stubbedError: Error?
 
+    private var routeEnteredContinuation: CheckedContinuation<Void, Never>?
+    private var routeReleaseContinuation: CheckedContinuation<Void, Never>?
+
     func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
         routeCallCount += 1
+
+        // Signal that route() has been entered
+        if let continuation = routeEnteredContinuation {
+            continuation.resume()
+            routeEnteredContinuation = nil
+        }
+
+        // Wait for release signal
+        await withCheckedContinuation { continuation in
+            routeReleaseContinuation = continuation
+        }
+
         if let error = stubbedError { throw error }
         return stubbedResult ?? PlannedCourse(
             coordinates: [start, destination],
             distanceMeters: 100
         )
+    }
+
+    func waitUntilRouteEntered() async {
+        await withCheckedContinuation { continuation in
+            routeEnteredContinuation = continuation
+        }
+    }
+
+    func resumeRoute() {
+        if let continuation = routeReleaseContinuation {
+            continuation.resume()
+            routeReleaseContinuation = nil
+        }
     }
 }
 

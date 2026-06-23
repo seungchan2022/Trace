@@ -62,10 +62,12 @@ final class CoursePlannerPageViewModel {
     func toggleDrawingMode() {
         switch interactionMode {
         case .tap:
+            recomputeGeneration += 1
             startCoordinate = nil
             destinationCoordinate = nil
             course = nil
             errorMessage = nil
+            isLoading = false
             interactionMode = .draw
         case .draw:
             recomputeGeneration += 1
@@ -107,15 +109,21 @@ final class CoursePlannerPageViewModel {
     private func calculateCourse() async {
         guard let startCoordinate, let destinationCoordinate else { return }
 
+        recomputeGeneration += 1
+        let generation = recomputeGeneration
         isLoading = true
         errorMessage = nil
         course = nil
 
         do {
-            course = try await coursePlanningService.route(from: startCoordinate, to: destinationCoordinate)
+            let route = try await coursePlanningService.route(from: startCoordinate, to: destinationCoordinate)
+            guard generation == recomputeGeneration else { return }
+            course = route
         } catch CoursePlanningError.routeNotFound {
+            guard generation == recomputeGeneration else { return }
             errorMessage = "도보 경로를 찾을 수 없습니다."
         } catch {
+            guard generation == recomputeGeneration else { return }
             errorMessage = "경로를 계산할 수 없습니다."
         }
 
