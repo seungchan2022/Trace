@@ -93,7 +93,11 @@ final class CoursePlannerPageViewModel {
     func appendStroke(_ stroke: [CourseCoordinate]) async {
         guard stroke.count >= 2 else { return }
         drawnStrokes.append(stroke)
-        await recomputeSnappedCourse()
+        recomputeGeneration += 1
+        let generation = recomputeGeneration
+        try? await Task.sleep(nanoseconds: 300_000_000)
+        guard generation == recomputeGeneration else { return }
+        await recomputeSnappedCourse(generation: generation)
     }
 
     func undoLastStroke() async {
@@ -104,7 +108,11 @@ final class CoursePlannerPageViewModel {
             course = nil
             errorMessage = nil
         } else {
-            await recomputeSnappedCourse()
+            recomputeGeneration += 1
+            let generation = recomputeGeneration
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard generation == recomputeGeneration else { return }
+            await recomputeSnappedCourse(generation: generation)
         }
     }
 
@@ -142,13 +150,11 @@ final class CoursePlannerPageViewModel {
         isLoading = false
     }
 
-    private func recomputeSnappedCourse() async {
+    private func recomputeSnappedCourse(generation: Int) async {
         let allPoints = drawnStrokes.flatMap { $0 }
         let sampled = DrawnPathSampler.sample(allPoints)
         guard sampled.count >= 2 else { course = nil; return }
 
-        recomputeGeneration += 1
-        let generation = recomputeGeneration
         isLoading = true
         errorMessage = nil
         do {

@@ -84,6 +84,38 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Race condition: tap→draw toggle during in-flight route calculation
 
+    // MARK: - Debounce
+
+    func testRapidStrokesDebounceRecompute() async {
+        let service = StubCoursePlanningService()
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+        sut.toggleDrawingMode()
+
+        let stroke1 = [
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+        ]
+        let stroke2 = [
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+            CourseCoordinate(latitude: 37.52, longitude: 127.00),
+        ]
+
+        // 빠르게 두 스트로크 추가 — 첫 번째의 디바운스가 두 번째에 의해 취소됨
+        await sut.appendStroke(stroke1)
+        await sut.appendStroke(stroke2)
+
+        // 디바운스 대기 (300ms + 여유)
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        // 두 스트로크가 저장되었는지 확인
+        XCTAssertEqual(sut.drawnStrokes.count, 2)
+    }
+
+    // MARK: - Race condition: tap→draw toggle during in-flight route calculation
+
     func testToggleDuringRouteCalculationDiscardsStaleCourse() async {
         let service = BlockingCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
