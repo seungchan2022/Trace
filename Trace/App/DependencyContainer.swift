@@ -3,20 +3,24 @@ import Foundation
 struct DependencyContainer {
     let coursePlanningService: CoursePlanningServiceProtocol
     let locationService: LocationServiceProtocol
+    let cameraStateStore: CameraStateStore
 
     @MainActor
     static func live() -> DependencyContainer {
         DependencyContainer(
             coursePlanningService: MapKitCoursePlanningService(),
-            locationService: CoreLocationService()
+            locationService: CoreLocationService(),
+            cameraStateStore: CameraStateStore()
         )
     }
 
     @MainActor
     static func uiTesting() -> DependencyContainer {
-        DependencyContainer(
+        let uiTestingDefaults = UserDefaults(suiteName: "uiTesting") ?? .standard
+        return DependencyContainer(
             coursePlanningService: UITestingCoursePlanningService(),
-            locationService: UITestingLocationService()
+            locationService: UITestingLocationService(),
+            cameraStateStore: CameraStateStore(defaults: uiTestingDefaults)
         )
     }
 }
