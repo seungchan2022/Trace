@@ -41,6 +41,10 @@ final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
         } catch let error as CoursePlanningError {
             throw error
         } catch {
+            let nsError = error as NSError
+            if nsError.domain == "GEOErrorDomain", nsError.code == -3 {
+                throw CoursePlanningError.throttled
+            }
             throw CoursePlanningError.requestFailed
         }
     }

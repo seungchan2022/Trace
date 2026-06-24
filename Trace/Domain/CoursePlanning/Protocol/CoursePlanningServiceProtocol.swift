@@ -31,6 +31,8 @@ extension CoursePlanningServiceProtocol {
         for attempt in 0..<attempts {
             do {
                 return try await route(from: start, to: destination)
+            } catch CoursePlanningError.throttled {
+                throw CoursePlanningError.throttled
             } catch {
                 lastError = error
                 if attempt < attempts - 1 {
