@@ -115,7 +115,7 @@ final class CoursePlannerPageViewModel {
         recomputeGeneration += 1
         let generation = recomputeGeneration
         try? await Task.sleep(nanoseconds: 300_000_000)
-        guard generation == recomputeGeneration else { return }
+        guard generation == recomputeGeneration else { isLoading = false; return }
         await incrementalRoute(rawStroke: stroke, generation: generation)
     }
 
@@ -142,7 +142,7 @@ final class CoursePlannerPageViewModel {
 
             for stroke in savedStrokes {
                 await incrementalRoute(rawStroke: stroke, generation: generation)
-                guard generation == recomputeGeneration else { return }
+                guard generation == recomputeGeneration else { isLoading = false; return }
             }
         }
     }
@@ -171,13 +171,13 @@ final class CoursePlannerPageViewModel {
 
         do {
             let route = try await coursePlanningService.route(from: startCoordinate, to: destinationCoordinate)
-            guard generation == recomputeGeneration else { return }
+            guard generation == recomputeGeneration else { isLoading = false; return }
             course = route
         } catch CoursePlanningError.routeNotFound {
-            guard generation == recomputeGeneration else { return }
+            guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "도보 경로를 찾을 수 없습니다."
         } catch {
-            guard generation == recomputeGeneration else { return }
+            guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "경로를 계산할 수 없습니다."
         }
 
@@ -204,7 +204,7 @@ final class CoursePlannerPageViewModel {
             var newDistance = 0.0
             for i in 0..<(oriented.count - 1) {
                 let leg = try await coursePlanningService.route(from: oriented[i], to: oriented[i + 1])
-                guard generation == recomputeGeneration else { return }
+                guard generation == recomputeGeneration else { isLoading = false; return }
                 newCoords.append(contentsOf: newCoords.isEmpty ? leg.coordinates : Array(leg.coordinates.dropFirst()))
                 newDistance += leg.distanceMeters
             }
@@ -217,7 +217,7 @@ final class CoursePlannerPageViewModel {
             case .append:
                 if let existingEnd = accumulatedCoordinates.last, let newStart = newCoords.first {
                     let connection = try await coursePlanningService.route(from: existingEnd, to: newStart)
-                    guard generation == recomputeGeneration else { return }
+                    guard generation == recomputeGeneration else { isLoading = false; return }
                     accumulatedCoordinates.append(contentsOf: Array(connection.coordinates.dropFirst()))
                     accumulatedDistance += connection.distanceMeters
                 }
@@ -226,7 +226,7 @@ final class CoursePlannerPageViewModel {
             case .prepend:
                 if let existingStart = accumulatedCoordinates.first, let newEnd = newCoords.last {
                     let connection = try await coursePlanningService.route(from: newEnd, to: existingStart)
-                    guard generation == recomputeGeneration else { return }
+                    guard generation == recomputeGeneration else { isLoading = false; return }
                     var merged = newCoords
                     merged.append(contentsOf: Array(connection.coordinates.dropFirst()))
                     merged.append(contentsOf: Array(accumulatedCoordinates.dropFirst()))
@@ -245,11 +245,11 @@ final class CoursePlannerPageViewModel {
 
             course = PlannedCourse(coordinates: accumulatedCoordinates, distanceMeters: accumulatedDistance)
         } catch CoursePlanningError.throttled {
-            guard generation == recomputeGeneration else { return }
+            guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "요청이 많아 잠시 후 다시 시도해주세요"
             drawnStrokes.removeLast()
         } catch {
-            guard generation == recomputeGeneration else { return }
+            guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "경로를 계산할 수 없습니다."
             drawnStrokes.removeLast()
         }
