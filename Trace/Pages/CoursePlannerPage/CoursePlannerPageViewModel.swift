@@ -17,6 +17,9 @@ final class CoursePlannerPageViewModel {
     private(set) var initialCameraCoordinate: CourseCoordinate?
     private(set) var interactionMode: InteractionMode = .tap
     private(set) var drawnStrokes: [[CourseCoordinate]] = []
+    private(set) var strokeEntries: [StrokeEntry] = []
+    private var accumulatedCoordinates: [CourseCoordinate] = []
+    private var accumulatedDistance: Double = 0
     var showLocationDeniedAlert = false
 
     private let coursePlanningService: CoursePlanningServiceProtocol
@@ -97,6 +100,9 @@ final class CoursePlannerPageViewModel {
         case .draw:
             recomputeGeneration += 1
             drawnStrokes = []
+            strokeEntries = []
+            accumulatedCoordinates = []
+            accumulatedDistance = 0
             course = nil
             errorMessage = nil
             interactionMode = .tap
@@ -110,22 +116,34 @@ final class CoursePlannerPageViewModel {
         let generation = recomputeGeneration
         try? await Task.sleep(nanoseconds: 300_000_000)
         guard generation == recomputeGeneration else { return }
-        await recomputeSnappedCourse(generation: generation)
+        await incrementalRoute(rawStroke: stroke, generation: generation)
     }
 
     func undoLastStroke() async {
-        guard drawnStrokes.isEmpty == false else { return }
+        guard strokeEntries.popLast() != nil else { return }
         drawnStrokes.removeLast()
-        if drawnStrokes.isEmpty {
-            recomputeGeneration += 1
+        recomputeGeneration += 1
+
+        if strokeEntries.isEmpty {
+            accumulatedCoordinates = []
+            accumulatedDistance = 0
             course = nil
             errorMessage = nil
         } else {
+            // 전체 재계산 — drawnStrokes를 순회하여 재구축 (double-sampling 방지)
             recomputeGeneration += 1
             let generation = recomputeGeneration
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            guard generation == recomputeGeneration else { return }
-            await recomputeSnappedCourse(generation: generation)
+            let savedStrokes = drawnStrokes
+            strokeEntries = []
+            accumulatedCoordinates = []
+            accumulatedDistance = 0
+            course = nil
+            errorMessage = nil
+
+            for stroke in savedStrokes {
+                await incrementalRoute(rawStroke: stroke, generation: generation)
+                guard generation == recomputeGeneration else { return }
+            }
         }
     }
 
@@ -134,6 +152,9 @@ final class CoursePlannerPageViewModel {
         startCoordinate = nil
         destinationCoordinate = nil
         drawnStrokes = []
+        strokeEntries = []
+        accumulatedCoordinates = []
+        accumulatedDistance = 0
         course = nil
         errorMessage = nil
         isLoading = false
@@ -163,20 +184,74 @@ final class CoursePlannerPageViewModel {
         isLoading = false
     }
 
-    private func recomputeSnappedCourse(generation: Int) async {
-        let allPoints = drawnStrokes.flatMap { $0 }
-        let sampled = DrawnPathSampler.sample(allPoints)
-        guard sampled.count >= 2 else { course = nil; return }
+    private func incrementalRoute(rawStroke: [CourseCoordinate], generation: Int) async {
+        let sampled = DrawnPathSampler.sample(rawStroke)
+        guard sampled.count >= 2 else { return }
+
+        let attachment = StrokeDirectionResolver.resolve(
+            newStroke: sampled,
+            existingCourseStart: accumulatedCoordinates.first,
+            existingCourseEnd: accumulatedCoordinates.last
+        )
+        let oriented = attachment.orientedStroke
 
         isLoading = true
         errorMessage = nil
+
         do {
-            let snapped = try await coursePlanningService.snappedRoute(through: sampled)
+            // 1) 새 스트로크 내부 구간 라우팅
+            var newCoords: [CourseCoordinate] = []
+            var newDistance = 0.0
+            for i in 0..<(oriented.count - 1) {
+                let leg = try await coursePlanningService.route(from: oriented[i], to: oriented[i + 1])
+                guard generation == recomputeGeneration else { return }
+                newCoords.append(contentsOf: newCoords.isEmpty ? leg.coordinates : Array(leg.coordinates.dropFirst()))
+                newDistance += leg.distanceMeters
+            }
+
+            // 2) 기존 경로와 연결 구간
+            switch attachment.direction {
+            case .initial:
+                accumulatedCoordinates = newCoords
+                accumulatedDistance = newDistance
+            case .append:
+                if let existingEnd = accumulatedCoordinates.last, let newStart = newCoords.first {
+                    let connection = try await coursePlanningService.route(from: existingEnd, to: newStart)
+                    guard generation == recomputeGeneration else { return }
+                    accumulatedCoordinates.append(contentsOf: Array(connection.coordinates.dropFirst()))
+                    accumulatedDistance += connection.distanceMeters
+                }
+                accumulatedCoordinates.append(contentsOf: Array(newCoords.dropFirst()))
+                accumulatedDistance += newDistance
+            case .prepend:
+                if let existingStart = accumulatedCoordinates.first, let newEnd = newCoords.last {
+                    let connection = try await coursePlanningService.route(from: newEnd, to: existingStart)
+                    guard generation == recomputeGeneration else { return }
+                    var merged = newCoords
+                    merged.append(contentsOf: Array(connection.coordinates.dropFirst()))
+                    merged.append(contentsOf: Array(accumulatedCoordinates.dropFirst()))
+                    accumulatedDistance += connection.distanceMeters + newDistance
+                    accumulatedCoordinates = merged
+                }
+            }
+
+            let entry = StrokeEntry(
+                orientedStroke: oriented,
+                direction: attachment.direction,
+                routedCoordinateCount: newCoords.count,
+                routedDistance: newDistance
+            )
+            strokeEntries.append(entry)
+
+            course = PlannedCourse(coordinates: accumulatedCoordinates, distanceMeters: accumulatedDistance)
+        } catch CoursePlanningError.throttled {
             guard generation == recomputeGeneration else { return }
-            course = snapped
+            errorMessage = "요청이 많아 잠시 후 다시 시도해주세요"
+            drawnStrokes.removeLast()
         } catch {
             guard generation == recomputeGeneration else { return }
             errorMessage = "경로를 계산할 수 없습니다."
+            drawnStrokes.removeLast()
         }
         isLoading = false
     }

@@ -119,6 +119,111 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNotNil(sut.initialCameraCoordinate)
     }
 
+    // MARK: - Incremental stroke pipeline
+
+    func testAppendStrokeNearEndAppendsAndRoutesOnlyNewSegment() async {
+        let service = StubCoursePlanningService()
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+        sut.toggleDrawingMode()
+
+        // 첫 스트로크
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.500, longitude: 127.00),
+            CourseCoordinate(latitude: 37.510, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        let callsAfterFirst = service.routeCallCount
+
+        // 끝점 근처에서 두 번째 스트로크
+        service.routeCallCount = 0
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.511, longitude: 127.00),
+            CourseCoordinate(latitude: 37.520, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        // 이전 구간은 재호출하지 않음 — 새 스트로크 내부 구간 + 연결 1건만
+        XCTAssertTrue(service.routeCallCount < callsAfterFirst + 3)
+        XCTAssertNotNil(sut.course)
+    }
+
+    func testAppendStrokeNearStartPrepends() async {
+        let service = StubCoursePlanningService()
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+        sut.toggleDrawingMode()
+
+        // 첫 스트로크: 37.510 → 37.520
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.510, longitude: 127.00),
+            CourseCoordinate(latitude: 37.520, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        // 시작점 근처에서 두 번째 스트로크: 37.500 → 37.509
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.500, longitude: 127.00),
+            CourseCoordinate(latitude: 37.509, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        XCTAssertNotNil(sut.course)
+        // 코스의 시작이 37.500 근처여야 함 (prepend됨)
+        if let first = sut.course?.coordinates.first {
+            XCTAssertTrue(abs(first.latitude - 37.500) < 0.005)
+        }
+    }
+
+    func testUndoRemovesLastAddedStroke() async {
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: StubCoursePlanningService(),
+            locationService: StubLocationService()
+        )
+        sut.toggleDrawingMode()
+
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.500, longitude: 127.00),
+            CourseCoordinate(latitude: 37.510, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.511, longitude: 127.00),
+            CourseCoordinate(latitude: 37.520, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        XCTAssertNotNil(sut.course)
+
+        await sut.undoLastStroke()
+
+        // 첫 스트로크만 남아있어야 함
+        XCTAssertEqual(sut.drawnStrokes.count, 1)
+        XCTAssertNotNil(sut.course)
+    }
+
+    func testThrottleErrorShowsUserMessage() async {
+        let service = StubCoursePlanningService()
+        service.stubbedError = CoursePlanningError.throttled
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+        sut.toggleDrawingMode()
+
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.500, longitude: 127.00),
+            CourseCoordinate(latitude: 37.510, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        XCTAssertEqual(sut.errorMessage, "요청이 많아 잠시 후 다시 시도해주세요")
+    }
+
     // MARK: - Race condition: tap→draw toggle during in-flight route calculation
 
     // MARK: - Debounce
