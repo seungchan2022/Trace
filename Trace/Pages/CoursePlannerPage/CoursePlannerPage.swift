@@ -73,7 +73,7 @@ struct CoursePlannerPage: View {
 
     private var mapView: some View {
         MapReader { proxy in
-            Map(position: $cameraPosition, interactionModes: viewModel.isDrawingMode ? [] : .all) {
+            Map(position: $cameraPosition, interactionModes: viewModel.isDrawingMode ? [.pan, .zoom] : .all) {
                 UserAnnotation()
 
                 if let course = viewModel.course {
