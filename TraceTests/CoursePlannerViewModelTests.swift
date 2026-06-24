@@ -6,9 +6,12 @@ final class CoursePlannerViewModelTests: XCTestCase {
     private func makeSUT(locationError: Error? = nil) -> CoursePlannerPageViewModel {
         let locationService = StubLocationService()
         locationService.stubbedError = locationError
+        let defaults = UserDefaults(suiteName: "viewModelTests")!
+        defaults.removePersistentDomain(forName: "viewModelTests")
         return CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
-            locationService: locationService
+            locationService: locationService,
+            cameraStateStore: CameraStateStore(defaults: defaults)
         )
     }
 
@@ -79,6 +82,40 @@ final class CoursePlannerViewModelTests: XCTestCase {
         let sut = makeSUT()
         await sut.bootstrapLocation()
         XCTAssertFalse(sut.showLocationDeniedAlert)
+        XCTAssertNotNil(sut.initialCameraCoordinate)
+    }
+
+    // MARK: - Camera restore
+
+    func testBootstrapDoesNotOverrideWhenCameraRestored() async {
+        let store = CameraStateStore(defaults: UserDefaults(suiteName: "testBootstrap")!)
+        UserDefaults(suiteName: "testBootstrap")!.removePersistentDomain(forName: "testBootstrap")
+        store.save(latitude: 35.0, longitude: 129.0, latitudinalMeters: 1000, longitudinalMeters: 1000)
+
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: StubCoursePlanningService(),
+            locationService: StubLocationService(),
+            cameraStateStore: store
+        )
+        await sut.bootstrapLocation()
+
+        // bootstrapLocation은 호출되지만, 저장된 카메라가 있으므로
+        // initialCameraCoordinate는 세팅되지 않음 (Page에서 이미 복원했으므로)
+        XCTAssertNil(sut.initialCameraCoordinate)
+    }
+
+    func testBootstrapSetsCoordinateWhenNoCameraStored() async {
+        let store = CameraStateStore(defaults: UserDefaults(suiteName: "testBootstrapEmpty")!)
+        UserDefaults(suiteName: "testBootstrapEmpty")!.removePersistentDomain(forName: "testBootstrapEmpty")
+
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: StubCoursePlanningService(),
+            locationService: StubLocationService(),
+            cameraStateStore: store
+        )
+        await sut.bootstrapLocation()
+
+        // 저장된 카메라 없으면 현재 위치로 세팅
         XCTAssertNotNil(sut.initialCameraCoordinate)
     }
 

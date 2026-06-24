@@ -6,14 +6,21 @@ struct CoursePlannerPage: View {
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var currentStroke: [CourseCoordinate] = []
     @State private var currentStrokePoints: [CGPoint] = []
+    @State private var lastCameraRegion: MKCoordinateRegion?
+    @Environment(\.scenePhase) private var scenePhase
+
+    private let cameraStateStore: CameraStateStore
 
     init(
         coursePlanningService: CoursePlanningServiceProtocol,
-        locationService: LocationServiceProtocol
+        locationService: LocationServiceProtocol,
+        cameraStateStore: CameraStateStore = CameraStateStore()
     ) {
+        self.cameraStateStore = cameraStateStore
         _viewModel = State(initialValue: CoursePlannerPageViewModel(
             coursePlanningService: coursePlanningService,
-            locationService: locationService
+            locationService: locationService,
+            cameraStateStore: cameraStateStore
         ))
     }
 
@@ -27,13 +34,31 @@ struct CoursePlannerPage: View {
                 statusPanel
             }
             .task {
-                await viewModel.bootstrapLocation()
-                if let center = viewModel.initialCameraCoordinate {
+                // 저장된 카메라 복원 (즉시, 점프 없음)
+                if let bounds = cameraStateStore.restore() {
                     cameraPosition = .region(MKCoordinateRegion(
-                        center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
-                        latitudinalMeters: 500,
-                        longitudinalMeters: 500
+                        center: CLLocationCoordinate2D(latitude: bounds.latitude, longitude: bounds.longitude),
+                        latitudinalMeters: bounds.latitudinalMeters,
+                        longitudinalMeters: bounds.longitudinalMeters
                     ))
+                }
+
+                await viewModel.bootstrapLocation()
+
+                // 저장된 카메라가 없었던 경우(첫 실행)에만 위치로 이동
+                if let center = viewModel.initialCameraCoordinate {
+                    withAnimation {
+                        cameraPosition = .region(MKCoordinateRegion(
+                            center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
+                            latitudinalMeters: 500,
+                            longitudinalMeters: 500
+                        ))
+                    }
+                }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .background {
+                    saveCameraPosition()
                 }
             }
             .alert("위치 권한이 필요합니다", isPresented: $viewModel.showLocationDeniedAlert) {
@@ -76,6 +101,9 @@ struct CoursePlannerPage: View {
                     Marker("도착", systemImage: "flag.checkered", coordinate: CLLocationCoordinate2D(last))
                         .tint(.red)
                 }
+            }
+            .onMapCameraChange(frequency: .onEnd) { context in
+                lastCameraRegion = context.region
             }
             .overlay {
                 Canvas { context, _ in
@@ -134,6 +162,16 @@ struct CoursePlannerPage: View {
         }
     }
 
+    private func saveCameraPosition() {
+        guard let region = lastCameraRegion else { return }
+        cameraStateStore.save(
+            latitude: region.center.latitude,
+            longitude: region.center.longitude,
+            latitudinalMeters: region.span.latitudeDelta * 111_000,
+            longitudinalMeters: region.span.longitudeDelta * 111_000 * cos(region.center.latitude * .pi / 180)
+        )
+    }
+
     private var statusPanel: some View {
         VStack(alignment: .leading, spacing: 8) {
             if viewModel.isLoading {
@@ -159,9 +197,11 @@ struct CoursePlannerPage: View {
 }
 
 #Preview {
+    let container = DependencyContainer.uiTesting()
     CoursePlannerPage(
-        coursePlanningService: DependencyContainer.uiTesting().coursePlanningService,
-        locationService: DependencyContainer.uiTesting().locationService
+        coursePlanningService: container.coursePlanningService,
+        locationService: container.locationService,
+        cameraStateStore: container.cameraStateStore
     )
 }
 

@@ -21,14 +21,17 @@ final class CoursePlannerPageViewModel {
 
     private let coursePlanningService: CoursePlanningServiceProtocol
     private let locationService: LocationServiceProtocol
+    private let cameraStateStore: CameraStateStore
     private var recomputeGeneration = 0
 
     init(
         coursePlanningService: CoursePlanningServiceProtocol,
-        locationService: LocationServiceProtocol
+        locationService: LocationServiceProtocol,
+        cameraStateStore: CameraStateStore = CameraStateStore()
     ) {
         self.coursePlanningService = coursePlanningService
         self.locationService = locationService
+        self.cameraStateStore = cameraStateStore
     }
 
     var isDrawingMode: Bool { interactionMode == .draw }
@@ -39,13 +42,23 @@ final class CoursePlannerPageViewModel {
     }
 
     func bootstrapLocation() async {
+        // 저장된 카메라가 있으면 Page에서 이미 복원했으므로 위치 요청만 하고 카메라는 건드리지 않음
+        let hasRestoredCamera = cameraStateStore.restore() != nil
+
         do {
-            initialCameraCoordinate = try await locationService.currentLocation()
+            let location = try await locationService.currentLocation()
+            if !hasRestoredCamera {
+                initialCameraCoordinate = location
+            }
         } catch LocationError.denied {
             showLocationDeniedAlert = true
-            initialCameraCoordinate = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
+            if !hasRestoredCamera {
+                initialCameraCoordinate = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
+            }
         } catch {
-            initialCameraCoordinate = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
+            if !hasRestoredCamera {
+                initialCameraCoordinate = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
+            }
         }
     }
 

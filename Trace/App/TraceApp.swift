@@ -23,7 +23,8 @@ struct TraceApp: App {
         WindowGroup {
             CoursePlannerPage(
                 coursePlanningService: container.coursePlanningService,
-                locationService: container.locationService
+                locationService: container.locationService,
+                cameraStateStore: container.cameraStateStore
             )
         }
     }
