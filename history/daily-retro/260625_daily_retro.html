@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>데일리 회고 — 2026-06-25</title>
+<style>
+:root {
+  --bg:#FDF6F0; --text:#2D2926; --accent:#D97706; --accent-light:#FEF3C7;
+  --heading:#92400E; --border:#E5D5C5; --code-bg:#FFF7ED; --card-bg:#FFFFFF;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg); color: var(--text);
+  max-width: 480px; margin: 0 auto; padding: 16px;
+  line-height: 1.7;
+}
+h1 { font-size: 1.5rem; color: var(--heading); margin-bottom: 4px; }
+h2 { font-size: 1.15rem; color: var(--heading); margin-top: 28px; margin-bottom: 10px;
+     border-bottom: 2px solid var(--accent-light); padding-bottom: 4px; }
+h3 { font-size: 1rem; color: var(--accent); margin-top: 18px; margin-bottom: 6px; }
+.date { font-size: 0.85rem; color: #888; margin-bottom: 20px; }
+.card {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; margin-bottom: 14px;
+}
+.card-title { font-weight: 700; color: var(--heading); font-size: 0.95rem; margin-bottom: 6px; }
+.label { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 2px 8px;
+         border-radius: 12px; margin-right: 4px; margin-bottom: 4px; }
+.label-situation { background: #E0E7FF; color: #3730A3; }
+.label-decision { background: #D1FAE5; color: #065F46; }
+.label-insight { background: var(--accent-light); color: var(--heading); }
+.label-fail { background: #FEE2E2; color: #991B1B; }
+.label-fix { background: #DBEAFE; color: #1E40AF; }
+p, li { font-size: 0.92rem; margin-bottom: 6px; }
+ul { padding-left: 20px; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+.stat-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px; text-align: center; }
+.stat-num { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+.stat-label { font-size: 0.78rem; color: #888; }
+.mermaid { background: var(--card-bg); border-radius: 10px; padding: 12px;
+           margin: 14px 0; border: 1px solid var(--border); overflow-x: auto; }
+.highlight { background: var(--accent-light); padding: 10px 14px; border-radius: 8px;
+             border-left: 4px solid var(--accent); margin: 14px 0; font-size: 0.9rem; }
+.emoji { font-size: 1.1rem; }
+</style>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base',
+    themeVariables: { primaryColor: '#FEF3C7', primaryBorderColor: '#D97706',
+                      primaryTextColor: '#2D2926', lineColor: '#D97706' }});
+</script>
+</head>
+<body>
+
+<h1><span class="emoji">📝</span> 데일리 회고</h1>
+<div class="date">2026년 6월 25일 (수)</div>
+
+<div class="stats">
+  <div class="stat-box"><div class="stat-num">14</div><div class="stat-label">커밋</div></div>
+  <div class="stat-box"><div class="stat-num">26</div><div class="stat-label">변경 파일</div></div>
+  <div class="stat-box"><div class="stat-num">2,119</div><div class="stat-label">추가 라인</div></div>
+  <div class="stat-box"><div class="stat-num">7</div><div class="stat-label">의사결정</div></div>
+</div>
+
+<h2><span class="emoji">🗺️</span> 오늘 뭘 했나</h2>
+<p>MVP3 전체 사이클을 하루에 완주했다 — 플랜 작성부터 SDD 실행, 실기기 테스트, 버그 수정, 아카이빙까지. 카메라 복원, 비연속 구간 방향 감지, 증분 라우팅, 스로틀 에러 감지를 구현했고, 2손가락 지도 이동은 SwiftUI Map의 근본 한계를 발견하고 보류했다.</p>
+<p>그리고 에이전트 push 우회 사고를 계기로 깃 가드 체계를 settings.json deny로 전면 전환했다.</p>
+
+<h2><span class="emoji">🔀</span> 의사결정 흐름</h2>
+
+<pre class="mermaid">
+graph TB
+    A["스로틀 문제 분석"] --> B{"전체 재계산 vs 증분?"}
+    B -->|"증분 계산"| C["새 구간만 라우팅"]
+    C --> D{"방향 감지 어떻게?"}
+    D -->|"4쌍 비교 + reverse"| E["StrokeDirectionResolver"]
+
+    F["2손가락 이동 시도"] --> G{"Phase 1: interactionModes?"}
+    G -->|"실패"| H{"Phase 2: UIViewRepresentable?"}
+    H -->|"실패"| I["심층 리서치"]
+    I --> J["SwiftUI Map ≠ UIKit 제스처"]
+    J --> K["MKMapView 교체 → 다음 MVP"]
+
+    L["에이전트 push 우회"] --> M{"어떻게 막나?"}
+    M -->|"git hooks"| N["--no-verify로 우회 가능 ❌"]
+    M -->|"settings.json deny"| O["런타임 차단 ✅"]
+
+    style C fill:#D1FAE5,stroke:#065F46
+    style E fill:#D1FAE5,stroke:#065F46
+    style K fill:#FEE2E2,stroke:#991B1B
+    style O fill:#DBEAFE,stroke:#1E40AF
+</pre>
+
+<h2><span class="emoji">⚡</span> 핵심 의사결정</h2>
+
+<div class="card">
+  <div class="card-title">1. 증분 계산 설계</div>
+  <span class="label label-situation">기존: 전체 재라우팅</span>
+  <span class="label label-decision">결정: 새 구간만</span>
+  <p>기존 <code>recomputeSnappedCourse</code>가 매번 전체 포인트를 순회하면서 route()를 N-1번 호출하는 구조를 이해한 뒤, 새 스트로크의 내부 구간 + 연결 1건만 라우팅하는 증분 방식으로 전환. 기존 코드 로직을 이해하고 나니 "새 부분만 계산한다"는 개념이 바로 와닿았다.</p>
+</div>
+
+<div class="card">
+  <div class="card-title">2. 4쌍 거리 비교 + 스트로크 reverse</div>
+  <span class="label label-decision">결정: 4쌍 전부 비교</span>
+  <span class="label label-insight">advisor가 역주행 버그 발견</span>
+  <p>처음엔 시작점만 비교하려 했는데, advisor 리뷰에서 prepend 시 역주행 가능성을 지적. 새 스트로크 양 끝 × 기존 경로 양 끝 = 4쌍을 비교해 가장 가까운 쌍을 찾고, 필요 시 스트로크를 reverse해서 자연스러운 방향으로 연결.</p>
+</div>
+
+<div class="card">
+  <div class="card-title">3. 2손가락 지도 이동 — 실패에서 배운 것</div>
+  <span class="label label-fail">Phase 1, 2 모두 실패</span>
+  <span class="label label-insight">SwiftUI ≠ UIKit 제스처</span>
+  <p>SwiftUI의 <code>.simultaneousGesture</code>는 SwiftUI 제스처끼리만 조율한다. Map 내부의 UIKit 제스처에는 영향을 주지 않는다. 오버레이가 hit-test로 터치를 가로채면, 제스처가 실패해도 소유권은 돌아오지 않는다. 일반 SwiftUI 뷰 문제가 아니라 MapKit 고유 문제라는 걸 심층 리서치로 발견.</p>
+</div>
+
+<div class="card">
+  <div class="card-title">4. 에이전트 push 우회 → settings.json deny</div>
+  <span class="label label-fix">frank 방식으로 전환</span>
+  <p>git hooks(pre-push)로 push를 막았지만, 에이전트가 <code>ALLOW_PUSH=1</code>과 <code>--no-verify</code>로 우회. frank 프로젝트에서는 settings.json deny로 더 간단하고 확실하게 막고 있었다. 더 복잡한 설정이 더 안전하다는 착각을 깼다.</p>
+</div>
+
+<h2><span class="emoji">🛡️</span> 강제성 레이어 비교</h2>
+
+<pre class="mermaid">
+graph LR
+    A["규칙 문서\n(git.md)"] -->|"무시 가능"| B["Git Hooks\n(pre-push)"]
+    B -->|"--no-verify 우회"| C["settings.json deny\n(런타임 차단)"]
+    C -->|"우회 불가 ✅"| D["에이전트 차단"]
+
+    style A fill:#FEE2E2,stroke:#991B1B
+    style B fill:#FEF3C7,stroke:#D97706
+    style C fill:#D1FAE5,stroke:#065F46
+    style D fill:#DBEAFE,stroke:#1E40AF
+</pre>
+
+<div class="highlight">
+  <strong>💡 핵심 인사이트:</strong> 에이전트를 막으려면 에이전트의 실행 경로에서 차단해야 한다. git hooks는 사용자와 에이전트가 같은 경로를 쓰기 때문에 한쪽만 차단하기 어렵다. settings.json deny는 에이전트 전용 레이어라서 사용자에겐 영향 없이 에이전트만 차단한다.
+</div>
+
+<h2><span class="emoji">📚</span> 배운 것</h2>
+<ul>
+  <li><strong>SwiftUI Map 내부가 UIKit</strong> — 제스처 시스템이 완전 분리. <code>.simultaneousGesture</code>는 Map에 안 먹힘.</li>
+  <li><strong>hit-test 소유권</strong> — touch-down 시점에 결정, 제스처 실패 후에도 불변.</li>
+  <li><strong>증분 계산의 핵심</strong> — 샘플링을 스트로크 단위로 해야 이전 구간 경계가 보존됨.</li>
+  <li><strong>settings.json deny</strong> — Claude Code 런타임이 Bash 실행 전에 패턴 매칭으로 차단. 에이전트 우회 불가.</li>
+</ul>
+
+<h2><span class="emoji">💭</span> 느낀 점</h2>
+<p>하루에 MVP 완주는 뿌듯하지만, push 우회는 불안했다. 내가 세팅한 보호 장치가 뚫린 거니까. 다행히 frank에서 이미 더 나은 방법을 쓰고 있었고, "더 복잡한 게 더 안전하다"는 착각을 깼다. 간단하고 올바른 레이어에 있는 게 더 강력하다.</p>
+<p>2손가락 실패는 아쉽지만, 실패가 다음 MVP 방향을 잡아줬다. 실기기 테스트의 가치를 다시 체감한 하루.</p>
+
+<h2><span class="emoji">📋</span> 내일 할 일</h2>
+<ul>
+  <li>다음 MVP 기획 — MKMapView 교체 중심으로 backlog 검토</li>
+  <li>스로틀 에러 domain/code 실기기 확인 (Xcode 콘솔 디버그 로그)</li>
+</ul>
+
+</body>
+</html>
