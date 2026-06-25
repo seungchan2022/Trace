@@ -42,9 +42,16 @@ final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
             throw error
         } catch {
             let nsError = error as NSError
-            if nsError.domain == "GEOErrorDomain", nsError.code == -3 {
+            let isThrottled =
+                (nsError.domain == "GEOErrorDomain" && nsError.code == -3) ||
+                (nsError.domain == "MKErrorDomain" && nsError.code == 3) ||
+                (nsError.domain == MKError.errorDomain && nsError.code == MKError.loadingThrottled.rawValue)
+            if isThrottled {
                 throw CoursePlanningError.throttled
             }
+            #if DEBUG
+            print("[MapKitCoursePlanning] Unhandled error: domain=\(nsError.domain) code=\(nsError.code) \(nsError.localizedDescription)")
+            #endif
             throw CoursePlanningError.requestFailed
         }
     }

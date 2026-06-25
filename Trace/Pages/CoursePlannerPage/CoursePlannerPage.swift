@@ -3,9 +3,12 @@ import SwiftUI
 
 struct CoursePlannerPage: View {
     @State var viewModel: CoursePlannerPageViewModel
-    @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var cameraPosition: MapCameraPosition = .region(MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 37.5666, longitude: 126.9784),
+        latitudinalMeters: 500,
+        longitudinalMeters: 500
+    ))
     @State private var currentStroke: [CourseCoordinate] = []
-    @State private var currentStrokePoints: [CGPoint] = []
     @State private var lastCameraRegion: MKCoordinateRegion?
     @Environment(\.scenePhase) private var scenePhase
 
@@ -106,29 +109,20 @@ struct CoursePlannerPage: View {
                 lastCameraRegion = context.region
             }
             .overlay {
-                Canvas { context, _ in
-                    guard currentStrokePoints.count > 1 else { return }
-                    var path = Path()
-                    path.addLines(currentStrokePoints)
-                    context.stroke(path, with: .color(.orange), lineWidth: 4)
-                }
-                .contentShape(Rectangle())
-                .allowsHitTesting(viewModel.isDrawingMode)
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            currentStrokePoints.append(value.location)
-                            if let coord = proxy.convert(value.location, from: .local) {
-                                currentStroke.append(CourseCoordinate(coord))
-                            }
+                DrawingOverlay(
+                    isActive: viewModel.isDrawingMode,
+                    onStrokePoint: { point in
+                        if let coord = proxy.convert(point, from: .local) {
+                            currentStroke.append(CourseCoordinate(coord))
                         }
-                        .onEnded { _ in
-                            let stroke = currentStroke
-                            currentStroke = []
-                            currentStrokePoints = []
-                            Task { await viewModel.appendStroke(stroke) }
-                        }
+                    },
+                    onStrokeEnd: {
+                        let stroke = currentStroke
+                        currentStroke = []
+                        Task { await viewModel.appendStroke(stroke) }
+                    }
                 )
+                .allowsHitTesting(viewModel.isDrawingMode)
             }
             .overlay(alignment: .bottomTrailing) {
                 Button {
