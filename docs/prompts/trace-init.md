@@ -63,7 +63,7 @@ git config core.hooksPath
   ```bash
   git config core.hooksPath .githooks
   ```
-  (이게 pre-commit/commit-msg/pre-push 가드를 켠다 — git.md 참고. 도구와 무관하게 리포 단위로 공유된다.)
+  (이게 pre-commit/commit-msg 가드를 켠다 — git.md 참고. push 차단은 `.claude/settings.json` deny로 처리.)
 
 ### 6. 백로그 확인 + 사용 가능한 도구 + 다음 단계 제안
 

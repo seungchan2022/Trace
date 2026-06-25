@@ -97,18 +97,30 @@ When creating a PR later, include:
 
 ## Local Guard
 
-This repository uses local hooks:
+이 저장소는 두 레이어로 보호된다:
 
-- `.githooks/pre-commit`: blocks commits on `main`, scans staged files for common secrets and unsafe Swift patterns
-- `.githooks/commit-msg`: blocks invalid commit messages and `Co-Authored-By:`
-- `.githooks/pre-push`: 기본 차단, 사용자는 `ALLOW_PUSH=1 git push ...`로 수동 push 가능
+### Git Hooks (코드 품질 가드)
+
+- `.githooks/pre-commit`: main 직접 커밋 차단, 시크릿 파일 감지, force unwrap/cast/try 차단, verification stamp 검증
+- `.githooks/commit-msg`: 커밋 메시지 형식 검증, Co-Authored-By 차단
 - `.swiftlint.yml`: makes force unwrap/cast/try and implicitly unwrapped optionals lint errors
 
-Enable it with:
+Enable hooks with:
 
 ```bash
 git config core.hooksPath .githooks
 ```
+
+### Claude Code Settings (에이전트 행동 차단)
+
+`.claude/settings.json`의 `deny` 규칙으로 에이전트의 위험 명령을 차단한다. Claude Code 런타임이 실행 자체를 막으므로 에이전트가 우회할 수 없다:
+
+- `git push` — 모든 형태의 push 차단 (사용자가 터미널에서 직접 push)
+- `git add -A` / `git add .` — 전체 스테이징 차단
+- `--no-verify` — 훅 우회 차단
+- `rm -rf` — 위험 삭제 차단
+- `git reset --hard` — 작업물 손실 차단
+- `.env` 편집 — 시크릿 파일 보호
 
 ## Merge Strategy
 

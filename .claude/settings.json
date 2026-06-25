@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push*)",
+      "Bash(*git push*)",
+      "Bash(*ALLOW_PUSH*)",
+      "Bash(git add -A*)",
+      "Bash(git add .)",
+      "Bash(git add . *)",
+      "Bash(*--no-verify*)",
+      "Bash(rm -rf*)",
+      "Bash(git reset --hard*)",
+      "Edit(.env*)"
+    ]
+  }
+}
