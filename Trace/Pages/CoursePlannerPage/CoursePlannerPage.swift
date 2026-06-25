@@ -9,6 +9,7 @@ struct CoursePlannerPage: View {
         longitudinalMeters: 500
     ))
     @State private var currentStroke: [CourseCoordinate] = []
+    @State private var currentStrokePoints: [CGPoint] = []
     @State private var lastCameraRegion: MKCoordinateRegion?
     @Environment(\.scenePhase) private var scenePhase
 
@@ -76,7 +77,7 @@ struct CoursePlannerPage: View {
 
     private var mapView: some View {
         MapReader { proxy in
-            Map(position: $cameraPosition, interactionModes: viewModel.isDrawingMode ? [.pan, .zoom] : .all) {
+            Map(position: $cameraPosition, interactionModes: viewModel.isDrawingMode ? [] : .all) {
                 UserAnnotation()
 
                 if let course = viewModel.course {
@@ -109,20 +110,29 @@ struct CoursePlannerPage: View {
                 lastCameraRegion = context.region
             }
             .overlay {
-                DrawingOverlay(
-                    isActive: viewModel.isDrawingMode,
-                    onStrokePoint: { point in
-                        if let coord = proxy.convert(point, from: .local) {
-                            currentStroke.append(CourseCoordinate(coord))
-                        }
-                    },
-                    onStrokeEnd: {
-                        let stroke = currentStroke
-                        currentStroke = []
-                        Task { await viewModel.appendStroke(stroke) }
-                    }
-                )
+                Canvas { context, _ in
+                    guard currentStrokePoints.count > 1 else { return }
+                    var path = Path()
+                    path.addLines(currentStrokePoints)
+                    context.stroke(path, with: .color(.orange), lineWidth: 4)
+                }
+                .contentShape(Rectangle())
                 .allowsHitTesting(viewModel.isDrawingMode)
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            currentStrokePoints.append(value.location)
+                            if let coord = proxy.convert(value.location, from: .local) {
+                                currentStroke.append(CourseCoordinate(coord))
+                            }
+                        }
+                        .onEnded { _ in
+                            let stroke = currentStroke
+                            currentStroke = []
+                            currentStrokePoints = []
+                            Task { await viewModel.appendStroke(stroke) }
+                        }
+                )
             }
             .overlay(alignment: .bottomTrailing) {
                 Button {
