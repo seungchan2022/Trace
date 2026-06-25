@@ -15,6 +15,15 @@
 
 ## MVP 목록
 
+### MVP3 — UX 개선 + 스로틀 강화   (상태: ✅ 완료)
+
+> MVP2 실기기 피드백 반영: 카메라 점프 제거, 비연속 구간 방향 감지, 증분 라우팅, 스로틀 에러 안내.
+> 그리기 중 지도 이동(2손가락)은 SwiftUI Map 제스처 한계로 보류 → MKMapView 교체와 함께 다음 MVP.
+
+- [x] **camera-restore** — UserDefaults 카메라 저장/복원, 서울시청 초기값, 백그라운드 저장
+- [x] **stroke-pipeline** — 자동 방향 감지(4쌍 비교 + reverse) + 증분 계산(새 구간만 라우팅) + 스로틀 감지/안내
+- [ ] ~~**drawing-pan**~~ — 보류: SwiftUI Map 위 오버레이 제스처 전달 불가, MKMapView 교체 필요
+
 ### MVP2 — UX 개선 + 스로틀 완화   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp2/`](history/mvp2/))
 
 > MVP1 실기기 피드백 반영: 상호작용 모델 정리, 위치 UX, 모드 표시, 스로틀 완화.
