@@ -4,14 +4,20 @@ import Foundation
 /// 라우팅 호출 수를 제한해 스로틀을 피하고, 시작/끝 좌표는 항상 보존한다.
 enum DrawnPathSampler {
     static func sample(_ raw: [CourseCoordinate], minSpacingMeters: Double = 120) -> [CourseCoordinate] {
-        guard var last = raw.first else { return [] }
-        var result = [last]
-        for point in raw.dropFirst() where last.distanceMeters(to: point) >= minSpacingMeters {
-            result.append(point)
-            last = point
+        guard let first = raw.first else { return [] }
+        var result = [first]
+        var accumulated = 0.0
+        var prev = first
+        for point in raw.dropFirst() {
+            accumulated += prev.distanceMeters(to: point)
+            if accumulated >= minSpacingMeters {
+                result.append(point)
+                accumulated = 0.0
+            }
+            prev = point
         }
-        if let actualLast = raw.last, actualLast != last {
-            result.append(actualLast)
+        if let last = raw.last, last != result.last {
+            result.append(last)
         }
         return result
     }

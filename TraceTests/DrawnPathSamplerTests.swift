@@ -29,4 +29,56 @@ final class DrawnPathSamplerTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(result[i].distanceMeters(to: result[i + 1]), 120)
         }
     }
+
+    func testLoopStrokeNotCollapsedToTwoPoints() {
+        // 반지름 ~55m 원 (둘레 ≈ 346m) — 30도 간격 12포인트
+        // 누적거리 기반이면 ≥3개 포인트가 나와야 함
+        // 기존 구현(직선거리)에서는 원의 지름(~110m) < 120m이므로 [시작, 끝] 2개만 나옴
+        let loop = makeCircleCoordinates(
+            center: CourseCoordinate(latitude: 37.5, longitude: 127.0),
+            radiusLatOffset: 0.0005,
+            stepDegrees: 30
+        )
+        let result = DrawnPathSampler.sample(loop, minSpacingMeters: 120)
+        XCTAssertGreaterThan(result.count, 2,
+            "루프 획은 시작/끝 2개로 축소되어서는 안 됩니다. 실제 count: \(result.count)")
+        XCTAssertEqual(result.first, loop.first, "시작점은 항상 보존")
+        XCTAssertEqual(result.last, loop.last, "끝점은 항상 보존")
+    }
+
+    func testCumulativeDistancePreservesStrokeOrder() {
+        let loop = makeCircleCoordinates(
+            center: CourseCoordinate(latitude: 37.5, longitude: 127.0),
+            radiusLatOffset: 0.0005,
+            stepDegrees: 30
+        )
+        let result = DrawnPathSampler.sample(loop, minSpacingMeters: 120)
+        // 결과 포인트들이 원본 배열에서 단조증가 인덱스로 등장해야 함
+        var lastIndex = -1
+        for point in result {
+            if let idx = loop.firstIndex(of: point) {
+                XCTAssertGreaterThan(idx, lastIndex,
+                    "샘플 포인트가 원본 획의 순서를 따라야 합니다")
+                lastIndex = idx
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func makeCircleCoordinates(
+        center: CourseCoordinate,
+        radiusLatOffset: Double,
+        stepDegrees: Double
+    ) -> [CourseCoordinate] {
+        // longitude 보정: 위도에 따라 경도 1도의 실제 거리가 줄어드므로 보정
+        let lonScale = cos(center.latitude * .pi / 180)
+        return stride(from: 0.0, to: 360.0, by: stepDegrees).map { angle in
+            let rad = angle * .pi / 180
+            return CourseCoordinate(
+                latitude: center.latitude + radiusLatOffset * cos(rad),
+                longitude: center.longitude + (radiusLatOffset / lonScale) * sin(rad)
+            )
+        }
+    }
 }
