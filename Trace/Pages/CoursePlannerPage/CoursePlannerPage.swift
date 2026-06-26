@@ -3,14 +3,12 @@ import SwiftUI
 
 struct CoursePlannerPage: View {
     @State var viewModel: CoursePlannerPageViewModel
-    @State private var cameraPosition: MapCameraPosition = .region(MKCoordinateRegion(
+    @State private var cameraRegion: MKCoordinateRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.5666, longitude: 126.9784),
         latitudinalMeters: 500,
         longitudinalMeters: 500
-    ))
-    @State private var currentStroke: [CourseCoordinate] = []
+    )
     @State private var currentStrokePoints: [CGPoint] = []
-    @State private var lastCameraRegion: MKCoordinateRegion?
     @Environment(\.scenePhase) private var scenePhase
 
     private let cameraStateStore: CameraStateStore
@@ -38,26 +36,22 @@ struct CoursePlannerPage: View {
                 statusPanel
             }
             .task {
-                // 저장된 카메라 복원 (즉시, 점프 없음)
                 if let bounds = cameraStateStore.restore() {
-                    cameraPosition = .region(MKCoordinateRegion(
+                    cameraRegion = MKCoordinateRegion(
                         center: CLLocationCoordinate2D(latitude: bounds.latitude, longitude: bounds.longitude),
                         latitudinalMeters: bounds.latitudinalMeters,
                         longitudinalMeters: bounds.longitudinalMeters
-                    ))
+                    )
                 }
 
                 await viewModel.bootstrapLocation()
 
-                // 저장된 카메라가 없었던 경우(첫 실행)에만 위치로 이동
                 if let center = viewModel.initialCameraCoordinate {
-                    withAnimation {
-                        cameraPosition = .region(MKCoordinateRegion(
-                            center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
-                            latitudinalMeters: 500,
-                            longitudinalMeters: 500
-                        ))
-                    }
+                    cameraRegion = MKCoordinateRegion(
+                        center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
+                        latitudinalMeters: 500,
+                        longitudinalMeters: 500
+                    )
                 }
             }
             .onChange(of: scenePhase) { _, newPhase in
@@ -76,103 +70,101 @@ struct CoursePlannerPage: View {
     }
 
     private var mapView: some View {
-        MapReader { proxy in
-            Map(position: $cameraPosition, interactionModes: viewModel.isDrawingMode ? [] : .all) {
-                UserAnnotation()
-
-                if let course = viewModel.course {
-                    MapPolyline(coordinates: course.coordinates.map(CLLocationCoordinate2D.init))
-                        .stroke(.blue, lineWidth: 6)
-                }
-
-                // 탭 모드: startCoordinate/destinationCoordinate 기반
-                if viewModel.interactionMode == .tap {
-                    if let start = viewModel.startCoordinate {
-                        Marker("출발", systemImage: "figure.run", coordinate: CLLocationCoordinate2D(start))
-                            .tint(.green)
-                    }
-                    if let destination = viewModel.destinationCoordinate {
-                        Marker("도착", systemImage: "flag.checkered", coordinate: CLLocationCoordinate2D(destination))
-                            .tint(.red)
-                    }
-                }
-
-                // 그리기 모드: course의 첫/끝 좌표 기반
-                if viewModel.interactionMode == .draw, let course = viewModel.course,
-                   let first = course.coordinates.first, let last = course.coordinates.last {
-                    Marker("출발", systemImage: "figure.run", coordinate: CLLocationCoordinate2D(first))
-                        .tint(.green)
-                    Marker("도착", systemImage: "flag.checkered", coordinate: CLLocationCoordinate2D(last))
-                        .tint(.red)
-                }
+        MapViewRepresentable(
+            region: $cameraRegion,
+            overlayCoordinates: overlayCoordinates,
+            pins: mapPins,
+            isDrawingMode: viewModel.isDrawingMode,
+            onStrokeUpdate: { points in currentStrokePoints = points },
+            onStrokeEnded: { stroke in Task { await viewModel.appendStroke(stroke) } },
+            onMapTap: { coord in Task { await viewModel.handleMapTap(at: coord) } }
+        )
+        .overlay {
+            Canvas { context, _ in
+                guard currentStrokePoints.count > 1 else { return }
+                var path = Path()
+                path.addLines(currentStrokePoints)
+                context.stroke(path, with: .color(.orange), lineWidth: 4)
             }
-            .onMapCameraChange(frequency: .onEnd) { context in
-                lastCameraRegion = context.region
-            }
-            .overlay {
-                Canvas { context, _ in
-                    guard currentStrokePoints.count > 1 else { return }
-                    var path = Path()
-                    path.addLines(currentStrokePoints)
-                    context.stroke(path, with: .color(.orange), lineWidth: 4)
-                }
-                .contentShape(Rectangle())
-                .allowsHitTesting(viewModel.isDrawingMode)
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            currentStrokePoints.append(value.location)
-                            if let coord = proxy.convert(value.location, from: .local) {
-                                currentStroke.append(CourseCoordinate(coord))
-                            }
-                        }
-                        .onEnded { _ in
-                            let stroke = currentStroke
-                            currentStroke = []
-                            currentStrokePoints = []
-                            Task { await viewModel.appendStroke(stroke) }
-                        }
-                )
-            }
-            .overlay(alignment: .bottomTrailing) {
-                Button {
-                    Task {
-                        if let location = await viewModel.recenterToCurrentLocation() {
-                            cameraPosition = .region(MKCoordinateRegion(
-                                center: CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude),
-                                latitudinalMeters: 100,
-                                longitudinalMeters: 100
-                            ))
-                        }
+            .allowsHitTesting(false)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            Button {
+                Task {
+                    if let location = await viewModel.recenterToCurrentLocation() {
+                        cameraRegion = MKCoordinateRegion(
+                            center: CLLocationCoordinate2D(
+                                latitude: location.latitude,
+                                longitude: location.longitude
+                            ),
+                            latitudinalMeters: 100,
+                            longitudinalMeters: 100
+                        )
                     }
-                } label: {
-                    Image(systemName: "location.fill")
-                        .font(.title2)
-                        .padding(12)
-                        .background(.regularMaterial, in: Circle())
                 }
-                .padding()
+            } label: {
+                Image(systemName: "location.fill")
+                    .font(.title2)
+                    .padding(12)
+                    .background(.regularMaterial, in: Circle())
             }
-            .gesture(
-                SpatialTapGesture()
-                    .onEnded { value in
-                        guard viewModel.isDrawingMode == false else { return }
-                        guard let coordinate = proxy.convert(value.location, from: .local) else { return }
-                        Task {
-                            await viewModel.handleMapTap(at: CourseCoordinate(coordinate))
-                        }
-                    }
-            )
+            .padding()
         }
     }
 
+    private var overlayCoordinates: [CLLocationCoordinate2D] {
+        viewModel.course?.coordinates.map {
+            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+        } ?? []
+    }
+
+    private var mapPins: [MapPin] {
+        var pins: [MapPin] = []
+        if viewModel.interactionMode == .tap {
+            if let start = viewModel.startCoordinate {
+                pins.append(MapPin(
+                    coordinate: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude),
+                    title: "출발",
+                    color: .systemGreen,
+                    systemImage: "figure.run"
+                ))
+            }
+            if let destination = viewModel.destinationCoordinate {
+                pins.append(MapPin(
+                    coordinate: CLLocationCoordinate2D(latitude: destination.latitude, longitude: destination.longitude),
+                    title: "도착",
+                    color: .systemRed,
+                    systemImage: "flag.checkered"
+                ))
+            }
+        } else if viewModel.interactionMode == .draw, let course = viewModel.course {
+            if let first = course.coordinates.first {
+                pins.append(MapPin(
+                    coordinate: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
+                    title: "출발",
+                    color: .systemGreen,
+                    systemImage: "figure.run"
+                ))
+            }
+            if let last = course.coordinates.last {
+                pins.append(MapPin(
+                    coordinate: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude),
+                    title: "도착",
+                    color: .systemRed,
+                    systemImage: "flag.checkered"
+                ))
+            }
+        }
+        return pins
+    }
+
     private func saveCameraPosition() {
-        guard let region = lastCameraRegion else { return }
         cameraStateStore.save(
-            latitude: region.center.latitude,
-            longitude: region.center.longitude,
-            latitudinalMeters: region.span.latitudeDelta * 111_000,
-            longitudinalMeters: region.span.longitudeDelta * 111_000 * cos(region.center.latitude * .pi / 180)
+            latitude: cameraRegion.center.latitude,
+            longitude: cameraRegion.center.longitude,
+            latitudinalMeters: cameraRegion.span.latitudeDelta * 111_000,
+            longitudinalMeters: cameraRegion.span.longitudeDelta * 111_000
+                * cos(cameraRegion.center.latitude * .pi / 180)
         )
     }
 
@@ -209,14 +201,3 @@ struct CoursePlannerPage: View {
     )
 }
 
-private extension CLLocationCoordinate2D {
-    init(_ coordinate: CourseCoordinate) {
-        self.init(latitude: coordinate.latitude, longitude: coordinate.longitude)
-    }
-}
-
-private extension CourseCoordinate {
-    init(_ coordinate: CLLocationCoordinate2D) {
-        self.init(latitude: coordinate.latitude, longitude: coordinate.longitude)
-    }
-}
