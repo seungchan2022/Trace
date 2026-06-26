@@ -75,7 +75,8 @@ struct MapViewRepresentable: UIViewRepresentable {
             .compactMap { $0 as? ColoredPinAnnotation }
         let pinsChanged = existing.count != pins.count ||
             zip(existing, pins).contains { ann, pin in
-                abs(ann.coordinate.latitude - pin.coordinate.latitude) > 0.00001
+                abs(ann.coordinate.latitude - pin.coordinate.latitude) > 0.00001 ||
+                abs(ann.coordinate.longitude - pin.coordinate.longitude) > 0.00001
             }
         if pinsChanged {
             uiView.removeAnnotations(uiView.annotations.filter { !($0 is MKUserLocation) })
