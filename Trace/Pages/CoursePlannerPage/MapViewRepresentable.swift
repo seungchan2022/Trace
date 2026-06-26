@@ -73,6 +73,7 @@ struct MapViewRepresentable: UIViewRepresentable {
             target: context.coordinator,
             action: #selector(Coordinator.handleTap(_:))
         )
+        tapGR.isEnabled = !isDrawingMode
         mapView.addGestureRecognizer(tapGR)
         context.coordinator.tapGestureRecognizer = tapGR
 
@@ -90,9 +91,20 @@ struct MapViewRepresentable: UIViewRepresentable {
             uiView.setRegion(region, animated: true)
         }
 
-        // Overlays: 좌표 수가 달라질 때만 교체
-        let existingCount = uiView.overlays.compactMap { $0 as? MKPolyline }.first?.pointCount ?? 0
-        if existingCount != overlayCoordinates.count {
+        // Overlays: count + 첫/끝 좌표가 달라질 때만 교체
+        let existingPolyline = uiView.overlays.compactMap { $0 as? MKPolyline }.first
+        let needsOverlayUpdate: Bool = {
+            guard let existingPolyline, existingPolyline.pointCount == overlayCoordinates.count,
+                  !overlayCoordinates.isEmpty else {
+                return (existingPolyline?.pointCount ?? 0) != overlayCoordinates.count
+            }
+            let pts = existingPolyline.points()
+            let first = pts[0].coordinate
+            let last = pts[existingPolyline.pointCount - 1].coordinate
+            return abs(first.latitude - overlayCoordinates[0].latitude) > 0.00001 ||
+                abs(last.latitude - overlayCoordinates[overlayCoordinates.count - 1].latitude) > 0.00001
+        }()
+        if needsOverlayUpdate {
             uiView.removeOverlays(uiView.overlays)
             if !overlayCoordinates.isEmpty {
                 var coords = overlayCoordinates
@@ -185,6 +197,8 @@ extension MapViewRepresentable {
                 currentStrokeCoords.append(coord)
                 parent.onStrokeUpdate(currentStrokePoints)
             case .ended, .cancelled:
+                currentStrokePoints.append(point)
+                currentStrokeCoords.append(coord)
                 let stroke = currentStrokeCoords
                 currentStrokePoints = []
                 currentStrokeCoords = []
