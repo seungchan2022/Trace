@@ -36,6 +36,10 @@ struct MapViewRepresentable: UIViewRepresentable {
     @Binding var region: MKCoordinateRegion
     var overlayCoordinates: [CLLocationCoordinate2D]
     var pins: [MapPin]
+    var isDrawingMode: Bool
+    var onStrokeUpdate: ([CGPoint]) -> Void
+    var onStrokeEnded: ([CourseCoordinate]) -> Void
+    var onMapTap: ((CourseCoordinate) -> Void)?
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -46,6 +50,32 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.delegate = context.coordinator
         mapView.showsUserLocation = true
         mapView.setRegion(region, animated: false)
+
+        // MKMapView 기본 1손가락 팬을 2손가락으로 변경 → 1손가락 드로우와 충돌 방지
+        for gr in mapView.gestureRecognizers ?? [] {
+            if let pan = gr as? UIPanGestureRecognizer {
+                pan.minimumNumberOfTouches = 2
+            }
+        }
+
+        // 드로우 제스처: 1손가락 최대, 초기엔 비활성화
+        let drawGR = UIPanGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleDraw(_:))
+        )
+        drawGR.maximumNumberOfTouches = 1
+        drawGR.isEnabled = false
+        mapView.addGestureRecognizer(drawGR)
+        context.coordinator.drawGestureRecognizer = drawGR
+
+        // 탭 제스처
+        let tapGR = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleTap(_:))
+        )
+        mapView.addGestureRecognizer(tapGR)
+        context.coordinator.tapGestureRecognizer = tapGR
+
         return mapView
     }
 
@@ -89,6 +119,10 @@ struct MapViewRepresentable: UIViewRepresentable {
                 ))
             }
         }
+
+        // 제스처 모드 동기화
+        context.coordinator.drawGestureRecognizer?.isEnabled = isDrawingMode
+        context.coordinator.tapGestureRecognizer?.isEnabled = !isDrawingMode
     }
 }
 
@@ -128,6 +162,48 @@ extension MapViewRepresentable {
 
         func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
             parent.region = mapView.region
+        }
+
+        // MARK: Gesture State
+
+        weak var drawGestureRecognizer: UIPanGestureRecognizer?
+        weak var tapGestureRecognizer: UITapGestureRecognizer?
+        private var currentStrokePoints: [CGPoint] = []
+        private var currentStrokeCoords: [CourseCoordinate] = []
+
+        // MARK: Draw
+
+        @objc func handleDraw(_ recognizer: UIPanGestureRecognizer) {
+            guard let mapView = recognizer.view as? MKMapView else { return }
+            let point = recognizer.location(in: mapView)
+            let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
+            let coord = CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude)
+
+            switch recognizer.state {
+            case .began, .changed:
+                currentStrokePoints.append(point)
+                currentStrokeCoords.append(coord)
+                parent.onStrokeUpdate(currentStrokePoints)
+            case .ended, .cancelled:
+                let stroke = currentStrokeCoords
+                currentStrokePoints = []
+                currentStrokeCoords = []
+                parent.onStrokeUpdate([])
+                if stroke.count >= 2 {
+                    parent.onStrokeEnded(stroke)
+                }
+            default:
+                break
+            }
+        }
+
+        // MARK: Tap
+
+        @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
+            guard let mapView = recognizer.view as? MKMapView else { return }
+            let point = recognizer.location(in: mapView)
+            let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
+            parent.onMapTap?(CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude))
         }
     }
 }
