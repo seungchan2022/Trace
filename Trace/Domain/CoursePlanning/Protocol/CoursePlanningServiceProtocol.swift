@@ -19,7 +19,9 @@ extension CoursePlanningServiceProtocol {
             coordinates.append(contentsOf: coordinates.isEmpty ? leg.coordinates : Array(leg.coordinates.dropFirst()))
             distance += leg.distanceMeters
         }
-        return PlannedCourse(coordinates: coordinates, distanceMeters: distance)
+        return PlannedCourse(
+            segments: [.drawn(coordinates: coordinates, distanceMeters: distance)]
+        )
     }
 
     private func routeWithRetry(

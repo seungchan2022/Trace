@@ -50,7 +50,9 @@ private final class SpyMapKitService: CoursePlanningServiceProtocol {
         let key = cacheKey(from: start, to: destination)
         if let cached = cache[key] { return cached }
         apiCallCount += 1
-        let result = PlannedCourse(coordinates: [start, destination], distanceMeters: 100)
+        let result = PlannedCourse(
+            segments: [.tapped(coordinates: [start, destination], distanceMeters: 100)]
+        )
         cache[key] = result
         return result
     }

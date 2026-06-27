@@ -175,11 +175,13 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
 
         // 4) 게이트 열기 → route가 결과를 반환하지만 세대 불일치로 적용되지 않아야 함
         let staleCourse = PlannedCourse(
-            coordinates: [
-                CourseCoordinate(latitude: 37.50, longitude: 127.00),
-                CourseCoordinate(latitude: 37.51, longitude: 127.00),
-            ],
-            distanceMeters: 500
+            segments: [.drawn(
+                coordinates: [
+                    CourseCoordinate(latitude: 37.50, longitude: 127.00),
+                    CourseCoordinate(latitude: 37.51, longitude: 127.00),
+                ],
+                distanceMeters: 500
+            )]
         )
         gatedService.openGate(returning: staleCourse)
 
@@ -242,8 +244,7 @@ private final class FakeCoursePlanningService: CoursePlanningServiceProtocol {
         }
 
         return PlannedCourse(
-            coordinates: [start, destination],
-            distanceMeters: 1200
+            segments: [.tapped(coordinates: [start, destination], distanceMeters: 1200)]
         )
     }
 }

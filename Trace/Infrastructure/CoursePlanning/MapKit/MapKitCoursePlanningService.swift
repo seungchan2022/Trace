@@ -33,8 +33,10 @@ final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
             )
 
             let result = PlannedCourse(
-                coordinates: coordinates.map(CourseCoordinate.init),
-                distanceMeters: route.distance
+                segments: [.tapped(
+                    coordinates: coordinates.map(CourseCoordinate.init),
+                    distanceMeters: route.distance
+                )]
             )
             cache[key] = result
             return result

@@ -35,15 +35,17 @@ private final class UITestingCoursePlanningService: CoursePlanningServiceProtoco
         }
 
         return PlannedCourse(
-            coordinates: [
-                start,
-                CourseCoordinate(
-                    latitude: (start.latitude + destination.latitude) / 2 + 0.001,
-                    longitude: (start.longitude + destination.longitude) / 2
-                ),
-                destination
-            ],
-            distanceMeters: 1200
+            segments: [.tapped(
+                coordinates: [
+                    start,
+                    CourseCoordinate(
+                        latitude: (start.latitude + destination.latitude) / 2 + 0.001,
+                        longitude: (start.longitude + destination.longitude) / 2
+                    ),
+                    destination
+                ],
+                distanceMeters: 1200
+            )]
         )
     }
 }

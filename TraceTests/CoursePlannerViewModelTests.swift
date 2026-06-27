@@ -303,8 +303,7 @@ private final class StubCoursePlanningService: CoursePlanningServiceProtocol {
         routeCallCount += 1
         if let error = stubbedError { throw error }
         return stubbedResult ?? PlannedCourse(
-            coordinates: [start, destination],
-            distanceMeters: 100
+            segments: [.tapped(coordinates: [start, destination], distanceMeters: 100)]
         )
     }
 }
@@ -324,7 +323,9 @@ private final class BlockingCoursePlanningService: CoursePlanningServiceProtocol
             routeReleaseContinuation = continuation
         }
 
-        return PlannedCourse(coordinates: [start, destination], distanceMeters: 100)
+        return PlannedCourse(
+            segments: [.tapped(coordinates: [start, destination], distanceMeters: 100)]
+        )
     }
 
     func waitUntilRouteEntered() async {

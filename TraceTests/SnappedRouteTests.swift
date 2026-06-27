@@ -72,6 +72,8 @@ private final class StubLegService: CoursePlanningServiceProtocol {
             shouldFailNext = false
             throw CoursePlanningError.requestFailed
         }
-        return PlannedCourse(coordinates: [start, destination], distanceMeters: 100)
+        return PlannedCourse(
+            segments: [.tapped(coordinates: [start, destination], distanceMeters: 100)]
+        )
     }
 }

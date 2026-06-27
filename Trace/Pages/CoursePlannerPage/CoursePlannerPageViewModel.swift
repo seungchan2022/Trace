@@ -102,6 +102,7 @@ final class CoursePlannerPageViewModel {
             strokeEntries = []
             accumulatedCoordinates = []
             accumulatedDistance = 0
+            course = nil
             errorMessage = nil
             interactionMode = .tap
         }
@@ -241,7 +242,9 @@ final class CoursePlannerPageViewModel {
             )
             strokeEntries.append(entry)
 
-            course = PlannedCourse(coordinates: accumulatedCoordinates, distanceMeters: accumulatedDistance)
+            course = PlannedCourse(
+                segments: [.drawn(coordinates: accumulatedCoordinates, distanceMeters: accumulatedDistance)]
+            )
         } catch CoursePlanningError.throttled {
             guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "요청이 많아 잠시 후 다시 시도해주세요"
