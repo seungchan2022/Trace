@@ -93,7 +93,6 @@ final class CoursePlannerPageViewModel {
             recomputeGeneration += 1
             startCoordinate = nil
             destinationCoordinate = nil
-            course = nil
             errorMessage = nil
             isLoading = false
             interactionMode = .draw
@@ -103,7 +102,6 @@ final class CoursePlannerPageViewModel {
             strokeEntries = []
             accumulatedCoordinates = []
             accumulatedDistance = 0
-            course = nil
             errorMessage = nil
             interactionMode = .tap
         }

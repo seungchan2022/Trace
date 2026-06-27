@@ -97,8 +97,8 @@ struct CoursePlannerPage: View {
                                 latitude: location.latitude,
                                 longitude: location.longitude
                             ),
-                            latitudinalMeters: 100,
-                            longitudinalMeters: 100
+                            latitudinalMeters: 500,
+                            longitudinalMeters: 500
                         )
                     }
                 }
