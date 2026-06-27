@@ -18,6 +18,15 @@ Tool-specific (thin adapters; each tool only reads its own):
 - Slash-command location: Codex `~/.codex/prompts/` (copied in); Claude Code `.claude/commands/` (symlinked to `docs/prompts/`, committed).
 - Memory and MCP config: per-tool, not shared. See `setup-codex.md` / `setup-claude.md` under `docs/prompts/`.
 
+## Claude Code 오토컴팩트 복구 설정
+
+컨텍스트가 넘쳐 자동 컴팩션이 발생할 때 작업 맥락이 유실되지 않도록 두 가지 장치를 `.claude/`에 설정한다:
+
+- **`.claude/settings.json` — PreCompact 훅**: 컴팩션 직전 트랜스크립트를 `~/.claude/backups/trace-<timestamp>.jsonl`로 백업. 컴팩션 후 원본 대화를 복원할 수 있다.
+- **`.claude/settings.local.json` — `compactPrompt`**: 컴팩션 요약 생성 시 Claude에게 보존 지침을 주입. 브랜치명, 플랜 체크박스 진행률, 수정 파일 목록, 사용자 피드백, 실패한 접근법 5개 항목을 요약에 반드시 포함하도록 지시한다.
+
+`settings.local.json`은 Claude Code 스키마 검증 우회를 위해 분리되어 있다 (`compactPrompt` 필드가 프로젝트 레벨 `settings.json`의 Edit 도구 검증을 통과하지 못하는 버그 회피). 커밋해서 세션 간 유지한다.
+
 Edit shared files to change behavior for both tools; touch a tool-specific
 adapter only to wire a tool up.
 

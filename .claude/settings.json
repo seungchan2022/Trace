@@ -12,5 +12,17 @@
       "Bash(git reset --hard*)",
       "Edit(.env*)"
     ]
+  },
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BACKUP_DIR=\"${CLAUDE_BACKUP_DIR:-$HOME/.claude/backups}\"; mkdir -p \"$BACKUP_DIR\" && cp \"$CLAUDE_TRANSCRIPT_PATH\" \"$BACKUP_DIR/trace-$(date +%s).jsonl\" 2>/dev/null; echo '💾 대화 백업 완료'"
+          }
+        ]
+      }
+    ]
   }
 }
