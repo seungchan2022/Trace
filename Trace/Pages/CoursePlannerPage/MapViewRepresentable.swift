@@ -151,6 +151,8 @@ struct MapViewRepresentable: UIViewRepresentable {
         if wasDrawing != isDrawingMode {
             uiView.isScrollEnabled = !isDrawingMode
             uiView.isZoomEnabled = !isDrawingMode
+            uiView.isPitchEnabled = !isDrawingMode
+            uiView.isRotateEnabled = !isDrawingMode
             context.coordinator.drawGestureRecognizer?.isEnabled = isDrawingMode
             context.coordinator.twoFingerPanGestureRecognizer?.isEnabled = isDrawingMode
             context.coordinator.pinchGestureRecognizer?.isEnabled = isDrawingMode
@@ -260,8 +262,8 @@ extension MapViewRepresentable {
                 let latPerPoint = region.span.latitudeDelta / mapView.bounds.height
                 let lonPerPoint = region.span.longitudeDelta / mapView.bounds.width
                 let newCenter = CLLocationCoordinate2D(
-                    latitude: startCenter.latitude - translation.y * latPerPoint,
-                    longitude: startCenter.longitude + translation.x * lonPerPoint
+                    latitude: startCenter.latitude + translation.y * latPerPoint,
+                    longitude: startCenter.longitude - translation.x * lonPerPoint
                 )
                 let newRegion = MKCoordinateRegion(center: newCenter, span: region.span)
                 mapView.setRegion(newRegion, animated: false)
