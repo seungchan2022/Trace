@@ -103,6 +103,7 @@ When creating a PR later, include:
 
 - `.githooks/pre-commit`: main 직접 커밋 차단, 시크릿 파일 감지, force unwrap/cast/try 차단, verification stamp 검증
 - `.githooks/commit-msg`: 커밋 메시지 형식 검증, Co-Authored-By 차단
+- `.githooks/pre-merge-commit`: 머지 커밋 차단 — --no-ff 시도 시 rebase + --ff-only 흐름을 안내하고 종료
 - `.swiftlint.yml`: makes force unwrap/cast/try and implicitly unwrapped optionals lint errors
 
 Enable hooks with:
