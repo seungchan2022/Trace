@@ -179,13 +179,14 @@ struct CoursePlannerPage: View {
                     .accessibilityIdentifier("coursePlanner.error")
             } else if let distanceText = viewModel.distanceText {
                 Text(distanceText)
-                    .font(.title2.weight(.semibold))
+                    .fontWeight(.semibold)
                     .accessibilityIdentifier("coursePlanner.distance")
             } else {
                 Text(viewModel.isDrawingMode ? "경로를 그려주세요" : "지도에서 출발지를 선택하세요")
                     .accessibilityIdentifier("coursePlanner.prompt")
             }
         }
+        .font(.body)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(.regularMaterial)
