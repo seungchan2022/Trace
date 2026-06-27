@@ -78,7 +78,7 @@ final class CoursePlannerPageViewModel {
         if startCoordinate == nil || destinationCoordinate != nil {
             startCoordinate = coordinate
             destinationCoordinate = nil
-            course = nil
+            course = history.isEmpty ? nil : PlannedCourse(segments: history)
             errorMessage = nil
             isLoading = false
             return
@@ -189,12 +189,16 @@ final class CoursePlannerPageViewModel {
         let generation = recomputeGeneration
         isLoading = true
         errorMessage = nil
-        course = nil
+        course = history.isEmpty ? nil : PlannedCourse(segments: history)
 
         do {
             let route = try await coursePlanningService.route(from: startCoordinate, to: destinationCoordinate)
             guard generation == recomputeGeneration else { isLoading = false; return }
-            course = route
+            let tap = CourseSegment.tapped(
+                coordinates: route.coordinates,
+                distanceMeters: route.distanceMeters
+            )
+            course = PlannedCourse(segments: history + [tap])
         } catch CoursePlanningError.routeNotFound {
             guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "도보 경로를 찾을 수 없습니다."
@@ -265,9 +269,11 @@ final class CoursePlannerPageViewModel {
             )
             strokeEntries.append(entry)
 
-            course = PlannedCourse(
-                segments: [.drawn(coordinates: accumulatedCoordinates, distanceMeters: accumulatedDistance)]
+            let drawn = CourseSegment.drawn(
+                coordinates: accumulatedCoordinates,
+                distanceMeters: accumulatedDistance
             )
+            course = PlannedCourse(segments: history + [drawn])
         } catch CoursePlanningError.throttled {
             guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "요청이 많아 잠시 후 다시 시도해주세요"
