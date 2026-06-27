@@ -16,15 +16,20 @@
 
 - [x] **앱 시작 시 카메라 점프 제거** — MVP3에서 해결: UserDefaults 카메라 저장/복원 + 서울시청 초기값 + 백그라운드 저장. `done`
 - [x] **비연속 구간 그리기 시 이상한 결과** — MVP3에서 해결: 4쌍 거리 비교 자동 방향 감지 + 스트로크 reverse + 증분 계산. `done`
-- [ ] **그리기 중 지도 이동 UX** — *where:* 그리기 모드 / *now:* SwiftUI Map 위 오버레이로는 2손가락 제스처를 Map으로 전달할 수 없음 (hit-test 소유권 문제) / *desired:* SwiftUI Map을 MKMapView(UIViewRepresentable)로 교체하고 그리기 제스처를 MapView에 직접 부착. `require(toFail:)`로 1손가락=그리기, 2손가락=지도 이동 분리. 리서치 완료. `open`
+- [x] **그리기 중 지도 이동 UX** — MVP4에서 해결: MKMapView(UIViewRepresentable) 마이그레이션 + isScrollEnabled/isZoomEnabled 토글 + 커스텀 2손가락pan/pinch GR. 2손가락 핀치 UX는 개선 여지 있음(아래 백로그). `done`
 - [x] **스로틀 한계 측정 + 모니터링** — MVP3에서 해결: 증분 계산(새 구간만 라우팅) + `.throttled` 에러 감지 + 사용자 안내 메시지. `done`
 
 ## MVP3 (2026-06-25) 실기기 피드백
 
-- [ ] **스로틀 에러 메시지 미표시** — *where:* 빠른 연속 그리기 / *now:* `GEOErrorDomain Code=-3` 감지가 실제 기기에서 작동하지 않을 수 있음 (MKErrorDomain/MKError.loadingThrottled도 추가했으나 미확인) / *desired:* 실제 스로틀 에러의 domain/code를 디버그 로그로 확인 후 정확한 감지 적용. `open`
+- [x] **스로틀 에러 메시지 미표시** — MVP4에서 확인: 실기기 로그가 `GEOErrorDomain Code=-3`이고 isThrottled 조건에 이미 포함되어 있음. 에러 메시지 정상 표시 확인. `done`
 
 ## 기술부채
 
 - [x] **MKDirections 스로틀 완화** — MVP3에서 해결: 증분 계산으로 기존 구간 재호출 제거. 근본책(맵매칭 제공자)은 여전히 미래 옵션. `done`
 - [ ] **테스트 시뮬레이터 iOS 버전 전략** — *now:* iOS 18.5에서 `@Observable` malloc 크래시 발생해 iOS 26.5로 우회 중 / *desired:* 최소 지원 버전(iOS 17) 근처 런타임에서도 테스트. iOS 17 런타임 설치 또는 배포 전 멀티버전 테스트 전략 결정 필요. 상세: `docs/solutions/workflow-issues/ios18-observable-malloc-crash.md`. `open`
-- [ ] **SwiftUI Map → MKMapView 교체** — *now:* SwiftUI Map은 내부 UIKit 제스처에 접근 불가, 오버레이 제스처 전달 불가 / *desired:* MKMapView를 UIViewRepresentable로 래핑, 그리기 제스처를 MapView에 직접 부착. MapPolyline/Marker/UserAnnotation을 MKOverlay/MKAnnotation delegate 방식으로 전환. 리서치: `docs/solutions/` 참고. `open`
+- [x] **SwiftUI Map → MKMapView 교체** — MVP4에서 해결: MKMapView(UIViewRepresentable) 마이그레이션 완료, MKOverlay/MKAnnotation delegate 방식으로 전환. `done`
+
+## MVP4 (2026-06-27) 실기기 피드백
+
+- [ ] **핀치 줌 UX 개선** — *where:* 그리기 모드 / *now:* 커스텀 UIPinchGestureRecognizer로 구현했으나 내장 MKMapView 핀치보다 부자연스러움 / *desired:* 내장 MKMapView 핀치와 동등한 감도·가속도 구현 또는 대안 탐색. `open`
+- [ ] **탭↔그리기 경로 이어붙이기** — *where:* CoursePlannerPage / *now:* 탭 모드(A→B 단일 경로)와 그리기 모드(스트로크 누적) 경로가 독립적. 모드 전환 시 경로 오버레이는 유지되지만 실제 이어붙이기는 안 됨 / *desired:* 탭으로 A→B 생성 후 그리기로 B→C 연장 (또는 반대 방향). course 데이터 모델을 세그먼트 배열로 확장하고 각 세그먼트를 append하는 방식으로 구조 변경 필요. `open`
