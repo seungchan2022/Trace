@@ -20,10 +20,7 @@ extension CoursePlannerPage {
             }
 
             Button("초기화") { viewModel.clear() }
-                .disabled(
-                    viewModel.startCoordinate == nil
-                    && viewModel.drawnStrokes.isEmpty
-                )
+                .disabled(viewModel.course == nil && viewModel.startCoordinate == nil)
                 .accessibilityIdentifier("coursePlanner.clear")
         }
         .buttonStyle(.borderedProminent)

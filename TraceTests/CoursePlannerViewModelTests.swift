@@ -181,6 +181,49 @@ final class CoursePlannerViewModelTests: XCTestCase {
         }
     }
 
+    // MARK: - Undo with history
+
+    func testUndoAllStrokesRestoresHistory() async {
+        let sut = makeSUT()
+        // tap A→B
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        let tapDistance = sut.course?.distanceMeters ?? 0
+
+        // draw B→C
+        sut.toggleDrawingMode()
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+            CourseCoordinate(latitude: 37.52, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        // undo drawn stroke
+        await sut.undoLastStroke()
+
+        // history(탭 경로)만 남아야 함
+        XCTAssertTrue(sut.drawnStrokes.isEmpty)
+        // course는 history(탭) 기반으로 존재해야 함
+        XCTAssertNotNil(sut.course)
+        XCTAssertEqual(sut.course?.distanceMeters ?? 0, tapDistance, accuracy: 1)
+    }
+
+    func testClearAlsoResetsHistory() async {
+        let sut = makeSUT()
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        sut.toggleDrawingMode()
+        XCTAssertNotNil(sut.course)
+
+        sut.clear()
+
+        XCTAssertNil(sut.course)
+        XCTAssertNil(sut.startCoordinate)
+        XCTAssertTrue(sut.drawnStrokes.isEmpty)
+    }
+
     func testUndoRemovesLastAddedStroke() async {
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),

@@ -149,7 +149,10 @@ final class CoursePlannerPageViewModel {
         if strokeEntries.isEmpty {
             accumulatedCoordinates = []
             accumulatedDistance = 0
-            course = nil
+            if let lastCoord = history.last?.coordinates.last {
+                accumulatedCoordinates = [lastCoord]
+            }
+            course = history.isEmpty ? nil : PlannedCourse(segments: history)
             errorMessage = nil
         } else {
             // 전체 재계산 — drawnStrokes를 순회하여 재구축 (double-sampling 방지)
@@ -159,7 +162,10 @@ final class CoursePlannerPageViewModel {
             strokeEntries = []
             accumulatedCoordinates = []
             accumulatedDistance = 0
-            course = nil
+            if let lastCoord = history.last?.coordinates.last {
+                accumulatedCoordinates = [lastCoord]
+            }
+            course = history.isEmpty ? nil : PlannedCourse(segments: history)
             errorMessage = nil
 
             for stroke in savedStrokes {
@@ -171,6 +177,7 @@ final class CoursePlannerPageViewModel {
 
     func clear() {
         recomputeGeneration += 1
+        history = []
         startCoordinate = nil
         destinationCoordinate = nil
         drawnStrokes = []
