@@ -23,6 +23,20 @@
 
 ---
 
+## MVP4 — MKMapView 마이그레이션 + 드로우 정밀도 (2026-06-26 ~ 06-27)
+
+> SwiftUI Map 제스처 한계 해결: MKMapView(UIViewRepresentable) 교체 + 드로우/탭/2손가락 제스처 재설계. DrawnPathSampler 루프 경로 버그 수정(누적거리 기반). 마일스톤 2개.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [MVP4 설계](mvp4/2026-06-26-mvp4-design.md) | MKMapView 래핑 아키텍처, 제스처 분리, DrawnPathSampler 수정 |
+| 플랜 | [mkmap-migration 플랜](mvp4/2026-06-26-mkmap-migration.md) | Task 1~3, MapViewRepresentable + Coordinator + CoursePlannerPage 통합 |
+| 플랜 | [drawing-precision 플랜](mvp4/2026-06-26-drawing-precision.md) | Task 1~2, TDD 누적거리 기반 샘플러 + 스로틀 감지 |
+| QA | [실기기 체크리스트](mvp4/2026-06-27-mvp4-device-test.md) | mkmap-migration + drawing-precision 실기기 검증 항목 |
+| 회고 | [MVP4 완료 회고](mvp4/260627_mvp4_completion_retro.md) | 브랜치 꼬임, makeUIView GR silent no-op, 핀치 UX 부자연스러움 |
+
+---
+
 ## MVP3 — UX 개선 + 스로틀 강화 (2026-06-24 ~ 06-25)
 
 > MVP2 실기기 피드백 반영: 카메라 점프 제거, 비연속 구간 방향 감지, 증분 라우팅, 스로틀 에러 안내. 2손가락 지도 이동은 SwiftUI Map 제스처 한계로 보류.

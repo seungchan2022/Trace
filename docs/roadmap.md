@@ -15,6 +15,15 @@
 
 ## MVP 목록
 
+### MVP4 — MKMapView 마이그레이션 + 드로우 정밀도   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp4/`](history/mvp4/))
+
+> MVP3 보류 항목(2손가락 지도 이동) 해결: SwiftUI Map → MKMapView(UIViewRepresentable) 교체.
+> DrawnPathSampler 루프 경로 버그(누적거리 기반)도 함께 수정.
+> 회고: [`260627_mvp4_completion_retro`](history/mvp4/260627_mvp4_completion_retro.md)
+
+- [x] **mkmap-migration** — SwiftUI Map → MKMapView 마이그레이션, 드로우/탭/2손가락 제스처
+- [x] **drawing-precision** — DrawnPathSampler 누적거리 기반 교체, 스로틀 감지 확인
+
 ### MVP3 — UX 개선 + 스로틀 강화   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp3/`](history/mvp3/))
 
 > MVP2 실기기 피드백 반영: 카메라 점프 제거, 비연속 구간 방향 감지, 증분 라우팅, 스로틀 에러 안내.
