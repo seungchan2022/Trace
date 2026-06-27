@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# 머지 커밋 차단 — 항상 rebase + --ff-only 흐름을 사용한다.
+echo "❌ 머지 커밋은 허용되지 않습니다."
+echo ""
+echo "올바른 통합 흐름:"
+echo "  git switch <work-branch>"
+echo "  git rebase main"
+echo "  git switch main"
+echo "  git merge --ff-only <work-branch>"
+echo "  git branch -d <work-branch>"
+echo ""
+echo "또는 헬퍼 스크립트: scripts/trace-integrate.sh"
+exit 1
