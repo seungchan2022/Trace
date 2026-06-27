@@ -51,14 +51,7 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.showsUserLocation = true
         mapView.setRegion(region, animated: false)
 
-        // MKMapView 기본 1손가락 팬을 2손가락으로 변경 → 1손가락 드로우와 충돌 방지
-        for gr in mapView.gestureRecognizers ?? [] {
-            if let pan = gr as? UIPanGestureRecognizer {
-                pan.minimumNumberOfTouches = 2
-            }
-        }
-
-        // 드로우 제스처: 1손가락 최대, 초기엔 비활성화
+        // 1손가락 드로우 GR (초기엔 비활성)
         let drawGR = UIPanGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handleDraw(_:))
@@ -68,7 +61,27 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.addGestureRecognizer(drawGR)
         context.coordinator.drawGestureRecognizer = drawGR
 
-        // 탭 제스처
+        // 2손가락 pan GR (그리기 모드에서 지도 이동, 초기엔 비활성)
+        let twoFingerPanGR = UIPanGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleTwoFingerPan(_:))
+        )
+        twoFingerPanGR.minimumNumberOfTouches = 2
+        twoFingerPanGR.maximumNumberOfTouches = 2
+        twoFingerPanGR.isEnabled = false
+        mapView.addGestureRecognizer(twoFingerPanGR)
+        context.coordinator.twoFingerPanGestureRecognizer = twoFingerPanGR
+
+        // 핀치 GR (그리기 모드에서 줌, 초기엔 비활성)
+        let pinchGR = UIPinchGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handlePinch(_:))
+        )
+        pinchGR.isEnabled = false
+        mapView.addGestureRecognizer(pinchGR)
+        context.coordinator.pinchGestureRecognizer = pinchGR
+
+        // 탭 GR
         let tapGR = UITapGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handleTap(_:))
@@ -87,7 +100,8 @@ struct MapViewRepresentable: UIViewRepresentable {
         let mapCenter = uiView.region.center
         let latDiff = abs(mapCenter.latitude - region.center.latitude)
         let lonDiff = abs(mapCenter.longitude - region.center.longitude)
-        if latDiff > 0.0001 || lonDiff > 0.0001 {
+        let spanDiff = abs(uiView.region.span.latitudeDelta - region.span.latitudeDelta)
+        if latDiff > 0.0001 || lonDiff > 0.0001 || spanDiff > 0.0001 {
             uiView.setRegion(region, animated: true)
         }
 
@@ -133,8 +147,15 @@ struct MapViewRepresentable: UIViewRepresentable {
         }
 
         // 제스처 모드 동기화
-        context.coordinator.drawGestureRecognizer?.isEnabled = isDrawingMode
-        context.coordinator.tapGestureRecognizer?.isEnabled = !isDrawingMode
+        let wasDrawing = context.coordinator.drawGestureRecognizer?.isEnabled ?? false
+        if wasDrawing != isDrawingMode {
+            uiView.isScrollEnabled = !isDrawingMode
+            uiView.isZoomEnabled = !isDrawingMode
+            context.coordinator.drawGestureRecognizer?.isEnabled = isDrawingMode
+            context.coordinator.twoFingerPanGestureRecognizer?.isEnabled = isDrawingMode
+            context.coordinator.pinchGestureRecognizer?.isEnabled = isDrawingMode
+            context.coordinator.tapGestureRecognizer?.isEnabled = !isDrawingMode
+        }
     }
 }
 
@@ -179,9 +200,14 @@ extension MapViewRepresentable {
         // MARK: Gesture State
 
         weak var drawGestureRecognizer: UIPanGestureRecognizer?
+        weak var twoFingerPanGestureRecognizer: UIPanGestureRecognizer?
+        weak var pinchGestureRecognizer: UIPinchGestureRecognizer?
         weak var tapGestureRecognizer: UITapGestureRecognizer?
         private var currentStrokePoints: [CGPoint] = []
         private var currentStrokeCoords: [CourseCoordinate] = []
+        private var panStartCenter: CLLocationCoordinate2D?
+        private var pinchStartSpan: MKCoordinateSpan?
+        private var pinchStartScale: CGFloat = 1.0
 
         // MARK: Draw
 
@@ -218,6 +244,56 @@ extension MapViewRepresentable {
             let point = recognizer.location(in: mapView)
             let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
             parent.onMapTap?(CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude))
+        }
+
+        // MARK: Two-Finger Pan
+
+        @objc func handleTwoFingerPan(_ recognizer: UIPanGestureRecognizer) {
+            guard let mapView = recognizer.view as? MKMapView else { return }
+            switch recognizer.state {
+            case .began:
+                panStartCenter = mapView.region.center
+            case .changed:
+                guard let startCenter = panStartCenter else { return }
+                let translation = recognizer.translation(in: mapView)
+                let region = mapView.region
+                let latPerPoint = region.span.latitudeDelta / mapView.bounds.height
+                let lonPerPoint = region.span.longitudeDelta / mapView.bounds.width
+                let newCenter = CLLocationCoordinate2D(
+                    latitude: startCenter.latitude - translation.y * latPerPoint,
+                    longitude: startCenter.longitude + translation.x * lonPerPoint
+                )
+                let newRegion = MKCoordinateRegion(center: newCenter, span: region.span)
+                mapView.setRegion(newRegion, animated: false)
+            case .ended, .cancelled:
+                panStartCenter = nil
+            default:
+                break
+            }
+        }
+
+        // MARK: Pinch
+
+        @objc func handlePinch(_ recognizer: UIPinchGestureRecognizer) {
+            guard let mapView = recognizer.view as? MKMapView else { return }
+            switch recognizer.state {
+            case .began:
+                pinchStartSpan = mapView.region.span
+                pinchStartScale = recognizer.scale
+            case .changed:
+                guard let startSpan = pinchStartSpan else { return }
+                let scaleDelta = pinchStartScale / recognizer.scale
+                let newSpan = MKCoordinateSpan(
+                    latitudeDelta: min(max(startSpan.latitudeDelta * scaleDelta, 0.001), 100),
+                    longitudeDelta: min(max(startSpan.longitudeDelta * scaleDelta, 0.001), 100)
+                )
+                let newRegion = MKCoordinateRegion(center: mapView.region.center, span: newSpan)
+                mapView.setRegion(newRegion, animated: false)
+            case .ended, .cancelled:
+                pinchStartSpan = nil
+            default:
+                break
+            }
         }
     }
 }
