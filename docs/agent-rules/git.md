@@ -140,6 +140,29 @@ git config core.hooksPath .githooks
   같은 작업은 기존 작업 브랜치를 이어가거나 `git rebase`로 갱신한다. 새 브랜치에 중복 커밋하면
   같은 변경이 두 갈래로 갈라지고, 한쪽이 버려진 채 남는다.
 
+### 두 브랜치 동시 진행 시 그래프 꼬임 방지
+
+독립적인 두 피처 브랜치를 같은 base에서 동시에 진행하면, 커밋 날짜가 겹쳐서 그래프에서 한 브랜치의 커밋이 다른 브랜치 커밋 사이에 시각적으로 끼어드는 현상이 생긴다.
+
+**예방책 (우선순위 순):**
+
+1. 브랜치 하나를 먼저 완전히 통합(FF 머지 + 삭제)한 뒤 다음 브랜치를 시작한다.
+2. 불가피하게 동시 진행해야 한다면, 두 번째 브랜치는 첫 번째 브랜치 위에서 시작하거나 통합 전에 `git rebase <첫번째-브랜치>`로 선형화한다.
+3. 두 브랜치 통합 순서: `git rebase <먼저-들어갈-브랜치>` → FF 머지 순으로 진행한다.
+
+**수정 절차 (이미 꼬인 경우):**
+
+```bash
+# 두 번째 브랜치를 첫 번째 브랜치 위에 rebase
+git checkout <second-branch>
+git rebase <first-branch>
+
+# 첫 번째 브랜치를 main에 통합 (second-branch도 포함됨)
+git switch main
+git merge --ff-only <second-branch>
+git branch -d <first-branch> <second-branch>
+```
+
 ### 통합 헬퍼
 
 위 1~5단계를 한 번에 수행하는 스크립트:
