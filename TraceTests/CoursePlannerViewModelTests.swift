@@ -22,33 +22,35 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.interactionMode, .tap)
     }
 
-    func testToggleToDrawClearsTapState() async {
+    func testToggleToDrawPreservesTapRouteAsHistory() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.5, longitude: 127.0))
-        XCTAssertNotNil(sut.startCoordinate)
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.6, longitude: 127.0))
+        XCTAssertNotNil(sut.course)
 
         sut.toggleDrawingMode()
 
         XCTAssertEqual(sut.interactionMode, .draw)
         XCTAssertNil(sut.startCoordinate)
         XCTAssertNil(sut.destinationCoordinate)
-        XCTAssertNil(sut.course)
+        XCTAssertNotNil(sut.course, "탭 경로가 history로 보존되어야 함")
     }
 
-    func testToggleToTapClearsDrawState() async {
+    func testToggleToTapPreservesDrawnRouteAsHistory() async {
         let sut = makeSUT()
         sut.toggleDrawingMode()
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
             CourseCoordinate(latitude: 37.51, longitude: 127.00),
         ])
-        XCTAssertFalse(sut.drawnStrokes.isEmpty)
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        XCTAssertNotNil(sut.course)
 
         sut.toggleDrawingMode()
 
         XCTAssertEqual(sut.interactionMode, .tap)
         XCTAssertTrue(sut.drawnStrokes.isEmpty)
-        XCTAssertNil(sut.course)
+        XCTAssertNotNil(sut.course, "그리기 경로가 history로 보존되어야 함")
     }
 
     func testClearResetsAllState() async {
@@ -288,6 +290,60 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
         // Course should remain nil because generation guard rejected the stale result
         XCTAssertNil(sut.course)
+    }
+
+    // MARK: - Path stitching
+
+    func testTapRouteIsPreservedWhenEnteringDrawMode() async {
+        let sut = makeSUT()
+        // 탭으로 A→B 생성
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        let tapCourse = sut.course
+        XCTAssertNotNil(tapCourse)
+
+        // 그리기 모드 전환
+        sut.toggleDrawingMode()
+
+        // 탭 경로가 course에 보존되어야 함
+        XCTAssertNotNil(sut.course)
+        XCTAssertEqual(sut.course?.distanceMeters, tapCourse?.distanceMeters)
+    }
+
+    func testDrawRouteIsPreservedWhenEnteringTapMode() async {
+        let sut = makeSUT()
+        sut.toggleDrawingMode()
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        let drawCourse = sut.course
+        XCTAssertNotNil(drawCourse)
+
+        // 탭 모드 전환
+        sut.toggleDrawingMode()
+
+        // 그리기 경로가 course에 보존되어야 함
+        XCTAssertNotNil(sut.course)
+        XCTAssertEqual(sut.course?.distanceMeters, drawCourse?.distanceMeters)
+    }
+
+    func testStartCoordinateIsSetFromDrawnRouteEndOnModeSwitch() async {
+        let sut = makeSUT()
+        sut.toggleDrawingMode()
+        let endPoint = CourseCoordinate(latitude: 37.51, longitude: 127.00)
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+            endPoint,
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        sut.toggleDrawingMode()
+
+        // startCoordinate가 그리기 끝점 근처로 설정되어야 함
+        XCTAssertNotNil(sut.startCoordinate)
     }
 }
 

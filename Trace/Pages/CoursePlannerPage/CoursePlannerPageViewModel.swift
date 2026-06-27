@@ -18,6 +18,7 @@ final class CoursePlannerPageViewModel {
     private(set) var interactionMode: InteractionMode = .tap
     private(set) var drawnStrokes: [[CourseCoordinate]] = []
     private(set) var strokeEntries: [StrokeEntry] = []
+    private var history: [CourseSegment] = []
     private var accumulatedCoordinates: [CourseCoordinate] = []
     private var accumulatedDistance: Double = 0
     var showLocationDeniedAlert = false
@@ -90,21 +91,43 @@ final class CoursePlannerPageViewModel {
     func toggleDrawingMode() {
         switch interactionMode {
         case .tap:
-            recomputeGeneration += 1
+            // 현재 탭 세션의 leg를 history에 봉인
+            if let course {
+                let sessionSegments = Array(course.segments.dropFirst(history.count))
+                history.append(contentsOf: sessionSegments)
+            }
+            // history 끝점을 그리기 시작점으로 seed
+            if let lastCoord = history.last?.coordinates.last {
+                accumulatedCoordinates = [lastCoord]
+            } else {
+                accumulatedCoordinates = []
+            }
+            accumulatedDistance = 0
             startCoordinate = nil
             destinationCoordinate = nil
+            recomputeGeneration += 1
             errorMessage = nil
             isLoading = false
             interactionMode = .draw
+            course = history.isEmpty ? nil : PlannedCourse(segments: history)
+
         case .draw:
-            recomputeGeneration += 1
+            // 현재 그리기 세션을 history에 봉인
+            if !accumulatedCoordinates.isEmpty {
+                history.append(.drawn(
+                    coordinates: accumulatedCoordinates,
+                    distanceMeters: accumulatedDistance
+                ))
+            }
+            startCoordinate = accumulatedCoordinates.last
             drawnStrokes = []
             strokeEntries = []
             accumulatedCoordinates = []
             accumulatedDistance = 0
-            course = nil
+            recomputeGeneration += 1
             errorMessage = nil
             interactionMode = .tap
+            course = history.isEmpty ? nil : PlannedCourse(segments: history)
         }
     }
 
