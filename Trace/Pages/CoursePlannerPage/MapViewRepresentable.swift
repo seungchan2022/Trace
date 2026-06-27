@@ -215,6 +215,16 @@ extension MapViewRepresentable {
 
         @objc func handleDraw(_ recognizer: UIPanGestureRecognizer) {
             guard let mapView = recognizer.view as? MKMapView else { return }
+
+            // 두 번째 손가락이 들어오면 진행 중인 stroke 취소
+            if recognizer.numberOfTouches > 1 {
+                currentStrokePoints = []
+                currentStrokeCoords = []
+                parent.onStrokeUpdate([])
+                recognizer.state = .cancelled
+                return
+            }
+
             let point = recognizer.location(in: mapView)
             let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
             let coord = CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude)
