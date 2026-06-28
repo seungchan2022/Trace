@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>260628 하루 회고 — Trace</title>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+    primaryColor: '#FEF3C7', primaryTextColor: '#2D2926',
+    primaryBorderColor: '#D97706', lineColor: '#92400E',
+    secondaryColor: '#FFF7ED', tertiaryColor: '#FDF6F0'
+  }});
+</script>
+<style>
+  :root {
+    --bg: #FDF6F0; --text: #2D2926; --accent: #D97706;
+    --accent-light: #FEF3C7; --heading: #92400E;
+    --border: #E5D5C5; --code-bg: #FFF7ED; --card-bg: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px; line-height: 1.7;
+    max-width: 480px; margin: 0 auto; padding: 20px 16px 48px;
+  }
+  header {
+    background: var(--accent); color: white;
+    border-radius: 14px; padding: 20px;
+    margin-bottom: 24px; text-align: center;
+  }
+  header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  header p { font-size: 13px; opacity: 0.9; }
+  .stat-row {
+    display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .stat {
+    flex: 1; min-width: 80px;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px; text-align: center;
+  }
+  .stat .num { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .stat .lbl { font-size: 11px; color: #888; margin-top: 2px; }
+
+  h2 {
+    color: var(--heading); font-size: 16px; font-weight: 700;
+    margin: 28px 0 12px; border-left: 3px solid var(--accent);
+    padding-left: 10px;
+  }
+  h3 {
+    color: var(--text); font-size: 14px; font-weight: 700;
+    margin: 20px 0 8px;
+  }
+  p { margin-bottom: 12px; }
+  ul { padding-left: 18px; margin-bottom: 12px; }
+  li { margin-bottom: 6px; }
+
+  .card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 14px;
+  }
+  .card .tag {
+    display: inline-block; background: var(--accent-light);
+    color: var(--heading); font-size: 11px; font-weight: 600;
+    border-radius: 6px; padding: 2px 8px; margin-bottom: 8px;
+  }
+  .card h3 { margin-top: 0; color: var(--heading); }
+
+  .decision-flow {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .decision-flow pre.mermaid { font-size: 12px; }
+
+  .insight-box {
+    background: var(--accent-light); border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0; padding: 12px 14px;
+    margin: 12px 0; font-size: 14px;
+  }
+  .insight-box strong { color: var(--heading); }
+
+  .timeline {
+    position: relative; padding-left: 20px;
+    border-left: 2px solid var(--border);
+  }
+  .timeline-item {
+    position: relative; margin-bottom: 18px;
+  }
+  .timeline-item::before {
+    content: ''; position: absolute;
+    left: -25px; top: 5px;
+    width: 8px; height: 8px;
+    background: var(--accent); border-radius: 50%;
+  }
+  .timeline-item .time {
+    font-size: 11px; color: var(--accent); font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .timeline-item .desc { font-size: 13px; }
+
+  .feel-box {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 14px;
+    font-size: 14px;
+  }
+  .tomorrow {
+    background: var(--heading); color: white;
+    border-radius: 12px; padding: 16px; margin-top: 28px;
+  }
+  .tomorrow h2 { color: white; border-left-color: white; }
+  .tomorrow li { color: rgba(255,255,255,0.9); }
+
+  footer {
+    text-align: center; font-size: 11px; color: #aaa;
+    margin-top: 32px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>260628 하루 회고</h1>
+  <p>MVP5 path-stitching 완료 · 브랜치 마무리</p>
+</header>
+
+<div class="stat-row">
+  <div class="stat"><div class="num">10</div><div class="lbl">커밋</div></div>
+  <div class="stat"><div class="num">437</div><div class="lbl">추가 줄</div></div>
+  <div class="stat"><div class="num">63</div><div class="lbl">테스트 통과</div></div>
+  <div class="stat"><div class="num">MVP5</div><div class="lbl">완료·아카이브</div></div>
+</div>
+
+<h2>📅 오늘 타임라인</h2>
+<div class="timeline">
+  <div class="timeline-item">
+    <div class="time">오전 — 실기기 QA 버그 수정</div>
+    <div class="desc">핀 역전 버그 + 라벨 UX 오류 발견 및 수정. <code>preDrawTapState</code> 보완, <code>startCoordinate = nil</code> 처리</div>
+  </div>
+  <div class="timeline-item">
+    <div class="time">오후 — 핀 소스 통일</div>
+    <div class="desc">모드별 분기 제거, "핀은 항상 course에서 파생" 원칙 확립. 테스트 63/63 통과</div>
+  </div>
+  <div class="timeline-item">
+    <div class="time">저녁 — 문서 정리 + 아카이빙</div>
+    <div class="desc">roadmap·backlog 완료 처리, spec/plan → history/mvp5/ 이동, 완료 회고 작성</div>
+  </div>
+</div>
+
+<h2>🔑 핵심 의사결정 흐름</h2>
+<div class="decision-flow">
+<pre class="mermaid">flowchart TD
+    A["탭 모드\n(startCoordinate\ndestinationCoordinate)"]
+    B["그리기 모드\n(drawnStrokes\naccumulatedCoordinates)"]
+
+    A -->|"탭→그리기\n현재 leg를 .tapped 봉인"| H["history\n[CourseSegment]"]
+    B -->|"그리기→탭\n누적 좌표를 .drawn 봉인"| H
+
+    H -->|"PlannedCourse(segments:)"| C["course\n단일 진실의 원천"]
+    C -->|"first/last"| P["핀 렌더링\n항상 course 기준"]
+    C -->|"coordinates"| O["폴리라인 오버레이"]
+
+    style H fill:#FEF3C7,stroke:#D97706
+    style C fill:#FEF3C7,stroke:#D97706
+</pre>
+</div>
+
+<h2>💡 의사결정 상세</h2>
+
+<div class="card">
+  <span class="tag">① 핵심</span>
+  <h3>history 봉인 패턴 — 독립 모드의 공존</h3>
+  <p>탭/그리기 모드는 원래 <strong>의도적으로 독립 설계</strong>됐다. 내부 상태를 뒤섞으면 두 모드의 단순함이 깨진다. 해결책은 내부는 건드리지 않고 <strong>전환 시점에만 history에 봉인</strong>하는 것.</p>
+  <div class="insight-box">
+    <strong>인사이트:</strong> 두 시스템을 통합할 때, 내부를 통합하지 말고 경계에서만 만나게 설계하면 각각의 단순함을 지킬 수 있다.
+  </div>
+</div>
+
+<div class="card">
+  <span class="tag">② 구조</span>
+  <h3>핀 소스 단일화</h3>
+  <p>탭 모드는 <code>startCoordinate</code>, 그리기 모드는 <code>course.coordinates</code>로 핀을 그리던 구조가 전환 타이밍 버그의 원인이었다. <strong>"핀은 항상 course에서 파생"</strong>으로 통일.</p>
+  <div class="insight-box">
+    <strong>인사이트:</strong> 같은 데이터를 두 소스에서 관리하면 동기화 버그가 필연적으로 생긴다.
+  </div>
+</div>
+
+<div class="card">
+  <span class="tag">③ UX</span>
+  <h3>라벨 — 현재 상태 표시</h3>
+  <p>처음엔 전환 대상을 표시(탭 모드에서 "그리기" 버튼). 사용자 피드백으로 현재 상태 표시로 수정(탭 모드 = "경로 찍기", 그리기 모드 = "그리기").</p>
+  <div class="insight-box">
+    <strong>인사이트:</strong> UX 방향성(현재 상태 vs 전환 대상)은 구현 전에 원칙을 확인해야 한다.
+  </div>
+</div>
+
+<div class="card">
+  <span class="tag">④ 방어 로직</span>
+  <h3>preDrawTapState</h3>
+  <p>그리기 모드에 진입할 때 현재 탭 상태를 저장. 아무것도 안 그리고 복귀하면 원상복원. 그린 게 있으면 무시. 전환 타이밍 안전망.</p>
+</div>
+
+<h2>📐 모드 전환 상태 비교표</h2>
+<div class="decision-flow">
+<pre class="mermaid">flowchart LR
+    subgraph 탭["탭 모드"]
+        T1["startCoordinate\n(출발)"]
+        T2["destinationCoordinate\n(도착)"]
+    end
+    subgraph 그리기["그리기 모드"]
+        D1["drawnStrokes\n(raw 입력)"]
+        D2["accumulatedCoordinates\n(라우팅된 누적)"]
+    end
+    subgraph 공용["공용 (항상 동기화)"]
+        H2["history: [CourseSegment]"]
+        C2["course: PlannedCourse"]
+    end
+
+    탭 -->|"전환 시 봉인"| H2
+    그리기 -->|"전환 시 봉인"| H2
+    H2 --> C2
+
+    style 공용 fill:#FEF3C7,stroke:#D97706
+</pre>
+</div>
+
+<h2>🎓 배운 것</h2>
+<ul>
+  <li><strong>CourseSegment 열거형 패턴</strong> — 탭/그리기를 동일 타입으로 추상화, computed property로 일관된 인터페이스. 세그먼트 타입 추가 시 자연스럽게 확장 가능</li>
+  <li><strong>제스처 UI 테스트의 한계</strong> — 두 손가락 pan 부호, pitch/rotate 동작은 시뮬레이터 자동화로 검증 어려움. 일반 CRUD와 달리 제스처 앱에서 자동화 + 실기기 QA의 균형이 중요한 과제로 남음</li>
+  <li><strong>single source of truth</strong> — 같은 데이터(핀 위치)를 두 군데서 관리하면 항상 동기화 버그가 생긴다. 권위 있는 소스 하나를 먼저 정하는 것이 설계 원칙</li>
+</ul>
+
+<div class="feel-box">
+  <h3>💬 느낀 것</h3>
+  <p>독립적으로 설계한 것들이 나중에 함께 동작해야 할 때, 경계를 잘 잡아두면 연결이 훨씬 수월하다는 걸 실감했다. history 봉인 패턴이 그 증거였고, undo/clear까지 자연스럽게 흡수한 게 뿌듯했다.</p>
+  <p>라벨 UX는 솔직히 조금 창피했다. 사용자가 직접 써보기 전까지 몰랐으니까. "모르면 먼저 물어보자"를 또 한 번 확인했다.</p>
+</div>
+
+<div class="tomorrow">
+  <h2>📌 내일 할 일</h2>
+  <ul>
+    <li>feature/mvp5-path-stitching → main 머지</li>
+    <li>다음 MVP 기획 시작 (백로그 항목 함께 논의)</li>
+  </ul>
+</div>
+
+<footer>Trace · 260628 · feature/mvp5-path-stitching</footer>
+
+</body>
+</html>
