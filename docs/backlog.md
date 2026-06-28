@@ -26,10 +26,10 @@
 ## 기술부채
 
 - [x] **MKDirections 스로틀 완화** — MVP3에서 해결: 증분 계산으로 기존 구간 재호출 제거. 근본책(맵매칭 제공자)은 여전히 미래 옵션. `done`
-- [ ] **테스트 시뮬레이터 iOS 버전 전략** — *now:* iOS 18.5에서 `@Observable` malloc 크래시 발생해 iOS 26.5로 우회 중 / *desired:* 최소 지원 버전(iOS 17) 근처 런타임에서도 테스트. iOS 17 런타임 설치 또는 배포 전 멀티버전 테스트 전략 결정 필요. 상세: `docs/solutions/workflow-issues/ios18-observable-malloc-crash.md`. `open`
+- [x] **테스트 시뮬레이터 iOS 버전 전략** — MVP5에서 문서화 완료: iOS 18.x `@Observable` malloc 크래시는 Apple 런타임 버그로 확인, iOS 26.5로 우회 결정. 상세: `docs/solutions/workflow-issues/ios18-observable-malloc-crash.md`. `done`
 - [x] **SwiftUI Map → MKMapView 교체** — MVP4에서 해결: MKMapView(UIViewRepresentable) 마이그레이션 완료, MKOverlay/MKAnnotation delegate 방식으로 전환. `done`
 
 ## MVP4 (2026-06-27) 실기기 피드백
 
 - [ ] **핀치 줌 UX 개선** — *where:* 그리기 모드 / *now:* 커스텀 UIPinchGestureRecognizer로 구현했으나 내장 MKMapView 핀치보다 부자연스러움 / *desired:* 내장 MKMapView 핀치와 동등한 감도·가속도 구현 또는 대안 탐색. `open`
-- [ ] **탭↔그리기 경로 이어붙이기** — *where:* CoursePlannerPage / *now:* 탭 모드(A→B 단일 경로)와 그리기 모드(스트로크 누적) 경로가 독립적. 모드 전환 시 경로 오버레이는 유지되지만 실제 이어붙이기는 안 됨 / *desired:* 탭으로 A→B 생성 후 그리기로 B→C 연장 (또는 반대 방향). course 데이터 모델을 세그먼트 배열로 확장하고 각 세그먼트를 append하는 방식으로 구조 변경 필요. `open`
+- [x] **탭↔그리기 경로 이어붙이기** — MVP5에서 해결: CourseSegment 세그먼트 배열 모델 + history 기반 탭↔그리기 이어붙이기. `done`

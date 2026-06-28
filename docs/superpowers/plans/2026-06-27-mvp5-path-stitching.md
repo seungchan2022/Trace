@@ -1,5 +1,7 @@
 # MVP5 Implementation Plan — path-stitching + two-finger-pan-ux + test-ios-versions
 
+> **완료(소급 확인) — 근거 커밋:** `1118d86`~`f7ba4b4` (feature/mvp5-path-stitching). 63/63 테스트 통과 + 실기기 QA 확인.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 탭↔그리기 경로를 이어붙이는 세그먼트 모델을 도입하고, 그리기 모드 두 손가락 UX 버그 3개를 수정하며, iOS 버전별 테스트 크래시 원인을 규명한다.

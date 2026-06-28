@@ -15,6 +15,16 @@
 
 ## MVP 목록
 
+### MVP5 — 경로 이어붙이기 + 조작 개선   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp5/`](history/mvp5/))
+
+> 탭↔그리기 양방향 경로 이어붙이기(세그먼트 모델), 그리기 모드 2손가락 UX 보완, iOS 18 Observable 크래시 원인 규명 + 문서화, 실기기 QA 후 핀·라벨 UX 버그 수정.
+> 회고: [`260628_mvp5_completion_retro`](history/mvp5/260628_mvp5_completion_retro.md)
+
+- [x] **path-stitching** — CourseSegment 세그먼트 모델, history 기반 탭↔그리기 경로 이어붙이기, undo/clear history 반영
+- [x] **two-finger-pan-ux** — 2손가락 pan 부호 수정, pitch/rotate 비활성화, 그리기 오염(멀티터치 가드) 수정
+- [x] **test-ios-versions** — iOS 18 `@Observable` malloc 크래시 원인 규명 + `docs/solutions/` 문서화
+- [x] **pin-label-ux** — 실기기 QA 후 핀 소스 통일(course 기준), 라벨 현재 상태 표시, draw→tap 핀 버그 수정
+
 ### MVP4 — MKMapView 마이그레이션 + 드로우 정밀도   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp4/`](history/mvp4/))
 
 > MVP3 보류 항목(2손가락 지도 이동) 해결: SwiftUI Map → MKMapView(UIViewRepresentable) 교체.
