@@ -7,8 +7,8 @@ extension CoursePlannerPage {
                 viewModel.toggleDrawingMode()
             } label: {
                 Label(
-                    viewModel.isDrawingMode ? "그리기 중" : "그리기",
-                    systemImage: "pencil.tip"
+                    viewModel.isDrawingMode ? "경로 찍기" : "그리기",
+                    systemImage: viewModel.isDrawingMode ? "mappin.and.ellipse" : "pencil.tip"
                 )
             }
             .accessibilityIdentifier("coursePlanner.drawToggle")

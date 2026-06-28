@@ -27,6 +27,8 @@ final class CoursePlannerPageViewModel {
     private let locationService: LocationServiceProtocol
     private let cameraStateStore: CameraStateStore
     private var recomputeGeneration = 0
+    // 그리기 모드 진입 전 탭 상태 — 아무것도 안 그리고 복귀할 때 복원
+    private var preDrawTapState: (start: CourseCoordinate?, destination: CourseCoordinate?)?
 
     init(
         coursePlanningService: CoursePlanningServiceProtocol,
@@ -91,35 +93,40 @@ final class CoursePlannerPageViewModel {
     func toggleDrawingMode() {
         switch interactionMode {
         case .tap:
+            // 복귀 시 복원을 위해 현재 탭 상태 저장
+            preDrawTapState = (startCoordinate, destinationCoordinate)
             // 현재 탭 세션의 leg를 history에 봉인
             if let course {
                 let sessionSegments = Array(course.segments.dropFirst(history.count))
                 history.append(contentsOf: sessionSegments)
             }
-            // history 끝점을 그리기 시작점으로 seed
-            if let lastCoord = history.last?.coordinates.last {
-                accumulatedCoordinates = [lastCoord]
-            } else {
-                accumulatedCoordinates = []
-            }
-            accumulatedDistance = 0
+            // history 전체 경로를 씨드로 사용 — 방향 해석기가 A→B 전체 맥락을 알아야 함
+            let enterDrawCourse = history.isEmpty ? nil : PlannedCourse(segments: history)
+            accumulatedCoordinates = enterDrawCourse?.coordinates ?? []
+            accumulatedDistance = enterDrawCourse?.distanceMeters ?? 0
             startCoordinate = nil
             destinationCoordinate = nil
             recomputeGeneration += 1
             errorMessage = nil
             isLoading = false
             interactionMode = .draw
-            course = history.isEmpty ? nil : PlannedCourse(segments: history)
+            course = enterDrawCourse
 
         case .draw:
-            // 현재 그리기 세션을 history에 봉인
-            if !accumulatedCoordinates.isEmpty {
-                history.append(.drawn(
+            if !drawnStrokes.isEmpty {
+                // 실제로 그린 내용이 있으면 전체 누적 경로를 단일 drawn 세그먼트로 봉인
+                history = [.drawn(
                     coordinates: accumulatedCoordinates,
                     distanceMeters: accumulatedDistance
-                ))
+                )]
+                startCoordinate = accumulatedCoordinates.last
+                destinationCoordinate = nil
+            } else {
+                // 아무것도 안 그렸으면 진입 전 탭 상태 복원
+                startCoordinate = preDrawTapState?.start
+                destinationCoordinate = preDrawTapState?.destination
             }
-            startCoordinate = accumulatedCoordinates.last
+            preDrawTapState = nil
             drawnStrokes = []
             strokeEntries = []
             accumulatedCoordinates = []
@@ -146,13 +153,11 @@ final class CoursePlannerPageViewModel {
         drawnStrokes.removeLast()
         recomputeGeneration += 1
 
+        let undoHistoryCourse = history.isEmpty ? nil : PlannedCourse(segments: history)
         if strokeEntries.isEmpty {
-            accumulatedCoordinates = []
-            accumulatedDistance = 0
-            if let lastCoord = history.last?.coordinates.last {
-                accumulatedCoordinates = [lastCoord]
-            }
-            course = history.isEmpty ? nil : PlannedCourse(segments: history)
+            accumulatedCoordinates = undoHistoryCourse?.coordinates ?? []
+            accumulatedDistance = undoHistoryCourse?.distanceMeters ?? 0
+            course = undoHistoryCourse
             errorMessage = nil
         } else {
             // 전체 재계산 — drawnStrokes를 순회하여 재구축 (double-sampling 방지)
@@ -160,12 +165,9 @@ final class CoursePlannerPageViewModel {
             let generation = recomputeGeneration
             let savedStrokes = drawnStrokes
             strokeEntries = []
-            accumulatedCoordinates = []
-            accumulatedDistance = 0
-            if let lastCoord = history.last?.coordinates.last {
-                accumulatedCoordinates = [lastCoord]
-            }
-            course = history.isEmpty ? nil : PlannedCourse(segments: history)
+            accumulatedCoordinates = undoHistoryCourse?.coordinates ?? []
+            accumulatedDistance = undoHistoryCourse?.distanceMeters ?? 0
+            course = undoHistoryCourse
             errorMessage = nil
 
             for stroke in savedStrokes {
@@ -178,6 +180,7 @@ final class CoursePlannerPageViewModel {
     func clear() {
         recomputeGeneration += 1
         history = []
+        preDrawTapState = nil
         startCoordinate = nil
         destinationCoordinate = nil
         drawnStrokes = []
@@ -280,7 +283,8 @@ final class CoursePlannerPageViewModel {
                 coordinates: accumulatedCoordinates,
                 distanceMeters: accumulatedDistance
             )
-            course = PlannedCourse(segments: history + [drawn])
+            // drawn이 history 좌표를 포함한 전체 경로이므로 history를 별도로 더하지 않음
+            course = PlannedCourse(segments: [drawn])
         } catch CoursePlanningError.throttled {
             guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "요청이 많아 잠시 후 다시 시도해주세요"

@@ -388,6 +388,56 @@ final class CoursePlannerViewModelTests: XCTestCase {
         // startCoordinate가 그리기 끝점 근처로 설정되어야 함
         XCTAssertNotNil(sut.startCoordinate)
     }
+
+    // MARK: - 버그 수정: 드로잉 없이 탭→그리기→탭 토글 시 핀 복원
+
+    func testToggleToDrawAndBackWithoutDrawing_restoresTapPins() async throws {
+        let sut = makeSUT()
+        let start = CourseCoordinate(latitude: 37.50, longitude: 127.00)
+        let dest = CourseCoordinate(latitude: 37.51, longitude: 127.00)
+        await sut.handleMapTap(at: start)
+        await sut.handleMapTap(at: dest)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        // 그리기 모드 진입 후 아무것도 안 그리고 복귀
+        sut.toggleDrawingMode()
+        XCTAssertEqual(sut.interactionMode, .draw)
+        sut.toggleDrawingMode()
+
+        // 원래 탭 상태가 복원되어야 함 — B가 출발로 바뀌는 버그 방지
+        XCTAssertEqual(sut.interactionMode, .tap)
+        let restoredStart = try XCTUnwrap(sut.startCoordinate)
+        let restoredDest = try XCTUnwrap(sut.destinationCoordinate)
+        XCTAssertEqual(restoredStart.latitude, start.latitude, accuracy: 0.0001)
+        XCTAssertEqual(restoredDest.latitude, dest.latitude, accuracy: 0.0001)
+    }
+
+    // MARK: - 버그 수정: 탭 경로 A→B 후 A 근처 그리기 → C→A→B 연결
+
+    func testDrawNearRouteStartPrependsCorrectly() async {
+        let sut = makeSUT()
+        // A(37.50) → B(37.51) 탭 경로
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertNotNil(sut.course)
+
+        // 그리기 모드: A 근처(37.49→37.50)에서 스트로크
+        sut.toggleDrawingMode()
+        await sut.appendStroke([
+            CourseCoordinate(latitude: 37.49, longitude: 127.00),
+            CourseCoordinate(latitude: 37.50, longitude: 127.00),
+        ])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        // 경로가 있어야 하며 출발점이 A 이전(37.49 근처)으로 이동해야 함
+        XCTAssertNotNil(sut.course)
+        if let first = sut.course?.coordinates.first {
+            XCTAssertTrue(first.latitude < 37.505, "출발이 A(37.50) 이전으로 prepend 되어야 함")
+        }
+        // 코스가 하나의 drawn 세그먼트로 표현되어야 함 (history 중복 없음)
+        XCTAssertEqual(sut.course?.segments.count, 1)
+    }
 }
 
 // MARK: - Test Doubles
