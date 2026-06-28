@@ -120,24 +120,7 @@ struct CoursePlannerPage: View {
 
     private var mapPins: [MapPin] {
         var pins: [MapPin] = []
-        if viewModel.interactionMode == .tap {
-            if let start = viewModel.startCoordinate {
-                pins.append(MapPin(
-                    coordinate: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude),
-                    title: "출발",
-                    color: .systemGreen,
-                    systemImage: "figure.run"
-                ))
-            }
-            if let destination = viewModel.destinationCoordinate {
-                pins.append(MapPin(
-                    coordinate: CLLocationCoordinate2D(latitude: destination.latitude, longitude: destination.longitude),
-                    title: "도착",
-                    color: .systemRed,
-                    systemImage: "flag.checkered"
-                ))
-            }
-        } else if viewModel.interactionMode == .draw, let course = viewModel.course {
+        if let course = viewModel.course {
             if let first = course.coordinates.first {
                 pins.append(MapPin(
                     coordinate: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
@@ -146,12 +129,21 @@ struct CoursePlannerPage: View {
                     systemImage: "figure.run"
                 ))
             }
-            if let last = course.coordinates.last {
+            if let last = course.coordinates.last, course.coordinates.count > 1 {
                 pins.append(MapPin(
                     coordinate: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude),
                     title: "도착",
                     color: .systemRed,
                     systemImage: "flag.checkered"
+                ))
+            }
+        } else if viewModel.interactionMode == .tap {
+            if let start = viewModel.startCoordinate {
+                pins.append(MapPin(
+                    coordinate: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude),
+                    title: "출발",
+                    color: .systemGreen,
+                    systemImage: "figure.run"
                 ))
             }
         }

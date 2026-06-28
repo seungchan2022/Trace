@@ -373,20 +373,23 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.course?.distanceMeters, drawCourse?.distanceMeters)
     }
 
-    func testStartCoordinateIsSetFromDrawnRouteEndOnModeSwitch() async {
+    func testDrawRouteIsPreservedAsCourseOnModeSwitch() async {
         let sut = makeSUT()
         sut.toggleDrawingMode()
-        let endPoint = CourseCoordinate(latitude: 37.51, longitude: 127.00)
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
-            endPoint,
+            CourseCoordinate(latitude: 37.51, longitude: 127.00),
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
+        XCTAssertNotNil(sut.course)
 
         sut.toggleDrawingMode()
 
-        // startCoordinate가 그리기 끝점 근처로 설정되어야 함
-        XCTAssertNotNil(sut.startCoordinate)
+        // 핀은 course에서 파생 — startCoordinate/destinationCoordinate 는 nil
+        XCTAssertNil(sut.startCoordinate)
+        XCTAssertNil(sut.destinationCoordinate)
+        // course는 보존되어야 함
+        XCTAssertNotNil(sut.course)
     }
 
     // MARK: - 버그 수정: 드로잉 없이 탭→그리기→탭 토글 시 핀 복원

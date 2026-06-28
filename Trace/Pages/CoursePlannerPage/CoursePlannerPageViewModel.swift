@@ -119,7 +119,7 @@ final class CoursePlannerPageViewModel {
                     coordinates: accumulatedCoordinates,
                     distanceMeters: accumulatedDistance
                 )]
-                startCoordinate = accumulatedCoordinates.last
+                startCoordinate = nil
                 destinationCoordinate = nil
             } else {
                 // 아무것도 안 그렸으면 진입 전 탭 상태 복원
