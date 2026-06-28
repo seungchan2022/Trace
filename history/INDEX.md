@@ -23,6 +23,19 @@
 
 ---
 
+## MVP5 — 경로 이어붙이기 + 조작 개선 (2026-06-27 ~ 06-28)
+
+> 탭↔그리기 양방향 경로 이어붙이기(CourseSegment 세그먼트 모델), 2손가락 pan UX 보완, iOS 18 Observable 크래시 원인 규명 + 문서화, 실기기 QA 후 핀·라벨 UX 버그 수정. 마일스톤 4개.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [MVP5 설계](mvp5/2026-06-27-mvp5-design.md) | 세그먼트 모델 설계, 2손가락 pan 수정 방향, iOS 버전 전략 |
+| 플랜 | [path-stitching 플랜](mvp5/2026-06-27-mvp5-path-stitching.md) | Task 1~8, TDD CourseSegment→history→toggleDrawingMode→MapView |
+| QA | [실기기 체크리스트](mvp5/2026-06-28-mvp5-path-stitching-device-checklist.md) | 탭/그리기 혼합, 2손가락 제스처, 핀·라벨 검증 |
+| 회고 | [MVP5 완료 회고](mvp5/260628_mvp5_completion_retro.md) | 핀 소스 이중화 버그, 라벨 UX 오판, preDrawTapState 패턴 |
+
+---
+
 ## MVP4 — MKMapView 마이그레이션 + 드로우 정밀도 (2026-06-26 ~ 06-27)
 
 > SwiftUI Map 제스처 한계 해결: MKMapView(UIViewRepresentable) 교체 + 드로우/탭/2손가락 제스처 재설계. DrawnPathSampler 루프 경로 버그 수정(누적거리 기반). 마일스톤 2개.
