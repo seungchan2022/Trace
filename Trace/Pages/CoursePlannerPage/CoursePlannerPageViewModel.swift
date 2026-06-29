@@ -55,7 +55,7 @@ final class CoursePlannerPageViewModel {
     }
 
     // Live course: session history + in-progress draw overlay
-    // Draw mode에서 accumulatedCoordinates가 있으면 session 경로 뒤에 drawn 세그먼트를 붙여 표시
+    // Draw mode에서 accumulatedCoordinates가 있으면 첫 스트로크 방향에 따라 앞/뒤에 붙여 표시
     var course: PlannedCourse? {
         if interactionMode == .draw, !accumulatedCoordinates.isEmpty {
             let drawn = CourseSegment.drawn(
@@ -63,6 +63,10 @@ final class CoursePlannerPageViewModel {
                 distanceMeters: accumulatedDistance
             )
             if let sessionCourse = session.course {
+                // 첫 스트로크가 session 출발 쪽에 붙으면 drawn을 앞에 배치
+                if strokeEntries.first?.direction == .prepend {
+                    return PlannedCourse(segments: [drawn] + sessionCourse.segments)
+                }
                 return PlannedCourse(segments: sessionCourse.segments + [drawn])
             }
             return PlannedCourse(segments: [drawn])
@@ -239,11 +243,14 @@ final class CoursePlannerPageViewModel {
         let sampled = DrawnPathSampler.sample(rawStroke)
         guard sampled.count >= 2 else { return }
 
-        // 기존 drawn context 기준으로 방향 판단 (session 씨드 없음 — drawn 내부에서만 판단)
+        // 첫 스트로크(accumulated 비어 있음)는 session 경로 기준으로 방향 판단
+        // 이후 스트로크는 기존 drawn context 기준
+        let contextStart = accumulatedCoordinates.isEmpty ? session.course?.coordinates.first : accumulatedCoordinates.first
+        let contextEnd   = accumulatedCoordinates.isEmpty ? session.course?.coordinates.last  : accumulatedCoordinates.last
         let attachment = StrokeDirectionResolver.resolve(
             newStroke: sampled,
-            existingCourseStart: accumulatedCoordinates.first,
-            existingCourseEnd: accumulatedCoordinates.last
+            existingCourseStart: contextStart,
+            existingCourseEnd: contextEnd
         )
         let oriented = attachment.orientedStroke
 
@@ -260,28 +267,35 @@ final class CoursePlannerPageViewModel {
                 newDistance += leg.distanceMeters
             }
 
-            switch attachment.direction {
-            case .initial:
+            if accumulatedCoordinates.isEmpty {
+                // 첫 스트로크: 방향(prepend/append) 감지 후 initial 스타일로 할당
+                // direction은 strokeEntries에 기록되어 course computed의 display 순서에 사용됨
                 accumulatedCoordinates = newCoords
                 accumulatedDistance = newDistance
-            case .append:
-                if let existingEnd = accumulatedCoordinates.last, let newStart = newCoords.first {
-                    let connection = try await coursePlanningService.route(from: existingEnd, to: newStart)
-                    guard generation == recomputeGeneration else { isLoading = false; return }
-                    accumulatedCoordinates.append(contentsOf: Array(connection.coordinates.dropFirst()))
-                    accumulatedDistance += connection.distanceMeters
-                }
-                accumulatedCoordinates.append(contentsOf: Array(newCoords.dropFirst()))
-                accumulatedDistance += newDistance
-            case .prepend:
-                if let existingStart = accumulatedCoordinates.first, let newEnd = newCoords.last {
-                    let connection = try await coursePlanningService.route(from: newEnd, to: existingStart)
-                    guard generation == recomputeGeneration else { isLoading = false; return }
-                    var merged = newCoords
-                    merged.append(contentsOf: Array(connection.coordinates.dropFirst()))
-                    merged.append(contentsOf: Array(accumulatedCoordinates.dropFirst()))
-                    accumulatedDistance += connection.distanceMeters + newDistance
-                    accumulatedCoordinates = merged
+            } else {
+                switch attachment.direction {
+                case .initial:
+                    accumulatedCoordinates = newCoords
+                    accumulatedDistance = newDistance
+                case .append:
+                    if let existingEnd = accumulatedCoordinates.last, let newStart = newCoords.first {
+                        let connection = try await coursePlanningService.route(from: existingEnd, to: newStart)
+                        guard generation == recomputeGeneration else { isLoading = false; return }
+                        accumulatedCoordinates.append(contentsOf: Array(connection.coordinates.dropFirst()))
+                        accumulatedDistance += connection.distanceMeters
+                    }
+                    accumulatedCoordinates.append(contentsOf: Array(newCoords.dropFirst()))
+                    accumulatedDistance += newDistance
+                case .prepend:
+                    if let existingStart = accumulatedCoordinates.first, let newEnd = newCoords.last {
+                        let connection = try await coursePlanningService.route(from: newEnd, to: existingStart)
+                        guard generation == recomputeGeneration else { isLoading = false; return }
+                        var merged = newCoords
+                        merged.append(contentsOf: Array(connection.coordinates.dropFirst()))
+                        merged.append(contentsOf: Array(accumulatedCoordinates.dropFirst()))
+                        accumulatedDistance += connection.distanceMeters + newDistance
+                        accumulatedCoordinates = merged
+                    }
                 }
             }
 

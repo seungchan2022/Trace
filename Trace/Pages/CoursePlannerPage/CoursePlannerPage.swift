@@ -137,15 +137,16 @@ struct CoursePlannerPage: View {
                     systemImage: "flag.checkered"
                 ))
             }
-        } else if viewModel.interactionMode == .tap {
-            if let start = viewModel.pendingTapStart {
-                pins.append(MapPin(
-                    coordinate: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude),
-                    title: "출발",
-                    color: .systemGreen,
-                    systemImage: "figure.run"
-                ))
-            }
+        }
+        // tap 모드에서 pendingTapStart는 course 유무와 무관하게 항상 표시
+        if viewModel.interactionMode == .tap, let start = viewModel.pendingTapStart {
+            let hasCourse = viewModel.course != nil
+            pins.append(MapPin(
+                coordinate: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude),
+                title: hasCourse ? "연결점" : "출발",
+                color: hasCourse ? .systemOrange : .systemGreen,
+                systemImage: hasCourse ? "mappin.circle" : "figure.run"
+            ))
         }
         return pins
     }
