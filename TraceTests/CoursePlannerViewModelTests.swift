@@ -236,6 +236,24 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.course?.distanceMeters ?? 0, tapDistance, accuracy: 1)
     }
 
+    func testDrawModeUndoWithNoStrokes_fallsThroughToSession() async {
+        let sut = makeSUT()
+        // Build a tap segment in session
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        XCTAssertEqual(sut.session.segments.count, 1)
+
+        // Enter draw mode (no strokes drawn)
+        await sut.toggleDrawingMode()
+        XCTAssertTrue(sut.drawnStrokes.isEmpty)
+
+        // Undo in draw mode with 0 drawn strokes → falls through to session.undo()
+        await sut.undoLastStroke()
+
+        XCTAssertTrue(sut.session.segments.isEmpty, "draw mode undo with no strokes should fall through to session.undo()")
+        XCTAssertNil(sut.course)
+    }
+
     func testClearAlsoResetsSession() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))

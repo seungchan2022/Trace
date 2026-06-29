@@ -15,7 +15,7 @@ extension CoursePlannerPage {
 
             if viewModel.isDrawingMode {
                 Button("되돌리기") { Task { await viewModel.undoLastStroke() } }
-                    .disabled(viewModel.drawnStrokes.isEmpty)
+                    .disabled(!viewModel.canUndo)
                     .accessibilityIdentifier("coursePlanner.undo")
             }
 
