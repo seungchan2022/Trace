@@ -15,4 +15,13 @@ enum CourseSegment: Equatable, Sendable {
         case .tapped(_, let d), .drawn(_, let d): return d
         }
     }
+
+    func reversed() -> CourseSegment {
+        switch self {
+        case .tapped(let coords, let dist):
+            return .tapped(coordinates: coords.reversed(), distanceMeters: dist)
+        case .drawn(let coords, let dist):
+            return .drawn(coordinates: coords.reversed(), distanceMeters: dist)
+        }
+    }
 }
