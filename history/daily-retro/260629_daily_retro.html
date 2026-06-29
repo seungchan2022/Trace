@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>260629 하루 회고 — MVP6 완료</title>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#FEF3C7', primaryTextColor: '#2D2926', primaryBorderColor: '#D97706', lineColor: '#92400E', secondaryColor: '#FDF6F0', tertiaryColor: '#FFF7ED' } });
+</script>
+<style>
+  :root {
+    --bg: #FDF6F0;
+    --text: #2D2926;
+    --accent: #D97706;
+    --accent-light: #FEF3C7;
+    --heading: #92400E;
+    --border: #E5D5C5;
+    --code-bg: #FFF7ED;
+    --card-bg: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+  }
+  header {
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+  }
+  header .date {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--heading);
+    line-height: 1.3;
+  }
+  .stat-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .stat {
+    flex: 1;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat .num {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+  .stat .label {
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+  }
+  h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--heading);
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  h2::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--heading);
+    margin: 20px 0 8px;
+  }
+  p { margin-bottom: 12px; color: var(--text); }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .card p { margin-bottom: 8px; font-size: 14px; }
+  .card p:last-child { margin-bottom: 0; }
+  .insight-box {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+    margin: 10px 0;
+    font-size: 14px;
+    color: var(--heading);
+    font-weight: 500;
+  }
+  .section-summary {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .emotion-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .emotion-tag {
+    background: var(--accent-light);
+    color: var(--heading);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tomorrow-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .tomorrow-item:last-child { border-bottom: none; }
+  .tomorrow-item .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .mermaid-wrap {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+  }
+  pre.mermaid { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="date">2026년 6월 29일 · MVP6</div>
+  <h1>탭과 그리기, 하나로 합치다</h1>
+</header>
+
+<div class="stat-row">
+  <div class="stat">
+    <span class="num">9</span>
+    <span class="label">커밋</span>
+  </div>
+  <div class="stat">
+    <span class="num">2,282</span>
+    <span class="label">줄 추가</span>
+  </div>
+  <div class="stat">
+    <span class="num">77</span>
+    <span class="label">테스트 통과</span>
+  </div>
+</div>
+
+<h2>오늘 한 것</h2>
+<p>MVP6 전체를 하루에 끝냈다. "탭이든 그리기든 경로를 쌓는 방식이 달라도, 이어붙이기·되돌리기·지우기가 동일하게 동작하도록 통합." 설계 → 구현 → 테스트 → 실기기 QA → 버그 수정 → 문서 → 아카이빙까지 한 사이클이 완전히 돌았다.</p>
+
+<h2>MVP6가 해결한 것</h2>
+<div class="mermaid-wrap">
+<pre class="mermaid">
+graph LR
+  A["MVP5\n탭 = 덮어쓰기\nUndo = 그리기만\n전환 시 경로 끊김"] -->|"MVP6"| B["MVP6\n탭 누적 이어붙이기\nUndo 모드 무관\n전환해도 연결"]
+  style A fill:#FEE2E2,stroke:#EF4444,color:#7F1D1D
+  style B fill:#D1FAE5,stroke:#10B981,color:#064E3B
+</pre>
+</div>
+
+<h2>핵심 의사결정</h2>
+
+<div class="card">
+  <div class="card-title">결정 1 · 근본 구조를 갈아끼우다</div>
+  <p>기능을 붙이다 보니 탭과 그리기가 서로 다른 "층"에서 동작하고 있었다. 처음 설계에 "둘이 공존한다"는 전제가 없었기 때문이다. 패치를 덧대는 대신, 경로 편집 전담 객체를 새로 만들고 기존 구조를 교체했다.</p>
+  <div class="insight-box">문제를 인식했을 때 미루지 않고 근본부터 바꾸는 것이 맞다. 패치는 더 큰 부채가 된다.</div>
+</div>
+
+<div class="card">
+  <div class="card-title">결정 2 · 되돌리기 1번 = 사용자 행동 1번</div>
+  <p>경로를 이어붙일 때 연결 구간이 자동 생성되는데, 이걸 별도로 저장하면 되돌리기를 두 번 눌러야 한다. 연결 구간과 새 경로를 하나로 묶어서 저장해 한 번에 취소되게 했다.</p>
+  <div class="insight-box">UX는 코드의 단위가 아니라 사용자의 인지 단위로 맞춰야 한다.</div>
+</div>
+
+<div class="card">
+  <div class="card-title">결정 3 · 실기기 QA 버그 2건</div>
+  <p><strong>버그 1</strong> — 경로가 있는 상태에서 다음 지점을 탭해도 핀이 안 생겼다. 조건문이 "경로가 없을 때만" 실행되도록 잘못 묶여 있었다.</p>
+  <p><strong>버그 2</strong> — 출발점 근처에서 그려도 도착점 쪽으로 연결되어 보였다. 첫 획에서 기존 경로의 시작/끝을 참조하지 않아 방향 판단을 못 했다.</p>
+</div>
+
+<h2>의사결정 흐름</h2>
+<div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+  A["탭↔그리기 공존 전제\n초기 설계에 없음"] --> B["기능 추가할수록\n구조가 버팀"]
+  B --> C{"패치 vs 교체"}
+  C -->|"교체 선택"| D["CourseEditSession\n경로 편집 전담"]
+  D --> E["탭 누적\n되돌리기 통합\n모드 전환 연결"]
+  E --> F["실기기 QA"]
+  F --> G["버그 2건 발견"]
+  G --> H["코드 분석\n원인 파악"]
+  H --> I["수정 완료\n77/77 통과"]
+  style C fill:#FEF3C7,stroke:#D97706
+  style D fill:#D1FAE5,stroke:#10B981
+  style I fill:#D1FAE5,stroke:#10B981
+</pre>
+</div>
+
+<h2>가장 어려웠던 점</h2>
+<div class="section-summary">
+  코드를 직접 보지 않으면서 의사결정을 내리고, 그걸 말로 표현하는 것. 버그가 생기면 사용자 입장에선 "이상한 것"이고 코드 입장에선 "구조적으로 어디가 문제"인데, 그 둘을 연결해서 이해하고 다시 말로 설명해야 했다.
+</div>
+
+<h2>배운 것</h2>
+<div class="insight-box" style="margin-bottom:10px;">설계의 공백이 나중에 버그로 돌아온다. 두 개 이상의 모드가 공존하는 경우는 처음부터 명시해야 한다.</div>
+<div class="insight-box">근본 문제는 미루지 않는다. 패치가 쌓이면 나중에 더 큰 비용이 된다.</div>
+
+<h2>느낀 점</h2>
+<div class="emotion-row">
+  <span class="emotion-tag">뿌듯함</span>
+  <span class="emotion-tag">살짝 당황</span>
+  <span class="emotion-tag">해냄</span>
+</div>
+<p>하루에 한 사이클을 전부 돌았다는 게 뿌듯하다. 실기기 QA에서 버그가 나왔을 때 잠깐 당황했지만, 원인을 찾고 수정했을 때 그 뿌듯함이 더 컸다. 코드 없이 판단하는 게 생각보다 어렵다는 걸 새삼 느꼈고, 이 회고 인터뷰 자체도 쉽지 않았는데 — 그게 당연한 거라는 것도 알았다.</p>
+
+<h2>내일 / 다음 세션</h2>
+<div class="tomorrow-item">
+  <span class="icon">🔀</span>
+  <span>브랜치 머지·푸시로 MVP6 완전히 마무리</span>
+</div>
+<div class="tomorrow-item">
+  <span class="icon">📱</span>
+  <span>실기기에서 더 테스트하며 개선할 부분 탐색</span>
+</div>
+<div class="tomorrow-item">
+  <span class="icon">💡</span>
+  <span>충분하다 싶으면 다음 기능 브레인스토밍 — 방향은 다음 세션에서</span>
+</div>
+
+</body>
+</html>
