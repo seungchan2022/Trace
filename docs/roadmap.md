@@ -11,7 +11,11 @@
 
 ## 진행 중 / 예정
 
-- (현재 진행 중인 마일스톤 없음)
+### MVP6 — 탭↔그리기 통합 + undo/clear 통합   (상태: ✅ 완료)
+
+> CourseEditSession Application 레이어 도입으로 탭 경로 누적, 탭↔그리기 자동 이어붙이기, 모드 무관 undo/clear를 올바르게 구현한다.
+
+- [x] **course-edit-session** — CourseEditSession Application 오케스트레이터, ViewModel 전면 교체, View undo 통합, QA 버그 2건 수정
 
 ## MVP 목록
 

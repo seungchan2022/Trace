@@ -29,6 +29,12 @@
 - [x] **테스트 시뮬레이터 iOS 버전 전략** — MVP5에서 문서화 완료: iOS 18.x `@Observable` malloc 크래시는 Apple 런타임 버그로 확인, iOS 26.5로 우회 결정. 상세: `docs/solutions/workflow-issues/ios18-observable-malloc-crash.md`. `done`
 - [x] **SwiftUI Map → MKMapView 교체** — MVP4에서 해결: MKMapView(UIViewRepresentable) 마이그레이션 완료, MKOverlay/MKAnnotation delegate 방식으로 전환. `done`
 
+## MVP5 (2026-06-28) 실기기 피드백
+
+- [x] **탭 경로 연속 누적 불가** — MVP6에서 해결: CourseEditSession.attach로 세그먼트 누적, 탭마다 이어붙이기. `done`
+- [x] **탭↔그리기 경로 자동 이어붙이기** — MVP6에서 해결: session 끝점 기준 방향 감지 + gap 라우팅 자동 연결. `done`
+- [x] **undo/clear 그리기 모드 전용** — MVP6에서 해결: canUndo 모드 무관 통합, session.undo() 폴스루. `done`
+
 ## MVP4 (2026-06-27) 실기기 피드백
 
 - [ ] **핀치 줌 UX 개선** — *where:* 그리기 모드 / *now:* 커스텀 UIPinchGestureRecognizer로 구현했으나 내장 MKMapView 핀치보다 부자연스러움 / *desired:* 내장 MKMapView 핀치와 동등한 감도·가속도 구현 또는 대안 탐색. `open`
