@@ -11,7 +11,7 @@
 
 ## 진행 중 / 예정
 
-### MVP6 — 탭↔그리기 통합 + undo/clear 통합   (상태: ✅ 완료)
+### MVP6 — 탭↔그리기 통합 + undo/clear 통합   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp6/`](history/mvp6/))
 
 > CourseEditSession Application 레이어 도입으로 탭 경로 누적, 탭↔그리기 자동 이어붙이기, 모드 무관 undo/clear를 올바르게 구현한다.
 

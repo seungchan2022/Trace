@@ -23,6 +23,18 @@
 
 ---
 
+## MVP6 — 탭↔그리기 통합 + undo/clear 통합 (2026-06-29)
+
+> CourseEditSession Application 레이어 도입. 탭 경로 누적, 탭↔그리기 자동 이어붙이기, 모드 무관 undo/clear 구현. 마일스톤 1개 + QA 버그 2건 수정.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [course-edit-session 설계](mvp6/2026-06-29-course-edit-session-design.md) | CourseEditSession 오케스트레이터, attach/undo/clear, 4쌍 방향 판단 + gap 라우팅 |
+| 플랜 | [course-edit-session 플랜](mvp6/2026-06-29-course-edit-session.md) | Task 1~3, TDD CourseEditSession→ViewModel→View |
+| 회고 | [MVP6 완료 회고](mvp6/260629_mvp6_completion_retro.md) | nil 케이스 설계 누락, Xcode 26 파일 자동 감지, SDD ledger 효과 |
+
+---
+
 ## MVP5 — 경로 이어붙이기 + 조작 개선 (2026-06-27 ~ 06-28)
 
 > 탭↔그리기 양방향 경로 이어붙이기(CourseSegment 세그먼트 모델), 2손가락 pan UX 보완, iOS 18 Observable 크래시 원인 규명 + 문서화, 실기기 QA 후 핀·라벨 UX 버그 수정. 마일스톤 4개.
