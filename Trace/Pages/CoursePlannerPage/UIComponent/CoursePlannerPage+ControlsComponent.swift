@@ -13,11 +13,9 @@ extension CoursePlannerPage {
             }
             .accessibilityIdentifier("coursePlanner.drawToggle")
 
-            if viewModel.isDrawingMode {
-                Button("되돌리기") { Task { await viewModel.undoLastStroke() } }
-                    .disabled(!viewModel.canUndo)
-                    .accessibilityIdentifier("coursePlanner.undo")
-            }
+            Button("되돌리기") { Task { await viewModel.undoLastStroke() } }
+                .disabled(!viewModel.canUndo)
+                .accessibilityIdentifier("coursePlanner.undo")
 
             Button("초기화") { viewModel.clear() }
                 .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
