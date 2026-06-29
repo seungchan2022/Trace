@@ -10,8 +10,7 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
 
         await viewModel.handleMapTap(at: start)
 
-        XCTAssertEqual(viewModel.startCoordinate?.latitude, start.latitude)
-        XCTAssertNil(viewModel.destinationCoordinate)
+        XCTAssertEqual(viewModel.pendingTapStart?.latitude, start.latitude)
         XCTAssertNil(viewModel.course)
         XCTAssertEqual(service.requestCount, 0)
     }
@@ -25,7 +24,6 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
         await viewModel.handleMapTap(at: start)
         await viewModel.handleMapTap(at: destination)
 
-        XCTAssertEqual(viewModel.destinationCoordinate?.latitude, destination.latitude)
         XCTAssertEqual(viewModel.course?.distanceMeters, 1200)
         XCTAssertEqual(viewModel.distanceText, "1.20 km")
         XCTAssertNil(viewModel.errorMessage)
@@ -75,6 +73,7 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
             CourseCoordinate(latitude: 37.52, longitude: 127.00),
         ]
 
+        await viewModel.toggleDrawingMode()
         await viewModel.appendStroke(stroke)
 
         XCTAssertNotNil(viewModel.course)
@@ -87,6 +86,7 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
         service.result = .failure(CoursePlanningError.requestFailed)
         let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: FakeLocationService())
 
+        await viewModel.toggleDrawingMode()
         await viewModel.appendStroke([
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
             CourseCoordinate(latitude: 37.51, longitude: 127.00),
@@ -100,6 +100,7 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
         let service = FakeCoursePlanningService()
         let viewModel = CoursePlannerPageViewModel(coursePlanningService: service, locationService: FakeLocationService())
 
+        await viewModel.toggleDrawingMode()
         // 1. 성공적으로 첫 스트로크 추가 → course 생성 확인
         await viewModel.appendStroke([
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
@@ -120,15 +121,16 @@ final class CoursePlannerPageViewModelTests: XCTestCase {
         XCTAssertNotNil(viewModel.errorMessage, "스냅 실패 시 에러 메시지가 설정되어야 합니다")
     }
 
-    func testToggleDrawingModeFlips() {
+    func testToggleDrawingModeFlips() async {
         let viewModel = CoursePlannerPageViewModel(coursePlanningService: FakeCoursePlanningService(), locationService: FakeLocationService())
         XCTAssertFalse(viewModel.isDrawingMode)
-        viewModel.toggleDrawingMode()
+        await viewModel.toggleDrawingMode()
         XCTAssertTrue(viewModel.isDrawingMode)
     }
 
     func testUndoRemovesLastStroke() async {
         let viewModel = CoursePlannerPageViewModel(coursePlanningService: FakeCoursePlanningService(), locationService: FakeLocationService())
+        await viewModel.toggleDrawingMode()
         await viewModel.appendStroke([
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
             CourseCoordinate(latitude: 37.51, longitude: 127.00),

@@ -138,7 +138,7 @@ struct CoursePlannerPage: View {
                 ))
             }
         } else if viewModel.interactionMode == .tap {
-            if let start = viewModel.startCoordinate {
+            if let start = viewModel.pendingTapStart {
                 pins.append(MapPin(
                     coordinate: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude),
                     title: "출발",

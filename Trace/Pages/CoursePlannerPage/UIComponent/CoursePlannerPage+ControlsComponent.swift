@@ -4,7 +4,7 @@ extension CoursePlannerPage {
     var controls: some View {
         HStack(spacing: 12) {
             Button {
-                viewModel.toggleDrawingMode()
+                Task { await viewModel.toggleDrawingMode() }
             } label: {
                 Label(
                     viewModel.isDrawingMode ? "그리기" : "경로 찍기",
@@ -20,7 +20,7 @@ extension CoursePlannerPage {
             }
 
             Button("초기화") { viewModel.clear() }
-                .disabled(viewModel.course == nil && viewModel.startCoordinate == nil)
+                .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
                 .accessibilityIdentifier("coursePlanner.clear")
         }
         .buttonStyle(.borderedProminent)
