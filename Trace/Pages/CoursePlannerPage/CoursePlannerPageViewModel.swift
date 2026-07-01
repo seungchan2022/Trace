@@ -110,6 +110,11 @@ final class CoursePlannerPageViewModel {
         do {
             let result = try await coursePlanningService.route(from: start, to: coordinate)
             guard generation == recomputeGeneration else { isLoading = false; return }
+            guard result.coordinates.count >= 2 else {
+                errorMessage = "도보 경로를 찾을 수 없습니다."
+                isLoading = false
+                return
+            }
             let segment = CourseSegment.tapped(
                 coordinates: result.coordinates,
                 distanceMeters: result.distanceMeters
@@ -168,6 +173,11 @@ final class CoursePlannerPageViewModel {
             for i in 0..<(sampled.count - 1) {
                 let leg = try await coursePlanningService.route(from: sampled[i], to: sampled[i + 1])
                 guard generation == recomputeGeneration else { isLoading = false; return }
+                guard leg.coordinates.count >= 2 else {
+                    errorMessage = "도보 경로를 찾을 수 없습니다."
+                    isLoading = false
+                    return
+                }
                 coords.append(contentsOf: coords.isEmpty ? leg.coordinates : Array(leg.coordinates.dropFirst()))
                 distance += leg.distanceMeters
             }

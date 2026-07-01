@@ -38,6 +38,8 @@
 ## 코스 편집 UX 개선 (2026-07-01) 실기기 피드백
 
 - [x] **undo가 prepend된 최근 구간을 못 지움** — 이번에 해결: `segments`는 "공간순"인데 attach는 "시간순"이라 prepend 시 두 순서가 갈라져 undo가 엉뚱한 구간을 지우던 버그. `CourseEditSession`에 `Entry{id, order, segment}` 도입해 시간순(`order`)을 별도 추적, undo는 `order` 최대값 제거로 수정. `segmentColorKeys`(attach 생성 순서)를 분리해 prepend 후에도 기존 구간 색상이 안 바뀌도록 함. 실기기 검증 완료. `done`
+- [x] **(C) 짧은 거리 도착 마커 미표시** — 이번에 해결: 거리 라벨 annotation과 위치가 겹칠 때 MapKit이 충돌 처리로 핀을 자동으로 숨기던 문제. `MKAnnotationView.displayPriority = .required`, `collisionMode = .none`으로 수정(핀은 최대 2개뿐이라 성능 영향 없음). 좌표 2개 미만의 축약된 route 결과에 대한 방어 guard도 함께 추가. 실기기 검증 완료. `done`
+- [ ] **(D) 내 위치 이동 버튼 오작동/지연** — 아직 미해결. 원인 규명 필요, `systematic-debugging`으로 별도 세션 처리. `open`
 - [ ] **실시간 구간 패널 무한 확장** — *where:* 지도 우측 상단 구간 패널(펼침 상태) / *now:* 구간이 늘어날수록 목록 높이가 계속 커져서 화면을 덮을 수 있음 / *desired:* 최대 높이를 두고 그 이상은 스크롤. `open`
 - [ ] **겹치는 경로 렌더링 방식** — *where:* 지도 위 구간 폴리라인 / *now:* 경로가 겹치면 최신 구간이 이전 구간을 그냥 덮어써서 아래 구간이 안 보임 / *desired:* 설계 논의 필요(오프셋, 스타일 구분 등) — brainstorm 대상. `open`
 

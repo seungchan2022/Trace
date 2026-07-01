@@ -283,6 +283,9 @@ extension MapViewRepresentable {
             let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "coloredPin")
             view.markerTintColor = pin.color
             view.glyphImage = UIImage(systemName: pin.systemImage)
+            // 출발/도착 핀은 거리 라벨과 겹쳐도 MapKit 충돌 처리로 가려지면 안 됨(최대 2개뿐이라 성능 영향 없음)
+            view.displayPriority = .required
+            view.collisionMode = .none
             return view
         }
 

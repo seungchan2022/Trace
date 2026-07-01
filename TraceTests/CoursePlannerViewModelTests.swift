@@ -220,6 +220,26 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.errorMessage, "도보 경로를 찾을 수 없습니다.")
     }
 
+    func testTapDegenerateRoute_singleCoordinate_showsErrorAndDoesNotAttach() async {
+        let service = StubCoursePlanningService()
+        let single = CourseCoordinate(latitude: 37.5665, longitude: 126.9780)
+        // route 서비스가 실패(throw)하지 않고 "성공"하지만 좌표가 1개뿐인 축약된 경로를 반환하는 경우
+        // (두 탭 좌표가 거의 동일하거나 매우 짧은 스트로크일 때 MapKit이 반환할 수 있는 경계 사례)
+        service.stubbedResult = PlannedCourse(
+            segments: [.tapped(coordinates: [single], distanceMeters: 0)]
+        )
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+
+        await sut.handleMapTap(at: single)
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.5666, longitude: 126.9781))
+
+        XCTAssertNil(sut.course, "좌표 1개짜리 route는 유효한 구간으로 attach되면 안 됨")
+        XCTAssertEqual(sut.errorMessage, "도보 경로를 찾을 수 없습니다.")
+    }
+
     func testFailedAttach_doesNotResetSelectedSegmentIndex() async {
         let service = StubCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
