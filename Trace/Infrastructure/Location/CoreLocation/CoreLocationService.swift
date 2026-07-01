@@ -4,12 +4,13 @@ import Foundation
 @MainActor
 final class CoreLocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
-    private var continuation: CheckedContinuation<CourseCoordinate, Error>?
+    // 부트스트랩(.task)과 "내 위치로 이동" 버튼이 겹쳐 호출될 수 있어, 진행 중인 요청이 있으면
+    // 새 요청을 거부하는 대신 같은 결과를 함께 기다리게 한다. (겹쳐 호출 시 즉시 실패 버그 수정)
+    private let broadcaster = ContinuationBroadcaster<CourseCoordinate>()
 
     func currentLocation() async throws -> CourseCoordinate {
-        guard continuation == nil else { throw LocationError.unavailable }
-        return try await withCheckedThrowingContinuation { continuation in
-            self.continuation = continuation
+        try await withCheckedThrowingContinuation { continuation in
+            guard broadcaster.addWaiter(continuation) else { return }
             manager.delegate = self
             switch manager.authorizationStatus {
             case .notDetermined:
@@ -25,9 +26,7 @@ final class CoreLocationService: NSObject, LocationServiceProtocol, CLLocationMa
     }
 
     private func finish(_ result: Result<CourseCoordinate, Error>) {
-        guard let continuation else { return }
-        self.continuation = nil
-        continuation.resume(with: result)
+        broadcaster.resumeAll(with: result)
     }
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
