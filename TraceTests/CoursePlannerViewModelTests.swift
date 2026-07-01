@@ -173,6 +173,38 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.session.segments.count, 2)
     }
 
+    func testUndo_clearsSelectedSegmentIndex() async {
+        let sut = makeSUT()
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.52, longitude: 127.00))
+        XCTAssertEqual(sut.session.segments.count, 2)
+
+        sut.selectSegment(at: 1)
+        XCTAssertEqual(sut.selectedSegmentIndex, 1)
+
+        await sut.undo()
+
+        XCTAssertNil(sut.selectedSegmentIndex, "undo로 세그먼트 배열이 바뀌면 선택된 인덱스는 무효화되어야 함")
+    }
+
+    func testAttachPrepend_clearsSelectedSegmentIndex() async {
+        let sut = makeSUT()
+        // A(37.50)→B(37.51) 세그먼트
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        XCTAssertEqual(sut.session.segments.count, 1)
+
+        sut.selectSegment(at: 0)
+        XCTAssertEqual(sut.selectedSegmentIndex, 0)
+
+        // 새 탭이 A(37.50)에 훨씬 가까움 → 출발쪽에서 연결(prepend)되어 기존 세그먼트 인덱스가 밀림
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.499, longitude: 127.00))
+
+        XCTAssertEqual(sut.session.segments.count, 2)
+        XCTAssertNil(sut.selectedSegmentIndex, "prepend로 기존 인덱스가 가리키는 세그먼트가 바뀌므로 선택은 초기화되어야 함")
+    }
+
     func testTapRouteNotFound_showsErrorAndDoesNotAttach() async {
         let service = StubCoursePlanningService()
         service.stubbedError = CoursePlanningError.routeNotFound
@@ -186,6 +218,26 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
         XCTAssertNil(sut.course)
         XCTAssertEqual(sut.errorMessage, "도보 경로를 찾을 수 없습니다.")
+    }
+
+    func testFailedAttach_doesNotResetSelectedSegmentIndex() async {
+        let service = StubCoursePlanningService()
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        XCTAssertEqual(sut.session.segments.count, 1)
+
+        sut.selectSegment(at: 0)
+        XCTAssertEqual(sut.selectedSegmentIndex, 0)
+
+        service.stubbedError = CoursePlanningError.routeNotFound
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.52, longitude: 127.00))
+
+        XCTAssertEqual(sut.session.segments.count, 1, "실패한 attach는 세그먼트를 추가하지 않아야 함")
+        XCTAssertEqual(sut.selectedSegmentIndex, 0, "attach 실패 시 기존 선택은 유지되어야 함")
     }
 
     // MARK: - Draw mode: stroke = segment

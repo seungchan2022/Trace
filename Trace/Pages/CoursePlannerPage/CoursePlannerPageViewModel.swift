@@ -112,6 +112,7 @@ final class CoursePlannerPageViewModel {
                 distanceMeters: result.distanceMeters
             )
             try await session.attach(segment, using: coursePlanningService)
+            selectedSegmentIndex = nil
         } catch CoursePlanningError.routeNotFound {
             guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "도보 경로를 찾을 수 없습니다."
@@ -169,6 +170,7 @@ final class CoursePlannerPageViewModel {
             }
             let segment = CourseSegment.drawn(coordinates: coords, distanceMeters: distance)
             try await session.attach(segment, using: coursePlanningService)
+            selectedSegmentIndex = nil
         } catch CoursePlanningError.throttled {
             guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "요청이 많아 잠시 후 다시 시도해주세요"
@@ -183,6 +185,7 @@ final class CoursePlannerPageViewModel {
 
     func undo() async {
         session.undo()
+        selectedSegmentIndex = nil
     }
 
     func clear() {
