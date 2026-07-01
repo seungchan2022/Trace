@@ -72,8 +72,9 @@ struct CoursePlannerPage: View {
     private var mapView: some View {
         MapViewRepresentable(
             region: $cameraRegion,
-            overlayCoordinates: overlayCoordinates,
+            segments: viewModel.course?.segments ?? [],
             pins: mapPins,
+            selectedSegmentIndex: viewModel.selectedSegmentIndex,
             isDrawingMode: viewModel.isDrawingMode,
             onStrokeUpdate: { points in currentStrokePoints = points },
             onStrokeEnded: { stroke in Task { await viewModel.appendStroke(stroke) } },
@@ -110,12 +111,6 @@ struct CoursePlannerPage: View {
             }
             .padding()
         }
-    }
-
-    private var overlayCoordinates: [CLLocationCoordinate2D] {
-        viewModel.course?.coordinates.map {
-            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
-        } ?? []
     }
 
     private var mapPins: [MapPin] {

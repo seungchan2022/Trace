@@ -30,12 +30,73 @@ final class ColoredPinAnnotation: NSObject, MKAnnotation {
     }
 }
 
+final class SegmentPolyline: MKPolyline {
+    var segmentIndex: Int = 0
+}
+
+final class SegmentDistanceAnnotation: NSObject, MKAnnotation {
+    let coordinate: CLLocationCoordinate2D
+    let distanceText: String
+    let color: UIColor
+
+    init(coordinate: CLLocationCoordinate2D, distanceText: String, color: UIColor) {
+        self.coordinate = coordinate
+        self.distanceText = distanceText
+        self.color = color
+    }
+}
+
+final class SegmentDistanceAnnotationView: MKAnnotationView {
+    private let label = UILabel()
+
+    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        label.font = .systemFont(ofSize: 11, weight: .semibold)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.layer.cornerRadius = 4
+        label.layer.masksToBounds = true
+        addSubview(label)
+        canShowCallout = false
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func configure(text: String, color: UIColor) {
+        label.text = " \(text) "
+        label.backgroundColor = color
+        label.sizeToFit()
+        bounds = label.bounds
+        centerOffset = .zero
+    }
+}
+
+fileprivate struct SegmentSnapshot: Equatable {
+    let coordinateCount: Int
+    let first: CLLocationCoordinate2D?
+    let last: CLLocationCoordinate2D?
+
+    static func == (lhs: SegmentSnapshot, rhs: SegmentSnapshot) -> Bool {
+        guard lhs.coordinateCount == rhs.coordinateCount else { return false }
+        switch (lhs.first, rhs.first, lhs.last, rhs.last) {
+        case (nil, nil, nil, nil): return true
+        case let (lf?, rf?, ll?, rl?):
+            return abs(lf.latitude - rf.latitude) < 0.00001 &&
+                abs(ll.latitude - rl.latitude) < 0.00001
+        default: return false
+        }
+    }
+}
+
 // MARK: - MapViewRepresentable
 
 struct MapViewRepresentable: UIViewRepresentable {
     @Binding var region: MKCoordinateRegion
-    var overlayCoordinates: [CLLocationCoordinate2D]
+    var segments: [CourseSegment]
     var pins: [MapPin]
+    var selectedSegmentIndex: Int?
     var isDrawingMode: Bool
     var onStrokeUpdate: ([CGPoint]) -> Void
     var onStrokeEnded: ([CourseCoordinate]) -> Void
@@ -51,7 +112,6 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.showsUserLocation = true
         mapView.setRegion(region, animated: false)
 
-        // 1손가락 드로우 GR (초기엔 비활성)
         let drawGR = UIPanGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handleDraw(_:))
@@ -61,7 +121,6 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.addGestureRecognizer(drawGR)
         context.coordinator.drawGestureRecognizer = drawGR
 
-        // 2손가락 pan GR (그리기 모드에서 지도 이동, 초기엔 비활성)
         let twoFingerPanGR = UIPanGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handleTwoFingerPan(_:))
@@ -72,7 +131,6 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.addGestureRecognizer(twoFingerPanGR)
         context.coordinator.twoFingerPanGestureRecognizer = twoFingerPanGR
 
-        // 핀치 GR (그리기 모드에서 줌, 초기엔 비활성)
         let pinchGR = UIPinchGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handlePinch(_:))
@@ -81,7 +139,6 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.addGestureRecognizer(pinchGR)
         context.coordinator.pinchGestureRecognizer = pinchGR
 
-        // 탭 GR
         let tapGR = UITapGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handleTap(_:))
@@ -96,7 +153,6 @@ struct MapViewRepresentable: UIViewRepresentable {
     func updateUIView(_ uiView: MKMapView, context: Context) {
         context.coordinator.parent = self
 
-        // Camera: parent가 시작한 유의미한 이동만 반영 (무한루프 방지)
         let mapCenter = uiView.region.center
         let latDiff = abs(mapCenter.latitude - region.center.latitude)
         let lonDiff = abs(mapCenter.longitude - region.center.longitude)
@@ -105,28 +161,46 @@ struct MapViewRepresentable: UIViewRepresentable {
             uiView.setRegion(region, animated: true)
         }
 
-        // Overlays: count + 첫/끝 좌표가 달라질 때만 교체
-        let existingPolyline = uiView.overlays.compactMap { $0 as? MKPolyline }.first
-        let needsOverlayUpdate: Bool = {
-            guard let existingPolyline, existingPolyline.pointCount == overlayCoordinates.count,
-                  !overlayCoordinates.isEmpty else {
-                return (existingPolyline?.pointCount ?? 0) != overlayCoordinates.count
-            }
-            let pts = existingPolyline.points()
-            let first = pts[0].coordinate
-            let last = pts[existingPolyline.pointCount - 1].coordinate
-            return abs(first.latitude - overlayCoordinates[0].latitude) > 0.00001 ||
-                abs(last.latitude - overlayCoordinates[overlayCoordinates.count - 1].latitude) > 0.00001
-        }()
-        if needsOverlayUpdate {
+        let currentSnapshots = segments.map {
+            SegmentSnapshot(
+                coordinateCount: $0.coordinates.count,
+                first: $0.coordinates.first.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) },
+                last: $0.coordinates.last.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+            )
+        }
+        if context.coordinator.lastSegmentSnapshots != currentSnapshots {
             uiView.removeOverlays(uiView.overlays)
-            if !overlayCoordinates.isEmpty {
-                var coords = overlayCoordinates
-                uiView.addOverlay(MKPolyline(coordinates: &coords, count: coords.count))
+            uiView.removeAnnotations(uiView.annotations.filter { $0 is SegmentDistanceAnnotation })
+            for (index, segment) in segments.enumerated() {
+                var coords = segment.coordinates.map {
+                    CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+                }
+                guard coords.count >= 2 else { continue }
+                let polyline = SegmentPolyline(coordinates: &coords, count: coords.count)
+                polyline.segmentIndex = index
+                uiView.addOverlay(polyline)
+
+                let midIndex = coords.count / 2
+                let annotation = SegmentDistanceAnnotation(
+                    coordinate: coords[midIndex],
+                    distanceText: String(format: "%.0fm", segment.distanceMeters),
+                    color: SegmentPalette.color(at: index)
+                )
+                uiView.addAnnotation(annotation)
+            }
+            context.coordinator.lastSegmentSnapshots = currentSnapshots
+        }
+
+        if context.coordinator.lastSelectedIndex != selectedSegmentIndex {
+            context.coordinator.lastSelectedIndex = selectedSegmentIndex
+            for overlay in uiView.overlays {
+                guard let polyline = overlay as? SegmentPolyline,
+                      let renderer = uiView.renderer(for: polyline) as? MKPolylineRenderer else { continue }
+                configureRenderer(renderer, segmentIndex: polyline.segmentIndex, selected: selectedSegmentIndex)
+                renderer.setNeedsDisplay()
             }
         }
 
-        // Annotations: 최대 2개, 변경 시 재구성
         let existing = uiView.annotations.filter { !($0 is MKUserLocation) }
             .compactMap { $0 as? ColoredPinAnnotation }
         let pinsChanged = existing.count != pins.count ||
@@ -135,7 +209,7 @@ struct MapViewRepresentable: UIViewRepresentable {
                 abs(ann.coordinate.longitude - pin.coordinate.longitude) > 0.00001
             }
         if pinsChanged {
-            uiView.removeAnnotations(uiView.annotations.filter { !($0 is MKUserLocation) })
+            uiView.removeAnnotations(uiView.annotations.compactMap { $0 as? ColoredPinAnnotation })
             for pin in pins {
                 uiView.addAnnotation(ColoredPinAnnotation(
                     coordinate: pin.coordinate,
@@ -146,7 +220,6 @@ struct MapViewRepresentable: UIViewRepresentable {
             }
         }
 
-        // 제스처 모드 동기화
         let wasDrawing = context.coordinator.drawGestureRecognizer?.isEnabled ?? false
         if wasDrawing != isDrawingMode {
             uiView.isScrollEnabled = !isDrawingMode
@@ -159,6 +232,11 @@ struct MapViewRepresentable: UIViewRepresentable {
             context.coordinator.tapGestureRecognizer?.isEnabled = !isDrawingMode
         }
     }
+
+    private func configureRenderer(_ renderer: MKPolylineRenderer, segmentIndex: Int, selected: Int?) {
+        renderer.strokeColor = SegmentPalette.color(at: segmentIndex)
+        renderer.lineWidth = segmentIndex == selected ? 9 : 6
+    }
 }
 
 // MARK: - Coordinator
@@ -166,6 +244,8 @@ struct MapViewRepresentable: UIViewRepresentable {
 extension MapViewRepresentable {
     final class Coordinator: NSObject, MKMapViewDelegate {
         var parent: MapViewRepresentable
+        fileprivate var lastSegmentSnapshots: [SegmentSnapshot] = []
+        var lastSelectedIndex: Int?
 
         init(parent: MapViewRepresentable) {
             self.parent = parent
@@ -174,18 +254,25 @@ extension MapViewRepresentable {
         // MARK: Overlay
 
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-            guard let polyline = overlay as? MKPolyline else {
+            guard let polyline = overlay as? SegmentPolyline else {
                 return MKOverlayRenderer(overlay: overlay)
             }
             let renderer = MKPolylineRenderer(polyline: polyline)
-            renderer.strokeColor = .systemBlue
-            renderer.lineWidth = 6
+            parent.configureRenderer(renderer, segmentIndex: polyline.segmentIndex, selected: parent.selectedSegmentIndex)
             return renderer
         }
 
         // MARK: Annotation
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+            if let distanceAnnotation = annotation as? SegmentDistanceAnnotation {
+                let identifier = "segmentDistance"
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? SegmentDistanceAnnotationView
+                    ?? SegmentDistanceAnnotationView(annotation: distanceAnnotation, reuseIdentifier: identifier)
+                view.annotation = distanceAnnotation
+                view.configure(text: distanceAnnotation.distanceText, color: distanceAnnotation.color)
+                return view
+            }
             guard let pin = annotation as? ColoredPinAnnotation else { return nil }
             let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "coloredPin")
             view.markerTintColor = pin.color
@@ -216,7 +303,6 @@ extension MapViewRepresentable {
         @objc func handleDraw(_ recognizer: UIPanGestureRecognizer) {
             guard let mapView = recognizer.view as? MKMapView else { return }
 
-            // 두 번째 손가락이 들어오면 진행 중인 stroke 취소
             if recognizer.numberOfTouches > 1 {
                 currentStrokePoints = []
                 currentStrokeCoords = []
