@@ -108,15 +108,29 @@ final class CoursePlannerPageViewModel {
         guard interactionMode == .tap else { return }
 
         if pendingTapStart == nil {
-            // First tap: set pending start, show pin
+            if let start = nearestEndpoint(to: coordinate) {
+                await routeAndAttach(from: start, to: coordinate)
+                return
+            }
+            // First tap when no course exists yet: set pending start, show pin
             pendingTapStart = coordinate
             return
         }
 
-        // Second tap: route start→coordinate then attach to session
+        // Second tap of the initial pair: route start→coordinate then attach
         guard let start = pendingTapStart else { return }
         pendingTapStart = nil
+        await routeAndAttach(from: start, to: coordinate)
+    }
 
+    private func nearestEndpoint(to coordinate: CourseCoordinate) -> CourseCoordinate? {
+        guard let course = session.course,
+              let start = course.coordinates.first,
+              let end = course.coordinates.last else { return nil }
+        return coordinate.distanceMeters(to: start) <= coordinate.distanceMeters(to: end) ? start : end
+    }
+
+    private func routeAndAttach(from start: CourseCoordinate, to coordinate: CourseCoordinate) async {
         recomputeGeneration += 1
         let generation = recomputeGeneration
         isLoading = true

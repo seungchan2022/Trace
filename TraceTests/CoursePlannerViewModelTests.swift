@@ -116,6 +116,34 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Tap accumulation (MVP6 핵심)
 
+    func testThirdTap_afterExistingSegment_autoConnectsWithSingleTap() async {
+        let sut = makeSUT()
+        // 최초 2탭: A→B, 세그먼트 1개
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        XCTAssertEqual(sut.session.segments.count, 1)
+
+        // 세 번째 탭 1번만으로 바로 연결되어야 함 (pendingTapStart를 거치지 않음)
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.52, longitude: 127.00))
+
+        XCTAssertNil(sut.pendingTapStart, "자동 연결 탭에는 대기 상태가 없어야 함")
+        XCTAssertEqual(sut.session.segments.count, 2)
+    }
+
+    func testAutoConnect_choosesNearerEndpoint() async {
+        let sut = makeSUT()
+        // A(37.50)→B(37.51) 세그먼트
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        XCTAssertEqual(sut.session.segments.count, 1)
+
+        // 새 탭이 A(37.50)에 훨씬 가까움 → 출발쪽에서 연결(prepend)되어야 함
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.499, longitude: 127.00))
+
+        XCTAssertEqual(sut.session.segments.count, 2)
+        XCTAssertEqual(sut.course?.coordinates.first?.latitude ?? 0, 37.499, accuracy: 0.001)
+    }
+
     func testFirstTap_setsPendingStart() async {
         let sut = makeSUT()
         let coord = CourseCoordinate(latitude: 37.5, longitude: 127.0)
@@ -140,10 +168,13 @@ final class CoursePlannerViewModelTests: XCTestCase {
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
         XCTAssertEqual(sut.session.segments.count, 1)
 
-        // 두 번째 쌍: C→D
+        // 세 번째 탭부터 자동 연결: C는 B에 가까워서 자동 연결
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.52, longitude: 127.00))
+        XCTAssertEqual(sut.session.segments.count, 2)
+
+        // 네 번째 탭도 자동 연결
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.53, longitude: 127.00))
-        XCTAssertEqual(sut.session.segments.count, 2, "탭이 누적되어야 함 — 두 번째 쌍이 덮어쓰면 안 됨")
+        XCTAssertEqual(sut.session.segments.count, 3, "탭이 누적되어야 함 — 자동 연결로 각 탭마다 새 세그먼트 생성")
         XCTAssertNotNil(sut.course)
     }
 
@@ -153,10 +184,10 @@ final class CoursePlannerViewModelTests: XCTestCase {
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.52, longitude: 127.00))
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.53, longitude: 127.00))
-        XCTAssertEqual(sut.session.segments.count, 2)
+        XCTAssertEqual(sut.session.segments.count, 3, "자동 연결로 3개 세그먼트 생성")
 
         await sut.undoLastStroke()
-        XCTAssertEqual(sut.session.segments.count, 1)
+        XCTAssertEqual(sut.session.segments.count, 2)
     }
 
     // MARK: - Incremental stroke pipeline
