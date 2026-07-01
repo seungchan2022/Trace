@@ -13,7 +13,7 @@ extension CoursePlannerPage {
             }
             .accessibilityIdentifier("coursePlanner.drawToggle")
 
-            Button("되돌리기") { Task { await viewModel.undoLastStroke() } }
+            Button("되돌리기") { Task { await viewModel.undo() } }
                 .disabled(!viewModel.canUndo)
                 .accessibilityIdentifier("coursePlanner.undo")
 
