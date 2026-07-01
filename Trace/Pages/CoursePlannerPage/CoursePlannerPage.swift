@@ -9,6 +9,7 @@ struct CoursePlannerPage: View {
         longitudinalMeters: 500
     )
     @State private var currentStrokePoints: [CGPoint] = []
+    @State var isSegmentPanelExpanded = false
     @Environment(\.scenePhase) private var scenePhase
 
     private let cameraStateStore: CameraStateStore
@@ -53,6 +54,13 @@ struct CoursePlannerPage: View {
                         longitudinalMeters: 500
                     )
                 }
+            }
+            .onChange(of: viewModel.selectedSegmentIndex) { _, newIndex in
+                guard let newIndex,
+                      let segments = viewModel.course?.segments,
+                      newIndex < segments.count,
+                      let region = regionFitting(segments[newIndex].coordinates) else { return }
+                cameraRegion = region
             }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .background {
@@ -111,6 +119,9 @@ struct CoursePlannerPage: View {
             }
             .padding()
         }
+        .overlay(alignment: .topTrailing) {
+            segmentPanel
+        }
     }
 
     private var mapPins: [MapPin] {
@@ -153,6 +164,20 @@ struct CoursePlannerPage: View {
             longitudinalMeters: cameraRegion.span.longitudeDelta * 111_000
                 * cos(cameraRegion.center.latitude * .pi / 180)
         )
+    }
+
+    private func regionFitting(_ coordinates: [CourseCoordinate]) -> MKCoordinateRegion? {
+        guard !coordinates.isEmpty else { return nil }
+        let lats = coordinates.map(\.latitude)
+        let lons = coordinates.map(\.longitude)
+        guard let minLat = lats.min(), let maxLat = lats.max(),
+              let minLon = lons.min(), let maxLon = lons.max() else { return nil }
+        let center = CLLocationCoordinate2D(latitude: (minLat + maxLat) / 2, longitude: (minLon + maxLon) / 2)
+        let span = MKCoordinateSpan(
+            latitudeDelta: max((maxLat - minLat) * 1.6, 0.003),
+            longitudeDelta: max((maxLon - minLon) * 1.6, 0.003)
+        )
+        return MKCoordinateRegion(center: center, span: span)
     }
 
     private var statusPanel: some View {
