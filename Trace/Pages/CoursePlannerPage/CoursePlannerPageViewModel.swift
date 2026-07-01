@@ -44,6 +44,9 @@ final class CoursePlannerPageViewModel {
 
     var course: PlannedCourse? { session.course }
 
+    // course.segments와 같은 순서로 정렬된 attach 순번(색상 identity, prepend에도 안정적)
+    var segmentColorKeys: [Int] { session.segmentColorKeys }
+
     var distanceText: String? {
         guard let course else { return nil }
         return String(format: "%.2f km", course.distanceMeters / 1000)

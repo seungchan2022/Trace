@@ -123,6 +123,43 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(session.segments.count, 1, "gap이 병합됐으므로 undo 1번에 하나만 남아야 함")
         XCTAssertEqual(session.course?.coordinates.last, B)
     }
+
+    // MARK: - undo after prepend (시간순 vs 공간순)
+
+    func testUndo_afterPrepend_removesMostRecentlyAttachedNotSpatialLast() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: A→B, then B→C (append) → 공간 순서: A-B-C
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        // D→A를 prepend (기존 시작 A 근처) → 공간 순서: D-A-B-C, 하지만 시간상 가장 최근 attach는 D→A
+        let near_A = CourseCoordinate(latitude: A.latitude - 0.0001, longitude: A.longitude)
+        try await session.attach(.tapped(coordinates: [D, near_A], distanceMeters: 100), using: service)
+        XCTAssertEqual(session.segments.count, 3)
+        XCTAssertEqual(session.course?.coordinates.first, D)
+
+        session.undo()
+
+        XCTAssertEqual(session.segments.count, 2, "가장 최근 attach(D→A)만 제거되어야 함")
+        XCTAssertEqual(session.course?.coordinates.first, A, "prepend로 붙인 최근 세그먼트가 제거되어야 함")
+        XCTAssertEqual(session.course?.coordinates.last, C, "공간적 마지막 세그먼트(B→C)는 남아있어야 함")
+    }
+
+    // MARK: - segmentColorKeys (attach 순서 기반, prepend에도 안정적)
+
+    func testSegmentColorKeys_stableAcrossPrepend() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        XCTAssertEqual(session.segmentColorKeys, [0, 1])
+
+        let near_A = CourseCoordinate(latitude: A.latitude - 0.0001, longitude: A.longitude)
+        try await session.attach(.tapped(coordinates: [D, near_A], distanceMeters: 100), using: service)
+
+        // prepend는 배열 맨 앞에 삽입되지만, colorKey(생성 순서)는 기존 세그먼트의 것이 유지되어야 함
+        XCTAssertEqual(session.segmentColorKeys, [2, 0, 1])
+    }
 }
 
 // MARK: - Stub

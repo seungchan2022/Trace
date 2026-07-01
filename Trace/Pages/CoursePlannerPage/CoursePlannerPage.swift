@@ -81,6 +81,7 @@ struct CoursePlannerPage: View {
         MapViewRepresentable(
             region: $cameraRegion,
             segments: viewModel.course?.segments ?? [],
+            segmentColorKeys: viewModel.segmentColorKeys,
             pins: mapPins,
             selectedSegmentIndex: viewModel.selectedSegmentIndex,
             isDrawingMode: viewModel.isDrawingMode,

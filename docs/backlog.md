@@ -35,7 +35,13 @@
 - [x] **탭↔그리기 경로 자동 이어붙이기** — MVP6에서 해결: session 끝점 기준 방향 감지 + gap 라우팅 자동 연결. `done`
 - [x] **undo/clear 그리기 모드 전용** — MVP6에서 해결: canUndo 모드 무관 통합, session.undo() 폴스루. `done`
 
+## 코스 편집 UX 개선 (2026-07-01) 실기기 피드백
+
+- [x] **undo가 prepend된 최근 구간을 못 지움** — 이번에 해결: `segments`는 "공간순"인데 attach는 "시간순"이라 prepend 시 두 순서가 갈라져 undo가 엉뚱한 구간을 지우던 버그. `CourseEditSession`에 `Entry{id, order, segment}` 도입해 시간순(`order`)을 별도 추적, undo는 `order` 최대값 제거로 수정. `segmentColorKeys`(attach 생성 순서)를 분리해 prepend 후에도 기존 구간 색상이 안 바뀌도록 함. 실기기 검증 완료. `done`
+- [ ] **실시간 구간 패널 무한 확장** — *where:* 지도 우측 상단 구간 패널(펼침 상태) / *now:* 구간이 늘어날수록 목록 높이가 계속 커져서 화면을 덮을 수 있음 / *desired:* 최대 높이를 두고 그 이상은 스크롤. `open`
+- [ ] **겹치는 경로 렌더링 방식** — *where:* 지도 위 구간 폴리라인 / *now:* 경로가 겹치면 최신 구간이 이전 구간을 그냥 덮어써서 아래 구간이 안 보임 / *desired:* 설계 논의 필요(오프셋, 스타일 구분 등) — brainstorm 대상. `open`
+
 ## MVP4 (2026-06-27) 실기기 피드백
 
-- [ ] **핀치 줌 UX 개선** — *where:* 그리기 모드 / *now:* 커스텀 UIPinchGestureRecognizer로 구현했으나 내장 MKMapView 핀치보다 부자연스러움 / *desired:* 내장 MKMapView 핀치와 동등한 감도·가속도 구현 또는 대안 탐색. `open`
+- [ ] **핀치 줌 UX 개선** — *where:* 그리기 모드 / *now:* `isZoomEnabled = false` + 커스텀 `UIPinchGestureRecognizer`로 구현 / *desired:* `drawGR.maximumNumberOfTouches = 1`이므로 충돌 없이 `isZoomEnabled = true` 고정 + 커스텀 pinchGR 제거로 네이티브 핀치 복원 가능. `open`
 - [x] **탭↔그리기 경로 이어붙이기** — MVP5에서 해결: CourseSegment 세그먼트 배열 모델 + history 기반 탭↔그리기 이어붙이기. `done`

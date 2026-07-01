@@ -32,6 +32,8 @@ final class ColoredPinAnnotation: NSObject, MKAnnotation {
 
 final class SegmentPolyline: MKPolyline {
     var segmentIndex: Int = 0
+    // segmentIndex는 배열상 위치(선택 하이라이트 매칭용), colorKey는 attach 생성 순서(색상 identity, prepend에도 안정적)
+    var colorKey: Int = 0
 }
 
 final class SegmentDistanceAnnotation: NSObject, MKAnnotation {
@@ -95,6 +97,8 @@ fileprivate struct SegmentSnapshot: Equatable {
 struct MapViewRepresentable: UIViewRepresentable {
     @Binding var region: MKCoordinateRegion
     var segments: [CourseSegment]
+    // segments와 같은 순서로 정렬된 attach 생성 순번(색상 identity)
+    var segmentColorKeys: [Int]
     var pins: [MapPin]
     var selectedSegmentIndex: Int?
     var isDrawingMode: Bool
@@ -176,15 +180,17 @@ struct MapViewRepresentable: UIViewRepresentable {
                     CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
                 }
                 guard coords.count >= 2 else { continue }
+                let colorKey = index < segmentColorKeys.count ? segmentColorKeys[index] : index
                 let polyline = SegmentPolyline(coordinates: &coords, count: coords.count)
                 polyline.segmentIndex = index
+                polyline.colorKey = colorKey
                 uiView.addOverlay(polyline)
 
                 let midIndex = coords.count / 2
                 let annotation = SegmentDistanceAnnotation(
                     coordinate: coords[midIndex],
                     distanceText: String(format: "%.0fm", segment.distanceMeters),
-                    color: SegmentPalette.color(at: index)
+                    color: SegmentPalette.color(at: colorKey)
                 )
                 uiView.addAnnotation(annotation)
             }
@@ -196,7 +202,7 @@ struct MapViewRepresentable: UIViewRepresentable {
             for overlay in uiView.overlays {
                 guard let polyline = overlay as? SegmentPolyline,
                       let renderer = uiView.renderer(for: polyline) as? MKPolylineRenderer else { continue }
-                configureRenderer(renderer, segmentIndex: polyline.segmentIndex, selected: selectedSegmentIndex)
+                configureRenderer(renderer, segmentIndex: polyline.segmentIndex, colorKey: polyline.colorKey, selected: selectedSegmentIndex)
                 renderer.setNeedsDisplay()
             }
         }
@@ -233,8 +239,8 @@ struct MapViewRepresentable: UIViewRepresentable {
         }
     }
 
-    private func configureRenderer(_ renderer: MKPolylineRenderer, segmentIndex: Int, selected: Int?) {
-        renderer.strokeColor = SegmentPalette.color(at: segmentIndex)
+    private func configureRenderer(_ renderer: MKPolylineRenderer, segmentIndex: Int, colorKey: Int, selected: Int?) {
+        renderer.strokeColor = SegmentPalette.color(at: colorKey)
         renderer.lineWidth = segmentIndex == selected ? 9 : 6
     }
 }
@@ -258,7 +264,7 @@ extension MapViewRepresentable {
                 return MKOverlayRenderer(overlay: overlay)
             }
             let renderer = MKPolylineRenderer(polyline: polyline)
-            parent.configureRenderer(renderer, segmentIndex: polyline.segmentIndex, selected: parent.selectedSegmentIndex)
+            parent.configureRenderer(renderer, segmentIndex: polyline.segmentIndex, colorKey: polyline.colorKey, selected: parent.selectedSegmentIndex)
             return renderer
         }
 

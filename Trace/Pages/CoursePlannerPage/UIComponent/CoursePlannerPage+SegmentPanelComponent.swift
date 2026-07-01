@@ -46,7 +46,7 @@ extension CoursePlannerPage {
                 } label: {
                     HStack(spacing: 8) {
                         Circle()
-                            .fill(Color(uiColor: SegmentPalette.color(at: index)))
+                            .fill(Color(uiColor: SegmentPalette.color(at: colorKey(at: index))))
                             .frame(width: 10, height: 10)
                         Text("\(index + 1)")
                             .font(.caption.weight(.semibold))
@@ -72,5 +72,11 @@ extension CoursePlannerPage {
     private func cumulativeDistanceMeters(upTo index: Int) -> Double {
         guard let segments = viewModel.course?.segments, index < segments.count else { return 0 }
         return segments.prefix(through: index).reduce(0) { $0 + $1.distanceMeters }
+    }
+
+    // segmentColorKeys는 attach 생성 순서(prepend에도 색상이 안정적으로 유지됨)
+    private func colorKey(at index: Int) -> Int {
+        let keys = viewModel.segmentColorKeys
+        return index < keys.count ? keys[index] : index
     }
 }

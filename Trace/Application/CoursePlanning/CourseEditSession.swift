@@ -4,10 +4,24 @@ import Observation
 @MainActor
 @Observable
 final class CourseEditSession {
-    private(set) var segments: [CourseSegment] = []
+    // segments 배열은 "공간적 순서"(경로상 위치)이고, order는 "시간순 attach 이력"이다.
+    // prepend(맨 앞 삽입) 시 두 순서가 갈라지므로 undo/색상은 order를 따라야 한다.
+    private struct Entry {
+        let id: UUID
+        let order: Int
+        let segment: CourseSegment
+    }
+
+    private var entries: [Entry] = []
+    private var nextOrder = 0
+
+    var segments: [CourseSegment] { entries.map(\.segment) }
+
+    // segments와 같은 순서로 정렬된 attach 순번(생성 순서). 색상 등 identity 기반 렌더링에 사용.
+    var segmentColorKeys: [Int] { entries.map(\.order) }
 
     var course: PlannedCourse? {
-        segments.isEmpty ? nil : PlannedCourse(segments: segments)
+        entries.isEmpty ? nil : PlannedCourse(segments: segments)
     }
 
     // 1 attach = 1 segment 추가 = undo 1번에 완전 제거
@@ -20,7 +34,7 @@ final class CourseEditSession {
               let existingEnd = existing.coordinates.last,
               let newStart = newSegment.coordinates.first,
               let newEnd = newSegment.coordinates.last else {
-            segments.append(newSegment)
+            append(newSegment)
             return
         }
 
@@ -42,27 +56,38 @@ final class CourseEditSession {
                 combinedCoords = gap.coordinates + Array(oriented.coordinates.dropFirst())
                 combinedDistance += gap.distanceMeters
             }
-            segments.append(makeMerged(like: newSegment, coordinates: combinedCoords, distance: combinedDistance))
+            append(makeMerged(like: newSegment, coordinates: combinedCoords, distance: combinedDistance))
         } else {
             if needsGap(from: orientedLast, to: existingStart) {
                 let gap = try await service.route(from: orientedLast, to: existingStart)
                 combinedCoords = oriented.coordinates + Array(gap.coordinates.dropFirst())
                 combinedDistance += gap.distanceMeters
             }
-            segments.insert(makeMerged(like: newSegment, coordinates: combinedCoords, distance: combinedDistance), at: 0)
+            prepend(makeMerged(like: newSegment, coordinates: combinedCoords, distance: combinedDistance))
         }
     }
 
     func undo() {
-        guard !segments.isEmpty else { return }
-        segments.removeLast()
+        guard let mostRecent = entries.max(by: { $0.order < $1.order }) else { return }
+        entries.removeAll { $0.id == mostRecent.id }
     }
 
     func clear() {
-        segments = []
+        entries = []
+        nextOrder = 0
     }
 
     // MARK: - Private
+
+    private func append(_ segment: CourseSegment) {
+        entries.append(Entry(id: UUID(), order: nextOrder, segment: segment))
+        nextOrder += 1
+    }
+
+    private func prepend(_ segment: CourseSegment) {
+        entries.insert(Entry(id: UUID(), order: nextOrder, segment: segment), at: 0)
+        nextOrder += 1
+    }
 
     private struct AttachOrientation {
         let needsReverse: Bool
