@@ -1,5 +1,7 @@
 # 코스 편집 UX 개선 (탭 자동 연결 + 구간 시각화 + 실시간 패널) Implementation Plan
 
+> 완료(소급 확인): Task 1~5 전부 구현·커밋됨 — `9698dea`(A 탭 자동 연결), `47e3dbf`(A-2 그리기 스트로크=세그먼트), `babc44e`(Task 3 색상 팔레트), `28075e3`(Task 4 색상+거리 라벨), `2a76d93`(Task 5 실시간 패널), `8458f8d`(selectedSegmentIndex QA 버그). 아래 체크박스는 실행 당시 갱신되지 않았으나 실제 구현은 완료 상태다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 탭 2번째부터 자동으로 기존 경로 끝에 연결되고, 그리기 스트로크마다 독립 세그먼트로 붙으며, 지도 위에 세그먼트별 색상·거리 라벨이 보이고, 우측 상단에 실시간 구간 현황 패널(접힘/펼침, 지도 연동)이 뜨는 코스 편집 UX를 구현한다.

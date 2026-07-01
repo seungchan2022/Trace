@@ -11,6 +11,12 @@
 
 ## 진행 중 / 예정
 
+### MVP7 — 코스 편집 UX 개선   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp7/`](history/mvp7/))
+
+> 탭 자동 연결(A) + 그리기 스트로크=세그먼트(A-2) + 지도 위 구간 색상·거리 라벨(B) + 실시간 구간 패널(E)을 구현하고, 실기기 QA에서 나온 버그 3건(undo/prepend 색상 안정성, 도착 마커 미표시, 위치 버튼 오작동)도 같은 브랜치에서 수정한다.
+
+- [x] **course-edit-ux-panel** — 탭 자동 연결, 그리기 스트로크=세그먼트 통일, 세그먼트 색상+거리 라벨, 실시간 구간 패널, QA 버그 3건(undo/prepend, 도착 마커, 위치 버튼) 수정
+
 ### MVP6 — 탭↔그리기 통합 + undo/clear 통합   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp6/`](history/mvp6/))
 
 > CourseEditSession Application 레이어 도입으로 탭 경로 누적, 탭↔그리기 자동 이어붙이기, 모드 무관 undo/clear를 올바르게 구현한다.
