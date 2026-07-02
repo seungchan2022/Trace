@@ -10,6 +10,7 @@
 - 테스트/빌드 실패 시 다른 시뮬레이터로 재시도 금지 — 실패 원인은 시뮬레이터가 아니라 코드임
 - 동시에 여러 xcodebuild 프로세스 실행 금지 — 이전 빌드/테스트가 끝나기 전에 새 빌드를 시작하지 않는다
 - 시뮬레이터가 응답하지 않을 때 다른 시뮬레이터로 전환 금지 — 아래 복구 절차를 따른다
+- **테스트 스위트 실행에 XcodeBuildMCP의 테스트 툴(`test_sim` 등) 사용 금지** — 기본값이 병렬 테스트라 시뮬레이터를 자동 복제하고, 이 프로젝트의 알려진 크래시성 플레이키 테스트(iOS `@Observable` malloc 버그 등, 위 참고)가 그 복제본 중 하나에서 크래시하면 xcodebuild가 응답 없이 무한 대기한다(2026-07-02 확인: CPU 사용 없이 44분+ 행 상태, `test-without-building`이 죽은 병렬 러너를 기다리며 멈춤). 테스트는 반드시 Baseline의 raw bash `xcodebuild ... -parallel-testing-enabled NO test` 명령으로만 실행한다. 빌드/실행/런치/UI 자동화(스크린샷, 탭 등)에는 XcodeBuildMCP를 계속 사용해도 된다 — 막는 것은 테스트 실행 한 가지뿐이다.
 
 ### 기준 시뮬레이터 선택 절차
 
@@ -97,7 +98,7 @@ SwiftLint is configured by `.swiftlint.yml`.
 
 - Use simulator verification for navigation, visible UI, gestures, permissions, and lifecycle behavior.
 - Use XCUITest or ViewInspector for UI tests.
-- Use `ios-debugger-agent` and XcodeBuildMCP-backed workflows for simulator build/run/debug tasks.
+- Use `ios-debugger-agent` and XcodeBuildMCP-backed workflows for simulator build/run/debug tasks — **not for running the test suite**; see Simulator Discipline above for why.
 
 ## Real-Device Verification
 
