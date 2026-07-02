@@ -50,6 +50,14 @@ extension CoursePlannerPage {
                     .font(.footnote.weight(.semibold))
                 Spacer()
                 Button {
+                    // 접기 전, 지금 보던 위치가 최신 근처였는지 기록 — 재펼침 시 이 값으로
+                    // "옛 위치 복원" vs "최신 계속 따라가기"를 가른다 (autoScrollIfNearLatest와 동일 판정 로직).
+                    let keys = viewModel.segmentColorKeys
+                    let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
+                    let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
+                    panelWasNearLatestAtCollapse = SegmentPanelLogic.shouldAutoScroll(
+                        anchorIndex: anchorIndex, previousLatestIndex: latestIndex
+                    )
                     isSegmentPanelExpanded = false
                 } label: {
                     Image(systemName: "chevron.up")
@@ -127,10 +135,14 @@ extension CoursePlannerPage {
         }
     }
 
-    // 재펼침 시: 보던 위치 복원, 없으면(첫 펼침/해당 행 삭제됨) 최신 구간으로
+    // 재펼침 시: 접기 직전 최신 근처였다면 최신을 계속 따라간다(접혀 있는 동안 구간이
+    // 늘었을 수 있으므로 "그때의 최신"이 아니라 "지금의 최신"). 그렇지 않으면 보던 위치를
+    // 복원하고, 없으면(첫 펼침/해당 행 삭제됨) 최신 구간으로 fallback.
     private func restoreScrollPosition(_ proxy: ScrollViewProxy) {
         let keys = viewModel.segmentColorKeys
-        if let anchor = panelAnchorColorKey, keys.contains(anchor) {
+        if panelWasNearLatestAtCollapse, let maxKey = keys.max() {
+            proxy.scrollTo(maxKey, anchor: .bottom)
+        } else if let anchor = panelAnchorColorKey, keys.contains(anchor) {
             proxy.scrollTo(anchor, anchor: .center)
         } else if let maxKey = keys.max() {
             proxy.scrollTo(maxKey, anchor: .bottom)

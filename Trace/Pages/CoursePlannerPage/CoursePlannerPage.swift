@@ -13,6 +13,9 @@ struct CoursePlannerPage: View {
     @State var panelContentHeight: CGFloat = 0
     @State var panelMaxListHeight: CGFloat = 300
     @State var panelAnchorColorKey: Int?
+    // 접기 직전 "최신 근처를 보고 있었는가" — 재펼침 시 이 값이 true면 옛 앵커 대신 최신을 따라간다.
+    // 기본값 true: 첫 펼침(앵커 없음)에서는 restoreScrollPosition의 fallback 분기가 이미 최신으로 보내므로 무해하다.
+    @State var panelWasNearLatestAtCollapse = true
     @Environment(\.scenePhase) private var scenePhase
 
     private let cameraStateStore: CameraStateStore
