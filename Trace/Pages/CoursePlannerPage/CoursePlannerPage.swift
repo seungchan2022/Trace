@@ -10,6 +10,9 @@ struct CoursePlannerPage: View {
     )
     @State private var currentStrokePoints: [CGPoint] = []
     @State var isSegmentPanelExpanded = false
+    @State var panelContentHeight: CGFloat = 0
+    @State var panelMaxListHeight: CGFloat = 300
+    @State var panelAnchorColorKey: Int?
     @Environment(\.scenePhase) private var scenePhase
 
     private let cameraStateStore: CameraStateStore
@@ -119,6 +122,11 @@ struct CoursePlannerPage: View {
                     .background(.regularMaterial, in: Circle())
             }
             .padding()
+        }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: { height in
+            panelMaxListHeight = height * 0.4
         }
         .overlay(alignment: .topTrailing) {
             segmentPanel
