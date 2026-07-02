@@ -135,14 +135,6 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.addGestureRecognizer(twoFingerPanGR)
         context.coordinator.twoFingerPanGestureRecognizer = twoFingerPanGR
 
-        let pinchGR = UIPinchGestureRecognizer(
-            target: context.coordinator,
-            action: #selector(Coordinator.handlePinch(_:))
-        )
-        pinchGR.isEnabled = false
-        mapView.addGestureRecognizer(pinchGR)
-        context.coordinator.pinchGestureRecognizer = pinchGR
-
         let tapGR = UITapGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handleTap(_:))
@@ -229,12 +221,10 @@ struct MapViewRepresentable: UIViewRepresentable {
         let wasDrawing = context.coordinator.drawGestureRecognizer?.isEnabled ?? false
         if wasDrawing != isDrawingMode {
             uiView.isScrollEnabled = !isDrawingMode
-            uiView.isZoomEnabled = !isDrawingMode
             uiView.isPitchEnabled = !isDrawingMode
             uiView.isRotateEnabled = !isDrawingMode
             context.coordinator.drawGestureRecognizer?.isEnabled = isDrawingMode
             context.coordinator.twoFingerPanGestureRecognizer?.isEnabled = isDrawingMode
-            context.coordinator.pinchGestureRecognizer?.isEnabled = isDrawingMode
             context.coordinator.tapGestureRecognizer?.isEnabled = !isDrawingMode
         }
     }
@@ -299,13 +289,10 @@ extension MapViewRepresentable {
 
         weak var drawGestureRecognizer: UIPanGestureRecognizer?
         weak var twoFingerPanGestureRecognizer: UIPanGestureRecognizer?
-        weak var pinchGestureRecognizer: UIPinchGestureRecognizer?
         weak var tapGestureRecognizer: UITapGestureRecognizer?
         private var currentStrokePoints: [CGPoint] = []
         private var currentStrokeCoords: [CourseCoordinate] = []
         private var panStartCenter: CLLocationCoordinate2D?
-        private var pinchStartSpan: MKCoordinateSpan?
-        private var pinchStartScale: CGFloat = 1.0
 
         // MARK: Draw
 
@@ -374,30 +361,6 @@ extension MapViewRepresentable {
                 mapView.setRegion(newRegion, animated: false)
             case .ended, .cancelled:
                 panStartCenter = nil
-            default:
-                break
-            }
-        }
-
-        // MARK: Pinch
-
-        @objc func handlePinch(_ recognizer: UIPinchGestureRecognizer) {
-            guard let mapView = recognizer.view as? MKMapView else { return }
-            switch recognizer.state {
-            case .began:
-                pinchStartSpan = mapView.region.span
-                pinchStartScale = recognizer.scale
-            case .changed:
-                guard let startSpan = pinchStartSpan else { return }
-                let scaleDelta = pinchStartScale / recognizer.scale
-                let newSpan = MKCoordinateSpan(
-                    latitudeDelta: min(max(startSpan.latitudeDelta * scaleDelta, 0.001), 100),
-                    longitudeDelta: min(max(startSpan.longitudeDelta * scaleDelta, 0.001), 100)
-                )
-                let newRegion = MKCoordinateRegion(center: mapView.region.center, span: newSpan)
-                mapView.setRegion(newRegion, animated: false)
-            case .ended, .cancelled:
-                pinchStartSpan = nil
             default:
                 break
             }
