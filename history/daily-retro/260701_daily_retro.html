@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-07-01 하루 회고 — 코스 편집 UX 개선</title>
+<style>
+  :root {
+    --bg:#FDF6F0; --text:#2D2926; --accent:#D97706; --accent-light:#FEF3C7;
+    --heading:#92400E; --border:#E5D5C5; --code-bg:#FFF7ED; --card-bg:#FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+  h1 {
+    font-size: 1.4rem;
+    color: var(--heading);
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+    color: #8A7A6B;
+    margin-bottom: 20px;
+  }
+  h2 {
+    font-size: 1.05rem;
+    color: var(--heading);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 32px;
+  }
+  h3 {
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin-top: 20px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 12px 0;
+  }
+  .timeline-item {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 0.85rem;
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .time {
+    flex: 0 0 78px;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.78rem;
+  }
+  .gap-marker {
+    background: var(--accent-light);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    font-size: 0.82rem;
+    text-align: center;
+    color: var(--heading);
+    font-weight: 600;
+  }
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.85em;
+  }
+  .decision-box {
+    background: var(--card-bg);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0;
+  }
+  .decision-box .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .insight {
+    background: var(--accent-light);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 16px 0;
+    font-size: 0.9rem;
+  }
+  ul, ol { padding-left: 20px; font-size: 0.9rem; }
+  li { margin: 6px 0; }
+  .mermaid {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 10px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 5px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--heading); }
+  .feeling {
+    font-style: italic;
+    color: #6B5B4A;
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+  }
+  .footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #A69485;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🗓️ 2026-07-01 하루 회고</h1>
+  <div class="subtitle">MVP7 — 코스 편집 UX 개선 (설계 → 구현 → QA → 아카이빙, 하루 완주)</div>
+
+  <h2>오늘의 흐름</h2>
+  <div class="card">
+    <div class="timeline-item"><span class="time">12:36~12:53</span><span>설계 + 계획 작성 (어드바이저 리뷰 포함)</span></div>
+    <div class="timeline-item"><span class="time">13:21</span><span>탭 자동 연결 구현</span></div>
+    <div class="timeline-item"><span class="time">14:02</span><span>그리기 스트로크=세그먼트 통일</span></div>
+    <div class="timeline-item"><span class="time">14:11</span><span>색상 팔레트 도입</span></div>
+    <div class="timeline-item"><span class="time">14:36</span><span>지도 위 색상+거리 라벨</span></div>
+    <div class="timeline-item"><span class="time">15:10~15:29</span><span>실시간 패널 + 버그 수정</span></div>
+    <div class="gap-marker">⏸️ 15:29 ~ 19:59 세션 단절 (/clear · /exit)</div>
+    <div class="timeline-item"><span class="time">19:59~20:17</span><span>실기기 버그 3건 수정 (undo, 마커, 위치버튼)</span></div>
+    <div class="timeline-item"><span class="time">21:21</span><span>MVP7 완료 등록 + 아카이빙</span></div>
+  </div>
+
+  <h2>핵심 흐름: "구별 가능한 단위 만들기"</h2>
+  <div class="insight">
+    경로 전체를 하나의 덩어리로 보지 않고, <b>구간(세그먼트) 하나하나를 구별 가능한 단위</b>로 만드는 게
+    오늘 하루의 큰 줄기였다. 탭 자동 연결·그리기 통일로 "1 동작 = 1 세그먼트"를 데이터 모델에 새기고,
+    색상 팔레트·지도 렌더링·패널로 그 구별을 사용자에게 보여줬다.
+  </div>
+
+  <div class="mermaid">
+graph LR
+    A["도메인: 1동작=1세그먼트<br/>(탭 자동연결 + 그리기 통일)"] --> B["표현: 세그먼트별 색상<br/>(팔레트 + 지도 렌더링)"]
+    B --> C["노출: 실시간 패널<br/>(구간별 순번·색·거리)"]
+    C --> D["균열 발견: index 기반 구별의 한계<br/>(prepend·undo 시 어긋남)"]
+    D --> E["보강: identity 기반 구별<br/>(colorKey/order 분리)"]
+    style A fill:#FEF3C7,stroke:#D97706
+    style E fill:#FEF3C7,stroke:#D97706
+  </div>
+
+  <h3>상황 · 선택지 · 결정</h3>
+  <div class="decision-box">
+    <div class="label">결정</div>
+    렌더링에서 임의로 구간을 나누는 대신(A안), <code>CourseEditSession.segments</code> 자체가
+    "1 동작 = 1 세그먼트"이도록 데이터 모델을 통일했다(B안).
+    <br><br>
+    <div class="label">왜</div>
+    세그먼트가 도메인 개념으로 한 번 정해지면 색상·라벨·패널·undo가 전부 같은 배열을 공유해서
+    서로 어긋날 일이 없다.
+  </div>
+
+  <h2>세션 단절 — 겪은 일</h2>
+  <div class="mermaid">
+sequenceDiagram
+    participant U as 사용자
+    participant S1 as 세션(오후)
+    participant Git as git 워킹 디렉터리
+    participant S2 as 세션(저녁)
+
+    U->>S1: undo 버그 수정 착수
+    S1->>Git: 코드 diff 작성(uncommitted)
+    Note over S1: clear·exit 발생
+    U->>S2: "세션이 사라진 것 같은데?"
+    S2->>Git: git status/diff 조회
+    Git-->>S2: 변경사항 그대로 존재
+    S2-->>U: 무슨 작업이었는지 재구성 완료
+  </div>
+  <p style="font-size:0.85rem">대화 기억과 git 워킹 디렉터리는 서로 다른 층이라는 걸 실제로 확인한 사건.</p>
+
+  <h2>인사이트</h2>
+  <div class="insight">
+    💡 <b>생각을 먼저 구조화해야 전달이 쉽다.</b> 오늘 가장 어려웠던 건 코드가 아니라
+    "내가 원하는 걸 어떻게 표현할까"였다. 결론만 말하지 않고 "그렇게 판단한 근거"를 같이
+    붙이면, 듣는 쪽이 재확인 없이 바로 움직일 수 있다.
+  </div>
+
+  <h2>배운 것</h2>
+  <ul>
+    <li>index 기반 구별 → identity 기반 구별로의 전환 패턴</li>
+    <li><code>CheckedContinuation</code> 재진입 가드가 "중복 방지"와 "겹친 요청 공유"를 혼동하면 정상 동시 호출까지 막는다</li>
+    <li>MapKit <code>collisionMode</code>가 겹친 어노테이션을 자동으로 숨긴다</li>
+    <li>git 워킹 디렉터리는 대화 세션과 독립적으로 보존된다</li>
+  </ul>
+
+  <h2>느낀 점</h2>
+  <p class="feeling">
+    세션이 끊겼을 땐 당황했지만, 코드가 그대로 남아있는 걸 확인하고 나니 "대화가 기억하는 것"과
+    "실제로 존재하는 것"을 구분해서 생각하는 게 훨씬 침착한 방법이라는 걸 깨달았다. 하루 안에
+    기능 4개 + 버그 3개 + 아카이빙까지 끝낸 건 뿌듯하지만, 표현이 정확하지 않아 재확인이
+    필요했던 순간들이 아쉬움으로 남는다.
+  </p>
+
+  <h2>내일 할 일</h2>
+  <ol>
+    <li>백로그 "실시간 구간 패널 무한 확장" 브레인스토밍부터 시작</li>
+    <li>작업 중 새 기능 아이디어가 떠오르면 그때그때 기록</li>
+    <li>QA 체크리스트 작성/전달 시 "구조화 먼저" 교훈 적용해보기</li>
+  </ol>
+
+  <h2>🔧 반복 실수 → 기계화</h2>
+  <div class="decision-box">
+    <div class="label">문제</div>
+    MVP6·MVP7 모두 roadmap.md 킥오프 등록을 빼먹고 완료 시점에 소급 처리 (2번째 반복).
+    <br><br>
+    <div class="label">반영</div>
+    <code>docs/agent-rules/workflow.md</code>에 체크포인트 추가: design 문서 작성 직전
+    roadmap.md 등록 여부를 확인하는 단계를 명시적으로 못박음.
+  </div>
+
+  <div class="footer">Trace · MVP7 완료일 회고 · history/daily-retro/260701_daily_retro.md</div>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#FEF3C7', primaryBorderColor: '#D97706', primaryTextColor: '#2D2926', lineColor: '#D97706' } });
+</script>
+</body>
+</html>
