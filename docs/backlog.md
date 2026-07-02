@@ -40,10 +40,18 @@
 - [x] **undo가 prepend된 최근 구간을 못 지움** — 이번에 해결: `segments`는 "공간순"인데 attach는 "시간순"이라 prepend 시 두 순서가 갈라져 undo가 엉뚱한 구간을 지우던 버그. `CourseEditSession`에 `Entry{id, order, segment}` 도입해 시간순(`order`)을 별도 추적, undo는 `order` 최대값 제거로 수정. `segmentColorKeys`(attach 생성 순서)를 분리해 prepend 후에도 기존 구간 색상이 안 바뀌도록 함. 실기기 검증 완료. `done`
 - [x] **(C) 짧은 거리 도착 마커 미표시** — 이번에 해결: 거리 라벨 annotation과 위치가 겹칠 때 MapKit이 충돌 처리로 핀을 자동으로 숨기던 문제. `MKAnnotationView.displayPriority = .required`, `collisionMode = .none`으로 수정(핀은 최대 2개뿐이라 성능 영향 없음). 좌표 2개 미만의 축약된 route 결과에 대한 방어 guard도 함께 추가. 실기기 검증 완료. `done`
 - [x] **(D) 내 위치 이동 버튼 오작동/지연** — 이번에 해결: `CoreLocationService.currentLocation()`이 단일 `continuation`으로 재진입을 막아, 부트스트랩(`.task`)이 위치를 기다리는 동안 버튼을 누르면 즉시 `.unavailable`로 실패하고 `recenterToCurrentLocation()`의 `try?`가 그 에러를 조용히 삼켰다. `ContinuationBroadcaster`를 도입해 겹친 요청이 같은 결과를 함께 기다리도록 수정. `done`
-- [ ] **실시간 구간 패널 무한 확장** — *where:* 지도 우측 상단 구간 패널(펼침 상태) / *now:* 구간이 늘어날수록 목록 높이가 계속 커져서 화면을 덮을 수 있음 / *desired:* 최대 높이를 두고 그 이상은 스크롤. `open`
-- [ ] **겹치는 경로 렌더링 방식** — *where:* 지도 위 구간 폴리라인 / *now:* 경로가 겹치면 최신 구간이 이전 구간을 그냥 덮어써서 아래 구간이 안 보임 / *desired:* 설계 논의 필요(오프셋, 스타일 구분 등) — brainstorm 대상. `open`
+- [ ] **실시간 구간 패널 무한 확장** — *where:* 지도 우측 상단 구간 패널(펼침 상태) / *now:* 구간이 늘어날수록 목록 높이가 계속 커져서 화면을 덮을 수 있음 / *desired:* 최대 높이(화면 ~40%)를 두고 그 이상은 스크롤 + 최신 구간 자동 스크롤. MVP8 `course-ux-polish`. `planned`
+- [ ] **겹치는 경로 렌더링 방식** — *where:* 지도 위 구간 폴리라인 / *now:* 경로가 겹치면 최신 구간이 이전 구간을 덮어써서, 아래 구간의 거리 라벨과 눈에 보이는 선 색이 어긋나 혼동됨 / *desired:* MVP8 킥오프(2026-07-02)에서 방향 결정 — 겹침 감지 + 좌표 오프셋(α)으로 나란히 표시. MVP8 `overlap-offset`. `planned`
+
+## MVP8 킥오프 논의 (2026-07-02)
+
+겹치는 경로 렌더링을 좌표 오프셋(α)으로 정하면서, α의 약점별 대비책을 트리거와 함께 보관.
+
+- [ ] **겹침 렌더링 — 단일 코스 색 + 방향 화살표(β)** — *what:* 지도 위 구간별 색칠을 접고 단일 색 + 진행 방향 화살표로 표현, 구간 색·거리는 패널 전담 / *trigger:* α(좌표 오프셋) 적용 후에도 실기기 QA에서 구간 색·라벨 혼동이 남으면. MVP7 시각 언어(구간 색+라벨)를 상당 부분 되돌리는 방향 전환이므로 근거 없이 착수하지 않는다. `open`
+- [ ] **겹침 렌더링 — 화면 포인트 기준 오프셋(안 3 원안)** — *what:* 오프셋 간격을 미터가 아닌 화면 포인트로 유지해 어느 줌에서도 겹친 선이 분리돼 보이게(지하철 노선도 방식). 줌마다 평행선을 재계산하는 커스텀 렌더러 필요 — 마일스톤 1개 규모 / *trigger:* α의 줌아웃 병합(축소 시 3~4m 간격이 1px 미만으로 줄어 한 줄로 보임)이 실사용에서 문제되면. `open`
+- [ ] **코스 저장** — 다음 MVP 후보 1순위. Persistence 미결(로컬 전용 vs 동기화, 저장 방식) 결정이 선행돼야 하므로 brainstorm부터 시작. 도메인(`Course`/`CourseSegment`)이 지도 SDK와 분리돼 있어 Infrastructure 어댑터 + 페이지 추가로 붙는 구조. `open`
 
 ## MVP4 (2026-06-27) 실기기 피드백
 
-- [ ] **핀치 줌 UX 개선** — *where:* 그리기 모드 / *now:* `isZoomEnabled = false` + 커스텀 `UIPinchGestureRecognizer`로 구현 / *desired:* `drawGR.maximumNumberOfTouches = 1`이므로 충돌 없이 `isZoomEnabled = true` 고정 + 커스텀 pinchGR 제거로 네이티브 핀치 복원 가능. `open`
+- [ ] **핀치 줌 UX 개선** — *where:* 그리기 모드 / *now:* `isZoomEnabled = false` + 커스텀 `UIPinchGestureRecognizer`로 구현 / *desired:* `drawGR.maximumNumberOfTouches = 1`이므로 충돌 없이 `isZoomEnabled = true` 고정 + 커스텀 pinchGR 제거로 네이티브 핀치 복원 가능. MVP8 `course-ux-polish`. `planned`
 - [x] **탭↔그리기 경로 이어붙이기** — MVP5에서 해결: CourseSegment 세그먼트 배열 모델 + history 기반 탭↔그리기 이어붙이기. `done`
