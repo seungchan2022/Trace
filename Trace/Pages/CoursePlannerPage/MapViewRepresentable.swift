@@ -167,8 +167,13 @@ struct MapViewRepresentable: UIViewRepresentable {
         if context.coordinator.lastSegmentSnapshots != currentSnapshots {
             uiView.removeOverlays(uiView.overlays)
             uiView.removeAnnotations(uiView.annotations.filter { $0 is SegmentDistanceAnnotation })
+            // 겹치는 경로는 표시 좌표만 옆으로 비켜 그린다 (도메인 좌표 불변).
+            // 스냅샷 게이트 안이므로 세그먼트가 실제로 바뀔 때만 재계산된다.
+            let displayCoordinates = OverlapOffsetResolver.displayCoordinates(
+                segments: segments, colorKeys: segmentColorKeys
+            )
             for (index, segment) in segments.enumerated() {
-                var coords = segment.coordinates.map {
+                var coords = displayCoordinates[index].map {
                     CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
                 }
                 guard coords.count >= 2 else { continue }
