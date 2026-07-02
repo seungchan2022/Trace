@@ -120,4 +120,61 @@ final class OverlapOffsetResolverTests: XCTestCase {
         )
         XCTAssertEqual(inbound.coordinates, originalInboundCoords)
     }
+
+    // MARK: - 테이퍼 (실거리 15m 선형 보간)
+
+    func testTaperRampsUpFromRunBoundary() {
+        // 오는 길의 겹침 run 시작 부근: 오프셋이 0 → 4m로 점진 증가해야 한다
+        let outbound = segment(line(fromEast: 0, toEast: 300, north: 0, spacing: 5))
+        let inbound = segment(line(fromEast: 300, toEast: 0, north: 0, spacing: 5))
+        let display = OverlapOffsetResolver.displayCoordinates(
+            segments: [outbound, inbound], colorKeys: [0, 1], parameters: .init()
+        )
+        let displacements = inbound.coordinates.indices.map {
+            inbound.coordinates[$0].distanceMeters(to: display[1][$0])
+        }
+        // 중앙부는 4m에 도달
+        XCTAssertEqual(displacements[displacements.count / 2], 4, accuracy: 0.5)
+        // 인접 점(5m 간격) 사이 오프셋 변화는 테이퍼 기울기(4m/15m × 5m ≈ 1.33m) 이하
+        for i in 1..<displacements.count {
+            XCTAssertLessThanOrEqual(
+                abs(displacements[i] - displacements[i - 1]), 1.4,
+                "인덱스 \(i)에서 단차 발생"
+            )
+        }
+    }
+
+    func testNTransitionHasNoStep() {
+        // 세 번째 통과가 run 중간에서 겹침 수가 변해도(1겹→2겹) 단차 없이 보간되어야 한다
+        // 구성: first는 동쪽 0~150m만, second는 0~300m 전체 왕복 → third(0~300m)는
+        // 0~150m 구간에서 2겹(first+second), 150~300m 구간에서 1겹(second)
+        let first = segment(line(fromEast: 0, toEast: 150, north: 0, spacing: 5))
+        let second = segment(line(fromEast: 300, toEast: 0, north: 0, spacing: 5))
+        let third = segment(line(fromEast: 0, toEast: 300, north: 0, spacing: 5))
+        let display = OverlapOffsetResolver.displayCoordinates(
+            segments: [first, second, third], colorKeys: [0, 1, 2], parameters: .init()
+        )
+        let displacements = third.coordinates.indices.map {
+            third.coordinates[$0].distanceMeters(to: display[2][$0])
+        }
+        for i in 1..<displacements.count {
+            XCTAssertLessThanOrEqual(
+                abs(displacements[i] - displacements[i - 1]), 1.4,
+                "n 전환 지점 인덱스 \(i)에서 4m 단차 발생"
+            )
+        }
+    }
+
+    // MARK: - 핀 예외
+
+    func testCourseEndpointsStayPinned() {
+        // 왕복: 코스 마지막 좌표(도착 핀 지점)는 겹쳐도 원본 유지
+        let outbound = segment(line(fromEast: 0, toEast: 200, north: 0, spacing: 10))
+        let inbound = segment(line(fromEast: 200, toEast: 0, north: 0, spacing: 10))
+        let display = OverlapOffsetResolver.displayCoordinates(
+            segments: [outbound, inbound], colorKeys: [0, 1], parameters: .init()
+        )
+        XCTAssertEqual(display[1].last, inbound.coordinates.last, "도착 핀 지점이 밀리면 안 됨")
+        XCTAssertEqual(display[0].first, outbound.coordinates.first, "출발 핀 지점이 밀리면 안 됨")
+    }
 }

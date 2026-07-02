@@ -114,12 +114,26 @@ enum OverlapOffsetResolver {
         if let pin = courseLast, coords.last == pin { counts[counts.count - 1] = 0 }
     }
 
-    /// Task 2 시점: 즉시 적용 (Task 3에서 실거리 기반 선형 테이퍼로 교체)
+    /// 목표 오프셋(step × n)에 실거리 기반 기울기 제한을 걸어, run 경계(0→step)와
+    /// run 내부의 n 전환(step→2×step)을 모두 taperLength에 걸친 선형 램프로 만든다.
+    /// 앞→뒤, 뒤→앞 두 번의 패스로 모든 전환 지점을 대칭으로 보간한다.
     private static func taperedOffsets(
         counts: [Int], coords: [CourseCoordinate],
         step: Double, taperLength: Double
     ) -> [Double] {
-        counts.map { Double($0) * step }
+        var offsets = counts.map { Double($0) * step }
+        guard offsets.count > 1, taperLength > 0 else { return offsets }
+        let slope = step / taperLength // 한 단(step) 전환을 taperLength 미터에 걸쳐
+
+        for i in 1..<offsets.count {
+            let distance = coords[i - 1].distanceMeters(to: coords[i])
+            offsets[i] = min(offsets[i], offsets[i - 1] + slope * distance)
+        }
+        for i in stride(from: offsets.count - 2, through: 0, by: -1) {
+            let distance = coords[i].distanceMeters(to: coords[i + 1])
+            offsets[i] = min(offsets[i], offsets[i + 1] + slope * distance)
+        }
+        return offsets
     }
 
     private static func applyOffsets(
