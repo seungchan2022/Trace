@@ -17,7 +17,7 @@
 세션 시작 시 한 번만 실행:
 
 ```bash
-# 1) iOS 26+ 런타임의 iPhone을 선택 (iOS 18.x는 @Observable malloc 버그로 테스트 크래시 발생)
+# 1) iOS 26.5 런타임의 iPhone을 선택 (iOS 18.x·26.0은 @Observable malloc 버그로 테스트 크래시 발생, 아래 참고)
 xcrun simctl list devices available | grep "iPhone"
 # 출력 예: iPhone 17 Pro (D887D0A4-...) (Shutdown)  ← iOS 26.5
 
@@ -27,7 +27,7 @@ SIM_UDID="D887D0A4-074C-4AFB-8D08-D87329D0EFD4"
 
 한번 선택하면 세션이 끝날 때까지 이 UDID만 사용한다. 절대 중간에 바꾸지 않는다.
 
-> **iOS 18.x 런타임 금지 (2026-06-23 확인):** iOS 18.5에서 `@Observable` 객체 해제 시 `malloc: pointer being freed was not allocated` (고정 주소 `0x25237aac0`)가 발생해 테스트 프로세스가 크래시 → xcodebuild가 재시작을 반복하는 무한 루프. iOS 26.x에서는 동일 코드가 정상 동작. 이 버그가 수정될 때까지 iOS 26+ 런타임만 사용한다.
+> **iOS 18.x·26.0 런타임 금지 (2026-06-23 확인, 2026-07-03 26.0 재발 확인):** iOS 18.5에서 `@Observable` 객체 해제 시 `malloc: pointer being freed was not allocated` (고정 주소 `0x25237aac0`)가 발생해 테스트 프로세스가 크래시 → xcodebuild가 재시작을 반복하는 무한 루프. iOS 26.5에서는 크래시 없이 통과 확인했으나, 2026-07-03 iOS 26.0(build 23A343)에서 동일 크래시가 재발했다(전체 스위트 실행 시 5개 테스트가 결정적으로 크래시, `docs/solutions/workflow-issues/ios18-observable-malloc-crash.md` 참고). "iOS 26+ 아무 버전"이 아니라 **iOS 26.5로 구체적으로 고정**한다.
 
 ### 시뮬레이터 무응답/무한 로딩 복구
 
