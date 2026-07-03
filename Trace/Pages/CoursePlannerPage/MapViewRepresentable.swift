@@ -251,6 +251,7 @@ extension MapViewRepresentable {
         var parent: MapViewRepresentable
         fileprivate var lastSegmentSnapshots: [SegmentSnapshot] = []
         var lastSelectedIndex: Int?
+        static let mergedBadgeTag = 990
 
         init(parent: MapViewRepresentable) {
             self.parent = parent
@@ -285,6 +286,18 @@ extension MapViewRepresentable {
             // 출발/도착 핀은 거리 라벨과 겹쳐도 MapKit 충돌 처리로 가려지면 안 됨(최대 2개뿐이라 성능 영향 없음)
             view.displayPriority = .required
             view.collisionMode = .none
+            view.subviews.filter { $0.tag == Self.mergedBadgeTag }.forEach { $0.removeFromSuperview() }
+            if pin.role == .merged {
+                let badge = UIImageView(image: UIImage(systemName: "flag.checkered"))
+                badge.tag = Self.mergedBadgeTag
+                badge.tintColor = .white
+                badge.backgroundColor = .systemRed
+                badge.layer.cornerRadius = 7
+                badge.clipsToBounds = true
+                badge.contentMode = .scaleAspectFit
+                badge.frame = CGRect(x: view.bounds.width - 10, y: -4, width: 14, height: 14)
+                view.addSubview(badge)
+            }
             return view
         }
 

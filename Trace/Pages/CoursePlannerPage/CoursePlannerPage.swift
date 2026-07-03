@@ -139,23 +139,34 @@ struct CoursePlannerPage: View {
     private var mapPins: [MapPin] {
         var pins: [MapPin] = []
         if let course = viewModel.course {
-            if let first = course.coordinates.first {
+            if viewModel.isClosedCourse, let first = course.coordinates.first {
+                // 닫힌 코스: 출발·도착이 같은 지점 — 병합 핀 하나만
                 pins.append(MapPin(
                     coordinate: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
-                    title: "출발",
+                    title: "출발/도착",
                     color: .systemGreen,
                     systemImage: "figure.run",
-                    role: .start
+                    role: .merged
                 ))
-            }
-            if let last = course.coordinates.last, course.coordinates.count > 1 {
-                pins.append(MapPin(
-                    coordinate: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude),
-                    title: "도착",
-                    color: .systemRed,
-                    systemImage: "flag.checkered",
-                    role: .end
-                ))
+            } else {
+                if let first = course.coordinates.first {
+                    pins.append(MapPin(
+                        coordinate: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
+                        title: "출발",
+                        color: .systemGreen,
+                        systemImage: "figure.run",
+                        role: .start
+                    ))
+                }
+                if let last = course.coordinates.last, course.coordinates.count > 1 {
+                    pins.append(MapPin(
+                        coordinate: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude),
+                        title: "도착",
+                        color: .systemRed,
+                        systemImage: "flag.checkered",
+                        role: .end
+                    ))
+                }
             }
         }
         // tap 모드에서 pendingTapStart는 코스가 비어 있을 때만 설정됨 (최초 2탭 대기)
