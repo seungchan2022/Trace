@@ -64,6 +64,8 @@ extension CoursePlannerPage {
                 }
                 .accessibilityIdentifier("coursePlanner.segmentPanel.collapse")
             }
+            .padding(.horizontal, 12)
+            .padding(.top, 12)
 
             ScrollViewReader { proxy in
                 ScrollView {
@@ -81,6 +83,10 @@ extension CoursePlannerPage {
                 }
                 // ScrollView는 greedy — 내용이 적으면 내용 높이만큼, 많으면 지도 높이 40% 상한
                 .frame(height: min(panelContentHeight, panelMaxListHeight))
+                // 콘텐츠 여백만 12pt로 주고 스크롤 인디케이터는 기본 여백(에지에 붙게) 유지 —
+                // .padding()으로 ScrollView 전체를 감싸면 인디케이터까지 같이 밀려 보인다 (실기기 QA 발견).
+                .contentMargins(.horizontal, 12, for: .scrollContent)
+                .contentMargins(.bottom, 12, for: .scrollContent)
                 .scrollPosition(id: $panelAnchorColorKey, anchor: .center)
                 .onAppear {
                     restoreScrollPosition(proxy)
@@ -92,7 +98,6 @@ extension CoursePlannerPage {
                 }
             }
         }
-        .padding(12)
         .frame(minWidth: 220)
     }
 
