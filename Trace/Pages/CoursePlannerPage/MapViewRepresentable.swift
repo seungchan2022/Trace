@@ -79,6 +79,32 @@ final class SegmentDistanceAnnotationView: MKAnnotationView {
     }
 }
 
+// 경유점(구간 경계) 마커 — 핀 diff와 분리된 별도 annotation 타입 (spec 설계 3 구현 노트)
+final class WaypointAnnotation: NSObject, MKAnnotation {
+    let coordinate: CLLocationCoordinate2D
+    init(coordinate: CLLocationCoordinate2D) {
+        self.coordinate = coordinate
+    }
+}
+
+final class WaypointAnnotationView: MKAnnotationView {
+    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        frame = CGRect(x: 0, y: 0, width: 10, height: 10)
+        layer.cornerRadius = 5
+        backgroundColor = .white
+        layer.borderColor = UIColor.systemGray.cgColor
+        layer.borderWidth = 2
+        // 조용한 시각 위계: 출발/도착 핀(.required/.none)이 항상 이기고, 겹치면 경유점이 양보한다
+        displayPriority = .defaultLow
+        collisionMode = .circle
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 fileprivate struct SegmentSnapshot: Equatable {
     let coordinateCount: Int
     let first: CLLocationCoordinate2D?
@@ -106,6 +132,7 @@ struct MapViewRepresentable: UIViewRepresentable {
     var pins: [MapPin]
     var selectedSegmentIndex: Int?
     var isDrawingMode: Bool
+    var waypoints: [CLLocationCoordinate2D]
     var onStrokeUpdate: ([CGPoint]) -> Void
     var onStrokeEnded: ([CourseCoordinate]) -> Void
     var onMapTap: ((CourseCoordinate, CoursePinRole?) -> Void)?
@@ -195,6 +222,10 @@ struct MapViewRepresentable: UIViewRepresentable {
                 )
                 uiView.addAnnotation(annotation)
             }
+            uiView.removeAnnotations(uiView.annotations.filter { $0 is WaypointAnnotation })
+            for waypoint in waypoints {
+                uiView.addAnnotation(WaypointAnnotation(coordinate: waypoint))
+            }
             context.coordinator.lastSegmentSnapshots = currentSnapshots
         }
 
@@ -271,6 +302,13 @@ extension MapViewRepresentable {
         // MARK: Annotation
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+            if annotation is WaypointAnnotation {
+                let identifier = "waypoint"
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? WaypointAnnotationView
+                    ?? WaypointAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                view.annotation = annotation
+                return view
+            }
             if let distanceAnnotation = annotation as? SegmentDistanceAnnotation {
                 let identifier = "segmentDistance"
                 let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? SegmentDistanceAnnotationView

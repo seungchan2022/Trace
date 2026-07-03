@@ -557,6 +557,30 @@ final class CoursePlannerViewModelTests: XCTestCase {
         await sut.handleMapTap(at: a, hitPin: .start)
         XCTAssertFalse(sut.roundTripHintVisible, "닫힌 코스면 숨김")
     }
+
+    // MARK: - Waypoint coordinates
+
+    func testWaypointCoordinates_areSegmentBoundariesExceptFinal() async {
+        let viewModel = makeSUT()
+        let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
+        let b = CourseCoordinate(latitude: 37.51, longitude: 127.00)
+        let c = CourseCoordinate(latitude: 37.52, longitude: 127.00)
+        await viewModel.handleMapTap(at: a)
+        await viewModel.handleMapTap(at: b)   // 구간 1: a→b
+        await viewModel.handleMapTap(at: c)   // 구간 2: b→c
+        XCTAssertEqual(viewModel.course?.segments.count, 2)
+
+        let waypoints = viewModel.waypointCoordinates
+        XCTAssertEqual(waypoints.count, 1, "구간 2개 → 경계 1개")
+        XCTAssertEqual(waypoints.first, viewModel.course?.segments.first?.coordinates.last)
+    }
+
+    func testWaypointCoordinates_emptyForSingleSegment() async {
+        let viewModel = makeSUT()
+        await viewModel.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await viewModel.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        XCTAssertTrue(viewModel.waypointCoordinates.isEmpty)
+    }
 }
 
 // MARK: - Test Doubles

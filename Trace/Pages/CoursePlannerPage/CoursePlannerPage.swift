@@ -91,6 +91,9 @@ struct CoursePlannerPage: View {
             pins: mapPins,
             selectedSegmentIndex: viewModel.selectedSegmentIndex,
             isDrawingMode: viewModel.isDrawingMode,
+            waypoints: viewModel.waypointCoordinates.map {
+                CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+            },
             onStrokeUpdate: { points in currentStrokePoints = points },
             onStrokeEnded: { stroke in Task { await viewModel.appendStroke(stroke) } },
             onMapTap: { coord, hitPin in Task { await viewModel.handleMapTap(at: coord, hitPin: hitPin) } }

@@ -57,6 +57,12 @@ final class CoursePlannerPageViewModel {
     // course.segments와 같은 순서로 정렬된 attach 순번(색상 identity, prepend에도 안정적)
     var segmentColorKeys: [Int] { session.segmentColorKeys }
 
+    // 지도 경유점 마커용: 인접 구간이 만나는 경계 좌표 (각 구간의 마지막 좌표, 최종 구간 제외)
+    var waypointCoordinates: [CourseCoordinate] {
+        guard let segments = course?.segments, segments.count > 1 else { return [] }
+        return segments.dropLast().compactMap { $0.coordinates.last }
+    }
+
     var distanceText: String? {
         guard let course else { return nil }
         return String(format: "%.2f km", course.distanceMeters / 1000)
