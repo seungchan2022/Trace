@@ -24,6 +24,10 @@ final class CourseEditSession {
         entries.isEmpty ? nil : PlannedCourse(segments: segments)
     }
 
+    static let connectionThresholdMeters: Double = 20
+
+    // 이어붙이기 순서 규칙 (spec 규칙 1~4): 반전은 "출발점 연장"(규칙 3) 단 하나.
+    // 거리 비교로 앞/뒤를 추측하지 않는다 — 기본값은 항상 "도착점에서 이어진다".
     // 1 attach = 1 segment 추가 = undo 1번에 완전 제거
     func attach(
         _ newSegment: CourseSegment,
@@ -32,39 +36,32 @@ final class CourseEditSession {
         guard let existing = course,
               let existingStart = existing.coordinates.first,
               let existingEnd = existing.coordinates.last,
-              let newStart = newSegment.coordinates.first,
-              let newEnd = newSegment.coordinates.last else {
+              let newStart = newSegment.coordinates.first else {
             append(newSegment)
             return
         }
 
-        let orientation = resolveOrientation(
-            newStart: newStart, newEnd: newEnd,
-            existingStart: existingStart, existingEnd: existingEnd
-        )
+        let threshold = Self.connectionThresholdMeters
+        let isClosedCourse = existingStart.distanceMeters(to: existingEnd) <= threshold
+        let startsNearEnd = newStart.distanceMeters(to: existingEnd) <= threshold
+        let startsNearStart = newStart.distanceMeters(to: existingStart) <= threshold
 
-        let oriented = orientation.needsReverse ? newSegment.reversed() : newSegment
-        guard let orientedFirst = oriented.coordinates.first,
-              let orientedLast = oriented.coordinates.last else { return }
-
-        var combinedCoords = oriented.coordinates
-        var combinedDistance = oriented.distanceMeters
-
-        if orientation.attachesToEnd {
-            if needsGap(from: existingEnd, to: orientedFirst) {
-                let gap = try await service.route(from: existingEnd, to: orientedFirst)
-                combinedCoords = gap.coordinates + Array(oriented.coordinates.dropFirst())
-                combinedDistance += gap.distanceMeters
-            }
-            append(makeMerged(like: newSegment, coordinates: combinedCoords, distance: combinedDistance))
-        } else {
-            if needsGap(from: orientedLast, to: existingStart) {
-                let gap = try await service.route(from: orientedLast, to: existingStart)
-                combinedCoords = oriented.coordinates + Array(gap.coordinates.dropFirst())
-                combinedDistance += gap.distanceMeters
-            }
-            prepend(makeMerged(like: newSegment, coordinates: combinedCoords, distance: combinedDistance))
+        // 규칙 3: 열린 코스의 출발점에서 시작한 구간만 "출발 방향 연장" — 반전 prepend.
+        // 반전 후 끝 좌표 = 원래 시작점 ≈ 기존 출발점이므로 gap 라우팅이 필요 없다.
+        if !isClosedCourse, !startsNearEnd, startsNearStart {
+            prepend(newSegment.reversed())
+            return
         }
+
+        // 규칙 1·2·4: 그린 그대로 도착점 뒤에 append (필요 시 gap 라우팅)
+        var combinedCoords = newSegment.coordinates
+        var combinedDistance = newSegment.distanceMeters
+        if needsGap(from: existingEnd, to: newStart) {
+            let gap = try await service.route(from: existingEnd, to: newStart)
+            combinedCoords = gap.coordinates + Array(newSegment.coordinates.dropFirst())
+            combinedDistance += gap.distanceMeters
+        }
+        append(makeMerged(like: newSegment, coordinates: combinedCoords, distance: combinedDistance))
     }
 
     func undo() {
@@ -89,29 +86,8 @@ final class CourseEditSession {
         nextOrder += 1
     }
 
-    private struct AttachOrientation {
-        let needsReverse: Bool
-        let attachesToEnd: Bool
-    }
-
-    private func resolveOrientation(
-        newStart: CourseCoordinate, newEnd: CourseCoordinate,
-        existingStart: CourseCoordinate, existingEnd: CourseCoordinate
-    ) -> AttachOrientation {
-        let pairs: [(distance: Double, attachesToEnd: Bool, needsReverse: Bool)] = [
-            (newStart.distanceMeters(to: existingEnd),   true,  false),
-            (newEnd.distanceMeters(to: existingEnd),     true,  true),
-            (newEnd.distanceMeters(to: existingStart),   false, false),
-            (newStart.distanceMeters(to: existingStart), false, true),
-        ]
-        guard let closest = pairs.min(by: { $0.distance < $1.distance }) else {
-            return AttachOrientation(needsReverse: false, attachesToEnd: true)
-        }
-        return AttachOrientation(needsReverse: closest.needsReverse, attachesToEnd: closest.attachesToEnd)
-    }
-
     private func needsGap(from: CourseCoordinate, to: CourseCoordinate) -> Bool {
-        from.distanceMeters(to: to) > 20
+        from.distanceMeters(to: to) > Self.connectionThresholdMeters
     }
 
     private func makeMerged(

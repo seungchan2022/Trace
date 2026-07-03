@@ -50,34 +50,66 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(session.course?.coordinates.first, A)
     }
 
-    // MARK: - attach: prepend (new end near existing start)
+    // MARK: - attach: 규칙 3 — 출발점에서 시작한 구간은 반전 prepend (유일한 반전)
 
-    func testAttach_prependNoGap() async throws {
+    func testAttach_startNearExistingStart_reversePrepends() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
         // Seed: B→C
         try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
-        // New: A→B (end near existing start B → prepend, no gap)
+        // New: near_B→A (출발점 B에서 시작해 바깥으로 그림) → 반전 prepend → 코스 A→…→C
         let near_B = CourseCoordinate(latitude: B.latitude + 0.0001, longitude: B.longitude)
-        try await session.attach(.tapped(coordinates: [A, near_B], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [near_B, A], distanceMeters: 100), using: service)
         XCTAssertEqual(session.segments.count, 2)
-        // prepend되므로 전체 경로 시작이 A여야 함
-        XCTAssertEqual(session.course?.coordinates.first, A)
+        XCTAssertEqual(session.course?.coordinates.first, A, "반전 prepend로 코스 시작이 A여야 함")
+        XCTAssertEqual(service.routeCallCount, 0, "출발점 근접이므로 gap 라우팅 없어야 함")
     }
 
-    // MARK: - attach: reversed append (new end near existing end)
+    // MARK: - attach: 규칙 4 — 양 끝점 모두에서 먼 스트로크는 그린 그대로 도착점 gap append
 
-    func testAttach_reversedAppend() async throws {
+    func testAttach_farStroke_appendsAsDrawnWithGap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
         // Seed: A→B
         try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
-        // New: C→B (end near existing end B → reverse to B→C, then append)
-        let near_B = CourseCoordinate(latitude: B.latitude + 0.0001, longitude: B.longitude)
-        try await session.attach(.tapped(coordinates: [C, near_B], distanceMeters: 100), using: service)
+        // New: C→D (양 끝점 모두에서 멂) → 도착점 B에서 C로 gap 라우팅 + 그린 그대로 append
+        try await session.attach(.tapped(coordinates: [C, D], distanceMeters: 100), using: service)
         XCTAssertEqual(session.segments.count, 2)
-        // 두 번째 세그먼트는 reversed되어 near_B→C 순서여야 함
-        XCTAssertEqual(session.segments.last?.coordinates.last, C)
+        XCTAssertEqual(session.course?.coordinates.last, D, "그린 방향 그대로여야 함 (반전 금지)")
+        XCTAssertEqual(service.routeCallCount, 1, "gap 라우팅 1회")
+    }
+
+    // MARK: - attach: 규칙 2 — 왕복 스트로크(도착점에서 시작)는 항상 append
+
+    func testAttach_roundTripStroke_appendsPreservingRunOrder() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: A→B
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        // New: 도착점 B 근처에서 시작해 출발점 A 근처로 되짚는 왕복 스트로크
+        let near_B = CourseCoordinate(latitude: B.latitude + 0.0001, longitude: B.longitude)
+        let near_A = CourseCoordinate(latitude: A.latitude + 0.0001, longitude: A.longitude)
+        try await session.attach(.drawn(coordinates: [near_B, near_A], distanceMeters: 100), using: service)
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.first, A, "출발은 A 유지 (prepend 금지)")
+        XCTAssertEqual(session.course?.coordinates.last, near_A, "달리는 순서 유지")
+    }
+
+    // MARK: - attach: 규칙 1 — 닫힌 코스에는 무조건 append
+
+    func testAttach_closedCourse_alwaysAppends() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // 닫힌 코스 구성: A→B, 그리고 B→A근처로 되짚기 → 첫·끝 좌표 ≤20m
+        let near_B = CourseCoordinate(latitude: B.latitude + 0.0001, longitude: B.longitude)
+        let near_A = CourseCoordinate(latitude: A.latitude + 0.0001, longitude: A.longitude)
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [near_B, near_A], distanceMeters: 100), using: service)
+        // 닫힌 코스에서 공유 지점 근처에서 시작하는 새 구간 → prepend가 아니라 append여야 함
+        let near_A2 = CourseCoordinate(latitude: A.latitude - 0.0001, longitude: A.longitude)
+        try await session.attach(.tapped(coordinates: [near_A2, C], distanceMeters: 100), using: service)
+        XCTAssertEqual(session.course?.coordinates.first, A, "닫힌 코스 연장 시 출발점이 바뀌면 안 됨")
+        XCTAssertEqual(session.course?.coordinates.last, C)
     }
 
     // MARK: - undo
@@ -134,7 +166,7 @@ final class CourseEditSessionTests: XCTestCase {
         try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
         // D→A를 prepend (기존 시작 A 근처) → 공간 순서: D-A-B-C, 하지만 시간상 가장 최근 attach는 D→A
         let near_A = CourseCoordinate(latitude: A.latitude - 0.0001, longitude: A.longitude)
-        try await session.attach(.tapped(coordinates: [D, near_A], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [near_A, D], distanceMeters: 100), using: service)
         XCTAssertEqual(session.segments.count, 3)
         XCTAssertEqual(session.course?.coordinates.first, D)
 
@@ -155,7 +187,7 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(session.segmentColorKeys, [0, 1])
 
         let near_A = CourseCoordinate(latitude: A.latitude - 0.0001, longitude: A.longitude)
-        try await session.attach(.tapped(coordinates: [D, near_A], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [near_A, D], distanceMeters: 100), using: service)
 
         // prepend는 배열 맨 앞에 삽입되지만, colorKey(생성 순서)는 기존 세그먼트의 것이 유지되어야 함
         XCTAssertEqual(session.segmentColorKeys, [2, 0, 1])
