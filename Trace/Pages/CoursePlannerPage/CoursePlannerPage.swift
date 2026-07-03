@@ -201,10 +201,22 @@ struct CoursePlannerPage: View {
                 Text(errorMessage)
                     .foregroundStyle(.red)
                     .accessibilityIdentifier("coursePlanner.error")
+            } else if let infoMessage = viewModel.infoMessage {
+                Text(infoMessage)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("coursePlanner.info")
             } else if let distanceText = viewModel.distanceText {
-                Text(distanceText)
-                    .fontWeight(.semibold)
-                    .accessibilityIdentifier("coursePlanner.distance")
+                HStack(spacing: 6) {
+                    Text(distanceText)
+                        .fontWeight(.semibold)
+                        .accessibilityIdentifier("coursePlanner.distance")
+                    if viewModel.roundTripHintVisible {
+                        Text("· 출발핀을 탭하면 왕복 완성")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .accessibilityIdentifier("coursePlanner.roundTripHint")
+                    }
+                }
             } else {
                 Text(viewModel.isDrawingMode ? "경로를 그려주세요" : "지도에서 출발지를 선택하세요")
                     .accessibilityIdentifier("coursePlanner.prompt")

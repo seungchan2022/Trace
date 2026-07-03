@@ -492,6 +492,71 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.selectedSegmentIndex, "redo 후 선택 초기화 (prepend 복원 시 인덱스 밀림)")
         XCTAssertFalse(sut.canRedo)
     }
+
+    // MARK: - Pin hit handling (round trip / no-op / info)
+
+    func testHandleMapTap_startPinHit_appendsReturnLegSnappedToStart() async {
+        let sut = makeSUT()
+        let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
+        let b = CourseCoordinate(latitude: 37.51, longitude: 127.00)
+        await sut.handleMapTap(at: a)
+        await sut.handleMapTap(at: b)
+        XCTAssertEqual(sut.course?.segments.count, 1)
+
+        // 출발핀 히트 → 도착점에서 출발점 좌표(스냅)까지 왕복 구간 append
+        let nearA = CourseCoordinate(latitude: 37.5001, longitude: 127.00)
+        await sut.handleMapTap(at: nearA, hitPin: .start)
+        XCTAssertEqual(sut.course?.segments.count, 2)
+        XCTAssertEqual(sut.course?.coordinates.first, a, "출발 유지")
+        XCTAssertEqual(sut.course?.coordinates.last, a, "탭 좌표가 아닌 출발점 좌표로 스냅")
+        XCTAssertTrue(sut.isClosedCourse)
+    }
+
+    func testHandleMapTap_endPinHit_isNoOpWithInfo() async {
+        let sut = makeSUT()
+        let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
+        let b = CourseCoordinate(latitude: 37.51, longitude: 127.00)
+        await sut.handleMapTap(at: a)
+        await sut.handleMapTap(at: b)
+
+        await sut.handleMapTap(at: b, hitPin: .end)
+        XCTAssertEqual(sut.course?.segments.count, 1, "무시(no-op)")
+        XCTAssertEqual(sut.infoMessage, "이미 도착점입니다")
+    }
+
+    func testHandleMapTap_mergedPinHit_isNoOpWithInfo() async {
+        let sut = makeSUT()
+        let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
+        await sut.handleMapTap(at: a)
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        await sut.handleMapTap(at: a, hitPin: .start) // 왕복으로 닫음
+
+        await sut.handleMapTap(at: a, hitPin: .merged)
+        XCTAssertEqual(sut.course?.segments.count, 2, "무시(no-op)")
+        XCTAssertEqual(sut.infoMessage, "이미 닫힌 코스입니다")
+    }
+
+    func testInfoMessage_clearedOnNextAction() async {
+        let sut = makeSUT()
+        let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
+        await sut.handleMapTap(at: a)
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00), hitPin: .end)
+        XCTAssertNotNil(sut.infoMessage)
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.52, longitude: 127.00))
+        XCTAssertNil(sut.infoMessage, "다음 액션에서 안내가 사라져야 함")
+    }
+
+    func testRoundTripHintVisible_onlyForOpenCourseInTapMode() async {
+        let sut = makeSUT()
+        XCTAssertFalse(sut.roundTripHintVisible, "코스 없으면 숨김")
+        let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
+        await sut.handleMapTap(at: a)
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        XCTAssertTrue(sut.roundTripHintVisible)
+        await sut.handleMapTap(at: a, hitPin: .start)
+        XCTAssertFalse(sut.roundTripHintVisible, "닫힌 코스면 숨김")
+    }
 }
 
 // MARK: - Test Doubles
