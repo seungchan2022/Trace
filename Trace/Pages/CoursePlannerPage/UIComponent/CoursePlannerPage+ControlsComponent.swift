@@ -17,6 +17,10 @@ extension CoursePlannerPage {
                 .disabled(!viewModel.canUndo)
                 .accessibilityIdentifier("coursePlanner.undo")
 
+            Button("앞으로") { viewModel.redo() }
+                .disabled(!viewModel.canRedo)
+                .accessibilityIdentifier("coursePlanner.redo")
+
             Button("초기화") { viewModel.clear() }
                 .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
                 .accessibilityIdentifier("coursePlanner.clear")

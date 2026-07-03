@@ -472,6 +472,26 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNotNil(sut.course)
         XCTAssertEqual(sut.course?.distanceMeters, tapCourse?.distanceMeters)
     }
+
+    // MARK: - Redo
+
+    func testRedo_restoresCourseAndResetsSelection() async {
+        let sut = makeSUT()
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.52, longitude: 127.00))
+        XCTAssertEqual(sut.course?.segments.count, 2)
+
+        await sut.undo()
+        XCTAssertEqual(sut.course?.segments.count, 1)
+        XCTAssertTrue(sut.canRedo)
+
+        sut.selectSegment(at: 0)
+        sut.redo()
+        XCTAssertEqual(sut.course?.segments.count, 2)
+        XCTAssertNil(sut.selectedSegmentIndex, "redo 후 선택 초기화 (prepend 복원 시 인덱스 밀림)")
+        XCTAssertFalse(sut.canRedo)
+    }
 }
 
 // MARK: - Test Doubles

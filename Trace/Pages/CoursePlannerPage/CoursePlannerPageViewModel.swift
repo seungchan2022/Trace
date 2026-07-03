@@ -201,6 +201,13 @@ final class CoursePlannerPageViewModel {
         selectedSegmentIndex = nil
     }
 
+    var canRedo: Bool { session.canRedo }
+
+    func redo() {
+        session.redo()
+        selectedSegmentIndex = nil
+    }
+
     func clear() {
         recomputeGeneration += 1
         session.clear()
