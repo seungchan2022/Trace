@@ -40,8 +40,16 @@
 - [x] **undo가 prepend된 최근 구간을 못 지움** — 이번에 해결: `segments`는 "공간순"인데 attach는 "시간순"이라 prepend 시 두 순서가 갈라져 undo가 엉뚱한 구간을 지우던 버그. `CourseEditSession`에 `Entry{id, order, segment}` 도입해 시간순(`order`)을 별도 추적, undo는 `order` 최대값 제거로 수정. `segmentColorKeys`(attach 생성 순서)를 분리해 prepend 후에도 기존 구간 색상이 안 바뀌도록 함. 실기기 검증 완료. `done`
 - [x] **(C) 짧은 거리 도착 마커 미표시** — 이번에 해결: 거리 라벨 annotation과 위치가 겹칠 때 MapKit이 충돌 처리로 핀을 자동으로 숨기던 문제. `MKAnnotationView.displayPriority = .required`, `collisionMode = .none`으로 수정(핀은 최대 2개뿐이라 성능 영향 없음). 좌표 2개 미만의 축약된 route 결과에 대한 방어 guard도 함께 추가. 실기기 검증 완료. `done`
 - [x] **(D) 내 위치 이동 버튼 오작동/지연** — 이번에 해결: `CoreLocationService.currentLocation()`이 단일 `continuation`으로 재진입을 막아, 부트스트랩(`.task`)이 위치를 기다리는 동안 버튼을 누르면 즉시 `.unavailable`로 실패하고 `recenterToCurrentLocation()`의 `try?`가 그 에러를 조용히 삼켰다. `ContinuationBroadcaster`를 도입해 겹친 요청이 같은 결과를 함께 기다리도록 수정. `done`
-- [ ] **실시간 구간 패널 무한 확장** — *where:* 지도 우측 상단 구간 패널(펼침 상태) / *now:* 구간이 늘어날수록 목록 높이가 계속 커져서 화면을 덮을 수 있음 / *desired:* 최대 높이(화면 ~40%)를 두고 그 이상은 스크롤 + 최신 구간 자동 스크롤. MVP8 `course-ux-polish`. `planned`
-- [ ] **겹치는 경로 렌더링 방식** — *where:* 지도 위 구간 폴리라인 / *now:* 경로가 겹치면 최신 구간이 이전 구간을 덮어써서, 아래 구간의 거리 라벨과 눈에 보이는 선 색이 어긋나 혼동됨 / *desired:* MVP8 킥오프(2026-07-02)에서 방향 결정 — 겹침 감지 + 좌표 오프셋(α)으로 나란히 표시. MVP8 `overlap-offset`. `planned`
+- [x] **실시간 구간 패널 무한 확장** — MVP8 `course-ux-polish`에서 해결: 최대 높이(지도 높이 40%) + 내부 스크롤 + 채팅 앱 방식 자동 스크롤. `done`
+- [x] **겹치는 경로 렌더링 방식** — MVP8 `overlap-offset`에서 해결: 점-대-선분 겹침 감지 + 생성 순서 우선 + 4m×n 오프셋 + 실거리 테이퍼. 2026-07-03 실기기 디버그 로그로 `maxDisplacementMeters≈4.0` 확인, 정상 동작 검증 완료. `done`
+
+## MVP8 (2026-07-03) 실기기 QA 피드백
+
+- [x] **구간 패널 스크롤 인디케이터가 콘텐츠와 함께 안쪽으로 밀림** — 이번에 해결: `.padding()`이 ScrollView 전체를 감싸 인디케이터까지 밀렸던 것을 `contentMargins(for: .scrollContent)`로 분리. `done`
+- [ ] **탭 모드로는 온전한 길이의 왕복(출발점까지 되짚기) 구간을 만들 수 없음** — *where:* `CoursePlannerPageViewModel.handleMapTap`/`nearestEndpoint` / *now:* 탭 한 번 = "가장 가까운 기존 끝점 → 지금 탭한 지점"으로 즉시 라우팅·연결되는데, 원래 출발점을 다시 탭하면 "그 지점에서 그 지점까지"가 되어 0m로 귀결됨 — 탭만으로는 중간 지점을 거치는 전체 길이의 왕복 구간을 만들 방법이 없음(그리기 모드는 가능, 2026-07-03 실기기 확인). MVP5~6 설계의 특성이라 겹침 오프셋(MVP8)과는 무관 / *desired:* 아직 미정 — "왕복" 전용 액션을 추가할지, 탭 모드의 연결 규칙을 조정할지 브레인스토밍 필요. `open`
+- [ ] **두 손가락 탭 줌아웃과 커스텀 2손가락 pan을 빠르게 연속 시도하면 서로 제대로 동작 안 할 때 있음** — *where:* `MapViewRepresentable` 그리기 모드 제스처 / *now:* 천천히 하면 각각 정상 동작, 빠르게 하면 제스처 인식기 경쟁으로 판정이 애매해짐(2026-07-03 실기기 확인) / *desired:* `UIGestureRecognizer` `shouldRecognizeSimultaneously`/`require(toFail:)` 조정 필요, 실기기 튜닝 필요. `open`
+- [ ] **구간 패널: 출발 지점(prepend)에 구간 추가 시 스크롤 위치가 한 칸씩 밀리는 느낌** — *where:* `CoursePlannerPage+SegmentPanelComponent` / *now:* 도착 지점 추가(append)는 위치 유지되는데, 출발 지점 추가(prepend)는 보던 위치가 밀리는 현상(2026-07-03 실기기 확인) — `scrollPosition(id:anchor:)`가 prepend 시 자동 위치보존을 완전히 못 하는 것으로 추정, 확정 원인 미조사 / *desired:* 재현 조건 구체화 후 원인 조사, 필요 시 prepend 시점에 명시적 재고정 로직 추가. `open`
+- [ ] **그리기 모드 핀치 줌 네이티브 복원, 체감 개선 미미** — MVP8 `course-ux-polish`에서 커스텀 핀치를 네이티브로 교체했으나(2026-07-03 실기기 확인) 사용자 체감상 뚜렷한 개선은 못 느낌. 버그는 아니고 기록만. `done`(코드 변경 자체는 완료, 체감 효과는 낮음)
 
 ## MVP8 킥오프 논의 (2026-07-02)
 
