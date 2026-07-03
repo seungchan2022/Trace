@@ -93,7 +93,7 @@ struct CoursePlannerPage: View {
             isDrawingMode: viewModel.isDrawingMode,
             onStrokeUpdate: { points in currentStrokePoints = points },
             onStrokeEnded: { stroke in Task { await viewModel.appendStroke(stroke) } },
-            onMapTap: { coord in Task { await viewModel.handleMapTap(at: coord) } }
+            onMapTap: { coord, hitPin in Task { await viewModel.handleMapTap(at: coord, hitPin: hitPin) } }
         )
         .overlay {
             Canvas { context, _ in
@@ -144,7 +144,8 @@ struct CoursePlannerPage: View {
                     coordinate: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
                     title: "출발",
                     color: .systemGreen,
-                    systemImage: "figure.run"
+                    systemImage: "figure.run",
+                    role: .start
                 ))
             }
             if let last = course.coordinates.last, course.coordinates.count > 1 {
@@ -152,7 +153,8 @@ struct CoursePlannerPage: View {
                     coordinate: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude),
                     title: "도착",
                     color: .systemRed,
-                    systemImage: "flag.checkered"
+                    systemImage: "flag.checkered",
+                    role: .end
                 ))
             }
         }
@@ -162,7 +164,8 @@ struct CoursePlannerPage: View {
                 coordinate: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude),
                 title: "출발",
                 color: .systemGreen,
-                systemImage: "figure.run"
+                systemImage: "figure.run",
+                role: .pendingStart
             ))
         }
         return pins

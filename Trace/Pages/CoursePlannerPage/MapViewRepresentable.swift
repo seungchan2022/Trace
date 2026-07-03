@@ -8,11 +8,13 @@ struct MapPin: Equatable {
     let title: String
     let color: UIColor
     let systemImage: String
+    let role: CoursePinRole
 
     static func == (lhs: MapPin, rhs: MapPin) -> Bool {
         lhs.coordinate.latitude == rhs.coordinate.latitude &&
             lhs.coordinate.longitude == rhs.coordinate.longitude &&
-            lhs.title == rhs.title
+            lhs.title == rhs.title &&
+            lhs.role == rhs.role   // 좌표가 같아도 스타일 전환(출발/도착 ↔ 병합)을 diff가 감지
     }
 }
 
@@ -21,12 +23,14 @@ final class ColoredPinAnnotation: NSObject, MKAnnotation {
     let title: String?
     let color: UIColor
     let systemImage: String
+    let role: CoursePinRole
 
-    init(coordinate: CLLocationCoordinate2D, title: String, color: UIColor, systemImage: String) {
+    init(coordinate: CLLocationCoordinate2D, title: String, color: UIColor, systemImage: String, role: CoursePinRole) {
         self.coordinate = coordinate
         self.title = title
         self.color = color
         self.systemImage = systemImage
+        self.role = role
     }
 }
 
@@ -104,7 +108,7 @@ struct MapViewRepresentable: UIViewRepresentable {
     var isDrawingMode: Bool
     var onStrokeUpdate: ([CGPoint]) -> Void
     var onStrokeEnded: ([CourseCoordinate]) -> Void
-    var onMapTap: ((CourseCoordinate) -> Void)?
+    var onMapTap: ((CourseCoordinate, CoursePinRole?) -> Void)?
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -204,13 +208,12 @@ struct MapViewRepresentable: UIViewRepresentable {
             }
         }
 
-        let existing = uiView.annotations.filter { !($0 is MKUserLocation) }
-            .compactMap { $0 as? ColoredPinAnnotation }
-        let pinsChanged = existing.count != pins.count ||
-            zip(existing, pins).contains { ann, pin in
-                abs(ann.coordinate.latitude - pin.coordinate.latitude) > 0.00001 ||
-                abs(ann.coordinate.longitude - pin.coordinate.longitude) > 0.00001
-            }
+        let existing = uiView.annotations.compactMap { $0 as? ColoredPinAnnotation }
+        let existingAsPins = existing.map {
+            MapPin(coordinate: $0.coordinate, title: $0.title ?? "", color: $0.color, systemImage: $0.systemImage, role: $0.role)
+        }
+        let pinsChanged = existingAsPins.count != pins.count ||
+            zip(existingAsPins, pins).contains { $0 != $1 }
         if pinsChanged {
             uiView.removeAnnotations(uiView.annotations.compactMap { $0 as? ColoredPinAnnotation })
             for pin in pins {
@@ -218,7 +221,8 @@ struct MapViewRepresentable: UIViewRepresentable {
                     coordinate: pin.coordinate,
                     title: pin.title,
                     color: pin.color,
-                    systemImage: pin.systemImage
+                    systemImage: pin.systemImage,
+                    role: pin.role
                 ))
             }
         }
@@ -342,7 +346,22 @@ extension MapViewRepresentable {
             guard let mapView = recognizer.view as? MKMapView else { return }
             let point = recognizer.location(in: mapView)
             let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
-            parent.onMapTap?(CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude))
+            let hit = pinHit(at: point, in: mapView)
+            parent.onMapTap?(CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude), hit)
+        }
+
+        // 화면 포인트 기반 핀 히트 — 지도거리(줌 종속)가 아니라 화면 24pt 반경으로 판정한다.
+        private func pinHit(at point: CGPoint, in mapView: MKMapView) -> CoursePinRole? {
+            let hitRadius: CGFloat = 24
+            var best: (role: CoursePinRole, distance: CGFloat)?
+            for annotation in mapView.annotations.compactMap({ $0 as? ColoredPinAnnotation }) {
+                let pinPoint = mapView.convert(annotation.coordinate, toPointTo: mapView)
+                let distance = hypot(pinPoint.x - point.x, pinPoint.y - point.y)
+                if distance <= hitRadius, distance < (best?.distance ?? .infinity) {
+                    best = (annotation.role, distance)
+                }
+            }
+            return best?.role
         }
 
         // MARK: Two-Finger Pan
