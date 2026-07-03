@@ -1,5 +1,9 @@
 # 코스 편집 UX 다듬기 (MVP8 마일스톤 1) Implementation Plan
 
+> **완료(소급 확인, 2026-07-03)** — Task 1~4 전부 구현·리뷰·실기기 QA 완료. 근거 커밋:
+> `02d9d07`(Task1) · `2c155b9`+`33abab0`(Task2) · `3aebf20`(Task3) · `d653e9d`(Task4 QA 체크리스트).
+> 실행 중 체크박스 갱신을 누락해 아래 `- [ ]`는 그대로 남아있음(내용은 전부 완료됨, 개별 복원하지 않음).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 구간 패널에 최대 높이(지도 높이 40%) + 스크롤 + 채팅 앱 방식 자동 스크롤을 넣고, 그리기 모드 핀치 줌을 MKMapView 내장 줌으로 복원한다.

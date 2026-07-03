@@ -1,5 +1,10 @@
 # 겹치는 경로 좌표 오프셋 렌더링 (MVP8 마일스톤 2) Implementation Plan
 
+> **완료(소급 확인, 2026-07-03)** — Task 1~5 전부 구현·리뷰·실기기 QA 완료. 근거 커밋:
+> `0df7397`(Task1) · `147a9ca`(Task2) · `68790e8`(Task3) · `9dcf1a7`(Task4) · `d653e9d`(Task5 QA 체크리스트).
+> 실기기 디버그 로그로 `maxDisplacementMeters≈4.0`(설계값 일치) 직접 확인, 정상 동작 검증됨.
+> 실행 중 체크박스 갱신을 누락해 아래 `- [ ]`는 그대로 남아있음(내용은 전부 완료됨, 개별 복원하지 않음).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 코스가 자기 자신 위를 지나는 부분(왕복 등)을 감지해 나중에 만든 구간의 표시 좌표를 옆으로 비켜 그려, 두 구간과 각자의 거리 라벨이 항상 함께 보이게 한다.
