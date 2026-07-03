@@ -9,10 +9,12 @@ final class CourseEditSession {
     private struct Entry {
         let id: UUID
         let order: Int
+        let placedAtFront: Bool
         let segment: CourseSegment
     }
 
     private var entries: [Entry] = []
+    private var redoStack: [Entry] = []
     private var nextOrder = 0
 
     var segments: [CourseSegment] { entries.map(\.segment) }
@@ -23,6 +25,8 @@ final class CourseEditSession {
     var course: PlannedCourse? {
         entries.isEmpty ? nil : PlannedCourse(segments: segments)
     }
+
+    var canRedo: Bool { !redoStack.isEmpty }
 
     static let connectionThresholdMeters: Double = 20
 
@@ -67,23 +71,36 @@ final class CourseEditSession {
     func undo() {
         guard let mostRecent = entries.max(by: { $0.order < $1.order }) else { return }
         entries.removeAll { $0.id == mostRecent.id }
+        redoStack.append(mostRecent)
+    }
+
+    func redo() {
+        guard let entry = redoStack.popLast() else { return }
+        if entry.placedAtFront {
+            entries.insert(entry, at: 0)
+        } else {
+            entries.append(entry)
+        }
     }
 
     func clear() {
         entries = []
+        redoStack = []
         nextOrder = 0
     }
 
     // MARK: - Private
 
     private func append(_ segment: CourseSegment) {
-        entries.append(Entry(id: UUID(), order: nextOrder, segment: segment))
+        entries.append(Entry(id: UUID(), order: nextOrder, placedAtFront: false, segment: segment))
         nextOrder += 1
+        redoStack = []
     }
 
     private func prepend(_ segment: CourseSegment) {
-        entries.insert(Entry(id: UUID(), order: nextOrder, segment: segment), at: 0)
+        entries.insert(Entry(id: UUID(), order: nextOrder, placedAtFront: true, segment: segment), at: 0)
         nextOrder += 1
+        redoStack = []
     }
 
     private func needsGap(from: CourseCoordinate, to: CourseCoordinate) -> Bool {

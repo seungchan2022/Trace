@@ -192,6 +192,99 @@ final class CourseEditSessionTests: XCTestCase {
         // prepend는 배열 맨 앞에 삽입되지만, colorKey(생성 순서)는 기존 세그먼트의 것이 유지되어야 함
         XCTAssertEqual(session.segmentColorKeys, [2, 0, 1])
     }
+
+    // MARK: - redo
+
+    func testRedo_restoresUndoneSegment() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        session.undo()
+        XCTAssertTrue(session.canRedo)
+        session.redo()
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.last, C)
+        XCTAssertEqual(session.segmentColorKeys, [0, 1], "order 보존")
+        XCTAssertFalse(session.canRedo)
+    }
+
+    func testRedo_restoresPrependPosition() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        // 반전 prepend 유발: 출발점 A 근처에서 시작해 D로
+        let near_A = CourseCoordinate(latitude: A.latitude - 0.0001, longitude: A.longitude)
+        try await session.attach(.tapped(coordinates: [near_A, D], distanceMeters: 100), using: service)
+        XCTAssertEqual(session.course?.coordinates.first, D)
+
+        session.undo()
+        XCTAssertEqual(session.course?.coordinates.first, A)
+        session.redo()
+        XCTAssertEqual(session.course?.coordinates.first, D, "prepend 자리(맨 앞)로 복원되어야 함")
+        XCTAssertEqual(session.segmentColorKeys, [2, 0, 1], "colorKey 보존")
+    }
+
+    func testRedo_multiple_restoresInReverseUndoOrder() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [C, D], distanceMeters: 100), using: service)
+        session.undo()
+        session.undo()
+        XCTAssertEqual(session.segments.count, 1)
+        session.redo()
+        XCTAssertEqual(session.course?.coordinates.last, C, "먼저 되돌린 것부터 역순 복원")
+        session.redo()
+        XCTAssertEqual(session.course?.coordinates.last, D)
+    }
+
+    func testAttach_success_clearsRedoStack() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        session.undo()
+        XCTAssertTrue(session.canRedo)
+        try await session.attach(.tapped(coordinates: [B, D], distanceMeters: 100), using: service)
+        XCTAssertFalse(session.canRedo, "성공한 attach는 미래를 무효화")
+    }
+
+    func testAttach_failure_preservesRedoStack() async throws {
+        let session = CourseEditSession()
+        let okService = StubCourseService()
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: okService)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: okService)
+        session.undo()
+        XCTAssertTrue(session.canRedo)
+
+        // gap 라우팅이 실패하는 원거리 attach → entry 미추가 → 스택 보존
+        let failingService = FailingCourseService()
+        do {
+            try await session.attach(.tapped(coordinates: [D, C], distanceMeters: 100), using: failingService)
+            XCTFail("gap 라우팅 실패로 throw되어야 함")
+        } catch {}
+        XCTAssertTrue(session.canRedo, "실패한 attach는 redo 스택을 보존해야 함")
+        XCTAssertEqual(session.segments.count, 1)
+    }
+
+    func testClear_clearsRedoStack() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        session.undo()
+        XCTAssertTrue(session.canRedo)
+        session.clear()
+        XCTAssertFalse(session.canRedo)
+    }
+
+    func testRedo_empty_doesNothing() {
+        let session = CourseEditSession()
+        session.redo()
+        XCTAssertTrue(session.segments.isEmpty)
+    }
 }
 
 // MARK: - Stub
@@ -202,5 +295,12 @@ private final class StubCourseService: CoursePlanningServiceProtocol {
     func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
         routeCallCount += 1
         return PlannedCourse(segments: [.tapped(coordinates: [start, destination], distanceMeters: 100)])
+    }
+}
+
+@MainActor
+private final class FailingCourseService: CoursePlanningServiceProtocol {
+    func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
+        throw CoursePlanningError.routeNotFound
     }
 }
