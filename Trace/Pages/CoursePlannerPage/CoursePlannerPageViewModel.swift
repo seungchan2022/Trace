@@ -219,36 +219,44 @@ final class CoursePlannerPageViewModel {
 
     // MARK: - Draw Mode
 
-    func appendStroke(_ stroke: [CourseCoordinate]) async {
+    func appendStroke(_ stroke: [CourseCoordinate], startPinHit: CoursePinRole? = nil) async {
         infoMessage = nil
         guard stroke.count >= 2 else { return }
         recomputeGeneration += 1
         let generation = recomputeGeneration
         try? await Task.sleep(nanoseconds: 300_000_000)
         guard generation == recomputeGeneration else { isLoading = false; return }
-        await routeStrokeAndAttach(stroke, generation: generation)
+        await routeStrokeAndAttach(stroke, startPinHit: startPinHit, generation: generation)
     }
 
-    // 라우팅 스냅으로 드리프트되기 전에, 원본 시작점이 기존 코스 끝점 근처면 정확한 좌표로 치환한다.
-    // 탭 모드(routeAndAttach)는 이미 기존 끝점에서 명시적으로 라우팅을 시작해 이 문제가 없다 —
-    // 안 그러면 실기기에서 도로망 스냅 오차로 20m 임계값을 넘어가 CourseEditSession의 근접 판정이 항상 실패한다.
-    private func snappedStrokeStart(_ sampled: [CourseCoordinate]) -> CourseCoordinate? {
-        guard let course = session.course, let existingStart = course.coordinates.first,
-              let existingEnd = course.coordinates.last, let first = sampled.first else { return nil }
-        let threshold = CourseEditSession.connectionThresholdMeters
-        if first.distanceMeters(to: existingEnd) <= threshold {
-            return existingEnd
-        } else if first.distanceMeters(to: existingStart) <= threshold {
-            return existingStart
+    // 시작점 치환: 화면 24pt 핀 히트(줌 무관 시각 근접) 우선, 실거리 20m 폴백(고배율 줌인에서
+    // 24pt < 20m인 구간을 커버 — 문서 리뷰 2026-07-04). 치환이 없으면 도로 스냅 드리프트로
+    // attach 근접 판정이 깨진다 (기존 주석의 원 문제).
+    private func snappedStrokeStart(
+        _ sampled: [CourseCoordinate], startPinHit: CoursePinRole?
+    ) -> CourseCoordinate? {
+        guard let course = session.course,
+              let existingStart = course.coordinates.first,
+              let existingEnd = course.coordinates.last,
+              let first = sampled.first else { return nil }
+        switch startPinHit {
+        case .end, .merged: return existingEnd
+        case .start: return existingStart
+        case .pendingStart, nil: break
         }
+        let threshold = CourseEditSession.connectionThresholdMeters
+        if first.distanceMeters(to: existingEnd) <= threshold { return existingEnd }
+        if first.distanceMeters(to: existingStart) <= threshold { return existingStart }
         return nil
     }
 
-    private func routeStrokeAndAttach(_ rawStroke: [CourseCoordinate], generation: Int) async {
+    private func routeStrokeAndAttach(
+        _ rawStroke: [CourseCoordinate], startPinHit: CoursePinRole?, generation: Int
+    ) async {
         var sampled = DrawnPathSampler.sample(rawStroke)
         guard sampled.count >= 2 else { return }
 
-        if let snappedStart = snappedStrokeStart(sampled) {
+        if let snappedStart = snappedStrokeStart(sampled, startPinHit: startPinHit) {
             sampled[0] = snappedStart
         }
 

@@ -154,7 +154,7 @@ struct MapViewRepresentable: UIViewRepresentable {
     var isDrawingMode: Bool
     var waypoints: [CLLocationCoordinate2D]
     var onStrokeUpdate: ([CGPoint]) -> Void
-    var onStrokeEnded: ([CourseCoordinate]) -> Void
+    var onStrokeEnded: ([CourseCoordinate], CoursePinRole?) -> Void
     var onMapTap: ((CourseCoordinate, CoursePinRole?) -> Void)?
     var onPendingTap: ((CourseCoordinate, CoursePinRole?) -> Void)?
     var onPendingTapCancelled: (() -> Void)?
@@ -417,6 +417,8 @@ extension MapViewRepresentable {
         private var currentStrokePoints: [CGPoint] = []
         private var currentStrokeCoords: [CourseCoordinate] = []
         private var panStartCenter: CLLocationCoordinate2D?
+        // 그리기 시작 시점(.began)에 잡은 핀 히트 — 실거리와 무관한 화면 24pt 근접 판정용
+        private var strokeStartPinRole: CoursePinRole?
 
         // MARK: Draw
 
@@ -426,6 +428,7 @@ extension MapViewRepresentable {
             if recognizer.numberOfTouches > 1 {
                 currentStrokePoints = []
                 currentStrokeCoords = []
+                strokeStartPinRole = nil
                 parent.onStrokeUpdate([])
                 recognizer.state = .cancelled
                 return
@@ -434,6 +437,11 @@ extension MapViewRepresentable {
             let point = recognizer.location(in: mapView)
             let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
             let coord = CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude)
+
+            if recognizer.state == .began {
+                let hit = pinHit(at: point, in: mapView)
+                strokeStartPinRole = hit == .pendingStart ? nil : hit
+            }
 
             switch recognizer.state {
             case .began, .changed:
@@ -446,9 +454,11 @@ extension MapViewRepresentable {
                 let stroke = currentStrokeCoords
                 currentStrokePoints = []
                 currentStrokeCoords = []
+                let startHit = strokeStartPinRole
+                strokeStartPinRole = nil
                 parent.onStrokeUpdate([])
                 if stroke.count >= 2 {
-                    parent.onStrokeEnded(stroke)
+                    parent.onStrokeEnded(stroke, startHit)
                 }
             default:
                 break

@@ -95,7 +95,7 @@ struct CoursePlannerPage: View {
                 CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
             },
             onStrokeUpdate: { points in currentStrokePoints = points },
-            onStrokeEnded: { stroke in Task { await viewModel.appendStroke(stroke) } },
+            onStrokeEnded: { stroke, startHit in Task { await viewModel.appendStroke(stroke, startPinHit: startHit) } },
             onMapTap: { coord, hitPin in Task { await viewModel.handleMapTap(at: coord, hitPin: hitPin) } },
             onPendingTap: { coord, hitPin in viewModel.pendingTapBegan(at: coord, hitPin: hitPin) },
             onPendingTapCancelled: { viewModel.pendingTapCancelled() }

@@ -334,6 +334,36 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.course?.coordinates.first, d, "반전 prepend로 코스 시작이 d로 바뀌어야 함 (유일한 반전 케이스)")
     }
 
+    func testStrokeStartSnapsToPinHitRegardlessOfDistance() async {
+        // 코스 생성 후, 힌트 .start로 그리기 시작 — 실거리 20m 밖이어도 출발 좌표로 치환되어
+        // 반전 prepend(attach 규칙 3)가 성립해야 한다
+        let sut = makeSUT()
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        let strokeStart = CourseCoordinate(latitude: 37.5004, longitude: 127.00)   // 출발점에서 ~44m
+        await sut.appendStroke(
+            [strokeStart, CourseCoordinate(latitude: 37.49, longitude: 127.00)],
+            startPinHit: .start
+        )
+        guard let course = sut.course else { return XCTFail("코스 없음") }
+        XCTAssertEqual(course.coordinates.first?.latitude, 37.49, "출발 방향 연장(prepend) 성립")
+    }
+
+    func testStrokeStartFallsBackToRealDistanceWithoutHint() async {
+        // 힌트 없음 + 실거리 20m 이내 → 기존 폴백 동작 유지 (도착점 치환 append)
+        let sut = makeSUT()
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
+        let nearEnd = CourseCoordinate(latitude: 37.51009, longitude: 127.00)      // 도착점에서 ~10m
+        await sut.appendStroke(
+            [nearEnd, CourseCoordinate(latitude: 37.52, longitude: 127.00)],
+            startPinHit: nil
+        )
+        guard let course = sut.course else { return XCTFail("코스 없음") }
+        XCTAssertEqual(course.coordinates.last?.latitude, 37.52)
+        XCTAssertEqual(sut.session.segments.count, 2, "gap 라우팅 없이 이어붙음")
+    }
+
     func testDrawUndo_removesOnlyLastSegment() async {
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
