@@ -284,6 +284,56 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.session.segments.count, 2, "스트로크마다 세그먼트가 하나씩 붙어야 함")
     }
 
+    func testAppendStroke_startNearExistingEnd_snapsToExactEndpointBeforeRouting() async {
+        let service = StubCoursePlanningService()
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+        await sut.toggleDrawingMode()
+
+        let a = CourseCoordinate(latitude: 37.500, longitude: 127.00)
+        let b = CourseCoordinate(latitude: 37.510, longitude: 127.00)
+        await sut.appendStroke([a, b])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        XCTAssertEqual(sut.session.segments.count, 1)
+
+        // 두 번째 스트로크: 기존 도착점(b)에서 약 11m 떨어진 곳에서 시작(라우팅 스냅 오차 시뮬레이션)
+        let nearB = CourseCoordinate(latitude: b.latitude + 0.0001, longitude: b.longitude)
+        let c = CourseCoordinate(latitude: 37.520, longitude: 127.00)
+        await sut.appendStroke([nearB, c])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        XCTAssertEqual(sut.session.segments.count, 2, "gap 세그먼트 없이 하나로 붙어야 함")
+        XCTAssertEqual(service.recordedFromCoordinates.last, b, "라우팅 시작점이 원본 터치(nearB)가 아니라 기존 도착점(b)으로 스냅되어야 함")
+        XCTAssertEqual(sut.course?.coordinates.last, c)
+    }
+
+    func testAppendStroke_startNearExistingStart_snapsAndReversesPrepend() async {
+        let service = StubCoursePlanningService()
+        let sut = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+        await sut.toggleDrawingMode()
+
+        let a = CourseCoordinate(latitude: 37.500, longitude: 127.00)
+        let b = CourseCoordinate(latitude: 37.510, longitude: 127.00)
+        await sut.appendStroke([a, b])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        XCTAssertEqual(sut.session.segments.count, 1)
+
+        // 두 번째 스트로크: 기존 출발점(a)에서 약 11m 떨어진 곳에서 시작해 바깥쪽(D)으로 그림
+        let nearA = CourseCoordinate(latitude: a.latitude - 0.0001, longitude: a.longitude)
+        let d = CourseCoordinate(latitude: 37.490, longitude: 127.00)
+        await sut.appendStroke([nearA, d])
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        XCTAssertEqual(sut.session.segments.count, 2)
+        XCTAssertEqual(service.recordedFromCoordinates.last, a, "라우팅 시작점이 원본 터치(nearA)가 아니라 기존 출발점(a)으로 스냅되어야 함")
+        XCTAssertEqual(sut.course?.coordinates.first, d, "반전 prepend로 코스 시작이 d로 바뀌어야 함 (유일한 반전 케이스)")
+    }
+
     func testDrawUndo_removesOnlyLastSegment() async {
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
@@ -588,11 +638,13 @@ final class CoursePlannerViewModelTests: XCTestCase {
 @MainActor
 private final class StubCoursePlanningService: CoursePlanningServiceProtocol {
     var routeCallCount = 0
+    var recordedFromCoordinates: [CourseCoordinate] = []
     var stubbedResult: PlannedCourse?
     var stubbedError: Error?
 
     func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
         routeCallCount += 1
+        recordedFromCoordinates.append(start)
         if let error = stubbedError { throw error }
         return stubbedResult ?? PlannedCourse(
             segments: [.tapped(coordinates: [start, destination], distanceMeters: 100)]

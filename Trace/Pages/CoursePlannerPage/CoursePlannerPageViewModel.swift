@@ -213,9 +213,28 @@ final class CoursePlannerPageViewModel {
         await routeStrokeAndAttach(stroke, generation: generation)
     }
 
+    // 라우팅 스냅으로 드리프트되기 전에, 원본 시작점이 기존 코스 끝점 근처면 정확한 좌표로 치환한다.
+    // 탭 모드(routeAndAttach)는 이미 기존 끝점에서 명시적으로 라우팅을 시작해 이 문제가 없다 —
+    // 안 그러면 실기기에서 도로망 스냅 오차로 20m 임계값을 넘어가 CourseEditSession의 근접 판정이 항상 실패한다.
+    private func snappedStrokeStart(_ sampled: [CourseCoordinate]) -> CourseCoordinate? {
+        guard let course = session.course, let existingStart = course.coordinates.first,
+              let existingEnd = course.coordinates.last, let first = sampled.first else { return nil }
+        let threshold = CourseEditSession.connectionThresholdMeters
+        if first.distanceMeters(to: existingEnd) <= threshold {
+            return existingEnd
+        } else if first.distanceMeters(to: existingStart) <= threshold {
+            return existingStart
+        }
+        return nil
+    }
+
     private func routeStrokeAndAttach(_ rawStroke: [CourseCoordinate], generation: Int) async {
-        let sampled = DrawnPathSampler.sample(rawStroke)
+        var sampled = DrawnPathSampler.sample(rawStroke)
         guard sampled.count >= 2 else { return }
+
+        if let snappedStart = snappedStrokeStart(sampled) {
+            sampled[0] = snappedStart
+        }
 
         isLoading = true
         errorMessage = nil
