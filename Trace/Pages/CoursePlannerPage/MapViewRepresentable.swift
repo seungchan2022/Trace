@@ -185,6 +185,7 @@ struct MapViewRepresentable: UIViewRepresentable {
         twoFingerPanGR.minimumNumberOfTouches = 2
         twoFingerPanGR.maximumNumberOfTouches = 2
         twoFingerPanGR.isEnabled = false
+        twoFingerPanGR.delegate = context.coordinator
         mapView.addGestureRecognizer(twoFingerPanGR)
         context.coordinator.twoFingerPanGestureRecognizer = twoFingerPanGR
 
@@ -204,6 +205,7 @@ struct MapViewRepresentable: UIViewRepresentable {
             coordinator.observedTouchBegan(at: point, in: mapView)
         }
         touchObserver.isEnabled = !isDrawingMode
+        touchObserver.delegate = context.coordinator
         mapView.addGestureRecognizer(touchObserver)
         context.coordinator.touchObserverRecognizer = touchObserver
 
@@ -339,7 +341,7 @@ struct MapViewRepresentable: UIViewRepresentable {
 // MARK: - Coordinator
 
 extension MapViewRepresentable {
-    final class Coordinator: NSObject, MKMapViewDelegate {
+    final class Coordinator: NSObject, MKMapViewDelegate, UIGestureRecognizerDelegate {
         var parent: MapViewRepresentable
         fileprivate var lastSegmentSnapshots: [SegmentSnapshot] = []
         var lastSelectedIndex: Int?
@@ -407,6 +409,19 @@ extension MapViewRepresentable {
 
         func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
             parent.region = mapView.region
+        }
+
+        // MARK: Gesture Delegate
+
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+        ) -> Bool {
+            // 커스텀 두손가락 팬 ↔ 네이티브 두손가락 탭 줌아웃 경쟁 완화: 동시 인식 허용.
+            // 탭 줌아웃은 이동량이 없어 팬 로직에 영향이 없고, 실제 팬 중에는 탭 줌아웃이 스스로 실패한다.
+            // 터치 관찰자는 인식 전이가 없어 항상 무해 — 명시적으로 허용해 둔다.
+            gestureRecognizer === twoFingerPanGestureRecognizer
+                || gestureRecognizer === touchObserverRecognizer
         }
 
         // MARK: Gesture State
