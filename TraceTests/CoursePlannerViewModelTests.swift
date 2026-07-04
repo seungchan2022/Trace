@@ -656,14 +656,22 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.pendingTapMarker)
     }
 
-    func testHandleMapTapClearsMarkerOnSuccessAndFailure() async {
-        // 성공 경로: 확정 흐름(라우팅→attach)이 끝나면 마커 제거
+    func testHandleMapTapClearsMarkerOnSuccess() async {
+        // 첫 탭으로 pendingTapStart를 만든 뒤, 실제 라우팅을 트리거하는 두 번째 탭 "직전"에
+        // 보류 마커를 다시 세팅해야 그 호출이 마커를 지우는지 검증할 수 있다
+        // (첫 번째 탭은 라우팅 없이 자체 defer로 이미 마커를 지우므로, 재세팅 없이는 이 테스트가
+        // 무의미하게 통과한다).
         let sut = makeSUT()
         sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.5, longitude: 127.0))
-        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.6, longitude: 127.0))
-        XCTAssertNil(sut.pendingTapMarker)
 
+        sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.6, longitude: 127.0), hitPin: nil)
+        XCTAssertNotNil(sut.pendingTapMarker, "라우팅 호출 직전에는 마커가 세팅되어 있어야 함")
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.6, longitude: 127.0))
+        XCTAssertNil(sut.pendingTapMarker, "성공 경로: 확정 흐름이 끝나면 마커 제거")
+    }
+
+    func testHandleMapTapClearsMarkerOnFailure() async {
         // 실패 경로: 라우팅 실패해도 유령 마커가 남지 않음 (기존 실패 스텁 패턴 재사용)
         let service = StubCoursePlanningService()
         service.stubbedError = CoursePlanningError.routeNotFound
@@ -673,8 +681,11 @@ final class CoursePlannerViewModelTests: XCTestCase {
         )
         failing.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
         await failing.handleMapTap(at: CourseCoordinate(latitude: 37.5, longitude: 127.0))
+
+        failing.pendingTapBegan(at: CourseCoordinate(latitude: 37.6, longitude: 127.0), hitPin: nil)
+        XCTAssertNotNil(failing.pendingTapMarker, "라우팅 호출 직전에는 마커가 세팅되어 있어야 함")
         await failing.handleMapTap(at: CourseCoordinate(latitude: 37.6, longitude: 127.0))
-        XCTAssertNil(failing.pendingTapMarker)
+        XCTAssertNil(failing.pendingTapMarker, "실패 경로에서도 마커가 제거되어야 함")
     }
 
     func testToggleDrawingModeClearsPendingMarker() async {
