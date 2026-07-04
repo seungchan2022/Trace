@@ -64,6 +64,7 @@ final class SegmentDistanceAnnotationView: MKAnnotationView {
         label.layer.masksToBounds = true
         addSubview(label)
         canShowCallout = false
+        layer.zPosition = 1
     }
 
     required init?(coder: NSCoder) {
@@ -173,6 +174,11 @@ struct MapViewRepresentable: UIViewRepresentable {
         tapGR.isEnabled = !isDrawingMode
         mapView.addGestureRecognizer(tapGR)
         context.coordinator.tapGestureRecognizer = tapGR
+        if let doubleTapGR = mapView.gestureRecognizers?.first(where: {
+            ($0 as? UITapGestureRecognizer)?.numberOfTapsRequired == 2
+        }) {
+            tapGR.require(toFail: doubleTapGR)
+        }
 
         return mapView
     }
@@ -324,6 +330,7 @@ extension MapViewRepresentable {
             // 출발/도착 핀은 거리 라벨과 겹쳐도 MapKit 충돌 처리로 가려지면 안 됨(최대 2개뿐이라 성능 영향 없음)
             view.displayPriority = .required
             view.collisionMode = .none
+            view.isEnabled = false
             view.subviews.filter { $0.tag == Self.mergedBadgeTag }.forEach { $0.removeFromSuperview() }
             if pin.role == .merged {
                 let badge = UIImageView(image: UIImage(systemName: "flag.checkered"))
@@ -333,8 +340,14 @@ extension MapViewRepresentable {
                 badge.layer.cornerRadius = 7
                 badge.clipsToBounds = true
                 badge.contentMode = .scaleAspectFit
-                badge.frame = CGRect(x: view.bounds.width - 10, y: -4, width: 14, height: 14)
+                badge.translatesAutoresizingMaskIntoConstraints = false
                 view.addSubview(badge)
+                NSLayoutConstraint.activate([
+                    badge.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 4),
+                    badge.topAnchor.constraint(equalTo: view.topAnchor, constant: -4),
+                    badge.widthAnchor.constraint(equalToConstant: 14),
+                    badge.heightAnchor.constraint(equalToConstant: 14)
+                ])
             }
             return view
         }
