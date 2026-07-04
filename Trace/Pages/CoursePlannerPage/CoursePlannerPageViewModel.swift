@@ -24,6 +24,10 @@ final class CoursePlannerPageViewModel {
     // Tap mode: first tap waits here until second tap routes A→B
     private(set) var pendingTapStart: CourseCoordinate?
 
+    // Tap mode: 판별 창(0.35s) 통과를 기다리는 보류 탭 — 임시 마커 표시용.
+    // 수명: 보류~확정 흐름 종료(성공/실패/정보 경로)까지. 스펙 '임시 마커' 절.
+    private(set) var pendingTapMarker: CourseCoordinate?
+
     // UI state
     private(set) var isLoading = false
     private(set) var errorMessage: String?
@@ -106,8 +110,19 @@ final class CoursePlannerPageViewModel {
 
     // MARK: - Tap Mode
 
+    // 판별 창(0.35s) 동안 임시 마커를 보여주기 위한 신호. Task 3의 제스처 인식기가 호출한다.
+    func pendingTapBegan(at coordinate: CourseCoordinate, hitPin: CoursePinRole?) {
+        guard interactionMode == .tap else { return }
+        pendingTapMarker = hitPin == nil ? coordinate : nil
+    }
+
+    func pendingTapCancelled() {
+        pendingTapMarker = nil
+    }
+
     func handleMapTap(at coordinate: CourseCoordinate, hitPin: CoursePinRole? = nil) async {
         guard interactionMode == .tap else { return }
+        defer { pendingTapMarker = nil }
         infoMessage = nil
 
         // 핀 히트 분기 (상호배제, spec 설계 2)
@@ -189,6 +204,7 @@ final class CoursePlannerPageViewModel {
         case .tap:
             infoMessage = nil
             pendingTapStart = nil
+            pendingTapMarker = nil
             recomputeGeneration += 1
             errorMessage = nil
             isLoading = false

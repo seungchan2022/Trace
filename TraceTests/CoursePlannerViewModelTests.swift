@@ -631,6 +631,58 @@ final class CoursePlannerViewModelTests: XCTestCase {
         await viewModel.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
         XCTAssertTrue(viewModel.waypointCoordinates.isEmpty)
     }
+
+    // MARK: - Pending tap marker (임시 마커, MVP10)
+
+    func testPendingTapShowsMarkerOnlyWhenNoPinHit() {
+        let sut = makeSUT()
+        sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
+        XCTAssertNotNil(sut.pendingTapMarker)
+        sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: .start)
+        XCTAssertNil(sut.pendingTapMarker, "핀 위 탭은 임시 마커 없음")
+    }
+
+    func testPendingTapIgnoredInDrawMode() async {
+        let sut = makeSUT()
+        await sut.toggleDrawingMode()
+        sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
+        XCTAssertNil(sut.pendingTapMarker)
+    }
+
+    func testPendingTapCancelledClearsMarker() {
+        let sut = makeSUT()
+        sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
+        sut.pendingTapCancelled()
+        XCTAssertNil(sut.pendingTapMarker)
+    }
+
+    func testHandleMapTapClearsMarkerOnSuccessAndFailure() async {
+        // 성공 경로: 확정 흐름(라우팅→attach)이 끝나면 마커 제거
+        let sut = makeSUT()
+        sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.5, longitude: 127.0))
+        await sut.handleMapTap(at: CourseCoordinate(latitude: 37.6, longitude: 127.0))
+        XCTAssertNil(sut.pendingTapMarker)
+
+        // 실패 경로: 라우팅 실패해도 유령 마커가 남지 않음 (기존 실패 스텁 패턴 재사용)
+        let service = StubCoursePlanningService()
+        service.stubbedError = CoursePlanningError.routeNotFound
+        let failing = CoursePlannerPageViewModel(
+            coursePlanningService: service,
+            locationService: StubLocationService()
+        )
+        failing.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
+        await failing.handleMapTap(at: CourseCoordinate(latitude: 37.5, longitude: 127.0))
+        await failing.handleMapTap(at: CourseCoordinate(latitude: 37.6, longitude: 127.0))
+        XCTAssertNil(failing.pendingTapMarker)
+    }
+
+    func testToggleDrawingModeClearsPendingMarker() async {
+        let sut = makeSUT()
+        sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
+        await sut.toggleDrawingMode()
+        XCTAssertNil(sut.pendingTapMarker)
+    }
 }
 
 // MARK: - Test Doubles
