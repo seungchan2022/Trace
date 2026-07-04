@@ -234,9 +234,8 @@ struct MapViewRepresentable: UIViewRepresentable {
                 polyline.colorKey = colorKey
                 uiView.addOverlay(polyline)
 
-                let midIndex = coords.count / 2
                 let annotation = SegmentDistanceAnnotation(
-                    coordinate: coords[midIndex],
+                    coordinate: midpointAlongPath(coords),
                     distanceText: String(format: "%.0fm", segment.distanceMeters),
                     color: SegmentPalette.color(at: colorKey)
                 )
@@ -291,6 +290,34 @@ struct MapViewRepresentable: UIViewRepresentable {
     private func configureRenderer(_ renderer: MKPolylineRenderer, segmentIndex: Int, colorKey: Int, selected: Int?) {
         renderer.strokeColor = SegmentPalette.color(at: colorKey)
         renderer.lineWidth = segmentIndex == selected ? 9 : 6
+    }
+
+    // 배열 인덱스 절반이 아니라 실제 누적 거리 절반 지점을 찾는다.
+    // 라우팅 결과는 좌표 밀도가 균일하지 않아(커브에 촘촘, 직선에 듬성) 인덱스 기준으로는
+    // 라벨이 경로 중간이 아니라 엉뚱한 곳(핀·경유점 근처 등)에 찍히는 문제가 있었다 (2026-07-04 실기기 확인).
+    private func midpointAlongPath(_ coords: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D {
+        guard let first = coords.first else { return CLLocationCoordinate2D(latitude: 0, longitude: 0) }
+        guard coords.count > 1 else { return first }
+
+        var cumulative: [Double] = [0]
+        for index in 1..<coords.count {
+            let pointA = CLLocation(latitude: coords[index - 1].latitude, longitude: coords[index - 1].longitude)
+            let pointB = CLLocation(latitude: coords[index].latitude, longitude: coords[index].longitude)
+            cumulative.append(cumulative[index - 1] + pointA.distance(from: pointB))
+        }
+
+        let half = (cumulative.last ?? 0) / 2
+        for index in 1..<cumulative.count {
+            guard cumulative[index] >= half else { continue }
+            let segStart = cumulative[index - 1]
+            let segEnd = cumulative[index]
+            let ratio = segEnd > segStart ? (half - segStart) / (segEnd - segStart) : 0
+            return CLLocationCoordinate2D(
+                latitude: coords[index - 1].latitude + (coords[index].latitude - coords[index - 1].latitude) * ratio,
+                longitude: coords[index - 1].longitude + (coords[index].longitude - coords[index - 1].longitude) * ratio
+            )
+        }
+        return coords[coords.count / 2]
     }
 }
 
