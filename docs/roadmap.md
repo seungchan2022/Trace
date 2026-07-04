@@ -11,16 +11,17 @@
 
 ## 진행 중 / 예정
 
-### MVP10 — 제스처 정합성 (탭 보류 확정·픽셀 판정·2손가락 튜닝)   (상태: 진행 중)
+### MVP10 — 제스처 정합성 (탭 보류 확정·픽셀 판정·2손가락 튜닝)   (상태: ✅ 완료 · 실기기 QA 대기)
 
 > 탭/그리기 제스처가 iOS 관례대로 섞이지 않게 한다: 탭 즉시 확정을 "0.3초 보류 → 확정/취소"로
 > 교체해 더블탭·원핑거 줌과 분리하고, 그리기 시작점 근접 판정을 화면 픽셀 기준으로 바꾸고,
 > 그리기 모드 두손가락 제스처 경쟁을 튜닝한다. 스펙: `docs/superpowers/specs/2026-07-04-gesture-consistency-design.md`
-> 플랜: `docs/superpowers/plans/2026-07-04-gesture-consistency.md` (문서 리뷰 반영 완료, 구현은 새 세션에서 시작)
+> 플랜: `docs/superpowers/plans/2026-07-04-gesture-consistency.md` (6개 태스크 전부 완료, 최종 전체 스위트 그린 확인)
+> 실기기 QA 체크리스트: `docs/qa/2026-07-04-gesture-consistency-device-checklist.md` (사용자 실행 예정, 완료 후 아카이빙)
 
-- [ ] **tap-pending-commit** — 탭 보류 확정(판별기 도입, 더블탭/원핑거 줌 시 취소, 임시 마커), 자체 디바운스 대체
-- [ ] **draw-start-pixel-snap** — 그리기 시작점 근접 판정을 실거리 20m → 화면 24pt 기준으로 교체
-- [ ] **two-finger-gesture-tuning** — 두손가락 탭줌아웃 ↔ 커스텀 두손가락 팬 경쟁 delegate 조정 + 실기기 튜닝
+- [x] **tap-pending-commit** — 탭 보류 확정(판별기 도입, 더블탭/원핑거 줌 시 취소, 임시 마커), 자체 디바운스 대체
+- [x] **draw-start-pixel-snap** — 그리기 시작점 근접 판정을 실거리 20m → 화면 24pt 기준으로 교체
+- [x] **two-finger-gesture-tuning** — 두손가락 탭줌아웃 ↔ 커스텀 두손가락 팬 경쟁 delegate 조정 + 실기기 튜닝
 
 ### MVP9 — 편집 정합성 (왕복·핀·redo)   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp9/`](history/mvp9/))
 
