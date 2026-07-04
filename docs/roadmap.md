@@ -16,6 +16,7 @@
 > 탭/그리기 제스처가 iOS 관례대로 섞이지 않게 한다: 탭 즉시 확정을 "0.3초 보류 → 확정/취소"로
 > 교체해 더블탭·원핑거 줌과 분리하고, 그리기 시작점 근접 판정을 화면 픽셀 기준으로 바꾸고,
 > 그리기 모드 두손가락 제스처 경쟁을 튜닝한다. 스펙: `docs/superpowers/specs/2026-07-04-gesture-consistency-design.md`
+> 플랜: `docs/superpowers/plans/2026-07-04-gesture-consistency.md` (문서 리뷰 반영 완료, 구현은 새 세션에서 시작)
 
 - [ ] **tap-pending-commit** — 탭 보류 확정(판별기 도입, 더블탭/원핑거 줌 시 취소, 임시 마커), 자체 디바운스 대체
 - [ ] **draw-start-pixel-snap** — 그리기 시작점 근접 판정을 실거리 20m → 화면 24pt 기준으로 교체
