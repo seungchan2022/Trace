@@ -174,11 +174,6 @@ struct MapViewRepresentable: UIViewRepresentable {
         tapGR.isEnabled = !isDrawingMode
         mapView.addGestureRecognizer(tapGR)
         context.coordinator.tapGestureRecognizer = tapGR
-        if let doubleTapGR = mapView.gestureRecognizers?.first(where: {
-            ($0 as? UITapGestureRecognizer)?.numberOfTapsRequired == 2
-        }) {
-            tapGR.require(toFail: doubleTapGR)
-        }
 
         return mapView
     }
@@ -204,6 +199,10 @@ struct MapViewRepresentable: UIViewRepresentable {
         if context.coordinator.lastSegmentSnapshots != currentSnapshots {
             uiView.removeOverlays(uiView.overlays)
             uiView.removeAnnotations(uiView.annotations.filter { $0 is SegmentDistanceAnnotation })
+            uiView.removeAnnotations(uiView.annotations.filter { $0 is WaypointAnnotation })
+            for waypoint in waypoints {
+                uiView.addAnnotation(WaypointAnnotation(coordinate: waypoint))
+            }
             // 겹치는 경로는 표시 좌표만 옆으로 비켜 그린다 (도메인 좌표 불변).
             // 스냅샷 게이트 안이므로 세그먼트가 실제로 바뀔 때만 재계산된다.
             let displayCoordinates = OverlapOffsetResolver.displayCoordinates(
@@ -227,10 +226,6 @@ struct MapViewRepresentable: UIViewRepresentable {
                     color: SegmentPalette.color(at: colorKey)
                 )
                 uiView.addAnnotation(annotation)
-            }
-            uiView.removeAnnotations(uiView.annotations.filter { $0 is WaypointAnnotation })
-            for waypoint in waypoints {
-                uiView.addAnnotation(WaypointAnnotation(coordinate: waypoint))
             }
             context.coordinator.lastSegmentSnapshots = currentSnapshots
         }
@@ -337,16 +332,16 @@ extension MapViewRepresentable {
                 badge.tag = Self.mergedBadgeTag
                 badge.tintColor = .white
                 badge.backgroundColor = .systemRed
-                badge.layer.cornerRadius = 7
+                badge.layer.cornerRadius = 10
                 badge.clipsToBounds = true
                 badge.contentMode = .scaleAspectFit
                 badge.translatesAutoresizingMaskIntoConstraints = false
                 view.addSubview(badge)
                 NSLayoutConstraint.activate([
                     badge.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 4),
-                    badge.topAnchor.constraint(equalTo: view.topAnchor, constant: -4),
-                    badge.widthAnchor.constraint(equalToConstant: 14),
-                    badge.heightAnchor.constraint(equalToConstant: 14)
+                    badge.topAnchor.constraint(equalTo: view.topAnchor, constant: -6),
+                    badge.widthAnchor.constraint(equalToConstant: 20),
+                    badge.heightAnchor.constraint(equalToConstant: 20)
                 ])
             }
             return view
@@ -406,9 +401,27 @@ extension MapViewRepresentable {
 
         // MARK: Tap
 
+        private var lastTapTime: Date?
+        private var lastTapPoint: CGPoint?
+
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard let mapView = recognizer.view as? MKMapView else { return }
             let point = recognizer.location(in: mapView)
+
+            // 더블탭 줌(같은 자리를 빠르게 두 번 탭)과 우리 싱글탭을 구분한다.
+            // UIKit 제스처 require(toFail:)는 위치와 무관하게 "빠른 두 번 탭"을 전부
+            // 더블탭으로 묶어버려 서로 다른 위치를 잇달아 탭하는 정상 플로우까지 씹었다(실기기 QA로 확인) —
+            // 그래서 우리가 직접 시간+거리로만 판정한다: 같은 자리(40pt 이내) + 짧은 시간(0.35s 이내)일 때만 무시.
+            if let lastTime = lastTapTime, let lastPoint = lastTapPoint,
+               Date().timeIntervalSince(lastTime) < 0.35,
+               hypot(point.x - lastPoint.x, point.y - lastPoint.y) < 40 {
+                lastTapTime = nil
+                lastTapPoint = nil
+                return
+            }
+            lastTapTime = Date()
+            lastTapPoint = point
+
             let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
             let hit = pinHit(at: point, in: mapView)
             parent.onMapTap?(CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude), hit)
