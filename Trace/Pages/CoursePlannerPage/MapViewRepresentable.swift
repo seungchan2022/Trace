@@ -64,7 +64,6 @@ final class SegmentDistanceAnnotationView: MKAnnotationView {
         label.layer.masksToBounds = true
         addSubview(label)
         canShowCallout = false
-        layer.zPosition = 1
     }
 
     required init?(coder: NSCoder) {
@@ -80,29 +79,49 @@ final class SegmentDistanceAnnotationView: MKAnnotationView {
     }
 }
 
-// 경유점(구간 경계) 마커 — 핀 diff와 분리된 별도 annotation 타입 (spec 설계 3 구현 노트)
-final class WaypointAnnotation: NSObject, MKAnnotation {
+// 경유점(구간 경계) 마커 — annotation이 아니라 오버레이로 그린다.
+// MapKit은 오버레이를 항상 애노테이션보다 아래에 그린다는 구조적 보장이 있어서,
+// 거리 라벨(annotation)과의 z-order 경쟁(추가 순서·zPosition 둘 다 실기기에서 불안정했음) 없이
+// 항상 라벨 아래에 위치한다 — 실기기 QA에서 두 방식 모두 재발해 오버레이 레이어로 옮김(2026-07-04).
+final class WaypointDotsOverlay: NSObject, MKOverlay {
     let coordinate: CLLocationCoordinate2D
-    init(coordinate: CLLocationCoordinate2D) {
-        self.coordinate = coordinate
+    let boundingMapRect: MKMapRect
+    let points: [CLLocationCoordinate2D]
+
+    init(points: [CLLocationCoordinate2D]) {
+        self.points = points
+        self.coordinate = points.first ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
+        if points.isEmpty {
+            self.boundingMapRect = .null
+        } else {
+            let mapPoints = points.map { MKMapPoint($0) }
+            let minX = mapPoints.map(\.x).min() ?? 0
+            let maxX = mapPoints.map(\.x).max() ?? 0
+            let minY = mapPoints.map(\.y).min() ?? 0
+            let maxY = mapPoints.map(\.y).max() ?? 0
+            let padding = 2000.0 // 점 반경을 어느 줌에서든 넉넉히 덮을 여유
+            self.boundingMapRect = MKMapRect(
+                x: minX - padding, y: minY - padding,
+                width: (maxX - minX) + padding * 2, height: (maxY - minY) + padding * 2
+            )
+        }
     }
 }
 
-final class WaypointAnnotationView: MKAnnotationView {
-    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        frame = CGRect(x: 0, y: 0, width: 10, height: 10)
-        layer.cornerRadius = 5
-        backgroundColor = .white
-        layer.borderColor = UIColor.systemGray.cgColor
-        layer.borderWidth = 2
-        // 조용한 시각 위계: 출발/도착 핀(.required/.none)이 항상 이기고, 겹치면 경유점이 양보한다
-        displayPriority = .defaultLow
-        collisionMode = .circle
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+final class WaypointDotsRenderer: MKOverlayRenderer {
+    override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
+        guard let dotsOverlay = overlay as? WaypointDotsOverlay else { return }
+        let radius: CGFloat = 5 / zoomScale
+        let borderWidth: CGFloat = 2 / zoomScale
+        for coordinate in dotsOverlay.points {
+            let point = self.point(for: MKMapPoint(coordinate))
+            let rect = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
+            context.setFillColor(UIColor.white.cgColor)
+            context.setStrokeColor(UIColor.systemGray.cgColor)
+            context.setLineWidth(borderWidth)
+            context.fillEllipse(in: rect)
+            context.strokeEllipse(in: rect)
+        }
     }
 }
 
@@ -199,10 +218,6 @@ struct MapViewRepresentable: UIViewRepresentable {
         if context.coordinator.lastSegmentSnapshots != currentSnapshots {
             uiView.removeOverlays(uiView.overlays)
             uiView.removeAnnotations(uiView.annotations.filter { $0 is SegmentDistanceAnnotation })
-            uiView.removeAnnotations(uiView.annotations.filter { $0 is WaypointAnnotation })
-            for waypoint in waypoints {
-                uiView.addAnnotation(WaypointAnnotation(coordinate: waypoint))
-            }
             // 겹치는 경로는 표시 좌표만 옆으로 비켜 그린다 (도메인 좌표 불변).
             // 스냅샷 게이트 안이므로 세그먼트가 실제로 바뀔 때만 재계산된다.
             let displayCoordinates = OverlapOffsetResolver.displayCoordinates(
@@ -226,6 +241,9 @@ struct MapViewRepresentable: UIViewRepresentable {
                     color: SegmentPalette.color(at: colorKey)
                 )
                 uiView.addAnnotation(annotation)
+            }
+            if !waypoints.isEmpty {
+                uiView.addOverlay(WaypointDotsOverlay(points: waypoints))
             }
             context.coordinator.lastSegmentSnapshots = currentSnapshots
         }
@@ -292,6 +310,9 @@ extension MapViewRepresentable {
         // MARK: Overlay
 
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            if let dotsOverlay = overlay as? WaypointDotsOverlay {
+                return WaypointDotsRenderer(overlay: dotsOverlay)
+            }
             guard let polyline = overlay as? SegmentPolyline else {
                 return MKOverlayRenderer(overlay: overlay)
             }
@@ -303,13 +324,6 @@ extension MapViewRepresentable {
         // MARK: Annotation
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            if annotation is WaypointAnnotation {
-                let identifier = "waypoint"
-                let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? WaypointAnnotationView
-                    ?? WaypointAnnotationView(annotation: annotation, reuseIdentifier: identifier)
-                view.annotation = annotation
-                return view
-            }
             if let distanceAnnotation = annotation as? SegmentDistanceAnnotation {
                 let identifier = "segmentDistance"
                 let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? SegmentDistanceAnnotationView
