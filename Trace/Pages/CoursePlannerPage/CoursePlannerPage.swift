@@ -96,7 +96,9 @@ struct CoursePlannerPage: View {
             },
             onStrokeUpdate: { points in currentStrokePoints = points },
             onStrokeEnded: { stroke in Task { await viewModel.appendStroke(stroke) } },
-            onMapTap: { coord, hitPin in Task { await viewModel.handleMapTap(at: coord, hitPin: hitPin) } }
+            onMapTap: { coord, hitPin in Task { await viewModel.handleMapTap(at: coord, hitPin: hitPin) } },
+            onPendingTap: { coord, hitPin in viewModel.pendingTapBegan(at: coord, hitPin: hitPin) },
+            onPendingTapCancelled: { viewModel.pendingTapCancelled() }
         )
         .overlay {
             Canvas { context, _ in
@@ -179,6 +181,17 @@ struct CoursePlannerPage: View {
                 title: "출발",
                 color: .systemGreen,
                 systemImage: "figure.run",
+                role: .pendingStart
+            ))
+        }
+        // 판별 창 보류 중 임시 마커 — 확정이 수렴하는 모양(첫 탭=출발, 이후=도착)과 동일 (스펙 '임시 마커' 절)
+        if viewModel.interactionMode == .tap, let pending = viewModel.pendingTapMarker {
+            let isFirstPoint = viewModel.course == nil && viewModel.pendingTapStart == nil
+            pins.append(MapPin(
+                coordinate: CLLocationCoordinate2D(latitude: pending.latitude, longitude: pending.longitude),
+                title: isFirstPoint ? "출발" : "도착",
+                color: isFirstPoint ? .systemGreen : .systemRed,
+                systemImage: isFirstPoint ? "figure.run" : "flag.checkered",
                 role: .pendingStart
             ))
         }

@@ -156,6 +156,8 @@ struct MapViewRepresentable: UIViewRepresentable {
     var onStrokeUpdate: ([CGPoint]) -> Void
     var onStrokeEnded: ([CourseCoordinate]) -> Void
     var onMapTap: ((CourseCoordinate, CoursePinRole?) -> Void)?
+    var onPendingTap: ((CourseCoordinate, CoursePinRole?) -> Void)?
+    var onPendingTapCancelled: (() -> Void)?
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -193,6 +195,17 @@ struct MapViewRepresentable: UIViewRepresentable {
         tapGR.isEnabled = !isDrawingMode
         mapView.addGestureRecognizer(tapGR)
         context.coordinator.tapGestureRecognizer = tapGR
+
+        let touchObserver = TouchObserverGestureRecognizer()
+        touchObserver.cancelsTouchesInView = false
+        touchObserver.delaysTouchesBegan = false
+        touchObserver.onTouchBegan = { [weak coordinator = context.coordinator, weak mapView] point in
+            guard let coordinator, let mapView else { return }
+            coordinator.observedTouchBegan(at: point, in: mapView)
+        }
+        touchObserver.isEnabled = !isDrawingMode
+        mapView.addGestureRecognizer(touchObserver)
+        context.coordinator.touchObserverRecognizer = touchObserver
 
         return mapView
     }
@@ -284,6 +297,8 @@ struct MapViewRepresentable: UIViewRepresentable {
             context.coordinator.drawGestureRecognizer?.isEnabled = isDrawingMode
             context.coordinator.twoFingerPanGestureRecognizer?.isEnabled = isDrawingMode
             context.coordinator.tapGestureRecognizer?.isEnabled = !isDrawingMode
+            context.coordinator.touchObserverRecognizer?.isEnabled = !isDrawingMode
+            context.coordinator.resetTapClassification(in: uiView)   // 판별 창 중 모드 전환 → 보류 취소
         }
     }
 
@@ -440,32 +455,66 @@ extension MapViewRepresentable {
             }
         }
 
-        // MARK: Tap
+        // MARK: Tap Classification
 
-        private var lastTapTime: Date?
-        private var lastTapPoint: CGPoint?
+        let tapClassifier = TapClassifier()
+        weak var touchObserverRecognizer: TouchObserverGestureRecognizer?
+        private var confirmWorkItem: DispatchWorkItem?
+        // 보류 시점에 좌표·핀 히트를 동봉해 확정 시 그대로 사용 (판별 창 중 지도 이동에 안전)
+        private var pendingCoordinate: CourseCoordinate?
+        private var pendingPinRole: CoursePinRole?
 
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard let mapView = recognizer.view as? MKMapView else { return }
             let point = recognizer.location(in: mapView)
+            process(tapClassifier.tapEnded(at: point, time: CACurrentMediaTime()), in: mapView)
+        }
 
-            // 더블탭 줌(같은 자리를 빠르게 두 번 탭)과 우리 싱글탭을 구분한다.
-            // UIKit 제스처 require(toFail:)는 위치와 무관하게 "빠른 두 번 탭"을 전부
-            // 더블탭으로 묶어버려 서로 다른 위치를 잇달아 탭하는 정상 플로우까지 씹었다(실기기 QA로 확인) —
-            // 그래서 우리가 직접 시간+거리로만 판정한다: 같은 자리(40pt 이내) + 짧은 시간(0.35s 이내)일 때만 무시.
-            if let lastTime = lastTapTime, let lastPoint = lastTapPoint,
-               Date().timeIntervalSince(lastTime) < 0.35,
-               hypot(point.x - lastPoint.x, point.y - lastPoint.y) < 40 {
-                lastTapTime = nil
-                lastTapPoint = nil
-                return
+        func observedTouchBegan(at point: CGPoint, in mapView: MKMapView) {
+            process(tapClassifier.touchBegan(at: point, time: CACurrentMediaTime()), in: mapView)
+        }
+
+        func resetTapClassification(in mapView: MKMapView) {
+            process(tapClassifier.reset(), in: mapView)
+        }
+
+        private func process(_ events: [TapClassifierEvent], in mapView: MKMapView) {
+            for event in events {
+                switch event {
+                case .pending(let point):
+                    let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
+                    pendingCoordinate = CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude)
+                    pendingPinRole = pinHit(at: point, in: mapView)
+                    if let coordinate = pendingCoordinate {
+                        parent.onPendingTap?(coordinate, pendingPinRole)
+                    }
+                    scheduleConfirm(in: mapView)
+                case .cancelled:
+                    confirmWorkItem?.cancel()
+                    confirmWorkItem = nil
+                    pendingCoordinate = nil
+                    pendingPinRole = nil
+                    parent.onPendingTapCancelled?()
+                case .confirmed:
+                    confirmWorkItem?.cancel()
+                    confirmWorkItem = nil
+                    guard let coordinate = pendingCoordinate else { break }
+                    let role = pendingPinRole
+                    pendingCoordinate = nil
+                    pendingPinRole = nil
+                    parent.onMapTap?(coordinate, role)
+                }
             }
-            lastTapTime = Date()
-            lastTapPoint = point
+        }
 
-            let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
-            let hit = pinHit(at: point, in: mapView)
-            parent.onMapTap?(CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude), hit)
+        private func scheduleConfirm(in mapView: MKMapView) {
+            confirmWorkItem?.cancel()
+            let item = DispatchWorkItem { [weak self, weak mapView] in
+                guard let self, let mapView else { return }
+                self.process(self.tapClassifier.windowElapsed(time: CACurrentMediaTime()), in: mapView)
+            }
+            confirmWorkItem = item
+            DispatchQueue.main.asyncAfter(deadline: .now() + tapClassifier.window, execute: item)
         }
 
         // 화면 포인트 기반 핀 히트 — 지도거리(줌 종속)가 아니라 화면 24pt 반경으로 판정한다.
@@ -507,5 +556,18 @@ extension MapViewRepresentable {
                 break
             }
         }
+    }
+}
+
+// MARK: - TouchObserverGestureRecognizer
+
+// 원시 터치 다운만 관찰해 탭 판별기에 공급한다. 절대 인식 상태로 전이하지 않으므로
+// 네이티브 줌을 포함한 다른 인식기를 방해하지 않는다 (스펙 '구조' 절: 관찰 필수 근거).
+final class TouchObserverGestureRecognizer: UIGestureRecognizer {
+    var onTouchBegan: ((CGPoint) -> Void)?
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        guard let touch = touches.first, let view else { return }
+        onTouchBegan?(touch.location(in: view))
     }
 }
