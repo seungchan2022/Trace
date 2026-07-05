@@ -184,14 +184,17 @@ struct CoursePlannerPage: View {
                 role: .pendingStart
             ))
         }
-        // 판별 창 보류 중 임시 마커 — 확정이 수렴하는 모양(첫 탭=출발, 이후=도착)과 동일 (스펙 '임시 마커' 절)
+        // 판별 창(~0.35초) 보류 중 임시 마커 — 확정된 출발/도착 핀(초록 러너/빨강 깃발)과
+        // 혼동되지 않도록 중립 스타일을 쓴다. 예전엔 첫 탭/두번째 탭 여부로 출발·도착 스타일을
+        // 그대로 재사용했는데, 그 판정(pendingTapStart == nil)이 라우팅 완료 전에 이미 바뀌어버려
+        // 확정 직후 짧게 라벨이 뒤바뀌어 보이는 버그가 있었다 (2026-07-05 실기기 확인).
+        // 중립 스타일은 위치 구분이 필요 없어 그 버그 자체가 성립하지 않는다.
         if viewModel.interactionMode == .tap, let pending = viewModel.pendingTapMarker {
-            let isFirstPoint = viewModel.course == nil && viewModel.pendingTapStart == nil
             pins.append(MapPin(
                 coordinate: CLLocationCoordinate2D(latitude: pending.latitude, longitude: pending.longitude),
-                title: isFirstPoint ? "출발" : "도착",
-                color: isFirstPoint ? .systemGreen : .systemRed,
-                systemImage: isFirstPoint ? "figure.run" : "flag.checkered",
+                title: "확인 중",
+                color: .systemGray,
+                systemImage: "circle.dashed",
                 role: .pendingStart
             ))
         }

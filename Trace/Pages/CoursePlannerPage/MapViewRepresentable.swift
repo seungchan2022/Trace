@@ -417,10 +417,14 @@ extension MapViewRepresentable {
             _ gestureRecognizer: UIGestureRecognizer,
             shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
         ) -> Bool {
+            // 네이티브 핀치 줌은 제외한다 — 핀치도 두 손가락이라 커스텀 팬과 동시 인식되면
+            // 팬 로직이 핀치 중에도 지도를 함께 움직이려 해서 서로 충돌해 줌이 뚝뚝 끊긴다
+            // (2026-07-05 실기기 확인, 회귀).
+            if otherGestureRecognizer is UIPinchGestureRecognizer { return false }
             // 커스텀 두손가락 팬 ↔ 네이티브 두손가락 탭 줌아웃 경쟁 완화: 동시 인식 허용.
             // 탭 줌아웃은 이동량이 없어 팬 로직에 영향이 없고, 실제 팬 중에는 탭 줌아웃이 스스로 실패한다.
             // 터치 관찰자는 인식 전이가 없어 항상 무해 — 명시적으로 허용해 둔다.
-            gestureRecognizer === twoFingerPanGestureRecognizer
+            return gestureRecognizer === twoFingerPanGestureRecognizer
                 || gestureRecognizer === touchObserverRecognizer
         }
 
@@ -485,6 +489,11 @@ extension MapViewRepresentable {
         let tapClassifier = TapClassifier()
         weak var touchObserverRecognizer: TouchObserverGestureRecognizer?
         private var confirmWorkItem: DispatchWorkItem?
+        // 임시 마커 표시를 살짝 늦춰(100ms) 더블탭/원핑거줌처럼 취소될 제스처에서는
+        // 마커가 아예 안 보이게 한다 — 정상 싱글탭 흐름에서는 체감되지 않는 지연이다
+        // (2026-07-05 실기기 QA 피드백).
+        private var markerShowWorkItem: DispatchWorkItem?
+        private static let markerShowDelay: TimeInterval = 0.1
         // 보류 시점에 좌표·핀 히트를 동봉해 확정 시 그대로 사용 (판별 창 중 지도 이동에 안전)
         private var pendingCoordinate: CourseCoordinate?
         private var pendingPinRole: CoursePinRole?
@@ -510,19 +519,21 @@ extension MapViewRepresentable {
                     let clCoord = mapView.convert(point, toCoordinateFrom: mapView)
                     pendingCoordinate = CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude)
                     pendingPinRole = pinHit(at: point, in: mapView)
-                    if let coordinate = pendingCoordinate {
-                        parent.onPendingTap?(coordinate, pendingPinRole)
-                    }
+                    scheduleMarkerShow()
                     scheduleConfirm(in: mapView)
                 case .cancelled:
                     confirmWorkItem?.cancel()
                     confirmWorkItem = nil
+                    markerShowWorkItem?.cancel()
+                    markerShowWorkItem = nil
                     pendingCoordinate = nil
                     pendingPinRole = nil
                     parent.onPendingTapCancelled?()
                 case .confirmed:
                     confirmWorkItem?.cancel()
                     confirmWorkItem = nil
+                    markerShowWorkItem?.cancel()
+                    markerShowWorkItem = nil
                     guard let coordinate = pendingCoordinate else { break }
                     let role = pendingPinRole
                     pendingCoordinate = nil
@@ -530,6 +541,17 @@ extension MapViewRepresentable {
                     parent.onMapTap?(coordinate, role)
                 }
             }
+        }
+
+        private func scheduleMarkerShow() {
+            markerShowWorkItem?.cancel()
+            guard let coordinate = pendingCoordinate else { return }
+            let role = pendingPinRole
+            let item = DispatchWorkItem { [weak self] in
+                self?.parent.onPendingTap?(coordinate, role)
+            }
+            markerShowWorkItem = item
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.markerShowDelay, execute: item)
         }
 
         private func scheduleConfirm(in mapView: MKMapView) {
