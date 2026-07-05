@@ -146,6 +146,95 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(session.course?.coordinates.last, C)
     }
 
+    // MARK: - attach: 규칙 3'/4' — 근접 끝점 대칭 처리 (실기기 QA 전 스크린샷에서 발견한 버그 수정)
+
+    /// 실기기 스크린샷에서 발견된 버그의 회귀 테스트: 스트로크를 반대 방향(먼 지점 → 출발점
+    /// 근처)으로 그으면, 끝점 근접을 못 보던 옛 코드는 이걸 원거리 규칙 4로 흘려보내 불필요한
+    /// gap을 만들고 마커를 옛 위치(출발점) 근처에 남겼다. 끝점 ≈ 출발점이므로 gap 없이 그대로
+    /// prepend되어, 스트로크의 진짜 새 지점(A)이 코스의 새 출발점이 되어야 한다.
+    func testAttach_reportedBug_strokeEndsNearStart_prependsUnreversedNoGap() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: B→C (출발 B, 도착 C)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        // New: A→near_B. A는 B·C 양쪽에서 멂(≈1112m·≈2224m), near_B는 출발점 B에서 ≈11.1m
+        let near_B = CourseCoordinate(latitude: B.latitude + 0.0001, longitude: B.longitude)
+        try await session.attach(.drawn(coordinates: [A, near_B], distanceMeters: 500), using: service)
+
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.first, A, "먼 지점 A가 새 출발점이어야 함(옛 위치 B 근처에 남으면 안 됨)")
+        XCTAssertEqual(session.course?.coordinates.last, C, "도착점은 그대로 C")
+        XCTAssertEqual(service.routeCallCount, 0, "끝점이 이미 출발점과 근접하므로 gap 불필요")
+        XCTAssertEqual(session.segments.first?.coordinates, [A, near_B], "반전 없이 그대로 prepend되어야 함")
+    }
+
+    /// 대칭 케이스(도착점 쪽): 스트로크가 먼 지점에서 시작해 도착점 근처에서 끝나면 반전 후
+    /// append되어, 스트로크의 진짜 새 지점(D)이 코스의 새 도착점이 되어야 한다.
+    func testAttach_symmetric_strokeEndsNearEnd_appendsReversedNoGap() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: A→B (출발 A, 도착 B)
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        // New: D→near_B. D는 A·B 양쪽에서 멀고(≈3336m·≈2224m), near_B는 도착점 B에서 ≈11.1m
+        let near_B = CourseCoordinate(latitude: B.latitude + 0.0001, longitude: B.longitude)
+        try await session.attach(.drawn(coordinates: [D, near_B], distanceMeters: 500), using: service)
+
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.first, A, "출발점 불변")
+        XCTAssertEqual(session.course?.coordinates.last, D, "먼 지점 D가 새 도착점이어야 함")
+        XCTAssertEqual(service.routeCallCount, 0, "끝점이 이미 도착점과 근접하므로 gap 불필요")
+        XCTAssertEqual(session.segments.last?.coordinates, [near_B, D], "반전 후 append되어야 함")
+    }
+
+    /// 어드바이저 리뷰에서 발견된 반례 클래스: 기존 출발·도착점이 20~40m 정도로 가까운
+    /// "거의 닫힌 루프"(공식 닫힌 코스 20m 컷오프는 안 넘음)에서, 스트로크 끝점이 양쪽
+    /// 임계값(20m) 안에 동시에 든다. 절대 임계값 두 개를 독립으로 체크하면 코드 순서상
+    /// 먼저 걸리는 쪽이 실제 상대 거리와 무관하게 이겨버려, 3배 더 가까운 핀이 있어도
+    /// 결과가 틀릴 수 있다 — 상대 비교라야 올바른(더 가까운) 쪽으로 붙는다.
+    func testAttach_nearClosedLoop_endNearBothPins_attachesToGenuinelyCloserPin() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: A→A2, A2는 A 북쪽 ≈24.46m (20m 닫힌 코스 컷오프 밖이지만 근접)
+        let A2 = CourseCoordinate(latitude: A.latitude + 0.00022, longitude: A.longitude)
+        try await session.attach(.tapped(coordinates: [A, A2], distanceMeters: 100), using: service)
+        // New: C→P. C는 A·A2 양쪽에서 멀고(≈2224m·≈2199m),
+        // P는 A에서 ≈18.35m·A2에서 ≈6.12m — 둘 다 20m 이내지만 A2가 정확히 3배 더 가까움
+        let P = CourseCoordinate(latitude: A.latitude + 0.000165, longitude: A.longitude)
+        try await session.attach(.drawn(coordinates: [C, P], distanceMeters: 500), using: service)
+
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.first, A, "출발점은 그대로 A — 먼저 체크되는 조건이 이겨서는 안 됨")
+        XCTAssertEqual(session.course?.coordinates.last, C, "3배 더 가까운 도착점(A2) 쪽에 붙어 C가 새 도착점이어야 함")
+        XCTAssertEqual(service.routeCallCount, 0)
+    }
+
+    /// 근접-루프 near-tie 안정성: 두 후보점이 ≈0.46m 차이로 "실제로 더 가까운 핀"이
+    /// 뒤바뀌면(A쪽 12.00m vs A2쪽 12.463m, 그리고 그 반대) 결과도 정확히 그 방향을 따라
+    /// 뒤바뀌어야 한다 — 코드 순서에 고정된 답이 아니라 실제 상대 거리를 따른다는 것의 직접
+    /// 검증. (브리프의 "동일 방향 유지" 변형 대신, 상대 거리에 따라 결과가 정확히 반대로
+    /// 뒤바뀌는 것을 확인하는 형태를 택함 — 이 쪽이 "순서 비의존"을 더 직접적으로 검증한다.)
+    func testAttach_nearClosedLoop_nearTie_resultFollowsTrueCloserSide() async throws {
+        let A2 = CourseCoordinate(latitude: A.latitude + 0.00022, longitude: A.longitude)
+
+        // Pn: A에서 ≈12.00m·A2에서 ≈12.463m (출발점 쪽이 더 가까움) → 반전 없이 prepend
+        let startSideSession = CourseEditSession()
+        let startSideService = StubCourseService()
+        try await startSideSession.attach(.tapped(coordinates: [A, A2], distanceMeters: 100), using: startSideService)
+        let Pn = CourseCoordinate(latitude: A.latitude + 0.00010791859271, longitude: A.longitude)
+        try await startSideSession.attach(.drawn(coordinates: [C, Pn], distanceMeters: 500), using: startSideService)
+        XCTAssertEqual(startSideSession.course?.coordinates.first, C, "출발점 쪽이 더 가까우므로 C가 새 출발점")
+        XCTAssertEqual(startSideSession.course?.coordinates.last, A2, "도착점 A2는 불변")
+
+        // Pm: A에서 ≈12.460m·A2에서 ≈12.003m (도착점 쪽이 더 가까움) → 반전 후 append
+        let endSideSession = CourseEditSession()
+        let endSideService = StubCourseService()
+        try await endSideSession.attach(.tapped(coordinates: [A, A2], distanceMeters: 100), using: endSideService)
+        let Pm = CourseCoordinate(latitude: A.latitude + 0.0001120554721, longitude: A.longitude)
+        try await endSideSession.attach(.drawn(coordinates: [C, Pm], distanceMeters: 500), using: endSideService)
+        XCTAssertEqual(endSideSession.course?.coordinates.first, A, "출발점 A는 불변")
+        XCTAssertEqual(endSideSession.course?.coordinates.last, C, "도착점 쪽이 더 가까우므로 C가 새 도착점")
+    }
+
     /// 출발점 쪽 gap 라우팅 실패 → 세션 상태 불변 + redo 스택 보존 (MVP9 에러 규칙의 새 분기 적용)
     func testAttach_farStrokeNearerToStart_gapFailure_preservesState() async throws {
         let session = CourseEditSession()

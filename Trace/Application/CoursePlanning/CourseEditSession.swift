@@ -41,7 +41,8 @@ final class CourseEditSession {
         guard let existing = course,
               let existingStart = existing.coordinates.first,
               let existingEnd = existing.coordinates.last,
-              let newStart = newSegment.coordinates.first else {
+              let newStart = newSegment.coordinates.first,
+              let newEnd = newSegment.coordinates.last else {
             append(newSegment)
             return
         }
@@ -55,6 +56,32 @@ final class CourseEditSession {
         // 반전 후 끝 좌표 = 원래 시작점 ≈ 기존 출발점이므로 gap 라우팅이 필요 없다.
         if !isClosedCourse, !startsNearEnd, startsNearStart {
             prepend(newSegment.reversed())
+            return
+        }
+
+        // 규칙 3'/4'(근접 끝점 대칭): 규칙 1~3이 모두 안 걸린 경우, 시작점은 두 기존 핀
+        // 모두에서 멀더라도 스트로크 끝점(손을 뗀 지점)이 근접할 수 있다 — 반대 방향으로
+        // 그리기(먼 지점 → 핀 근처)가 그 경우다. 근접(threshold 이내) 판정에 한해서만
+        // 끝점을 대칭적으로 쓰고, 원거리 비교(아래 규칙 4)는 시작점만 쓰는 기존 규칙을
+        // 그대로 둔다. 두 기존 핀이 20~40m 정도로 가까운 "거의 닫힌 루프"에서는 끝점이
+        // 양쪽 근접 범위에 동시에 들 수 있는데, 이때 절대 임계값 두 개를 독립으로 체크하면
+        // 코드 순서상 먼저 걸리는 쪽이 실제 상대 거리와 무관하게 이겨버려 손 뗀 위치가
+        // 1m만 달라져도 결과가 정반대로 뒤집힐 수 있다(MVP9가 제거한 것과 같은 불안정성).
+        // 그래서 두 조건이 동시에 참이면 하나의 결정으로 묶어, nearestEndpoint/규칙4와
+        // 동일한 마진 없는 <= 상대 비교로 결정론적으로 정한다.
+        let endNearStart = newEnd.distanceMeters(to: existingStart) <= threshold
+        let endNearEnd = newEnd.distanceMeters(to: existingEnd) <= threshold
+        if !isClosedCourse, !startsNearEnd, !startsNearStart, endNearStart || endNearEnd {
+            if endNearStart,
+               !endNearEnd || newEnd.distanceMeters(to: existingStart) <= newEnd.distanceMeters(to: existingEnd) {
+                // 끝점 ≈ 출발점(또는 상대적으로 더 가까움) → 반전 없이 그대로 prepend.
+                // 스트로크의 첫 좌표(진짜 새 지점)가 코스의 새 출발점이 된다. gap 불필요.
+                prepend(newSegment)
+            } else {
+                // 끝점 ≈ 도착점(위 조건에서 밀림) → 반전 후 append.
+                // 반전하면 시작 ≈ 도착점이므로 gap 불필요, 원래 첫 좌표가 새 도착점이 된다.
+                append(newSegment.reversed())
+            }
             return
         }
 
