@@ -21,11 +21,14 @@
 > 1차 실기기 QA(2026-07-05)에서 버그 3건 발견 후 근본 원인까지 확정해 수정(임시 마커 라벨 뒤바뀜,
 > 마커 깜빡임, 두손가락 줌아웃 끊김 — commit 119047c). 재검증 대기. QA 중 그리기 시작점 방향 판정의
 > 더 근본적인 UX 갭도 발견 — 코드 버그 아님, MVP9 설계의 트레이드오프로 확인되어 `docs/backlog.md`
-> (MVP10 QA 섹션)로 이관, 별도 브레인스토밍 예정. 재검증 + 방향 판정 재설계까지 끝나야 아카이빙.
+> (MVP10 QA 섹션)로 이관 → 브레인스토밍·스펙 리뷰 완료(2026-07-05), 4번째 마일스톤
+> `attach-nearest-fallback`으로 편입(스펙·플랜 작성 완료, 구현 대기). 재검증 + 방향 판정
+> 재설계까지 끝나야 아카이빙.
 
 - [x] **tap-pending-commit** — 탭 보류 확정(판별기 도입, 더블탭/원핑거 줌 시 취소, 임시 마커), 자체 디바운스 대체
 - [x] **draw-start-pixel-snap** — 그리기 시작점 근접 판정을 실거리 20m → 화면 24pt 기준으로 교체
 - [x] **two-finger-gesture-tuning** — 두손가락 탭줌아웃 ↔ 커스텀 두손가락 팬 경쟁 delegate 조정 + 실기기 튜닝
+- [~] **attach-nearest-fallback** — 그리기 원거리 시작점 방향 판정 재설계: attach 규칙 4를 시작점 최근접 끝점 비교(출발점 쪽이면 반전 prepend + gap)로 교체. 스펙: `docs/superpowers/specs/2026-07-05-attach-nearest-fallback-design.md` · 플랜: `docs/superpowers/plans/2026-07-05-attach-nearest-fallback.md` (구현 대기)
 
 ### MVP9 — 편집 정합성 (왕복·핀·redo)   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp9/`](history/mvp9/))
 
