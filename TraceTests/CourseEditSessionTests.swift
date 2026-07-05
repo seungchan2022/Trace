@@ -79,6 +79,96 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(service.routeCallCount, 1, "gap 라우팅 1회")
     }
 
+    // MARK: - attach: 새 규칙 4 — 원거리 스트로크 최근접 끝점 비교 (MVP10 마일스톤 4)
+
+    /// 원거리 시작점이 출발점에 명백히 더 가까움 → 반전 prepend + gap 병합 (스펙 QA 케이스 324m vs 1241m 축소판)
+    func testAttach_farStroke_nearerToStart_reversePrependsWithGap() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: B→C (출발 B, 도착 C)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        // New: P→A, P는 B에서 ~555m·C에서 ~1,665m (양쪽 임계값 밖, 출발점 쪽)
+        let P = CourseCoordinate(latitude: 37.505, longitude: 127.00)
+        try await session.attach(.drawn(coordinates: [P, A], distanceMeters: 500), using: service)
+
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.first, A, "반전 prepend로 코스 시작이 A여야 함")
+        XCTAssertEqual(session.course?.coordinates.last, C, "도착점은 그대로 C")
+        XCTAssertEqual(service.routeCallCount, 1, "출발점 쪽 gap 라우팅 1회")
+        // 병합 세그먼트: reversed(stroke) + gap(P→B).dropFirst() = [A, P] + [B]
+        XCTAssertEqual(session.segments.first?.coordinates, [A, P, B])
+        XCTAssertEqual(session.segments.first?.distanceMeters, 600, "스트로크 500 + gap 100")
+    }
+
+    /// near-tie 경계 (출발점 쪽): 이등분선보다 ~11m 출발점 쪽 → 결정론적으로 prepend
+    func testAttach_nearTieBoundary_startSide_prepends() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: A→C (이등분선 = 37.51)
+        try await session.attach(.tapped(coordinates: [A, C], distanceMeters: 100), using: service)
+        // New: P1→D, P1은 A에서 ~1,099m·C에서 ~1,121m (근소하게 출발점 쪽)
+        let P1 = CourseCoordinate(latitude: 37.5099, longitude: 127.00)
+        try await session.attach(.drawn(coordinates: [P1, D], distanceMeters: 300), using: service)
+
+        XCTAssertEqual(session.course?.coordinates.first, D, "출발점 쪽 판정 → 반전 prepend → 시작이 D")
+        XCTAssertEqual(session.course?.coordinates.last, C)
+    }
+
+    /// near-tie 경계 (도착점 쪽): 이등분선보다 ~11m 도착점 쪽 → 결정론적으로 append
+    func testAttach_nearTieBoundary_endSide_appends() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: A→C
+        try await session.attach(.tapped(coordinates: [A, C], distanceMeters: 100), using: service)
+        // New: P2→D, P2는 A에서 ~1,121m·C에서 ~1,099m (근소하게 도착점 쪽)
+        let P2 = CourseCoordinate(latitude: 37.5101, longitude: 127.00)
+        try await session.attach(.drawn(coordinates: [P2, D], distanceMeters: 300), using: service)
+
+        XCTAssertEqual(session.course?.coordinates.first, A, "도착점 쪽 판정 → 출발점 불변")
+        XCTAssertEqual(session.course?.coordinates.last, D, "그린 그대로 도착점 뒤 append")
+    }
+
+    /// 닫힌 코스 + 원거리 스트로크 → 여전히 append (규칙 1 선점 = 진입 조건 게이트 검증)
+    func testAttach_closedCourse_farStroke_stillAppends() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // 닫힌 코스 구성: A→B, B근처→A근처 (첫·끝 좌표 ≤20m)
+        let near_B = CourseCoordinate(latitude: B.latitude + 0.0001, longitude: B.longitude)
+        let near_A = CourseCoordinate(latitude: A.latitude + 0.0001, longitude: A.longitude)
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: service)
+        try await session.attach(.tapped(coordinates: [near_B, near_A], distanceMeters: 100), using: service)
+        // New: E→C, E는 A 남쪽 ~1,110m — 닫힌 코스 양끝 어디서도 멀지만 출발점 A에 근소하게 더 가까움.
+        // 비교가 게이트 없이 실행되면 prepend로 새어 규칙 1이 깨진다.
+        let E = CourseCoordinate(latitude: 37.49, longitude: 127.00)
+        try await session.attach(.tapped(coordinates: [E, C], distanceMeters: 100), using: service)
+
+        XCTAssertEqual(session.course?.coordinates.first, A, "닫힌 코스는 무조건 append — 출발점 불변")
+        XCTAssertEqual(session.course?.coordinates.last, C)
+    }
+
+    /// 출발점 쪽 gap 라우팅 실패 → 세션 상태 불변 + redo 스택 보존 (MVP9 에러 규칙의 새 분기 적용)
+    func testAttach_farStrokeNearerToStart_gapFailure_preservesState() async throws {
+        let session = CourseEditSession()
+        let okService = StubCourseService()
+        try await session.attach(.tapped(coordinates: [A, B], distanceMeters: 100), using: okService)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: okService)
+        session.undo()
+        XCTAssertTrue(session.canRedo)
+
+        // P는 A에서 ~333m·B에서 ~777m (출발점 쪽, 임계값 밖) → 새 분기의 gap 라우팅이 실패
+        let P = CourseCoordinate(latitude: 37.503, longitude: 127.00)
+        let failingService = FailingCourseService()
+        do {
+            try await session.attach(.drawn(coordinates: [P, D], distanceMeters: 300), using: failingService)
+            XCTFail("gap 라우팅 실패로 throw되어야 함")
+        } catch {}
+
+        XCTAssertTrue(session.canRedo, "실패한 attach는 redo 스택을 보존해야 함")
+        XCTAssertEqual(session.segments.count, 1)
+        XCTAssertEqual(session.course?.coordinates.first, A)
+        XCTAssertEqual(session.course?.coordinates.last, B)
+    }
+
     // MARK: - attach: 규칙 2 — 왕복 스트로크(도착점에서 시작)는 항상 append
 
     func testAttach_roundTripStroke_appendsPreservingRunOrder() async throws {

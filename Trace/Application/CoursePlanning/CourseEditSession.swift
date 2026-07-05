@@ -30,8 +30,9 @@ final class CourseEditSession {
 
     static let connectionThresholdMeters: Double = 20
 
-    // 이어붙이기 순서 규칙 (spec 규칙 1~4): 반전은 "출발점 연장"(규칙 3) 단 하나.
-    // 거리 비교로 앞/뒤를 추측하지 않는다 — 기본값은 항상 "도착점에서 이어진다".
+    // 이어붙이기 순서 규칙 (spec 규칙 1~4): 반전은 "출발점 쪽 시작 = 출발 방향 연장" 하나뿐.
+    // 규칙 4는 시작점 "단일 점"만 두 끝점과 최근접 비교한다(탭 nearestEndpoint와 동일한 <=) —
+    // 스트로크 양끝 4쌍 비교·끝점 비교는 왕복 모호성을 재발시키므로 금지 (MVP9 → MVP10 스펙).
     // 1 attach = 1 segment 추가 = undo 1번에 완전 제거
     func attach(
         _ newSegment: CourseSegment,
@@ -57,7 +58,22 @@ final class CourseEditSession {
             return
         }
 
-        // 규칙 1·2·4: 그린 그대로 도착점 뒤에 append (필요 시 gap 라우팅)
+        // 규칙 4(출발점 쪽): 규칙 1~3이 모두 안 걸린 원거리 스트로크는 시작점을 두 끝점과
+        // 최근접 비교해, 출발점 쪽(등거리 포함)이면 규칙 3의 원거리 확장 — 반전 prepend + gap.
+        // 진입 조건상 시작점-출발점 거리 > threshold이므로 gap 라우팅이 항상 필요하다.
+        if !isClosedCourse, !startsNearEnd, !startsNearStart,
+           newStart.distanceMeters(to: existingStart) <= newStart.distanceMeters(to: existingEnd) {
+            let gap = try await service.route(from: newStart, to: existingStart)
+            let reversed = newSegment.reversed()
+            prepend(makeMerged(
+                like: newSegment,
+                coordinates: reversed.coordinates + Array(gap.coordinates.dropFirst()),
+                distance: reversed.distanceMeters + gap.distanceMeters
+            ))
+            return
+        }
+
+        // 규칙 1·2·4(도착점 쪽): 그린 그대로 도착점 뒤에 append (필요 시 gap 라우팅)
         var combinedCoords = newSegment.coordinates
         var combinedDistance = newSegment.distanceMeters
         if needsGap(from: existingEnd, to: newStart) {
