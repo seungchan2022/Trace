@@ -28,7 +28,7 @@
 - [x] **tap-pending-commit** — 탭 보류 확정(판별기 도입, 더블탭/원핑거 줌 시 취소, 임시 마커), 자체 디바운스 대체
 - [x] **draw-start-pixel-snap** — 그리기 시작점 근접 판정을 실거리 20m → 화면 24pt 기준으로 교체
 - [x] **two-finger-gesture-tuning** — 두손가락 탭줌아웃 ↔ 커스텀 두손가락 팬 경쟁 delegate 조정 + 실기기 튜닝
-- [~] **attach-nearest-fallback** — 그리기 원거리 시작점 방향 판정 재설계: attach 규칙 4를 시작점 최근접 끝점 비교(출발점 쪽이면 반전 prepend + gap)로 교체. 스펙: `docs/superpowers/specs/2026-07-05-attach-nearest-fallback-design.md` · 플랜: `docs/superpowers/plans/2026-07-05-attach-nearest-fallback.md` (구현 대기)
+- [x] **attach-nearest-fallback** — 그리기 원거리 시작점 방향 판정 재설계: attach 규칙 4를 시작점 최근접 끝점 비교(출발점 쪽이면 반전 prepend + gap)로 교체. 스펙: `docs/superpowers/specs/2026-07-05-attach-nearest-fallback-design.md` · 플랜: `docs/superpowers/plans/2026-07-05-attach-nearest-fallback.md` (구현 완료, 실기기 QA 대기)
 
 ### MVP9 — 편집 정합성 (왕복·핀·redo)   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp9/`](history/mvp9/))
 
