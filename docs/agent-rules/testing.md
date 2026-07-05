@@ -111,6 +111,10 @@ SwiftLint is configured by `.swiftlint.yml`.
 
 ### Real-Device Checklist Template
 
+Use a scenario card for any test that needs multiple physical steps or a specific gesture sequence. Keep plain single-line checkboxes only for one-shot checks (build/install, known-limitations notes).
+
+Write every scenario for a first-time user who has never seen the implementation: concrete physical actions ("두 손가락으로 지도를 축소하세요"), and a result the user can literally see ("어느 핀이 움직이는지 보세요"). Never use internal/implementation terms — threshold, gap, routing, hit-test, pixel/meter distinction, rule numbers, class/function names. If a scenario exists to probe an internal edge case, translate it into what the user would actually do and observe, not what the code checks.
+
 ```markdown
 # <기능> 실기기 체크리스트 (YYYY-MM-DD)
 
@@ -123,16 +127,28 @@ SwiftLint is configured by `.swiftlint.yml`.
 - [ ] 거부 경로 동작(크래시 없이 폴백)
 
 ## 핵심 기능 (손으로 수행)
-- [ ] 주요 사용자 플로우가 의도대로 동작
+
+### 시나리오 <N>: <한 줄 요약 — 무슨 결과를 보는 시나리오인지>
+
+**준비:** <시작하기 전에 이미 되어 있어야 하는 상태>
+
+**수행:**
+1. <구체적인 동작 1 — 손으로 뭘 하는지>
+2. <구체적인 동작 2>
+
+**확인할 것:** <무엇을 눈으로 보면 되는지 — 통과/실패가 바로 판단되는 관찰 포인트>
+
+**결과:** ☐ 통과 ☐ 실패
+**메모:**
 
 ## 제스처/입력 감
-- [ ] 실제 터치 반응·자연스러움, 충돌 없음
+(위와 같은 시나리오 카드 형식)
 
 ## 지역/환경 의존
-- [ ] 대상 지역(예: 한국)에서 동작·품질 확인
+(위와 같은 시나리오 카드 형식)
 
 ## 엣지/견고성
-- [ ] 빠른 반복 조작·대용량 입력·네트워크 지연 시 안정
+(위와 같은 시나리오 카드 형식)
 
 ## 의도 일치
 - [ ] 만든 기능이 내가 원한 UX와 맞는가 (불일치 메모)
