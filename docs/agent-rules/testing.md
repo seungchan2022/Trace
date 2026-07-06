@@ -113,7 +113,7 @@ SwiftLint is configured by `.swiftlint.yml`.
 
 Use a scenario card for any test that needs multiple physical steps or a specific gesture sequence. Keep plain single-line checkboxes only for one-shot checks (build/install, known-limitations notes).
 
-Write every scenario for a first-time user who has never seen the implementation: concrete physical actions ("두 손가락으로 지도를 축소하세요"), and a result the user can literally see ("어느 핀이 움직이는지 보세요"). Never use internal/implementation terms — threshold, gap, routing, hit-test, pixel/meter distinction, rule numbers, class/function names. If a scenario exists to probe an internal edge case, translate it into what the user would actually do and observe, not what the code checks.
+Write every scenario for a first-time user who has never seen the implementation: concrete physical actions ("두 손가락으로 지도를 축소하세요"), and a result the user can literally see ("어느 핀이 움직이는지 보세요"). Never use internal/implementation terms — threshold, gap, routing, hit-test, pixel/meter distinction, rule numbers, class/function names, spec/plan file paths, milestone names. This applies to the whole section the user reads, not just the numbered step lines: section headings, intro blockquotes, and closing/footer notes must be just as jargon-free as the steps — a plain-language step under a jargon-heavy heading still reads as confusing. If a scenario exists to probe an internal edge case, translate it into what the user would actually do and observe, not what the code checks.
 
 ```markdown
 # <기능> 실기기 체크리스트 (YYYY-MM-DD)
