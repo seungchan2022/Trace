@@ -23,6 +23,24 @@
 
 ---
 
+## MVP10 — 제스처 정합성 (탭 보류 확정·픽셀 판정·2손가락 튜닝·attach 방향 판정 재설계) (2026-07-04 ~ 07-06)
+
+> 탭 즉시 확정을 "0.3초 보류 → 확정/취소"로 교체(더블탭·원핑거 줌 분리), 그리기 시작점 근접 판정
+> 화면 24pt 기준 전환, 두손가락 제스처 경쟁 튜닝. 실기기 QA에서 발견된 attach 방향 판정 버그(근접·
+> 원거리 양쪽 모두 스트로크 끝점을 무시하던 근본 원인)를 4번째 마일스톤으로 편입해 해결. 마일스톤
+> 4개 + 실기기 QA 버그 4건(마커 라벨/깜빡임, 두손가락 줌아웃, attach 방향 판정) 수정·재검증.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [gesture-consistency 설계](mvp10/2026-07-04-gesture-consistency-design.md) | 탭 판별기(TapClassifier), 화면 픽셀 히트 판정, 두손가락 delegate 조정 |
+| 플랜 | [gesture-consistency 플랜](mvp10/2026-07-04-gesture-consistency.md) | Task 1~6, TDD TapClassifier→픽셀 히트→delegate→QA |
+| 기획 | [attach-nearest-fallback 설계](mvp10/2026-07-05-attach-nearest-fallback-design.md) | attach 규칙 4 재설계(시작점 단일 최근접 비교), 이후 근접·원거리 끝점 대칭 처리로 확장 |
+| 플랜 | [attach-nearest-fallback 플랜](mvp10/2026-07-05-attach-nearest-fallback.md) | Task 1~3, subagent-driven-development로 실행, 전체 브랜치 리뷰(opus) clean |
+| QA | [실기기 체크리스트](mvp10/2026-07-04-gesture-consistency-device-checklist.md) | 시나리오 1~19, 버그 4건 발견·수정·재검증 완료 |
+| 회고 | [MVP10 완료 회고](mvp10/260706_mvp10_completion_retro.md) | 적대적 서브에이전트 리뷰가 반례 2회 적발, advisor의 과신 지적, 사용자의 재분류 정정 |
+
+---
+
 ## MVP9 — 편집 정합성 (왕복·핀·redo) (2026-07-03 ~ 07-04)
 
 > attach 이어붙이기 규칙을 순서 규칙(반전은 출발점 연장 단일 예외)으로 교체, 끝점 근접 탭 왕복, 닫힌

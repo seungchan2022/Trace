@@ -11,24 +11,19 @@
 
 ## 진행 중 / 예정
 
-### MVP10 — 제스처 정합성 (탭 보류 확정·픽셀 판정·2손가락 튜닝)   (상태: ✅ 구현 완료 · 실기기 QA 진행 중)
+### MVP10 — 제스처 정합성 (탭 보류 확정·픽셀 판정·2손가락 튜닝·attach 방향 판정 재설계)   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp10/`](history/mvp10/))
 
 > 탭/그리기 제스처가 iOS 관례대로 섞이지 않게 한다: 탭 즉시 확정을 "0.3초 보류 → 확정/취소"로
 > 교체해 더블탭·원핑거 줌과 분리하고, 그리기 시작점 근접 판정을 화면 픽셀 기준으로 바꾸고,
-> 그리기 모드 두손가락 제스처 경쟁을 튜닝한다. 스펙: `docs/superpowers/specs/2026-07-04-gesture-consistency-design.md`
-> 플랜: `docs/superpowers/plans/2026-07-04-gesture-consistency.md` (6개 태스크 전부 완료, 최종 전체 스위트 그린 확인)
-> 실기기 QA 체크리스트: `docs/qa/2026-07-04-gesture-consistency-device-checklist.md`
-> 1차 실기기 QA(2026-07-05)에서 버그 3건 발견 후 근본 원인까지 확정해 수정(임시 마커 라벨 뒤바뀜,
-> 마커 깜빡임, 두손가락 줌아웃 끊김 — commit 119047c). 재검증 대기. QA 중 그리기 시작점 방향 판정의
-> 더 근본적인 UX 갭도 발견 — 코드 버그 아님, MVP9 설계의 트레이드오프로 확인되어 `docs/backlog.md`
-> (MVP10 QA 섹션)로 이관 → 브레인스토밍·스펙 리뷰 완료(2026-07-05), 4번째 마일스톤
-> `attach-nearest-fallback`으로 편입(스펙·플랜·구현 완료, 실기기 QA 대기). 재검증 + 방향 판정
-> 재설계까지 끝나야 아카이빙.
+> 그리기 모드 두손가락 제스처 경쟁을 튜닝한다. 실기기 QA에서 발견된 attach 방향 판정 버그(근접·
+> 원거리 양쪽 모두 스트로크 끝점을 무시하던 근본 원인)까지 4번째 마일스톤으로 편입해 해결.
+> 실기기 QA 전체 재검증 완료(2026-07-06).
+> 회고: [`260706_mvp10_completion_retro`](history/mvp10/260706_mvp10_completion_retro.md)
 
 - [x] **tap-pending-commit** — 탭 보류 확정(판별기 도입, 더블탭/원핑거 줌 시 취소, 임시 마커), 자체 디바운스 대체
 - [x] **draw-start-pixel-snap** — 그리기 시작점 근접 판정을 실거리 20m → 화면 24pt 기준으로 교체
 - [x] **two-finger-gesture-tuning** — 두손가락 탭줌아웃 ↔ 커스텀 두손가락 팬 경쟁 delegate 조정 + 실기기 튜닝
-- [x] **attach-nearest-fallback** — 그리기 원거리 시작점 방향 판정 재설계: attach 규칙 4를 시작점 최근접 끝점 비교(출발점 쪽이면 반전 prepend + gap)로 교체. 스펙: `docs/superpowers/specs/2026-07-05-attach-nearest-fallback-design.md` · 플랜: `docs/superpowers/plans/2026-07-05-attach-nearest-fallback.md` (구현 완료, 실기기 QA 대기)
+- [x] **attach-nearest-fallback** — 그리기 방향 무관 attach 판정 재설계: 근접 판정에 한해 끝점 대칭 처리 추가, 원거리(규칙 4)도 스트로크 양끝 중 더 가까운 쪽(anchor) 기준 단일 상대 비교로 확장. 스펙: `history/mvp10/2026-07-05-attach-nearest-fallback-design.md` · 플랜: `history/mvp10/2026-07-05-attach-nearest-fallback.md`
 
 ### MVP9 — 편집 정합성 (왕복·핀·redo)   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp9/`](history/mvp9/))
 
