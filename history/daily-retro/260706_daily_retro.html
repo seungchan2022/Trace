@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-07-06 하루 회고</title>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+    primaryColor: '#FEF3C7',
+    primaryTextColor: '#2D2926',
+    primaryBorderColor: '#D97706',
+    lineColor: '#92400E',
+    tertiaryColor: '#FFF7ED'
+  }});
+</script>
+<style>
+  :root {
+    --bg:#FDF6F0; --text:#2D2926; --accent:#D97706; --accent-light:#FEF3C7;
+    --heading:#92400E; --border:#E5D5C5; --code-bg:#FFF7ED; --card-bg:#FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 {
+    font-size: 1.4rem; color: var(--heading); margin: 8px 0 4px;
+  }
+  .date { color: #A8724F; font-size: 0.85rem; margin-bottom: 20px; }
+  h2 {
+    font-size: 1.05rem; color: var(--heading);
+    margin: 28px 0 10px; padding-bottom: 6px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 { font-size: 0.95rem; color: var(--accent); margin: 16px 0 6px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 1.3em; margin: 8px 0; }
+  li { margin: 4px 0; }
+  .card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin: 10px 0;
+  }
+  .insight {
+    background: var(--accent-light); border-left: 3px solid var(--accent);
+    border-radius: 6px; padding: 10px 14px; margin: 10px 0;
+  }
+  .feeling {
+    background: #FFFBEB; border: 1px dashed var(--accent);
+    border-radius: 8px; padding: 12px 14px; font-style: italic;
+  }
+  code {
+    background: var(--code-bg); padding: 1px 5px; border-radius: 4px;
+    font-size: 0.88em; word-break: break-word;
+  }
+  .mermaid { background: var(--card-bg); border-radius: 10px; padding: 12px; overflow-x: auto; }
+  .tag {
+    display: inline-block; background: var(--accent); color: white;
+    font-size: 0.72rem; padding: 2px 8px; border-radius: 10px; margin-right: 6px;
+  }
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#1C1917; --text:#E7E1DA; --accent:#F59E0B; --accent-light:#3A2A12;
+      --heading:#FBBF24; --border:#44352A; --code-bg:#2A2320; --card-bg:#241F1B;
+    }
+    .feeling { background: #2A2013; }
+  }
+  :root[data-theme="dark"] {
+    --bg:#1C1917; --text:#E7E1DA; --accent:#F59E0B; --accent-light:#3A2A12;
+    --heading:#FBBF24; --border:#44352A; --code-bg:#2A2320; --card-bg:#241F1B;
+  }
+  :root[data-theme="dark"] .feeling { background: #2A2013; }
+  :root[data-theme="light"] {
+    --bg:#FDF6F0; --text:#2D2926; --accent:#D97706; --accent-light:#FEF3C7;
+    --heading:#92400E; --border:#E5D5C5; --code-bg:#FFF7ED; --card-bg:#FFFFFF;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🏃 2026-07-06 하루 회고</h1>
+  <div class="date">MVP10 마무리 — attach 원거리 방향 판정 버그, 그리고 밀린 회고 정리</div>
+
+  <h2>오늘 뭘 했나</h2>
+  <p>
+    어제 attach 근접 케이스를 고쳤는데, 실기기 재검증 중 <b>원거리(threshold 밖) 케이스</b>에서
+    같은 종류의 버그가 재발한 걸 발견하며 하루가 시작됐다. 오늘은 그 버그를 마저 고치고,
+    MVP10 전체 QA를 재확인해 아카이빙까지 끝낸 뒤, 밀린 데일리 회고 7일치를 정리하다가
+    <b>"코스 저장"이라는 죽은 정보</b>가 문서 곳곳에 남아있던 걸 발견해 정정하는 것으로 마무리됐다.
+  </p>
+
+  <div class="card">
+    <span class="tag">완료</span> 원거리 attach 버그 설계·구현·검증<br>
+    <span class="tag">완료</span> 실기기 재검증(시나리오 18·19)<br>
+    <span class="tag">완료</span> MVP10 전체 QA 재확인 + 아카이빙<br>
+    <span class="tag">완료</span> 병합·푸시(사용자), 브랜치 정리<br>
+    <span class="tag">완료</span> 밀린 데일리 회고 7일치 정리<br>
+    <span class="tag">발견</span> "코스 저장" stale 정보 → 정정
+  </div>
+
+  <h2>핵심 의사결정</h2>
+  <p>
+    원거리 attach 버그를 <b>"anchor 단일 선택 + 기존 로직 재사용"</b>으로 고치기로 했다.
+    스트로크 양끝 중 어느 쪽이 어느 핀에 더 가까운지 하나만 골라(anchor), 그 지점을 기존
+    로직에 그대로 흘려보내는 방식. 안전 근거는 "근접 처리가 이미 양끝이 핀에 가까운 경우를
+    다 가로채므로, 이 로직에 도달하는 시점엔 이미 양끝 다 핀에서 멀다"는 것.
+  </p>
+
+  <h3>결정 흐름</h3>
+  <pre class="mermaid">
+graph TD
+    A["스트로크 양끝 모두<br/>기존 핀에서 멀다고 확정됨<br/>(근접 판정이 이미 처리)"] --> B{"양끝 중 어느 쪽이<br/>더 가까운 핀을 가졌나?"}
+    B -->|시작점 쪽| C["anchor = 시작점"]
+    B -->|끝점 쪽| D["anchor = 끝점<br/>(스트로크 반전)"]
+    C --> E["기존 로직 그대로:<br/>출발점 쪽이면 반전 prepend + gap<br/>도착점 쪽이면 gap append"]
+    D --> E
+    E --> F["닫힌 코스는<br/>이 로직 밖 — 무조건 append"]
+  </pre>
+
+  <h2>기획/설계 과정</h2>
+  <p>
+    1차 아이디어(스트로크 양끝 × 두 핀 4쌍 비교)는 예전에 왕복 그리기 판정이 흔들리던 문제를
+    다시 불러올 위험이 있어 기각. "양끝 각각의 최소 거리 중 더 작은 쪽만 anchor로 쓰고, 나머지는
+    기존 로직"으로 범위를 좁혔다. 실제 구현 중 "닫힌 코스는 무조건 이어붙는다"는 기존 규칙을
+    깨뜨리는 걸 테스트로 발견해 다시 고쳤다.
+  </p>
+
+  <h2>인사이트 &amp; 피드백</h2>
+
+  <div class="insight">
+    <b>"이해했다"고 넘어간 것과 실제 이해가 맞물린 것은 다르다.</b><br>
+    여러 번 "이해했어?"라고 물었지만, 막상 되짚어보니 정확한 이해는 아직 부족했다는 걸 서로
+    인정했다. 확인 질문 한 번으로 끝내지 않고, 상대가 자기 말로 설명해볼 수 있는지까지 봐야
+    진짜 확인이 된다.
+  </div>
+
+  <div class="insight">
+    <b>버그 하나 고치는 데 전체 워크플로우를 다 도는 게 항상 맞는 건 아닐 수 있다.</b><br>
+    이미 끝난 MVP 안에서 발견된, 범위가 좁고 명확한 버그를 고치는 데도 스펙 검토→구현→리뷰→
+    문서 갱신→아카이빙 전체를 다 돌리다 보니 세션이 여러 번 끊기고 느려졌다. Superpowers
+    워크플로우 자체는 좋지만, 작업 규모에 맞는 무게 조절이 필요해 보인다.
+  </div>
+
+  <div class="insight">
+    <b>문서에 남은 "죽은 정보"는 스스로 안 없어진다.</b><br>
+    "코스 저장"을 백로그에서 뺀 결정이 다른 문서(완료 회고, 로드맵)에는 전파되지 않아서, 계속
+    "다음 방향"인 것처럼 재생산됐다 — 오늘 새로 쓴 회고에도 그대로 옮겨 적었다가 지적받고서야
+    알았다.
+  </div>
+
+  <h2>배운 것</h2>
+  <ul>
+    <li>attach 판정에서 "근접 처리가 먼저 특정 조건을 가로채면, 그 뒤 로직은 그 조건이 이미
+    배제됐다고 가정해도 된다" — 게이트 순서 자체가 안전성 증명의 일부가 된다.</li>
+    <li>swiftlint 함수 길이/파라미터 개수 제한은, 로직을 그대로 private 메서드로 추출하는 것만
+    으로(동작 변경 없이) 해결 가능.</li>
+  </ul>
+
+  <h2>느낀 점</h2>
+  <div class="feeling">
+    솔직히 오늘도 "제대로 이해했다"는 확신이 잘 안 선다. 여러 번 설명을 듣고 되묻는 과정을
+    거쳤는데도 막상 "그럼 뭐가 문제였는지 설명해봐"라고 하면 스스로 명확히 못 하겠다는 걸
+    인정하게 됐다. 그리고 버그 하나 고치는 데 이렇게 여러 세션·여러 서브에이전트가 오가는 게
+    맞는 건가 하는 의문도 들었다.
+  </div>
+
+  <h2>내일 할 일</h2>
+  <ul>
+    <li>다음 MVP 방향이 아직 하나도 정해지지 않은 상태 — "코스 저장"이 자동으로 다음 순서인 게
+    아니라, 완전히 원점에서 브레인스토밍부터 시작.</li>
+    <li>"워크플로우 무게를 작업 규모에 맞게 조절할지"도 같이 논의.</li>
+  </ul>
+
+  <hr>
+  <p style="font-size:0.8rem; color:#A8724F;">history/daily-retro/260706_daily_retro.md · Claude Sunset</p>
+
+</div>
+</body>
+</html>
