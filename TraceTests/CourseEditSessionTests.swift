@@ -258,6 +258,124 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(session.course?.coordinates.last, B)
     }
 
+    // MARK: - attach: 원거리(far-case) 끝점 대칭 처리 (실기기 QA 시나리오 19 회귀 — 방향 무관)
+
+    /// 원거리 회귀: newStart는 양 핀 모두에서 멀고, newEnd는 existingStart(B)에서 ~30m(임계값
+    /// 밖이지만 newStart보다 훨씬 가까움) → endMin < startMin이므로 anchor = newEnd, "출발점
+    /// 쪽" 분기(반전 prepend + gap). 이중 반전이 맞물려 최종 좌표 순서는 원래 스트로크
+    /// 순서([newStart, newEnd])에 gap이 덧붙는 형태가 되어야 한다.
+    func testAttach_farCase_symmetricEndAnchor_startSide_reversePrependsWithGap() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: B→C (출발 B, 도착 C)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        let newStart = A
+        let newEnd = CourseCoordinate(latitude: B.latitude + 0.00027, longitude: B.longitude)
+
+        let threshold = CourseEditSession.connectionThresholdMeters
+        XCTAssertGreaterThan(newStart.distanceMeters(to: B), threshold)
+        XCTAssertGreaterThan(newStart.distanceMeters(to: C), threshold)
+        XCTAssertGreaterThan(newEnd.distanceMeters(to: B), threshold)
+        XCTAssertGreaterThan(newEnd.distanceMeters(to: C), threshold)
+        let startMin = min(newStart.distanceMeters(to: B), newStart.distanceMeters(to: C))
+        let endMin = min(newEnd.distanceMeters(to: B), newEnd.distanceMeters(to: C))
+        XCTAssertLessThan(endMin, startMin, "endMin < startMin이어야 anchor가 newEnd로 뽑힘")
+
+        try await session.attach(.drawn(coordinates: [newStart, newEnd], distanceMeters: 500), using: service)
+
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.first, newStart, "먼 지점(newStart)이 새 출발점이어야 함")
+        XCTAssertEqual(session.course?.coordinates, [newStart, newEnd, B, C], "이중 반전 순서까지 전체 배열로 확인")
+        XCTAssertEqual(service.routeCallCount, 1, "gap 라우팅 1회")
+        XCTAssertEqual(service.routeCalls.first?.from, newEnd)
+        XCTAssertEqual(service.routeCalls.first?.to, B)
+    }
+
+    /// 원거리 회귀(대칭): newEnd가 existingEnd(C)에서 ~30m → anchor = newEnd지만 이번엔
+    /// "도착점 쪽" 분기(append + gap)를 탄다. 최종 도착점은 newStart여야 한다.
+    func testAttach_farCase_symmetricEndAnchor_endSide_appendsWithGap() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: B→C (출발 B, 도착 C)
+        try await session.attach(.tapped(coordinates: [B, C], distanceMeters: 100), using: service)
+        let newStart = A
+        let newEnd = CourseCoordinate(latitude: C.latitude + 0.00027, longitude: C.longitude)
+
+        let threshold = CourseEditSession.connectionThresholdMeters
+        XCTAssertGreaterThan(newStart.distanceMeters(to: B), threshold)
+        XCTAssertGreaterThan(newStart.distanceMeters(to: C), threshold)
+        XCTAssertGreaterThan(newEnd.distanceMeters(to: B), threshold)
+        XCTAssertGreaterThan(newEnd.distanceMeters(to: C), threshold)
+        let startMin = min(newStart.distanceMeters(to: B), newStart.distanceMeters(to: C))
+        let endMin = min(newEnd.distanceMeters(to: B), newEnd.distanceMeters(to: C))
+        XCTAssertLessThan(endMin, startMin, "endMin < startMin이어야 anchor가 newEnd로 뽑힘")
+
+        try await session.attach(.drawn(coordinates: [newStart, newEnd], distanceMeters: 500), using: service)
+
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.last, newStart, "먼 지점(newStart)이 새 도착점이어야 함")
+        XCTAssertEqual(session.course?.coordinates, [B, C, newEnd, newStart], "전체 배열로 append 순서 확인")
+        XCTAssertEqual(service.routeCallCount, 1, "gap 라우팅 1회")
+        XCTAssertEqual(service.routeCalls.first?.from, C)
+        XCTAssertEqual(service.routeCalls.first?.to, newEnd)
+    }
+
+    /// 경계 크로스오버 변형 A: 기존 코스 A→C와 반대 방향으로 그은 스트로크. newEnd가 A에서
+    /// ~29m로 newStart(C에서 ~30m)보다 근소하게 더 가까워 anchor가 newEnd(A측)로 뽑히고,
+    /// 진짜 더 가까운 핀(A)에 붙어야 한다 — 코드 순서가 아니라 상대 거리가 결정함을 증명.
+    func testAttach_farCase_crissCrossPair_startSideCloser_attachesToTrueCloserPin() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: A→C
+        try await session.attach(.tapped(coordinates: [A, C], distanceMeters: 100), using: service)
+        let newStart = CourseCoordinate(latitude: C.latitude + 0.00027, longitude: C.longitude)
+        let newEndA = CourseCoordinate(latitude: A.latitude - 0.0002613, longitude: A.longitude)
+
+        let threshold = CourseEditSession.connectionThresholdMeters
+        XCTAssertGreaterThan(newStart.distanceMeters(to: A), threshold)
+        XCTAssertGreaterThan(newStart.distanceMeters(to: C), threshold)
+        XCTAssertGreaterThan(newEndA.distanceMeters(to: A), threshold)
+        XCTAssertGreaterThan(newEndA.distanceMeters(to: C), threshold)
+        // newEnd(A측 ~29m)가 newStart(C측 ~30m)보다 근소하게 더 가까움 → anchor = newEnd, A측
+        XCTAssertLessThan(newEndA.distanceMeters(to: A), newStart.distanceMeters(to: C))
+
+        try await session.attach(.drawn(coordinates: [newStart, newEndA], distanceMeters: 500), using: service)
+
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.first, newStart, "이중 반전으로 newStart가 그대로 새 출발점")
+        XCTAssertEqual(service.routeCallCount, 1)
+        XCTAssertEqual(service.routeCalls.first?.from, newEndA, "A측(진짜 더 가까운 핀)으로 gap 연결")
+        XCTAssertEqual(service.routeCalls.first?.to, A)
+    }
+
+    /// 경계 크로스오버 변형 B: 위와 같은 newStart(C에서 ~30m)에, newEnd만 A에서 ~31m로 ~2m
+    /// 멀어지면 anchor가 newStart(C측)로 뒤집혀 진짜 더 가까운 핀(C)에 붙어야 한다 — 변형
+    /// A와 정반대 결과가 나오는 것으로 결과가 코드 순서가 아니라 실제 상대 거리를 따름을 증명.
+    func testAttach_farCase_crissCrossPair_endSideCloser_attachesToTrueCloserPin() async throws {
+        let session = CourseEditSession()
+        let service = StubCourseService()
+        // Seed: A→C
+        try await session.attach(.tapped(coordinates: [A, C], distanceMeters: 100), using: service)
+        let newStart = CourseCoordinate(latitude: C.latitude + 0.00027, longitude: C.longitude)
+        let newEndB = CourseCoordinate(latitude: A.latitude - 0.0002793, longitude: A.longitude)
+
+        let threshold = CourseEditSession.connectionThresholdMeters
+        XCTAssertGreaterThan(newStart.distanceMeters(to: A), threshold)
+        XCTAssertGreaterThan(newStart.distanceMeters(to: C), threshold)
+        XCTAssertGreaterThan(newEndB.distanceMeters(to: A), threshold)
+        XCTAssertGreaterThan(newEndB.distanceMeters(to: C), threshold)
+        // newStart(C측 ~30m)가 newEnd(A측 ~31m)보다 근소하게 더 가까움 → anchor = newStart, C측
+        XCTAssertLessThan(newStart.distanceMeters(to: C), newEndB.distanceMeters(to: A))
+
+        try await session.attach(.drawn(coordinates: [newStart, newEndB], distanceMeters: 500), using: service)
+
+        XCTAssertEqual(session.segments.count, 2)
+        XCTAssertEqual(session.course?.coordinates.last, newEndB, "반전 없이 그대로 append되어 newEnd가 새 도착점")
+        XCTAssertEqual(service.routeCallCount, 1)
+        XCTAssertEqual(service.routeCalls.first?.from, C, "C측(진짜 더 가까운 핀)에서 gap 연결")
+        XCTAssertEqual(service.routeCalls.first?.to, newStart)
+    }
+
     // MARK: - attach: 규칙 2 — 왕복 스트로크(도착점에서 시작)는 항상 append
 
     func testAttach_roundTripStroke_appendsPreservingRunOrder() async throws {
@@ -468,11 +586,17 @@ final class CourseEditSessionTests: XCTestCase {
 
 // MARK: - Stub
 
+private struct RouteCall: Equatable {
+    let from: CourseCoordinate
+    let to: CourseCoordinate
+}
+
 @MainActor
 private final class StubCourseService: CoursePlanningServiceProtocol {
-    var routeCallCount = 0
+    private(set) var routeCalls: [RouteCall] = []
+    var routeCallCount: Int { routeCalls.count }
     func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
-        routeCallCount += 1
+        routeCalls.append(RouteCall(from: start, to: destination))
         return PlannedCourse(segments: [.tapped(coordinates: [start, destination], distanceMeters: 100)])
     }
 }

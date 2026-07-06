@@ -85,22 +85,24 @@ final class CourseEditSession {
             return
         }
 
-        // 규칙 4(출발점 쪽): 규칙 1~3이 모두 안 걸린 원거리 스트로크는 시작점을 두 끝점과
-        // 최근접 비교해, 출발점 쪽(등거리 포함)이면 규칙 3의 원거리 확장 — 반전 prepend + gap.
-        // 진입 조건상 시작점-출발점 거리 > threshold이므로 gap 라우팅이 항상 필요하다.
-        if !isClosedCourse, !startsNearEnd, !startsNearStart,
-           newStart.distanceMeters(to: existingStart) <= newStart.distanceMeters(to: existingEnd) {
-            let gap = try await service.route(from: newStart, to: existingStart)
-            let reversed = newSegment.reversed()
-            prepend(makeMerged(
-                like: newSegment,
-                coordinates: reversed.coordinates + Array(gap.coordinates.dropFirst()),
-                distance: reversed.distanceMeters + gap.distanceMeters
-            ))
+        // 규칙 4(원거리, 방향 무관 대칭 처리): 열린 코스이고 시작점이 이미 근접 판정에
+        // 걸리지 않은 경우에만 적용된다. 이 게이트 안에서는 스트로크의 양끝이 두 기존 핀
+        // 모두에서 threshold보다 멀다는 것이 보장된다(근접 판정이 위에서 전부 가로챔).
+        // 따라서 "어느 끝이 어느 핀에 더 가까운가"를 양끝 전체에서 비교해도, MVP9가 걱정한
+        // 왕복 모호성(양끝이 동시에 핀 근처에 있는 경우)은 애초에 이 지점에 도달할 수 없다.
+        // 닫힌 코스(규칙 1: 무조건 append)는 이 게이트 밖이므로 영향받지 않는다.
+        if !isClosedCourse, !startsNearEnd, !startsNearStart {
+            try await attachFarCase(
+                newSegment,
+                newStart: newStart,
+                newEnd: newEnd,
+                existingBounds: (existingStart, existingEnd),
+                using: service
+            )
             return
         }
 
-        // 규칙 1·2·4(도착점 쪽): 그린 그대로 도착점 뒤에 append (필요 시 gap 라우팅)
+        // 규칙 1·2(닫힌 코스 / 시작점이 도착점 근접): 그린 그대로 도착점 뒤에 append (필요 시 gap 라우팅)
         var combinedCoords = newSegment.coordinates
         var combinedDistance = newSegment.distanceMeters
         if needsGap(from: existingEnd, to: newStart) {
@@ -148,6 +150,53 @@ final class CourseEditSession {
 
     private func needsGap(from: CourseCoordinate, to: CourseCoordinate) -> Bool {
         from.distanceMeters(to: to) > Self.connectionThresholdMeters
+    }
+
+    // 스트로크 양끝 중 threshold 밖에서 더 가까운 쪽을 anchor로 골라, 그 anchor를 기존 두
+    // 끝점과 최근접 비교해 반전 prepend+gap 또는 그대로 append(+gap 필요 시)를 결정한다.
+    // 호출 전제(호출부 규칙 4 주석 참고): 열린 코스이고 스트로크 양끝 모두 threshold 밖.
+    private func attachFarCase(
+        _ newSegment: CourseSegment,
+        newStart: CourseCoordinate,
+        newEnd: CourseCoordinate,
+        existingBounds: (start: CourseCoordinate, end: CourseCoordinate),
+        using service: CoursePlanningServiceProtocol
+    ) async throws {
+        let existingStart = existingBounds.start
+        let existingEnd = existingBounds.end
+        let startMin = min(
+            newStart.distanceMeters(to: existingStart),
+            newStart.distanceMeters(to: existingEnd)
+        )
+        let endMin = min(
+            newEnd.distanceMeters(to: existingStart),
+            newEnd.distanceMeters(to: existingEnd)
+        )
+        let anchorIsEnd = endMin < startMin
+        let anchor = anchorIsEnd ? newEnd : newStart
+        let effectiveSegment = anchorIsEnd ? newSegment.reversed() : newSegment
+
+        // 출발점 쪽(등거리 포함): anchor는 항상 threshold 밖이므로 gap 라우팅이 항상 필요하다.
+        if anchor.distanceMeters(to: existingStart) <= anchor.distanceMeters(to: existingEnd) {
+            let gap = try await service.route(from: anchor, to: existingStart)
+            let reversed = effectiveSegment.reversed()
+            prepend(makeMerged(
+                like: newSegment,
+                coordinates: reversed.coordinates + Array(gap.coordinates.dropFirst()),
+                distance: reversed.distanceMeters + gap.distanceMeters
+            ))
+            return
+        }
+
+        // 도착점 쪽: anchor 기준 그대로 append (필요 시 gap 라우팅)
+        var combinedCoords = effectiveSegment.coordinates
+        var combinedDistance = effectiveSegment.distanceMeters
+        if needsGap(from: existingEnd, to: anchor) {
+            let gap = try await service.route(from: existingEnd, to: anchor)
+            combinedCoords = gap.coordinates + Array(effectiveSegment.coordinates.dropFirst())
+            combinedDistance += gap.distanceMeters
+        }
+        append(makeMerged(like: newSegment, coordinates: combinedCoords, distance: combinedDistance))
     }
 
     private func makeMerged(
