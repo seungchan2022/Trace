@@ -188,7 +188,9 @@ final class CourseEditSession {
             return
         }
 
-        // 도착점 쪽: anchor 기준 그대로 append (필요 시 gap 라우팅)
+        // 도착점 쪽: anchor 기준 그대로 append (이 게이트 안에서는 anchor가 항상 threshold
+        // 밖이므로 아래 needsGap은 사실상 항상 참이다 — 구조를 default append 분기와
+        // 맞추기 위해 그대로 둔다)
         var combinedCoords = effectiveSegment.coordinates
         var combinedDistance = effectiveSegment.distanceMeters
         if needsGap(from: existingEnd, to: anchor) {
