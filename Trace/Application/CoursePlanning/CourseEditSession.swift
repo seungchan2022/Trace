@@ -30,6 +30,11 @@ final class CourseEditSession {
     var canRedo: Bool { !redoStack.isEmpty }
 
     static let connectionThresholdMeters: Double = 20
+    static let maxTotalCoordinates = 20_000
+
+    private var totalCoordinateCount: Int {
+        entries.reduce(0) { $0 + $1.segment.coordinates.count }
+    }
 
     // 이어붙이기 순서 규칙 (spec 규칙 1~4): 반전은 "출발점 쪽 시작 = 출발 방향 연장" 하나뿐.
     // 규칙 4는 시작점 "단일 점"만 두 끝점과 최근접 비교한다(탭 nearestEndpoint와 동일한 <=) —
@@ -122,7 +127,12 @@ final class CourseEditSession {
 
     func redo() {
         guard let entry = redoStack.popLast() else { return }
-        if entry.placedAtFront {
+        // 왕복 엔트리는 anchor 바로 뒤로 복원 — anchor는 LIFO 순서상 항상 먼저 복원돼 있다 (스펙 §4).
+        // anchor 미발견 시 placedAtFront/append 폴백 (스펙 증명상 도달 불가, 방어적).
+        if let anchorID = entry.anchorID,
+           let anchorIndex = entries.firstIndex(where: { $0.id == anchorID }) {
+            entries.insert(entry, at: anchorIndex + 1)
+        } else if entry.placedAtFront {
             entries.insert(entry, at: 0)
         } else {
             entries.append(entry)
@@ -133,6 +143,34 @@ final class CourseEditSession {
         entries = []
         redoStack = []
         nextOrder = 0
+    }
+
+    // MARK: - Round Trip (MVP11 스펙 §4)
+
+    // 대상 구간(A→B) 바로 뒤에 역+정 병합 왕복(B→A→B, 거리 2×)을 한 엔트리로 삽입한다.
+    // 한 덩어리인 이유: 두 엔트리로 나누면 undo 한 번 시점에 역방향만 남아 코스가 끊긴다.
+    func canInsertRoundTrip(afterOrder order: Int) -> Bool {
+        guard let entry = entries.first(where: { $0.order == order }) else { return false }
+        let n = entry.segment.coordinates.count
+        guard n >= 2 else { return false }
+        return totalCoordinateCount + (2 * n - 1) <= Self.maxTotalCoordinates
+    }
+
+    func insertRoundTrip(afterOrder order: Int) {
+        guard canInsertRoundTrip(afterOrder: order),
+              let index = entries.firstIndex(where: { $0.order == order }) else { return }
+        let target = entries[index]
+        let coords = target.segment.coordinates
+        let roundTrip = CourseSegment.roundTrip(
+            coordinates: Array(coords.reversed()) + Array(coords.dropFirst()),
+            distanceMeters: target.segment.distanceMeters * 2
+        )
+        entries.insert(
+            Entry(id: UUID(), order: nextOrder, placedAtFront: false, anchorID: target.id, segment: roundTrip),
+            at: index + 1
+        )
+        nextOrder += 1
+        redoStack = []
     }
 
     // MARK: - Snapshot (초안 저장·복원, MVP11 스펙 §3)
