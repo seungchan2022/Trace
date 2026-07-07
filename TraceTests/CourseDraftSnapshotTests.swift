@@ -61,9 +61,8 @@ final class CourseDraftSnapshotTests: XCTestCase {
         session.undo()
         XCTAssertTrue(session.canRedo)
         let draft = session.snapshot()
-        let restored = CourseEditSession()
-        restored.restore(from: draft)
-        XCTAssertFalse(restored.canRedo) // 스냅샷에 redo가 없으므로 복원 후 비활성 (스펙 §1 제외 사항)
+        session.restore(from: draft)
+        XCTAssertFalse(session.canRedo) // 스냅샷에 redo가 없으므로 복원 후 비활성 (스펙 §1 제외 사항)
     }
 
     func testLoadSegments_reassignsSequentialOrders() {
