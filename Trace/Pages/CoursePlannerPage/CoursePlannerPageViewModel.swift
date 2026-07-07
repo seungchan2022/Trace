@@ -336,6 +336,19 @@ final class CoursePlannerPageViewModel {
         selectedSegmentIndex = index
     }
 
+    // MARK: - Round Trip (MVP11 스펙 §4) — colorKey = 세션 order
+
+    func canInsertRoundTrip(afterColorKey key: Int) -> Bool {
+        session.canInsertRoundTrip(afterOrder: key)
+    }
+
+    func insertRoundTrip(afterColorKey key: Int) {
+        infoMessage = nil
+        session.insertRoundTrip(afterOrder: key)
+        selectedSegmentIndex = nil
+        persistDraft()
+    }
+
     // MARK: - Draft Persistence (MVP11 스펙 §3)
 
     // 앱 시작 시 1회: 초안이 있으면 세션 복원 — "껐다 켜면 마지막 모습 그대로"

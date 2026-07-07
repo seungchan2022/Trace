@@ -230,6 +230,31 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         let remaining = await repo.savedCourses
         XCTAssertTrue(remaining.isEmpty)
     }
+
+    func testInsertRoundTrip_viaViewModel_updatesCourseAndPersists() async {
+        let repo = MockCourseRepository()
+        await repo.setStubbedDraft(draftWithOneSegment())
+        let vm = makeViewModel(repo: repo)
+        await vm.bootstrapDraft()
+
+        XCTAssertTrue(vm.canInsertRoundTrip(afterColorKey: 0))
+        vm.insertRoundTrip(afterColorKey: 0)
+
+        XCTAssertEqual(vm.course?.segments.count, 2)
+        XCTAssertEqual(vm.course?.segments.last?.isRoundTrip, true)
+        XCTAssertEqual(vm.course?.distanceMeters, 3000) // 1000 + 2000
+        XCTAssertNil(vm.selectedSegmentIndex)
+
+        await vm.flushDraftSaves()
+        let drafts = await repo.savedDrafts
+        XCTAssertEqual(drafts.last?.entries.count, 2) // 왕복 삽입도 초안 저장 트리거 (스펙 §3)
+    }
+
+    func testCanInsertRoundTrip_unknownKey_false() async {
+        let repo = MockCourseRepository()
+        let vm = makeViewModel(repo: repo)
+        XCTAssertFalse(vm.canInsertRoundTrip(afterColorKey: 0)) // 빈 코스
+    }
 }
 
 private final class StubPlannerService: CoursePlanningServiceProtocol {

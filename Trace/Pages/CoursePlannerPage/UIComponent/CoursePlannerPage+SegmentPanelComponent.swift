@@ -102,28 +102,48 @@ extension CoursePlannerPage {
     }
 
     private func segmentRow(_ row: PanelRow) -> some View {
-        Button {
-            viewModel.selectSegment(at: row.index)
-        } label: {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(Color(uiColor: SegmentPalette.color(at: row.colorKey)))
-                    .frame(width: 10, height: 10)
-                Text("\(row.index + 1)")
-                    .font(.caption.weight(.semibold))
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "%.0fm", row.segment.distanceMeters))
-                        .font(.caption)
-                    Text(String(format: "누적 %.2fkm", cumulativeDistanceMeters(upTo: row.index) / 1000))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+        HStack(spacing: 8) {
+            Button {
+                viewModel.selectSegment(at: row.index)
+            } label: {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(Color(uiColor: SegmentPalette.color(at: row.colorKey)))
+                        .frame(width: 10, height: 10)
+                    Text("\(row.index + 1)")
+                        .font(.caption.weight(.semibold))
+                    if row.segment.isRoundTrip {
+                        // 왕복 구간 표식 — 저장·불러오기를 통과해도 유지된다 (스펙 §4)
+                        Image(systemName: "arrow.left.arrow.right")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel("왕복 구간")
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(String(format: "%.0fm", row.segment.distanceMeters))
+                            .font(.caption)
+                        Text(String(format: "누적 %.2fkm", cumulativeDistanceMeters(upTo: row.index) / 1000))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("coursePlanner.segmentPanel.item.\(row.index)")
+
+            // 왕복 추가: 이 구간 뒤에 "갔다 되돌아오기" 삽입 (스펙 §4)
+            Button {
+                viewModel.insertRoundTrip(afterColorKey: row.colorKey)
+            } label: {
+                Image(systemName: "arrow.uturn.down.circle")
+                    .font(.callout)
+            }
+            .buttonStyle(.plain)
+            .disabled(!viewModel.canInsertRoundTrip(afterColorKey: row.colorKey))
+            .accessibilityIdentifier("coursePlanner.segmentPanel.roundTrip.\(row.index)")
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("coursePlanner.segmentPanel.item.\(row.index)")
     }
 
     // 새 구간 추가 시: 직전 최신 구간 근처를 보고 있을 때만 최신으로 스크롤 (채팅 앱 방식)
