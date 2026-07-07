@@ -11,6 +11,16 @@
 
 ## 진행 중 / 예정
 
+### MVP11 — 코스 저장 + 구간 왕복   (상태: 진행 중)
+
+> 실사용 pain 두 개를 해결한다: 앱을 껐다 켜도 작업 중 코스가 그대로 남고(자동 복원),
+> 완성한 코스는 이름을 붙여 저장·불러오기 할 수 있으며(SwiftData, 미래 "코스 골라서 달리기"의
+> 기반), 구간 패널에서 임의 구간을 "왕복 추가"(좌표 복제 — 라우팅 오차 없는 되돌아오기)할 수 있다.
+> 사이클 1개(경량 + persistence 설계 리뷰 1회) · 스펙: [`2026-07-07-course-save-roundtrip-design`](superpowers/specs/2026-07-07-course-save-roundtrip-design.md)
+
+- [ ] **course-save** — 초안 자동 저장·복원(세션 스냅샷, redo 제외) + 이름 저장/목록 sheet/불러오기/삭제, `CourseRepositoryProtocol` + SwiftData 어댑터
+- [ ] **roundtrip-insert** — 구간 패널 왕복 버튼: 대상 구간 뒤에 역+정 한 덩어리 왕복 세그먼트 삽입(undo 1회 취소, anchor 기반 redo 복원)
+
 ### MVP10 — 제스처 정합성 (탭 보류 확정·픽셀 판정·2손가락 튜닝·attach 방향 판정 재설계)   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp10/`](history/mvp10/))
 
 > 탭/그리기 제스처가 iOS 관례대로 섞이지 않게 한다: 탭 즉시 확정을 "0.3초 보류 → 확정/취소"로
