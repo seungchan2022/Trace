@@ -10,6 +10,7 @@ final class CourseEditSession {
         let id: UUID
         let order: Int
         let placedAtFront: Bool
+        let anchorID: UUID?   // 왕복 엔트리의 redo 재삽입 기준(대상 구간 id). 일반 엔트리는 nil.
         let segment: CourseSegment
     }
 
@@ -134,16 +135,52 @@ final class CourseEditSession {
         nextOrder = 0
     }
 
+    // MARK: - Snapshot (초안 저장·복원, MVP11 스펙 §3)
+
+    // 복원은 엔트리 id를 보존해야 한다 — append/prepend 재사용 시 id가 재발급되어
+    // 왕복 anchor 참조가 끊긴다 (스펙 §3·§4).
+    func snapshot() -> CourseDraft {
+        CourseDraft(
+            entries: entries.map {
+                CourseDraft.Entry(
+                    id: $0.id, order: $0.order, placedAtFront: $0.placedAtFront,
+                    anchorID: $0.anchorID, segment: $0.segment
+                )
+            },
+            nextOrder: nextOrder
+        )
+    }
+
+    func restore(from draft: CourseDraft) {
+        entries = draft.entries.map {
+            Entry(
+                id: $0.id, order: $0.order, placedAtFront: $0.placedAtFront,
+                anchorID: $0.anchorID, segment: $0.segment
+            )
+        }
+        nextOrder = draft.nextOrder
+        redoStack = []
+    }
+
+    // 저장 코스 불러오기: 공간순 세그먼트에 시간순을 0부터 재부여 (undo = 공간순 마지막부터 제거)
+    func load(segments: [CourseSegment]) {
+        entries = segments.enumerated().map { index, segment in
+            Entry(id: UUID(), order: index, placedAtFront: false, anchorID: nil, segment: segment)
+        }
+        nextOrder = segments.count
+        redoStack = []
+    }
+
     // MARK: - Private
 
     private func append(_ segment: CourseSegment) {
-        entries.append(Entry(id: UUID(), order: nextOrder, placedAtFront: false, segment: segment))
+        entries.append(Entry(id: UUID(), order: nextOrder, placedAtFront: false, anchorID: nil, segment: segment))
         nextOrder += 1
         redoStack = []
     }
 
     private func prepend(_ segment: CourseSegment) {
-        entries.insert(Entry(id: UUID(), order: nextOrder, placedAtFront: true, segment: segment), at: 0)
+        entries.insert(Entry(id: UUID(), order: nextOrder, placedAtFront: true, anchorID: nil, segment: segment), at: 0)
         nextOrder += 1
         redoStack = []
     }
