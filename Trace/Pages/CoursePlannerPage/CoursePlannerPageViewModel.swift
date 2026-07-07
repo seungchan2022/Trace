@@ -372,4 +372,88 @@ final class CoursePlannerPageViewModel {
         didNotifyDraftSaveFailure = true
         errorMessage = "코스 자동 저장이 계속 실패하고 있습니다. 저장 공간을 확인해주세요."
     }
+
+    // MARK: - Saved Courses (MVP11 스펙 §3)
+
+    private(set) var savedCourses: [SavedCourse] = []
+    var isCourseListPresented = false
+    var isSavePromptPresented = false
+    var courseNameInput = ""
+    private(set) var pendingLoadCourse: SavedCourse?
+
+    var canSaveCourse: Bool { course != nil }
+
+    // 스냅샷 의미론: 저장 시점의 세그먼트를 복사 — 이후 편집과 무관 (스펙 §2)
+    func saveCurrentCourse() async {
+        let name = courseNameInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, let course = session.course else { return }
+        let saved = SavedCourse(id: UUID(), name: name, createdAt: Date(), segments: course.segments)
+        do {
+            try await courseRepository.saveCourse(saved)
+            infoMessage = "'\(name)' 저장됨"
+            courseNameInput = ""
+        } catch {
+            errorMessage = "코스 저장에 실패했습니다."
+        }
+    }
+
+    func presentCourseList() async {
+        savedCourses = await courseRepository.fetchCourses()
+        isCourseListPresented = true
+    }
+
+    // 작업 중 코스가 있으면 교체 확인을 거친다 (스펙 §3)
+    func requestLoad(_ saved: SavedCourse) async {
+        if course == nil {
+            applyLoadedCourse(saved)
+        } else {
+            pendingLoadCourse = saved
+        }
+    }
+
+    func confirmPendingLoad() async {
+        guard let saved = pendingLoadCourse else { return }
+        pendingLoadCourse = nil
+        applyLoadedCourse(saved)
+    }
+
+    func cancelPendingLoad() {
+        pendingLoadCourse = nil
+    }
+
+    // 스와이프 삭제는 확인 알럿을 거친다 (스펙 §3)
+    private(set) var pendingDeleteCourse: SavedCourse?
+
+    func requestDelete(_ saved: SavedCourse) {
+        pendingDeleteCourse = saved
+    }
+
+    func confirmPendingDelete() async {
+        guard let saved = pendingDeleteCourse else { return }
+        pendingDeleteCourse = nil
+        await deleteSavedCourse(saved)
+    }
+
+    func cancelPendingDelete() {
+        pendingDeleteCourse = nil
+    }
+
+    func deleteSavedCourse(_ saved: SavedCourse) async {
+        do {
+            try await courseRepository.deleteCourse(id: saved.id)
+            savedCourses.removeAll { $0.id == saved.id }
+        } catch {
+            errorMessage = "코스 삭제에 실패했습니다."
+        }
+    }
+
+    private func applyLoadedCourse(_ saved: SavedCourse) {
+        session.load(segments: saved.segments)
+        pendingTapStart = nil
+        selectedSegmentIndex = nil
+        errorMessage = nil
+        infoMessage = nil
+        isCourseListPresented = false
+        persistDraft()
+    }
 }

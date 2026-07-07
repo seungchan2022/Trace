@@ -85,6 +85,28 @@ struct CoursePlannerPage: View {
                 }
                 Button("닫기", role: .cancel) {}
             }
+            .sheet(isPresented: $viewModel.isCourseListPresented) {
+                courseListSheet
+            }
+            .alert("코스 이름", isPresented: $viewModel.isSavePromptPresented) {
+                TextField("예: 한강 5km", text: $viewModel.courseNameInput)
+                Button("저장") { Task { await viewModel.saveCurrentCourse() } }
+                Button("취소", role: .cancel) { viewModel.courseNameInput = "" }
+            } message: {
+                Text("현재 코스를 저장합니다")
+            }
+            .alert(
+                "지금 만들던 코스를 대체할까요?",
+                isPresented: Binding(
+                    get: { viewModel.pendingLoadCourse != nil },
+                    set: { if !$0 { viewModel.cancelPendingLoad() } }
+                )
+            ) {
+                Button("대체", role: .destructive) { Task { await viewModel.confirmPendingLoad() } }
+                Button("취소", role: .cancel) { viewModel.cancelPendingLoad() }
+            } message: {
+                Text("작업 중인 코스는 사라집니다")
+            }
     }
 
     private var mapView: some View {

@@ -24,6 +24,21 @@ extension CoursePlannerPage {
             Button("초기화") { viewModel.clear() }
                 .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
                 .accessibilityIdentifier("coursePlanner.clear")
+
+            Button {
+                viewModel.isSavePromptPresented = true
+            } label: {
+                Image(systemName: "square.and.arrow.down")
+            }
+            .disabled(!viewModel.canSaveCourse)
+            .accessibilityIdentifier("coursePlanner.saveCourse")
+
+            Button {
+                Task { await viewModel.presentCourseList() }
+            } label: {
+                Image(systemName: "list.bullet")
+            }
+            .accessibilityIdentifier("coursePlanner.courseList")
         }
         .buttonStyle(.borderedProminent)
         .padding()

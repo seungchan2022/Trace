@@ -130,6 +130,106 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         await vm.flushDraftSaves()
         XCTAssertEqual(vm.errorMessage, message)
     }
+
+    func testSaveCurrentCourse_savesSnapshotWithTrimmedName() async {
+        let repo = MockCourseRepository()
+        await repo.setStubbedDraft(draftWithOneSegment())
+        let vm = makeViewModel(repo: repo)
+        await vm.bootstrapDraft()
+
+        vm.courseNameInput = "  한강 5km  "
+        await vm.saveCurrentCourse()
+
+        let saved = await repo.savedCourses
+        XCTAssertEqual(saved.count, 1)
+        XCTAssertEqual(saved.first?.name, "한강 5km")
+        XCTAssertEqual(saved.first?.segments, vm.course?.segments)
+    }
+
+    func testSaveCurrentCourse_emptyNameOrCourse_doesNothing() async {
+        let repo = MockCourseRepository()
+        let vm = makeViewModel(repo: repo)
+        vm.courseNameInput = "이름"
+        await vm.saveCurrentCourse() // 코스 없음
+        vm.courseNameInput = "   "
+        await vm.saveCurrentCourse() // 이름 없음(코스도 없지만 이름 가드 선행)
+        let saved = await repo.savedCourses
+        XCTAssertTrue(saved.isEmpty)
+    }
+
+    func testPresentCourseList_loadsCoursesNewestFirst() async {
+        let repo = MockCourseRepository()
+        let vm = makeViewModel(repo: repo)
+        let older = SavedCourse(
+            id: UUID(), name: "A", createdAt: Date(timeIntervalSince1970: 1000),
+            segments: [.tapped(coordinates: [coord(37.50, 127.00), coord(37.51, 127.00)], distanceMeters: 1000)]
+        )
+        let newer = SavedCourse(
+            id: UUID(), name: "B", createdAt: Date(timeIntervalSince1970: 2000), segments: older.segments
+        )
+        try? await repo.saveCourse(older)
+        try? await repo.saveCourse(newer)
+
+        await vm.presentCourseList()
+
+        XCTAssertTrue(vm.isCourseListPresented)
+        XCTAssertEqual(vm.savedCourses.map(\.name), ["B", "A"])
+    }
+
+    func testRequestLoad_emptySession_loadsImmediately() async {
+        let repo = MockCourseRepository()
+        let vm = makeViewModel(repo: repo)
+        let saved = SavedCourse(
+            id: UUID(), name: "A", createdAt: Date(),
+            segments: [.tapped(coordinates: [coord(37.50, 127.00), coord(37.51, 127.00)], distanceMeters: 1000)]
+        )
+        await vm.requestLoad(saved)
+        XCTAssertEqual(vm.course?.segments, saved.segments)
+        XCTAssertNil(vm.pendingLoadCourse)
+        await vm.flushDraftSaves()
+        let drafts = await repo.savedDrafts
+        XCTAssertEqual(drafts.last?.entries.count, 1) // 불러오기도 초안으로 저장됨 (스펙 §3 트리거)
+    }
+
+    func testRequestLoad_nonEmptySession_asksConfirmationThenReplaces() async {
+        let repo = MockCourseRepository()
+        await repo.setStubbedDraft(draftWithOneSegment())
+        let vm = makeViewModel(repo: repo)
+        await vm.bootstrapDraft()
+        let saved = SavedCourse(
+            id: UUID(), name: "A", createdAt: Date(),
+            segments: [
+                .drawn(coordinates: [coord(37.55, 126.99), coord(37.56, 126.99)], distanceMeters: 3000)
+            ]
+        )
+
+        await vm.requestLoad(saved)
+        XCTAssertEqual(vm.pendingLoadCourse, saved) // 즉시 교체 아님 — 확인 대기
+        XCTAssertNotEqual(vm.course?.segments, saved.segments)
+
+        await vm.confirmPendingLoad()
+        XCTAssertEqual(vm.course?.segments, saved.segments)
+        XCTAssertNil(vm.pendingLoadCourse)
+        XCTAssertFalse(vm.isCourseListPresented) // 불러오면 시트 닫힘
+    }
+
+    func testDeleteSavedCourse_removesFromRepositoryAndList() async {
+        let repo = MockCourseRepository()
+        let vm = makeViewModel(repo: repo)
+        let saved = SavedCourse(
+            id: UUID(), name: "A", createdAt: Date(),
+            segments: [.tapped(coordinates: [coord(37.50, 127.00), coord(37.51, 127.00)], distanceMeters: 1000)]
+        )
+        try? await repo.saveCourse(saved)
+        await vm.presentCourseList()
+        XCTAssertEqual(vm.savedCourses.count, 1)
+
+        await vm.deleteSavedCourse(saved)
+
+        XCTAssertTrue(vm.savedCourses.isEmpty)
+        let remaining = await repo.savedCourses
+        XCTAssertTrue(remaining.isEmpty)
+    }
 }
 
 private final class StubPlannerService: CoursePlanningServiceProtocol {
