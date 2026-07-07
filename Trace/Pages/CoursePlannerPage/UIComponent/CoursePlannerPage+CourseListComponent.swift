@@ -41,7 +41,7 @@ extension CoursePlannerPage {
             "코스를 삭제할까요?",
             isPresented: Binding(
                 get: { viewModel.pendingDeleteCourse != nil },
-                set: { if !$0 { viewModel.cancelPendingDelete() } }
+                set: { _ in }
             )
         ) {
             Button("삭제", role: .destructive) { Task { await viewModel.confirmPendingDelete() } }

@@ -99,7 +99,7 @@ struct CoursePlannerPage: View {
                 "지금 만들던 코스를 대체할까요?",
                 isPresented: Binding(
                     get: { viewModel.pendingLoadCourse != nil },
-                    set: { if !$0 { viewModel.cancelPendingLoad() } }
+                    set: { _ in }
                 )
             ) {
                 Button("대체", role: .destructive) { Task { await viewModel.confirmPendingLoad() } }
