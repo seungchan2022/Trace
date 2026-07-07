@@ -99,6 +99,9 @@ struct CoursePlannerPage: View {
                 "지금 만들던 코스를 대체할까요?",
                 isPresented: Binding(
                     get: { viewModel.pendingLoadCourse != nil },
+                    // 의도된 no-op: SwiftUI가 대체/취소 버튼 탭 모두에서 이 setter를 먼저 호출하므로,
+                    // 여기서 상태를 지우면 confirmPendingLoad()의 Task가 읽기 전에 값이 사라지는
+                    // 경쟁 상태가 재발한다. 상태 정리는 버튼 액션(confirmPendingLoad/cancelPendingLoad)에서만.
                     set: { _ in }
                 )
             ) {

@@ -41,6 +41,9 @@ extension CoursePlannerPage {
             "코스를 삭제할까요?",
             isPresented: Binding(
                 get: { viewModel.pendingDeleteCourse != nil },
+                // 의도된 no-op: 삭제/취소 버튼 탭 모두에서 SwiftUI가 이 setter를 먼저 호출하므로,
+                // 여기서 상태를 지우면 confirmPendingDelete()의 Task가 읽기 전에 값이 사라지는
+                // 경쟁 상태가 재발한다. 상태 정리는 버튼 액션(confirmPendingDelete/cancelPendingDelete)에서만.
                 set: { _ in }
             )
         ) {
