@@ -209,6 +209,7 @@ final class CourseEditSession {
         switch original {
         case .tapped: return .tapped(coordinates: coordinates, distanceMeters: distance)
         case .drawn:  return .drawn(coordinates: coordinates, distanceMeters: distance)
+        case .roundTrip: return .roundTrip(coordinates: coordinates, distanceMeters: distance)
         }
     }
 }
