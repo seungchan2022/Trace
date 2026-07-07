@@ -23,13 +23,15 @@ struct CoursePlannerPage: View {
     init(
         coursePlanningService: CoursePlanningServiceProtocol,
         locationService: LocationServiceProtocol,
-        cameraStateStore: CameraStateStore = CameraStateStore()
+        cameraStateStore: CameraStateStore = CameraStateStore(),
+        courseRepository: CourseRepositoryProtocol
     ) {
         self.cameraStateStore = cameraStateStore
         _viewModel = State(initialValue: CoursePlannerPageViewModel(
             coursePlanningService: coursePlanningService,
             locationService: locationService,
-            cameraStateStore: cameraStateStore
+            cameraStateStore: cameraStateStore,
+            courseRepository: courseRepository
         ))
     }
 
@@ -43,6 +45,7 @@ struct CoursePlannerPage: View {
                 statusPanel
             }
             .task {
+                await viewModel.bootstrapDraft()
                 if let bounds = cameraStateStore.restore() {
                     cameraRegion = MKCoordinateRegion(
                         center: CLLocationCoordinate2D(latitude: bounds.latitude, longitude: bounds.longitude),
@@ -71,6 +74,7 @@ struct CoursePlannerPage: View {
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .background {
                     saveCameraPosition()
+                    viewModel.persistDraft()
                 }
             }
             .alert("위치 권한이 필요합니다", isPresented: $viewModel.showLocationDeniedAlert) {
@@ -267,7 +271,8 @@ struct CoursePlannerPage: View {
     CoursePlannerPage(
         coursePlanningService: container.coursePlanningService,
         locationService: container.locationService,
-        cameraStateStore: container.cameraStateStore
+        cameraStateStore: container.cameraStateStore,
+        courseRepository: container.courseRepository
     )
 }
 

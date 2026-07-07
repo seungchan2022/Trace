@@ -9,9 +9,11 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
+        let container = DependencyContainer.live()
         CoursePlannerPage(
-            coursePlanningService: DependencyContainer.live().coursePlanningService,
-            locationService: DependencyContainer.live().locationService
+            coursePlanningService: container.coursePlanningService,
+            locationService: container.locationService,
+            courseRepository: container.courseRepository
         )
     }
 }

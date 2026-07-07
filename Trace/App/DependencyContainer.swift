@@ -4,13 +4,15 @@ struct DependencyContainer {
     let coursePlanningService: CoursePlanningServiceProtocol
     let locationService: LocationServiceProtocol
     let cameraStateStore: CameraStateStore
+    let courseRepository: CourseRepositoryProtocol
 
     @MainActor
     static func live() -> DependencyContainer {
         DependencyContainer(
             coursePlanningService: MapKitCoursePlanningService(),
             locationService: CoreLocationService(),
-            cameraStateStore: CameraStateStore()
+            cameraStateStore: CameraStateStore(),
+            courseRepository: SwiftDataCourseRepository()
         )
     }
 
@@ -20,7 +22,9 @@ struct DependencyContainer {
         return DependencyContainer(
             coursePlanningService: UITestingCoursePlanningService(),
             locationService: UITestingLocationService(),
-            cameraStateStore: CameraStateStore(defaults: uiTestingDefaults)
+            cameraStateStore: CameraStateStore(defaults: uiTestingDefaults),
+            // in-memory: UI 테스트는 런치마다 빈 상태에서 시작 (기존 UI 테스트 전제 보존)
+            courseRepository: SwiftDataCourseRepository(inMemory: true)
         )
     }
 }

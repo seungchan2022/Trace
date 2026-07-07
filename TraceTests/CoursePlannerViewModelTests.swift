@@ -11,7 +11,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         return CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
             locationService: locationService,
-            cameraStateStore: CameraStateStore(defaults: defaults)
+            cameraStateStore: CameraStateStore(defaults: defaults),
+            courseRepository: MockCourseRepository()
         )
     }
 
@@ -78,7 +79,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
             locationService: StubLocationService(),
-            cameraStateStore: store
+            cameraStateStore: store,
+            courseRepository: MockCourseRepository()
         )
         await sut.bootstrapLocation()
         XCTAssertNil(sut.initialCameraCoordinate)
@@ -91,7 +93,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
             locationService: StubLocationService(),
-            cameraStateStore: store
+            cameraStateStore: store,
+            courseRepository: MockCourseRepository()
         )
         await sut.bootstrapLocation()
         XCTAssertNotNil(sut.initialCameraCoordinate)
@@ -210,7 +213,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         service.stubbedError = CoursePlanningError.routeNotFound
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
 
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.5665, longitude: 126.9780))
@@ -230,7 +234,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         )
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
 
         await sut.handleMapTap(at: single)
@@ -244,7 +249,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         let service = StubCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.51, longitude: 127.00))
@@ -265,7 +271,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
     func testAppendStroke_attachesOneSegmentPerStroke() async {
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         await sut.toggleDrawingMode()
 
@@ -288,7 +295,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         let service = StubCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         await sut.toggleDrawingMode()
 
@@ -313,7 +321,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         let service = StubCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         await sut.toggleDrawingMode()
 
@@ -367,7 +376,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
     func testDrawUndo_removesOnlyLastSegment() async {
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         await sut.toggleDrawingMode()
         await sut.appendStroke([
@@ -407,7 +417,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         service.stubbedError = CoursePlanningError.throttled
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         await sut.toggleDrawingMode()
 
@@ -425,7 +436,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         let service = StubCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         await sut.toggleDrawingMode()
 
@@ -468,7 +480,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         service.stubbedError = CoursePlanningError.throttled
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         await sut.toggleDrawingMode()
 
@@ -487,7 +500,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         let service = BlockingCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
 
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
@@ -514,7 +528,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         let service = BlockingCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         await sut.toggleDrawingMode()
 
@@ -707,7 +722,8 @@ final class CoursePlannerViewModelTests: XCTestCase {
         service.stubbedError = CoursePlanningError.routeNotFound
         let failing = CoursePlannerPageViewModel(
             coursePlanningService: service,
-            locationService: StubLocationService()
+            locationService: StubLocationService(),
+            courseRepository: MockCourseRepository()
         )
         failing.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
         await failing.handleMapTap(at: CourseCoordinate(latitude: 37.5, longitude: 127.0))

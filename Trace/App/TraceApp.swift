@@ -24,7 +24,8 @@ struct TraceApp: App {
             CoursePlannerPage(
                 coursePlanningService: container.coursePlanningService,
                 locationService: container.locationService,
-                cameraStateStore: container.cameraStateStore
+                cameraStateStore: container.cameraStateStore,
+                courseRepository: container.courseRepository
             )
         }
     }
