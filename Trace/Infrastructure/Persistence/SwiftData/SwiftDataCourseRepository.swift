@@ -8,16 +8,20 @@ actor SwiftDataCourseRepository: CourseRepositoryProtocol {
         case storeUnavailable
     }
 
-    private let context: ModelContext?
+    private let inMemory: Bool
+    // 컨텍스트는 첫 사용 시 actor 실행기 위에서 생성한다. init은 호출자(main) 스레드에서 실행되므로
+    // 여기서 만들면 "main에서 생성한 컨텍스트를 다른 스레드에서 사용"하는 affinity 위반이 된다
+    // (실기기 콘솔 "Unbinding from the main queue" 경고, 2026-07-08 QA).
+    private lazy var context: ModelContext? = Self.makeContext(inMemory: inMemory)
 
     init(inMemory: Bool = false) {
-        self.context = Self.makeContext(inMemory: inMemory)
+        self.inMemory = inMemory
     }
 
     // 컨테이너 생성 실패 정책 (스펙 §2): ① 정상 생성 → ② 스토어 파일을 백업으로 옮기고 재생성
     // (자산 즉시 삭제 금지) → ③ in-memory 폴백 → ④ nil(모든 연산 no-op/throw).
     // 어떤 경우에도 앱은 뜬다 — 런치 크래시 금지.
-    private static func makeContext(inMemory: Bool) -> ModelContext? {
+    private nonisolated static func makeContext(inMemory: Bool) -> ModelContext? {
         let schema = Schema([CourseRecord.self])
 
         if inMemory {
