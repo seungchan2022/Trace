@@ -48,22 +48,21 @@
 
 ## 다음 세션이 할 일
 
-- [ ] **Task 1: bounds 리사이즈 자체를 막을 수 있는지 로그로 처음부터 재검증한다.**
-  `docs/solutions/workflow-issues/live-only-bug-temp-print-debugging.md` 컨벤션을 따른다 — `MapViewRepresentable.updateUIView`
-  진입 시 `uiView.bounds`를 임시 `print()`로 찍고, 알럿을 띄우기 전/텍스트 입력 중/알럿 닫은 후 세 시점을 실기기에서
-  비교한다. `.ignoresSafeArea(.keyboard, edges: .all)`를 body 최상위(예: `CoursePlannerPage.body` 전체, `mapView`가
-  아니라)에 적용한 뒤 같은 로그로 재검증한다. bounds가 그래도 바뀐다면 SwiftUI의 자동 keyboard-avoidance가 원인이
-  아니라는 뜻이므로 Task 2로 넘어간다.
-- [ ] **Task 2: (Task 1에서 레이아웃 층위로 못 막는 것이 확인되면) 구조적 대안을 사용자와 상의한다.**
-  가설: `.alert(...) { TextField(...) }`는 내부적으로 `UIAlertController`를 띄우는데, 이게 SwiftUI의
-  keyboard-avoidance 경로 밖에서 시스템 레벨로 프레젠팅 뷰의 레이아웃에 영향을 줄 수 있다. 이 경우 저장 이름
-  입력을 시스템 `.alert` 대신 커스텀 `.sheet` + `TextField`로 바꾸는 것도 옵션이다 — 이건 다운스트림 패치가
-  아니라 UI 컴포넌트를 바꾸는 결정이므로, 근거(로그)를 들고 먼저 사용자에게 제안하고 승인받은 뒤 진행한다.
-- [ ] **Task 3: 수정 후 실기기에서 세 가지를 모두 확인한다.**
-  ① 텍스트 입력 중에도 줌 레벨 유지 ② 저장/취소로 알럿 닫을 때 상태 이상 없음(애초에 안 바뀌었으니 "복원"이랄
-  것도 없어야 정상) ③ Xcode 콘솔에 "Modifying state during view update" 경고 없음.
-- [ ] **Task 4: 임시 print 전부 제거 확인.**
-  `git diff --stat`으로 조사용 코드가 하나도 안 남았는지 확인 후 실제 수정 커밋.
+- [x] **Task 1: bounds 리사이즈 자체를 막을 수 있는지 로그로 처음부터 재검증한다.** ✅ 2026-07-08 시뮬레이터(iPhone 17 Pro, iOS 26.5)에서 완료.
+  베이스라인: 알럿 자동 표시 임시 스캐폴딩 + 소프트웨어 키보드로 재현 — 키보드 등장 시 bounds 높이 **576→275**,
+  span 0.006428→0.003069로 반토막 후 `setRegion(animated:)` 복원 애니메이션이 didChangeVisibleRegion 연쇄를 유발
+  (= 줌아웃 증상, 실기기 로그 572↔298 패턴과 동일). **원인은 SwiftUI 자동 keyboard avoidance로 확정.**
+  수정: `.ignoresSafeArea(.keyboard)`를 `CoursePlannerPage.body` 수정자 체인 **가장 바깥**(두 `safeAreaInset`보다
+  바깥)에 적용 → 같은 실험에서 키보드가 떠 있는 동안에도 bounds **(402, 576) 불변**, span 불변, 연쇄 없음.
+  시도 1이 실패했던 이유는 적용 계층 문제로 추정 — 안쪽(`mapView`)에 적용하면 바깥 `safeAreaInset` 레이아웃이
+  이미 줄어들어 효과가 없다.
+- [x] ~~**Task 2: 구조적 대안을 사용자와 상의한다.**~~ 불필요 — Task 1에서 레이아웃 층위 차단이 성공해 해당 없음.
+- [x] **Task 3: 수정 후 실기기에서 세 가지를 모두 확인한다.** ✅ 2026-07-08 실기기 QA 완료(사용자 확인).
+  ① 텍스트 입력 중 줌 레벨 유지 ② 알럿 닫을 때 상태 이상 없음 ③ 콘솔에 "Modifying state during view update"
+  경고 없음 — 콘솔 출력 검토 결과 전부 시스템 노이즈였고, 단 SwiftData ModelContext 스레딩 경고 1건은
+  이 버그와 무관한 별개 기술부채로 `docs/backlog.md`에 기록.
+- [x] **Task 4: 임시 print 전부 제거 확인.** ✅ `git diff --stat` 결과 `CoursePlannerPage.swift` 수정(주석+`.ignoresSafeArea(.keyboard)` 1줄)만 남음.
+  전체 테스트 스위트 178개 통과(iOS 26.5, `-parallel-testing-enabled NO`). 커밋은 사용자 승인 대기.
 
 ## 금지 사항
 
