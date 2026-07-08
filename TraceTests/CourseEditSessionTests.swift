@@ -582,6 +582,19 @@ final class CourseEditSessionTests: XCTestCase {
         session.redo()
         XCTAssertTrue(session.segments.isEmpty)
     }
+
+    func testLoadSegments_reassignsSequentialOrders() {
+        let session = CourseEditSession()
+        let segs: [CourseSegment] = [
+            .tapped(coordinates: [CourseCoordinate(latitude: 37.50, longitude: 127.00), CourseCoordinate(latitude: 37.51, longitude: 127.00)], distanceMeters: 1000),
+            .drawn(coordinates: [CourseCoordinate(latitude: 37.51, longitude: 127.00), CourseCoordinate(latitude: 37.52, longitude: 127.00)], distanceMeters: 1000)
+        ]
+        session.load(segments: segs)
+        XCTAssertEqual(session.segments, segs)
+        XCTAssertEqual(session.segmentColorKeys, [0, 1])
+        session.undo() // 공간순 마지막이 시간순 최신
+        XCTAssertEqual(session.segments.count, 1)
+    }
 }
 
 // MARK: - Stub

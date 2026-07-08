@@ -202,33 +202,6 @@ final class CourseEditSession {
         append(.roundTrip(coordinates: course.coordinates.reversed(), distanceMeters: course.distanceMeters))
     }
 
-    // MARK: - Snapshot (초안 저장·복원, MVP11 스펙 §3)
-
-    // 복원은 엔트리 id를 보존해야 한다 — append/prepend 재사용 시 id가 재발급되어
-    // 왕복 anchor 참조가 끊긴다 (스펙 §3·§4).
-    func snapshot() -> CourseDraft {
-        CourseDraft(
-            entries: entries.map {
-                CourseDraft.Entry(
-                    id: $0.id, order: $0.order, placedAtFront: $0.placedAtFront,
-                    anchorID: $0.anchorID, anchorInsertsBefore: $0.anchorInsertsBefore, segment: $0.segment
-                )
-            },
-            nextOrder: nextOrder
-        )
-    }
-
-    func restore(from draft: CourseDraft) {
-        entries = draft.entries.map {
-            Entry(
-                id: $0.id, order: $0.order, placedAtFront: $0.placedAtFront,
-                anchorID: $0.anchorID, anchorInsertsBefore: $0.anchorInsertsBefore, segment: $0.segment
-            )
-        }
-        nextOrder = draft.nextOrder
-        redoStack = []
-    }
-
     // 저장 코스 불러오기: 공간순 세그먼트에 시간순을 0부터 재부여 (undo = 공간순 마지막부터 제거)
     func load(segments: [CourseSegment]) {
         entries = segments.enumerated().map { index, segment in

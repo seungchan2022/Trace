@@ -154,28 +154,6 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.course?.distanceMeters, 4000)
     }
 
-    func testSnapshotRestore_preservesRoundTripRedoAnchor() async throws {
-        let session = try await makeThreeSegmentSession()
-        session.insertRoundTrip(afterOrder: 2)
-        let restored = CourseEditSession()
-        restored.restore(from: session.snapshot())
-        let after = restored.segments
-        restored.undo()
-        restored.redo()
-        XCTAssertEqual(restored.segments, after)
-    }
-
-    func testSnapshotRestore_preservesFrontAnchorPlacement() async throws {
-        let session = try await makeThreeSegmentSession()
-        session.insertRoundTrip(afterOrder: 0) // 앞쪽 끝 — anchorInsertsBefore = true
-        let restored = CourseEditSession()
-        restored.restore(from: session.snapshot())
-        let after = restored.segments
-        restored.undo()
-        restored.redo()
-        XCTAssertEqual(restored.segments, after)
-    }
-
     // MARK: - 전체 왕복 (2026-07-08 추가)
 
     func testCanInsertWholeCourseRoundTrip_falseForEmptyCourse() {
