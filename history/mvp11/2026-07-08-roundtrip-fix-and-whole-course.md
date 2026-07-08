@@ -1,5 +1,9 @@
 # 왕복 버그 수정 + 전체 왕복 추가 Implementation Plan
 
+> 완료(소급 확인, 2026-07-08): 전 스텝 구현 완료 — 근거 커밋 `e57e1cb`(왕복 버그 수정+전체 왕복),
+> `d8b5334`(ViewModel 전체 왕복 노출), `e240e97`(컨트롤 바 버튼), `90c8b5e`(스펙 정정) + roadmap의
+> "둘 다 완료" 기록과 실기기 QA 통과(2026-07-08). 체크박스는 실행 당시 미갱신.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** MVP11 실기기 QA에서 발견된 "왕복 추가" 버튼의 거리·연결 버그를 고치고(중간 구간은 막고, 자유 끝 구간만 정확히 2× 거리로 동작하게), 코스 전체를 한 번에 왕복시키는 새 "전체 왕복" 버튼을 추가한다.

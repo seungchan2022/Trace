@@ -1,5 +1,10 @@
 # MVP11 course-save-roundtrip Implementation Plan
 
+> 완료(소급 확인, 2026-07-08): 전 태스크 구현 완료 — 근거 커밋 `0d34611`~`1f7280e`(roundTrip 케이스,
+> 왕복 삽입 연산, SwiftData 어댑터, 초안 자동 저장 배선, 저장/목록/불러오기/삭제 UI) + roadmap의
+> "8개 태스크 전부 완료, 최종 전체 스위트 그린 확인" 기록. 체크박스는 실행 당시 미갱신.
+> 단, 초안 자동 저장·복원 부분은 이후 제거됨(`2026-07-08-remove-draft-persistence.md` 참고).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 작업 중 코스의 자동 저장·복원 + 이름 붙여 저장/목록/불러오기/삭제(SwiftData) + 구간 패널의 "왕복 추가"(좌표 복제 삽입)를 구현한다.

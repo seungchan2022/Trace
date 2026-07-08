@@ -11,24 +11,20 @@
 
 ## 진행 중 / 예정
 
-### MVP11 — 코스 저장 + 구간 왕복   (상태: ✅ 완료 · 실기기 QA 전체 통과(2026-07-08) · ⚠️ 아카이빙 대기 → `/trace-archive`)
+### MVP11 — 코스 저장 + 구간 왕복   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp11/`](history/mvp11/))
 
-> 실사용 pain 두 개를 해결한다: 앱을 껐다 켜도 작업 중 코스가 그대로 남고(자동 복원),
-> 완성한 코스는 이름을 붙여 저장·불러오기 할 수 있으며(SwiftData, 미래 "코스 골라서 달리기"의
-> 기반), 구간 패널에서 임의 구간을 "왕복 추가"(좌표 복제 — 라우팅 오차 없는 되돌아오기)할 수 있다.
-> 사이클 1개(경량 + persistence 설계 리뷰 1회, 완료) · 스펙: [`2026-07-07-course-save-roundtrip-design`](superpowers/specs/2026-07-07-course-save-roundtrip-design.md) · 플랜: [`2026-07-07-course-save-roundtrip`](superpowers/plans/2026-07-07-course-save-roundtrip.md) (8개 태스크 전부 완료, 최종 전체 스위트 그린 확인)
-> **(2026-07-08 정정)** 초안 자동 저장·복원은 이후 제거됨 — 완전 종료 시 빈 상태로 시작. 대신 왕복
-> 버그 수정 + 전체 왕복 신규 기능 추가: [`2026-07-08-roundtrip-fix-and-whole-course`](superpowers/plans/2026-07-08-roundtrip-fix-and-whole-course.md), 초안 제거: [`2026-07-08-remove-draft-persistence`](superpowers/plans/2026-07-08-remove-draft-persistence.md) (둘 다 완료).
-> 실기기 QA 체크리스트: `docs/qa/2026-07-07-course-save-roundtrip-device-checklist.md` 진행 중 — 시나리오 3(저장 이름 입력)에서
-> 발견됐던 지도 줌아웃 버그는 2026-07-08 해결: 근본 원인은 SwiftUI 자동 keyboard avoidance가 지도 프레임을 축소시키는 것으로
-> 시뮬레이터 로그로 확정하고, `.ignoresSafeArea(.keyboard)`를 body 최상위에 적용해 수정(실기기 확인 완료). 플랜:
-> [`2026-07-08-map-zoom-during-alert-bugfix`](superpowers/plans/2026-07-08-map-zoom-during-alert-bugfix.md) (전 태스크 완료).
-> QA 중 부수 발견(SwiftData ModelContext 스레딩 경고)은 `docs/backlog.md`에 기록. **실기기 QA 전 시나리오 통과(2026-07-08,
-> 사용자 확인) — 아카이빙 조건 충족, `/trace-archive` 대기.**
+> 완성한 코스에 이름을 붙여 저장·목록·불러오기·삭제(SwiftData, 미래 "코스 골라서 달리기"의 기반)하고,
+> 구간 패널에서 구간 왕복(역방향만 붙여 정확히 2× — 실기기 QA에서 3× 버그 발견 후 재설계)과 전체
+> 왕복을 추가했다. 초안 자동 저장·복원은 도입 후 실사용 판정으로 제거(완전 종료 시 빈 상태 시작).
+> 저장 알럿 줌아웃 버그는 4회 증상 패치 실패 → 세션 리셋 → 인수인계 문서 → 근본 수정(keyboard
+> avoidance, `.ignoresSafeArea(.keyboard)`)의 전 과정을 거침 — 인수인계 문서가 작동한 첫 사례.
+> 실기기 QA 전 시나리오 통과(2026-07-08). 부수 발견(SwiftData affinity)은 즉시 수정, Swift 6
+> 동시성 리팩토링은 `docs/backlog.md`로.
+> 회고: [`260708_mvp11_completion_retro`](history/mvp11/260708_mvp11_completion_retro.md)
 
 - [x] **course-save** — 이름 저장/목록 sheet/불러오기/삭제, `CourseRepositoryProtocol` + SwiftData 어댑터 (초안 자동 저장은 2026-07-08 제거)
 - [x] **roundtrip-insert** — 구간 패널 왕복 버튼: 자유 끝 구간에서 역방향만 붙여 정확히 2배 거리(2026-07-08 버그 수정) + 전체 왕복 버튼 추가
-- [x] **map-zoom-during-alert-bugfix** — 저장 알럿 텍스트 입력 중 지도 줌아웃 버그 해결: SwiftUI keyboard avoidance의 프레임 축소가 근본 원인, `.ignoresSafeArea(.keyboard)` body 최상위 적용(2026-07-08, 실기기 확인). 상세: `superpowers/plans/2026-07-08-map-zoom-during-alert-bugfix.md` · 교훈: `docs/solutions/design-patterns/swiftui-keyboard-avoidance-shrinks-representable.md`
+- [x] **map-zoom-during-alert-bugfix** — 저장 알럿 텍스트 입력 중 지도 줌아웃 버그 해결: SwiftUI keyboard avoidance의 프레임 축소가 근본 원인, `.ignoresSafeArea(.keyboard)` body 최상위 적용(2026-07-08, 실기기 확인). 상세: `history/mvp11/2026-07-08-map-zoom-during-alert-bugfix.md` · 교훈: `docs/solutions/design-patterns/swiftui-keyboard-avoidance-shrinks-representable.md`
 
 ### MVP10 — 제스처 정합성 (탭 보류 확정·픽셀 판정·2손가락 튜닝·attach 방향 판정 재설계)   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp10/`](history/mvp10/))
 

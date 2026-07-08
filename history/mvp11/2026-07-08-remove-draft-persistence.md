@@ -1,5 +1,9 @@
 # 초안 자동 저장/복원 제거 Implementation Plan
 
+> 완료(소급 확인, 2026-07-08): 전 스텝 구현 완료 — 근거 커밋 `9e75116`(스냅샷 제거),
+> `a0be0b8`(저장소 계층 제거), `b2a28e9`(ViewModel·Page 제거), `d88db1b`(스펙·결정 기록) +
+> roadmap의 "둘 다 완료" 기록과 실기기 QA 시나리오 1·2 통과(빈 상태 시작). 체크박스는 실행 당시 미갱신.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 앱을 완전히 종료했다가 다시 켜면 작업 중이던 코스가 사라지고 빈 상태로 시작하도록, 디스크 기반 초안 자동 저장/복원 기능을 통째로 제거한다.
