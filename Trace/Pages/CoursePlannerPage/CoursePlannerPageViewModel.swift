@@ -349,6 +349,19 @@ final class CoursePlannerPageViewModel {
         persistDraft()
     }
 
+    // MARK: - Whole Course Round Trip (2026-07-08 추가)
+
+    var canInsertWholeCourseRoundTrip: Bool {
+        session.canInsertWholeCourseRoundTrip()
+    }
+
+    func insertWholeCourseRoundTrip() {
+        infoMessage = nil
+        session.insertWholeCourseRoundTrip()
+        selectedSegmentIndex = nil
+        persistDraft()
+    }
+
     // MARK: - Draft Persistence (MVP11 스펙 §3)
 
     // 앱 시작 시 1회: 초안이 있으면 세션 복원 — "껐다 켜면 마지막 모습 그대로"

@@ -44,7 +44,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
     private func draftWithOneSegment() -> CourseDraft {
         CourseDraft(
             entries: [CourseDraft.Entry(
-                id: UUID(), order: 0, placedAtFront: false, anchorID: nil,
+                id: UUID(), order: 0, placedAtFront: false, anchorID: nil, anchorInsertsBefore: false,
                 segment: .tapped(
                     coordinates: [coord(37.50, 127.00), coord(37.51, 127.00)], distanceMeters: 1000
                 )
@@ -242,7 +242,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
 
         XCTAssertEqual(vm.course?.segments.count, 2)
         XCTAssertEqual(vm.course?.segments.last?.isRoundTrip, true)
-        XCTAssertEqual(vm.course?.distanceMeters, 3000) // 1000 + 2000
+        XCTAssertEqual(vm.course?.distanceMeters, 2000) // 1000 + 1000(대상 구간만큼 추가)
         XCTAssertNil(vm.selectedSegmentIndex)
 
         await vm.flushDraftSaves()
@@ -254,6 +254,31 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
         XCTAssertFalse(vm.canInsertRoundTrip(afterColorKey: 0)) // 빈 코스
+    }
+
+    func testInsertWholeCourseRoundTrip_viaViewModel_updatesCourseAndPersists() async {
+        let repo = MockCourseRepository()
+        await repo.setStubbedDraft(draftWithOneSegment())
+        let vm = makeViewModel(repo: repo)
+        await vm.bootstrapDraft()
+
+        XCTAssertTrue(vm.canInsertWholeCourseRoundTrip)
+        vm.insertWholeCourseRoundTrip()
+
+        XCTAssertEqual(vm.course?.segments.count, 2)
+        XCTAssertEqual(vm.course?.segments.last?.isRoundTrip, true)
+        XCTAssertEqual(vm.course?.distanceMeters, 2000) // 1000 + 1000(전체 코스 왕복)
+        XCTAssertNil(vm.selectedSegmentIndex)
+
+        await vm.flushDraftSaves()
+        let drafts = await repo.savedDrafts
+        XCTAssertEqual(drafts.last?.entries.count, 2)
+    }
+
+    func testCanInsertWholeCourseRoundTrip_emptyCourse_false() async {
+        let repo = MockCourseRepository()
+        let vm = makeViewModel(repo: repo)
+        XCTAssertFalse(vm.canInsertWholeCourseRoundTrip)
     }
 }
 
