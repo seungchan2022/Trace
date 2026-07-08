@@ -108,6 +108,10 @@ struct CoursePlannerPage: View {
             } message: {
                 Text("작업 중인 코스는 사라집니다")
             }
+            // 저장 알럿의 키보드가 뜰 때 SwiftUI 자동 keyboard avoidance가 지도 프레임을
+            // 축소시켜 줌아웃되는 것을 레이아웃 층위에서 차단한다. safeAreaInset(하단 statusPanel)보다
+            // 바깥에 있어야 keyboard 리전이 인셋 레이아웃에 도달하기 전에 제거된다 (2026-07-08 시뮬레이터 로그 검증).
+            .ignoresSafeArea(.keyboard)
     }
 
     private var mapView: some View {
