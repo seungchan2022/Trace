@@ -1,18 +1,7 @@
 import Foundation
 import SwiftData
 
-// 어댑터 내부 전용 — 이 파일 밖(App/Domain/Pages)에서 import SwiftData 금지 (MVP11 스펙 §2)
-
-@Model
-final class DraftRecord {
-    var payload: Data
-    var updatedAt: Date
-
-    init(payload: Data, updatedAt: Date) {
-        self.payload = payload
-        self.updatedAt = updatedAt
-    }
-}
+// 어댑터 내부 전용 — 이 파일 밖(App/Domain/Pages)에서 import SwiftData 금지
 
 @Model
 final class CourseRecord {

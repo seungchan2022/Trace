@@ -18,7 +18,7 @@ actor SwiftDataCourseRepository: CourseRepositoryProtocol {
     // (자산 즉시 삭제 금지) → ③ in-memory 폴백 → ④ nil(모든 연산 no-op/throw).
     // 어떤 경우에도 앱은 뜬다 — 런치 크래시 금지.
     private static func makeContext(inMemory: Bool) -> ModelContext? {
-        let schema = Schema([DraftRecord.self, CourseRecord.self])
+        let schema = Schema([CourseRecord.self])
 
         if inMemory {
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
@@ -43,36 +43,6 @@ actor SwiftDataCourseRepository: CourseRepositoryProtocol {
         let memoryConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         guard let container = try? ModelContainer(for: schema, configurations: [memoryConfig]) else { return nil }
         return ModelContext(container)
-    }
-
-    // MARK: - Draft (단일 슬롯)
-
-    func saveDraft(_ draft: CourseDraft) async throws {
-        guard let context else { throw RepositoryError.storeUnavailable }
-        let payload = try JSONEncoder().encode(CoursePersistenceDTO.Draft(draft))
-        var descriptor = FetchDescriptor<DraftRecord>()
-        descriptor.fetchLimit = 1
-        if let record = try context.fetch(descriptor).first {
-            record.payload = payload
-            record.updatedAt = Date()
-        } else {
-            context.insert(DraftRecord(payload: payload, updatedAt: Date()))
-        }
-        try context.save()
-    }
-
-    func loadDraft() async -> CourseDraft? {
-        guard let context else { return nil }
-        var descriptor = FetchDescriptor<DraftRecord>()
-        descriptor.fetchLimit = 1
-        guard let record = try? context.fetch(descriptor).first else { return nil }
-        guard let draft = Self.decodeDraft(record.payload) else {
-            // 손상 초안은 버린다 (스펙 §2)
-            context.delete(record)
-            try? context.save()
-            return nil
-        }
-        return draft
     }
 
     // MARK: - Saved Courses
@@ -116,12 +86,6 @@ actor SwiftDataCourseRepository: CourseRepositoryProtocol {
     }
 
     // MARK: - Decode (테스트 가능한 손상 처리 경로)
-
-    static func decodeDraft(_ data: Data) -> CourseDraft? {
-        guard let dto = try? JSONDecoder().decode(CoursePersistenceDTO.Draft.self, from: data),
-              dto.version <= CoursePersistenceDTO.currentVersion else { return nil }
-        return dto.domain
-    }
 
     static func decodeCourseSegments(_ data: Data) -> [CourseSegment]? {
         guard let dto = try? JSONDecoder().decode(CoursePersistenceDTO.Course.self, from: data),

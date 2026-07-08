@@ -6,50 +6,6 @@ final class SwiftDataCourseRepositoryTests: XCTestCase {
         CourseCoordinate(latitude: lat, longitude: lon)
     }
 
-    private func sampleDraft() -> CourseDraft {
-        let segID = UUID()
-        return CourseDraft(
-            entries: [
-                CourseDraft.Entry(
-                    id: segID, order: 0, placedAtFront: false, anchorID: nil, anchorInsertsBefore: false,
-                    segment: .tapped(
-                        coordinates: [coord(37.50, 127.00), coord(37.51, 127.00)], distanceMeters: 1000
-                    )
-                ),
-                CourseDraft.Entry(
-                    id: UUID(), order: 1, placedAtFront: false, anchorID: segID, anchorInsertsBefore: false,
-                    segment: .roundTrip(
-                        coordinates: [coord(37.51, 127.00), coord(37.50, 127.00)],
-                        distanceMeters: 1000
-                    )
-                )
-            ],
-            nextOrder: 2
-        )
-    }
-
-    func testDraft_saveLoad_roundTripsAllFields() async throws {
-        let repo = SwiftDataCourseRepository(inMemory: true)
-        let draft = sampleDraft()
-        try await repo.saveDraft(draft)
-        let loaded = await repo.loadDraft()
-        XCTAssertEqual(loaded, draft) // id·order·placedAtFront·anchorID·세그먼트 케이스 전부 보존
-    }
-
-    func testDraft_secondSaveOverwritesFirst() async throws {
-        let repo = SwiftDataCourseRepository(inMemory: true)
-        try await repo.saveDraft(sampleDraft())
-        try await repo.saveDraft(.empty)
-        let loaded = await repo.loadDraft()
-        XCTAssertEqual(loaded, .empty) // 단일 슬롯 — 마지막 저장이 이긴다
-    }
-
-    func testDraft_loadWithoutSave_returnsNil() async {
-        let repo = SwiftDataCourseRepository(inMemory: true)
-        let loaded = await repo.loadDraft()
-        XCTAssertNil(loaded)
-    }
-
     func testCourses_saveFetchDelete() async throws {
         let repo = SwiftDataCourseRepository(inMemory: true)
         let older = SavedCourse(
@@ -89,54 +45,9 @@ final class SwiftDataCourseRepositoryTests: XCTestCase {
         XCTAssertEqual(fetched.count, 2) // 같은 이름 중복 허용 (스펙 §2)
     }
 
-    func testDecodeDraft_garbageData_returnsNil() {
-        let garbage = Data("not json".utf8)
-        XCTAssertNil(SwiftDataCourseRepository.decodeDraft(garbage)) // 손상 blob → nil (스펙 §2)
-    }
-
     func testDecodeCourse_futureVersion_returnsNil() throws {
         // version=999 blob — 미래 포맷은 손상과 동일하게 취급 (스펙 §2 버전 필드)
         let payload = Data(#"{"version":999,"segments":[]}"#.utf8)
         XCTAssertNil(SwiftDataCourseRepository.decodeCourseSegments(payload))
-    }
-
-    func testDecodeDraft_missingAnchorInsertsBeforeField_defaultsToFalse() {
-        // 구버전(2026-07-07 이전) blob 형태 — anchorInsertsBefore 키 자체가 없음.
-        // 손상으로 취급하지 않고 false(= anchor 뒤, 옛 동작과 동일)로 복원돼야 한다.
-        let segID = UUID().uuidString
-        let entryID = UUID().uuidString
-        let json = """
-        {
-            "version": 1,
-            "entries": [
-                {
-                    "id": "\(segID)",
-                    "order": 0,
-                    "placedAtFront": false,
-                    "anchorID": null,
-                    "segment": {
-                        "kind": "tapped",
-                        "coordinates": [{"lat": 37.50, "lon": 127.00}, {"lat": 37.51, "lon": 127.00}],
-                        "distanceMeters": 1000
-                    }
-                },
-                {
-                    "id": "\(entryID)",
-                    "order": 1,
-                    "placedAtFront": false,
-                    "anchorID": "\(segID)",
-                    "segment": {
-                        "kind": "roundTrip",
-                        "coordinates": [{"lat": 37.51, "lon": 127.00}, {"lat": 37.50, "lon": 127.00}],
-                        "distanceMeters": 1000
-                    }
-                }
-            ],
-            "nextOrder": 2
-        }
-        """
-        let draft = SwiftDataCourseRepository.decodeDraft(Data(json.utf8))
-        XCTAssertNotNil(draft) // 필드 누락은 손상이 아니다
-        XCTAssertEqual(draft?.entries.map(\.anchorInsertsBefore), [false, false])
     }
 }
