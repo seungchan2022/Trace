@@ -11,6 +11,9 @@ final class CourseEditSession {
         let order: Int
         let placedAtFront: Bool
         let anchorID: UUID?   // 왕복 엔트리의 redo 재삽입 기준(대상 구간 id). 일반 엔트리는 nil.
+        // anchorID가 있을 때만 의미 있음: true = anchor 바로 앞(코스 앞쪽 끝 왕복),
+        // false = anchor 바로 뒤(코스 뒤쪽 끝 왕복).
+        let anchorInsertsBefore: Bool
         let segment: CourseSegment
     }
 
@@ -127,11 +130,12 @@ final class CourseEditSession {
 
     func redo() {
         guard let entry = redoStack.popLast() else { return }
-        // 왕복 엔트리는 anchor 바로 뒤로 복원 — anchor는 LIFO 순서상 항상 먼저 복원돼 있다 (스펙 §4).
+        // 왕복 엔트리는 anchor 옆으로 복원 — anchor는 LIFO 순서상 항상 먼저 복원돼 있다 (스펙 §4).
+        // anchorInsertsBefore로 anchor 앞/뒤 중 원래 삽입 위치를 재현한다.
         // anchor 미발견 시 placedAtFront/append 폴백 (스펙 증명상 도달 불가, 방어적).
         if let anchorID = entry.anchorID,
            let anchorIndex = entries.firstIndex(where: { $0.id == anchorID }) {
-            entries.insert(entry, at: anchorIndex + 1)
+            entries.insert(entry, at: entry.anchorInsertsBefore ? anchorIndex : anchorIndex + 1)
         } else if entry.placedAtFront {
             entries.insert(entry, at: 0)
         } else {
@@ -145,32 +149,57 @@ final class CourseEditSession {
         nextOrder = 0
     }
 
-    // MARK: - Round Trip (MVP11 스펙 §4)
+    // MARK: - Round Trip (MVP11 스펙 §4, 2026-07-08 정정)
 
-    // 대상 구간(A→B) 바로 뒤에 역+정 병합 왕복(B→A→B, 거리 2×)을 한 엔트리로 삽입한다.
-    // 한 덩어리인 이유: 두 엔트리로 나누면 undo 한 번 시점에 역방향만 남아 코스가 끊긴다.
+    // 코스의 자유 끝(맨 앞 또는 맨 뒤) 구간에서만 왕복 가능하다. 중간 구간은 반대쪽이 다른
+    // 구간과 이어져 있어, 그 구간만 되짚으면 연결이 끊긴다 — 안전하게 되짚을 수 있는 쪽은
+    // 아무것도 이어지지 않은 자유 끝뿐이다 (실기기 QA 2026-07-08로 확정, 이전의 "역+정 병합"
+    // 방식은 거리가 3×가 되고 코스가 끊기지 않는 대신 항상 원래 끝점에 머물러 사용자 의도와
+    // 어긋났다 — 폐기).
     func canInsertRoundTrip(afterOrder order: Int) -> Bool {
-        guard let entry = entries.first(where: { $0.order == order }) else { return false }
-        let n = entry.segment.coordinates.count
+        guard let index = entries.firstIndex(where: { $0.order == order }),
+              index == 0 || index == entries.count - 1 else { return false }
+        let n = entries[index].segment.coordinates.count
         guard n >= 2 else { return false }
-        return totalCoordinateCount + (2 * n - 1) <= Self.maxTotalCoordinates
+        return totalCoordinateCount + n <= Self.maxTotalCoordinates
     }
 
+    // 대상 구간(A→B)의 역방향(B→A)만 만들어 자유 끝에 붙인다 — 거리는 대상 구간과 동일(1×),
+    // 코스 총 거리는 그 구간만큼 늘어 결과적으로 2×가 된다. 뒤쪽 끝이면 뒤에 append, 앞쪽
+    // 끝이면 앞에 prepend — 구간이 하나뿐이면(양쪽 다 해당) append로 취급한다.
     func insertRoundTrip(afterOrder order: Int) {
         guard canInsertRoundTrip(afterOrder: order),
               let index = entries.firstIndex(where: { $0.order == order }) else { return }
         let target = entries[index]
-        let coords = target.segment.coordinates
+        let reversed = target.segment.reversed()
         let roundTrip = CourseSegment.roundTrip(
-            coordinates: Array(coords.reversed()) + Array(coords.dropFirst()),
-            distanceMeters: target.segment.distanceMeters * 2
+            coordinates: reversed.coordinates,
+            distanceMeters: reversed.distanceMeters
         )
-        entries.insert(
-            Entry(id: UUID(), order: nextOrder, placedAtFront: false, anchorID: target.id, segment: roundTrip),
-            at: index + 1
+        let isBackMost = index == entries.count - 1
+        let newEntry = Entry(
+            id: UUID(), order: nextOrder, placedAtFront: false,
+            anchorID: target.id, anchorInsertsBefore: !isBackMost,
+            segment: roundTrip
         )
+        entries.insert(newEntry, at: isBackMost ? index + 1 : index)
         nextOrder += 1
         redoStack = []
+    }
+
+    // MARK: - Whole Course Round Trip (2026-07-08 추가)
+
+    // 지금까지 그린 코스 전체를 뒤집어 맨 뒤에 이어붙인다 — 언제나 코스의 열린 끝(마지막 좌표)
+    // 에서 시작하는 연산이라 별도 anchor 추적 없이 항상 연결이 유지된다(일반 append와 동일하게
+    // undo/redo). 라우팅 재호출 없음(§4와 동일 원칙).
+    func canInsertWholeCourseRoundTrip() -> Bool {
+        guard let course, course.coordinates.count >= 2 else { return false }
+        return totalCoordinateCount + course.coordinates.count <= Self.maxTotalCoordinates
+    }
+
+    func insertWholeCourseRoundTrip() {
+        guard canInsertWholeCourseRoundTrip(), let course else { return }
+        append(.roundTrip(coordinates: course.coordinates.reversed(), distanceMeters: course.distanceMeters))
     }
 
     // MARK: - Snapshot (초안 저장·복원, MVP11 스펙 §3)
@@ -182,7 +211,7 @@ final class CourseEditSession {
             entries: entries.map {
                 CourseDraft.Entry(
                     id: $0.id, order: $0.order, placedAtFront: $0.placedAtFront,
-                    anchorID: $0.anchorID, segment: $0.segment
+                    anchorID: $0.anchorID, anchorInsertsBefore: $0.anchorInsertsBefore, segment: $0.segment
                 )
             },
             nextOrder: nextOrder
@@ -193,7 +222,7 @@ final class CourseEditSession {
         entries = draft.entries.map {
             Entry(
                 id: $0.id, order: $0.order, placedAtFront: $0.placedAtFront,
-                anchorID: $0.anchorID, segment: $0.segment
+                anchorID: $0.anchorID, anchorInsertsBefore: $0.anchorInsertsBefore, segment: $0.segment
             )
         }
         nextOrder = draft.nextOrder
@@ -203,7 +232,10 @@ final class CourseEditSession {
     // 저장 코스 불러오기: 공간순 세그먼트에 시간순을 0부터 재부여 (undo = 공간순 마지막부터 제거)
     func load(segments: [CourseSegment]) {
         entries = segments.enumerated().map { index, segment in
-            Entry(id: UUID(), order: index, placedAtFront: false, anchorID: nil, segment: segment)
+            Entry(
+                id: UUID(), order: index, placedAtFront: false,
+                anchorID: nil, anchorInsertsBefore: false, segment: segment
+            )
         }
         nextOrder = segments.count
         redoStack = []
@@ -212,13 +244,19 @@ final class CourseEditSession {
     // MARK: - Private
 
     private func append(_ segment: CourseSegment) {
-        entries.append(Entry(id: UUID(), order: nextOrder, placedAtFront: false, anchorID: nil, segment: segment))
+        entries.append(Entry(
+            id: UUID(), order: nextOrder, placedAtFront: false,
+            anchorID: nil, anchorInsertsBefore: false, segment: segment
+        ))
         nextOrder += 1
         redoStack = []
     }
 
     private func prepend(_ segment: CourseSegment) {
-        entries.insert(Entry(id: UUID(), order: nextOrder, placedAtFront: true, anchorID: nil, segment: segment), at: 0)
+        entries.insert(Entry(
+            id: UUID(), order: nextOrder, placedAtFront: true,
+            anchorID: nil, anchorInsertsBefore: false, segment: segment
+        ), at: 0)
         nextOrder += 1
         redoStack = []
     }

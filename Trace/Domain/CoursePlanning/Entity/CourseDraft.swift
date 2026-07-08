@@ -8,6 +8,9 @@ struct CourseDraft: Equatable, Sendable {
         let order: Int
         let placedAtFront: Bool
         let anchorID: UUID?
+        // anchorID가 있을 때만 의미 있음: true = anchor 바로 앞에 삽입(코스 앞쪽 끝 왕복),
+        // false = anchor 바로 뒤(코스 뒤쪽 끝 왕복). anchorID가 nil이면 무시된다.
+        let anchorInsertsBefore: Bool
         let segment: CourseSegment
     }
 
