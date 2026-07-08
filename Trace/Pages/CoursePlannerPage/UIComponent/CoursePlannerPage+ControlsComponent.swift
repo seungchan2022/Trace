@@ -39,6 +39,14 @@ extension CoursePlannerPage {
                 Image(systemName: "list.bullet")
             }
             .accessibilityIdentifier("coursePlanner.courseList")
+
+            Button {
+                viewModel.insertWholeCourseRoundTrip()
+            } label: {
+                Image(systemName: "arrow.triangle.2.circlepath")
+            }
+            .disabled(!viewModel.canInsertWholeCourseRoundTrip)
+            .accessibilityIdentifier("coursePlanner.wholeCourseRoundTrip")
         }
         .buttonStyle(.borderedProminent)
         .padding()
