@@ -23,7 +23,7 @@ struct DependencyContainer {
             coursePlanningService: UITestingCoursePlanningService(),
             locationService: UITestingLocationService(),
             cameraStateStore: CameraStateStore(defaults: uiTestingDefaults),
-            // in-memory: UI 테스트는 런치마다 빈 상태에서 시작 (기존 UI 테스트 전제 보존)
+            // in-memory: UI 테스트가 실기기/다른 테스트의 저장 코스 데이터와 격리되도록
             courseRepository: SwiftDataCourseRepository(inMemory: true)
         )
     }

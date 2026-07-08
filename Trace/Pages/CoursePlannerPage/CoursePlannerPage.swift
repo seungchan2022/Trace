@@ -45,7 +45,6 @@ struct CoursePlannerPage: View {
                 statusPanel
             }
             .task {
-                await viewModel.bootstrapDraft()
                 if let bounds = cameraStateStore.restore() {
                     cameraRegion = MKCoordinateRegion(
                         center: CLLocationCoordinate2D(latitude: bounds.latitude, longitude: bounds.longitude),
@@ -74,7 +73,6 @@ struct CoursePlannerPage: View {
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .background {
                     saveCameraPosition()
-                    viewModel.persistDraft()
                 }
             }
             .alert("위치 권한이 필요합니다", isPresented: $viewModel.showLocationDeniedAlert) {

@@ -43,12 +43,6 @@ final class CoursePlannerPageViewModel {
     private let courseRepository: CourseRepositoryProtocol
     private var recomputeGeneration = 0
 
-    // 초안 저장 직렬화: 이전 저장을 await한 뒤 다음 저장 — 연산 순서 보장 (스펙 §2 순서 불변식)
-    private var draftSaveTask: Task<Void, Never>?
-    private var draftSaveFailureCount = 0
-    private var didNotifyDraftSaveFailure = false
-    static let draftSaveFailureNotifyThreshold = 3
-
     init(
         coursePlanningService: CoursePlanningServiceProtocol,
         locationService: LocationServiceProtocol,
@@ -195,7 +189,6 @@ final class CoursePlannerPageViewModel {
             )
             try await session.attach(segment, using: coursePlanningService)
             selectedSegmentIndex = nil
-            persistDraft()
         } catch CoursePlanningError.routeNotFound {
             guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "도보 경로를 찾을 수 없습니다."
@@ -290,7 +283,6 @@ final class CoursePlannerPageViewModel {
             let segment = CourseSegment.drawn(coordinates: coords, distanceMeters: distance)
             try await session.attach(segment, using: coursePlanningService)
             selectedSegmentIndex = nil
-            persistDraft()
         } catch CoursePlanningError.throttled {
             guard generation == recomputeGeneration else { isLoading = false; return }
             errorMessage = "요청이 많아 잠시 후 다시 시도해주세요"
@@ -306,7 +298,6 @@ final class CoursePlannerPageViewModel {
     func undo() async {
         infoMessage = nil
         session.undo()
-        persistDraft()
         selectedSegmentIndex = nil
     }
 
@@ -315,7 +306,6 @@ final class CoursePlannerPageViewModel {
     func redo() {
         infoMessage = nil
         session.redo()
-        persistDraft()
         selectedSegmentIndex = nil
     }
 
@@ -323,7 +313,6 @@ final class CoursePlannerPageViewModel {
         infoMessage = nil
         recomputeGeneration += 1
         session.clear()
-        persistDraft()
         pendingTapStart = nil
         selectedSegmentIndex = nil
         errorMessage = nil
@@ -346,7 +335,6 @@ final class CoursePlannerPageViewModel {
         infoMessage = nil
         session.insertRoundTrip(afterOrder: key)
         selectedSegmentIndex = nil
-        persistDraft()
     }
 
     // MARK: - Whole Course Round Trip (2026-07-08 추가)
@@ -359,44 +347,6 @@ final class CoursePlannerPageViewModel {
         infoMessage = nil
         session.insertWholeCourseRoundTrip()
         selectedSegmentIndex = nil
-        persistDraft()
-    }
-
-    // MARK: - Draft Persistence (MVP11 스펙 §3)
-
-    // 앱 시작 시 1회: 초안이 있으면 세션 복원 — "껐다 켜면 마지막 모습 그대로"
-    func bootstrapDraft() async {
-        guard let draft = await courseRepository.loadDraft(), !draft.isEmpty else { return }
-        session.restore(from: draft)
-    }
-
-    // 편집 연산 확정 시마다 호출. 스냅샷은 호출 시점(연산 직후)에 동기로 뜨고,
-    // 쓰기는 이전 쓰기를 await한 뒤 실행 — 디스크 도달 순서 = 연산 순서.
-    func persistDraft() {
-        let draft = session.snapshot()
-        let previous = draftSaveTask
-        draftSaveTask = Task { [courseRepository] in
-            await previous?.value
-            do {
-                try await courseRepository.saveDraft(draft)
-                self.draftSaveFailureCount = 0
-            } catch {
-                self.recordDraftSaveFailure()
-            }
-        }
-    }
-
-    // 대기 중인 저장 완료 대기 — scenePhase background 안전망·테스트에서 사용
-    func flushDraftSaves() async {
-        await draftSaveTask?.value
-    }
-
-    private func recordDraftSaveFailure() {
-        draftSaveFailureCount += 1
-        guard draftSaveFailureCount >= Self.draftSaveFailureNotifyThreshold,
-              !didNotifyDraftSaveFailure else { return }
-        didNotifyDraftSaveFailure = true
-        errorMessage = "코스 자동 저장이 계속 실패하고 있습니다. 저장 공간을 확인해주세요."
     }
 
     // MARK: - Saved Courses (MVP11 스펙 §3)
@@ -480,6 +430,5 @@ final class CoursePlannerPageViewModel {
         errorMessage = nil
         infoMessage = nil
         isCourseListPresented = false
-        persistDraft()
     }
 }
