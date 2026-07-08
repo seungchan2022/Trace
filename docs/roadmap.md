@@ -11,16 +11,22 @@
 
 ## 진행 중 / 예정
 
-### MVP11 — 코스 저장 + 구간 왕복   (상태: ✅ 완료 · 실기기 QA 대기)
+### MVP11 — 코스 저장 + 구간 왕복   (상태: 🔶 진행 중 · 실기기 QA에서 버그 1건 발견, 수정 미완료)
 
 > 실사용 pain 두 개를 해결한다: 앱을 껐다 켜도 작업 중 코스가 그대로 남고(자동 복원),
 > 완성한 코스는 이름을 붙여 저장·불러오기 할 수 있으며(SwiftData, 미래 "코스 골라서 달리기"의
 > 기반), 구간 패널에서 임의 구간을 "왕복 추가"(좌표 복제 — 라우팅 오차 없는 되돌아오기)할 수 있다.
 > 사이클 1개(경량 + persistence 설계 리뷰 1회, 완료) · 스펙: [`2026-07-07-course-save-roundtrip-design`](superpowers/specs/2026-07-07-course-save-roundtrip-design.md) · 플랜: [`2026-07-07-course-save-roundtrip`](superpowers/plans/2026-07-07-course-save-roundtrip.md) (8개 태스크 전부 완료, 최종 전체 스위트 그린 확인)
-> 실기기 QA 체크리스트: `docs/qa/2026-07-07-course-save-roundtrip-device-checklist.md` (사용자 실행 예정, 완료 후 아카이빙)
+> **(2026-07-08 정정)** 초안 자동 저장·복원은 이후 제거됨 — 완전 종료 시 빈 상태로 시작. 대신 왕복
+> 버그 수정 + 전체 왕복 신규 기능 추가: [`2026-07-08-roundtrip-fix-and-whole-course`](superpowers/plans/2026-07-08-roundtrip-fix-and-whole-course.md), 초안 제거: [`2026-07-08-remove-draft-persistence`](superpowers/plans/2026-07-08-remove-draft-persistence.md) (둘 다 완료).
+> 실기기 QA 체크리스트: `docs/qa/2026-07-07-course-save-roundtrip-device-checklist.md` 진행 중 — 시나리오 3(저장 이름 입력)에서
+> 지도 줌아웃 버그 발견, 4차례 수정 시도 모두 증상 패치에 그쳐 미해결 상태로 세션 리셋. 인수인계 문서(다음 세션 시작점):
+> [`2026-07-08-map-zoom-during-alert-bugfix`](superpowers/plans/2026-07-08-map-zoom-during-alert-bugfix.md). QA 체크리스트 나머지
+> 시나리오 + 이 버그 수정이 끝나야 아카이빙 가능.
 
-- [x] **course-save** — 초안 자동 저장·복원(세션 스냅샷, redo 제외) + 이름 저장/목록 sheet/불러오기/삭제, `CourseRepositoryProtocol` + SwiftData 어댑터
-- [x] **roundtrip-insert** — 구간 패널 왕복 버튼: 대상 구간 뒤에 역+정 한 덩어리 왕복 세그먼트 삽입(undo 1회 취소, anchor 기반 redo 복원)
+- [x] **course-save** — 이름 저장/목록 sheet/불러오기/삭제, `CourseRepositoryProtocol` + SwiftData 어댑터 (초안 자동 저장은 2026-07-08 제거)
+- [x] **roundtrip-insert** — 구간 패널 왕복 버튼: 자유 끝 구간에서 역방향만 붙여 정확히 2배 거리(2026-07-08 버그 수정) + 전체 왕복 버튼 추가
+- [ ] **map-zoom-during-alert-bugfix** — 저장 알럿 텍스트 입력 중 지도 줌아웃 버그, 근본 원인(레이아웃 층위) 미해결 → 상세: `superpowers/plans/2026-07-08-map-zoom-during-alert-bugfix.md`
 
 ### MVP10 — 제스처 정합성 (탭 보류 확정·픽셀 판정·2손가락 튜닝·attach 방향 판정 재설계)   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp10/`](history/mvp10/))
 
