@@ -20,6 +20,8 @@ This file records defaults until the user chooses otherwise.
 - Architecture direction: page-first MVVM presentation with Clean Architecture boundaries
 - Modularization: not active yet, but code should be structured so `Domain`, `Application`, `Infrastructure`, and `Pages` can later move into Swift Package modules
 - Persistence: SwiftData, local-only (결정 2026-07-07, MVP11) — Domain의 `CourseRepositoryProtocol` 뒤에 격리, SwiftData `@Model`은 `Trace/Infrastructure/Persistence/SwiftData/` 어댑터 내부 전용(도메인 모델과 분리, 좌표 배열은 Codable `Data`로 저장). 초안(작업 중 코스)은 편집 연산 확정 시마다 + 백그라운드 진입 시 자동 저장하고 redo 스택은 저장하지 않는다. 이름 저장 코스는 스냅샷 의미론(저장 후 편집해도 저장본 불변, 중복 이름 허용). 상세: `docs/superpowers/specs/2026-07-07-course-save-roundtrip-design.md` §2
+ **(2026-07-08 정정)** 초안(작업 중 코스) 자동 저장·복원은 제거됨 — 완전 종료 후에는
+ 빈 상태로 시작. 저장 코스(이름 붙여 저장) 기능은 이 결정과 무관하게 SwiftData로 유지.
 - Backend: none by default
 - Authentication: none by default
 - Analytics: none by default
