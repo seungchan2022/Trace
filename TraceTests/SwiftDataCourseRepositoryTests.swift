@@ -11,16 +11,16 @@ final class SwiftDataCourseRepositoryTests: XCTestCase {
         return CourseDraft(
             entries: [
                 CourseDraft.Entry(
-                    id: segID, order: 0, placedAtFront: false, anchorID: nil,
+                    id: segID, order: 0, placedAtFront: false, anchorID: nil, anchorInsertsBefore: false,
                     segment: .tapped(
                         coordinates: [coord(37.50, 127.00), coord(37.51, 127.00)], distanceMeters: 1000
                     )
                 ),
                 CourseDraft.Entry(
-                    id: UUID(), order: 1, placedAtFront: false, anchorID: segID,
+                    id: UUID(), order: 1, placedAtFront: false, anchorID: segID, anchorInsertsBefore: false,
                     segment: .roundTrip(
-                        coordinates: [coord(37.51, 127.00), coord(37.50, 127.00), coord(37.51, 127.00)],
-                        distanceMeters: 2000
+                        coordinates: [coord(37.51, 127.00), coord(37.50, 127.00)],
+                        distanceMeters: 1000
                     )
                 )
             ],
@@ -98,5 +98,45 @@ final class SwiftDataCourseRepositoryTests: XCTestCase {
         // version=999 blob — 미래 포맷은 손상과 동일하게 취급 (스펙 §2 버전 필드)
         let payload = Data(#"{"version":999,"segments":[]}"#.utf8)
         XCTAssertNil(SwiftDataCourseRepository.decodeCourseSegments(payload))
+    }
+
+    func testDecodeDraft_missingAnchorInsertsBeforeField_defaultsToFalse() {
+        // 구버전(2026-07-07 이전) blob 형태 — anchorInsertsBefore 키 자체가 없음.
+        // 손상으로 취급하지 않고 false(= anchor 뒤, 옛 동작과 동일)로 복원돼야 한다.
+        let segID = UUID().uuidString
+        let entryID = UUID().uuidString
+        let json = """
+        {
+            "version": 1,
+            "entries": [
+                {
+                    "id": "\(segID)",
+                    "order": 0,
+                    "placedAtFront": false,
+                    "anchorID": null,
+                    "segment": {
+                        "kind": "tapped",
+                        "coordinates": [{"lat": 37.50, "lon": 127.00}, {"lat": 37.51, "lon": 127.00}],
+                        "distanceMeters": 1000
+                    }
+                },
+                {
+                    "id": "\(entryID)",
+                    "order": 1,
+                    "placedAtFront": false,
+                    "anchorID": "\(segID)",
+                    "segment": {
+                        "kind": "roundTrip",
+                        "coordinates": [{"lat": 37.51, "lon": 127.00}, {"lat": 37.50, "lon": 127.00}],
+                        "distanceMeters": 1000
+                    }
+                }
+            ],
+            "nextOrder": 2
+        }
+        """
+        let draft = SwiftDataCourseRepository.decodeDraft(Data(json.utf8))
+        XCTAssertNotNil(draft) // 필드 누락은 손상이 아니다
+        XCTAssertEqual(draft?.entries.map(\.anchorInsertsBefore), [false, false])
     }
 }
