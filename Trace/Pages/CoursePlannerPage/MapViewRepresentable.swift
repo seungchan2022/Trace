@@ -488,11 +488,11 @@ extension MapViewRepresentable {
 
         let tapClassifier = TapClassifier()
         weak var touchObserverRecognizer: TouchObserverGestureRecognizer?
-        private var confirmWorkItem: DispatchWorkItem?
+        private var confirmTask: Task<Void, Never>?
         // 임시 마커 표시를 살짝 늦춰(100ms) 더블탭/원핑거줌처럼 취소될 제스처에서는
         // 마커가 아예 안 보이게 한다 — 정상 싱글탭 흐름에서는 체감되지 않는 지연이다
         // (2026-07-05 실기기 QA 피드백).
-        private var markerShowWorkItem: DispatchWorkItem?
+        private var markerShowTask: Task<Void, Never>?
         private static let markerShowDelay: TimeInterval = 0.1
         // 보류 시점에 좌표·핀 히트를 동봉해 확정 시 그대로 사용 (판별 창 중 지도 이동에 안전)
         private var pendingCoordinate: CourseCoordinate?
@@ -522,18 +522,18 @@ extension MapViewRepresentable {
                     scheduleMarkerShow()
                     scheduleConfirm(in: mapView)
                 case .cancelled:
-                    confirmWorkItem?.cancel()
-                    confirmWorkItem = nil
-                    markerShowWorkItem?.cancel()
-                    markerShowWorkItem = nil
+                    confirmTask?.cancel()
+                    confirmTask = nil
+                    markerShowTask?.cancel()
+                    markerShowTask = nil
                     pendingCoordinate = nil
                     pendingPinRole = nil
                     parent.onPendingTapCancelled?()
                 case .confirmed:
-                    confirmWorkItem?.cancel()
-                    confirmWorkItem = nil
-                    markerShowWorkItem?.cancel()
-                    markerShowWorkItem = nil
+                    confirmTask?.cancel()
+                    confirmTask = nil
+                    markerShowTask?.cancel()
+                    markerShowTask = nil
                     guard let coordinate = pendingCoordinate else { break }
                     let role = pendingPinRole
                     pendingCoordinate = nil
@@ -544,24 +544,24 @@ extension MapViewRepresentable {
         }
 
         private func scheduleMarkerShow() {
-            markerShowWorkItem?.cancel()
+            markerShowTask?.cancel()
             guard let coordinate = pendingCoordinate else { return }
             let role = pendingPinRole
-            let item = DispatchWorkItem { [weak self] in
+            markerShowTask = Task { [weak self] in
+                try? await Task.sleep(until: .now + .seconds(Self.markerShowDelay), tolerance: .zero, clock: .continuous)
+                guard !Task.isCancelled else { return }
                 self?.parent.onPendingTap?(coordinate, role)
             }
-            markerShowWorkItem = item
-            DispatchQueue.main.asyncAfter(deadline: .now() + Self.markerShowDelay, execute: item)
         }
 
         private func scheduleConfirm(in mapView: MKMapView) {
-            confirmWorkItem?.cancel()
-            let item = DispatchWorkItem { [weak self, weak mapView] in
-                guard let self, let mapView else { return }
+            confirmTask?.cancel()
+            let window = tapClassifier.window
+            confirmTask = Task { [weak self, weak mapView] in
+                try? await Task.sleep(until: .now + .seconds(window), tolerance: .zero, clock: .continuous)
+                guard !Task.isCancelled, let self, let mapView else { return }
                 self.process(self.tapClassifier.windowElapsed(time: CACurrentMediaTime()), in: mapView)
             }
-            confirmWorkItem = item
-            DispatchQueue.main.asyncAfter(deadline: .now() + tapClassifier.window, execute: item)
         }
 
         // 화면 포인트 기반 핀 히트 — 지도거리(줌 종속)가 아니라 화면 24pt 반경으로 판정한다.
