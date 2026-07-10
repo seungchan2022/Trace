@@ -4,7 +4,7 @@ import SwiftData
 // 어댑터 내부 전용 — 이 파일 밖(App/Domain/Pages)에서 import SwiftData 금지
 
 @Model
-final class CourseRecord {
+nonisolated final class CourseRecord {
     @Attribute(.unique) var id: UUID
     var name: String
     var createdAt: Date
