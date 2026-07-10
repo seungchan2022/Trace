@@ -1,6 +1,6 @@
 import UIKit
 
-enum SegmentPalette {
+nonisolated enum SegmentPalette {
     private static let colors: [UIColor] = [
         .systemBlue, .systemGreen, .systemOrange, .systemPurple, .systemTeal, .systemPink,
     ]

@@ -3,7 +3,7 @@ import Foundation
 // 겹치는 경로를 표시할 때만 옆으로 비켜 그리는 순수 기하 계산.
 // 도메인 좌표는 불변이며 MapKit에 의존하지 않는다 (스펙: 2026-07-02-overlap-offset-design.md).
 // 처리 순서는 생성(attach) 순서 — 먼저 만든 구간이 도로 위에 남는다 (prepend 표시 안정성).
-enum OverlapOffsetResolver {
+nonisolated enum OverlapOffsetResolver {
     struct Parameters {
         var detectionThresholdMeters = 10.0
         var offsetStepMeters = 4.0
