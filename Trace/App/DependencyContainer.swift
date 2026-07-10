@@ -6,7 +6,6 @@ struct DependencyContainer {
     let cameraStateStore: CameraStateStore
     let courseRepository: CourseRepositoryProtocol
 
-    @MainActor
     static func live() -> DependencyContainer {
         DependencyContainer(
             coursePlanningService: MapKitCoursePlanningService(),
@@ -16,7 +15,6 @@ struct DependencyContainer {
         )
     }
 
-    @MainActor
     static func uiTesting() -> DependencyContainer {
         let uiTestingDefaults = UserDefaults(suiteName: "uiTesting") ?? .standard
         return DependencyContainer(

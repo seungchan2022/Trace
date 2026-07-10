@@ -1,7 +1,6 @@
 import CoreLocation
 import Foundation
 
-@MainActor
 final class CoreLocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     // 부트스트랩(.task)과 "내 위치로 이동" 버튼이 겹쳐 호출될 수 있어, 진행 중인 요청이 있으면

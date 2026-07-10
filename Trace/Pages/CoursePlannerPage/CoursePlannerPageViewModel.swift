@@ -15,7 +15,6 @@ enum CoursePinRole: Equatable {
     case pendingStart // 첫 탭 대기 핀 (특수 동작 없음)
 }
 
-@MainActor
 @Observable
 final class CoursePlannerPageViewModel {
     // Application layer: mutable course being planned

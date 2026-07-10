@@ -27,7 +27,7 @@ nonisolated enum CoursePersistenceDTO: Sendable {
 
 // MARK: - 도메인 ↔ DTO 매핑
 
-extension CoursePersistenceDTO.Coordinate {
+nonisolated extension CoursePersistenceDTO.Coordinate {
     init(_ c: CourseCoordinate) {
         self.init(lat: c.latitude, lon: c.longitude)
     }
@@ -36,7 +36,7 @@ extension CoursePersistenceDTO.Coordinate {
     }
 }
 
-extension CoursePersistenceDTO.Segment {
+nonisolated extension CoursePersistenceDTO.Segment {
     init(_ segment: CourseSegment) {
         let coords = segment.coordinates.map(CoursePersistenceDTO.Coordinate.init)
         switch segment {
