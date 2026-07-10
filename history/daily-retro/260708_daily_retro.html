@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>260708 하루 회고 — Trace</title>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+    primaryColor: '#FEF3C7', primaryTextColor: '#2D2926', primaryBorderColor: '#D97706',
+    lineColor: '#92400E', secondaryColor: '#FFF7ED', tertiaryColor: '#FDF6F0', fontSize: '13px'
+  }});
+</script>
+<style>
+  :root {
+    --bg:#FDF6F0; --text:#2D2926; --accent:#D97706; --accent-light:#FEF3C7;
+    --heading:#92400E; --border:#E5D5C5; --code-bg:#FFF7ED; --card-bg:#FFFFFF;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    line-height:1.7; font-size:15px;
+  }
+  .wrap { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  header { text-align:center; margin-bottom:28px; }
+  header .date { color:var(--accent); font-weight:700; letter-spacing:2px; font-size:13px; }
+  header h1 { color:var(--heading); font-size:22px; margin-top:6px; line-height:1.4; }
+  header .sub { color:#8a7a6a; font-size:13px; margin-top:8px; }
+  .stats { display:flex; gap:8px; margin:20px 0; }
+  .stat { flex:1; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px 8px; text-align:center; }
+  .stat .num { color:var(--accent); font-size:20px; font-weight:800; }
+  .stat .label { font-size:11px; color:#8a7a6a; margin-top:2px; }
+  h2 { color:var(--heading); font-size:17px; margin:32px 0 12px; padding-bottom:6px; border-bottom:2px solid var(--accent-light); }
+  h3 { color:var(--heading); font-size:14.5px; margin:18px 0 8px; }
+  p { margin-bottom:12px; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:14px; }
+  .card .tag { display:inline-block; background:var(--accent-light); color:var(--heading); font-size:11px; font-weight:700; padding:2px 10px; border-radius:99px; margin-bottom:8px; }
+  .card h3 { margin-top:0; }
+  .kv { font-size:14px; margin-bottom:6px; }
+  .kv b { color:var(--heading); }
+  .insight { background:var(--code-bg); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:10px 12px; font-size:13.5px; margin-top:10px; }
+  .timeline { list-style:none; }
+  .timeline li { position:relative; padding:0 0 18px 22px; border-left:2px solid var(--border); margin-left:8px; }
+  .timeline li:last-child { border-left:2px solid transparent; }
+  .timeline li::before { content:""; position:absolute; left:-7px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--accent); border:2px solid var(--bg); }
+  .timeline .t { font-weight:700; color:var(--heading); font-size:13.5px; }
+  .timeline p { font-size:13.5px; margin:2px 0 0; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; margin:12px 0; background:var(--card-bg); border-radius:8px; overflow:hidden; }
+  th { background:var(--accent-light); color:var(--heading); padding:8px 6px; text-align:left; }
+  td { padding:8px 6px; border-top:1px solid var(--border); vertical-align:top; }
+  ul.plain { padding-left:18px; margin-bottom:12px; }
+  ul.plain li { margin-bottom:8px; font-size:14px; }
+  code { background:var(--code-bg); border:1px solid var(--border); border-radius:4px; padding:1px 5px; font-size:12.5px; font-family:ui-monospace, "SF Mono", monospace; }
+  .mermaid { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px 4px; margin:14px 0; display:flex; justify-content:center; overflow-x:auto; }
+  .feel { background:linear-gradient(135deg, var(--accent-light), var(--code-bg)); border-radius:12px; padding:16px; font-size:14px; }
+  footer { text-align:center; margin-top:40px; color:#b3a493; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="date">2026.07.08 (WED)</div>
+  <h1>버그 하나가 가르쳐준 것들<br>— MVP11 완결</h1>
+  <div class="sub">Trace · 코스 저장 + 구간 왕복</div>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="num">23</div><div class="label">커밋</div></div>
+  <div class="stat"><div class="num">+2,166</div><div class="label">추가 라인</div></div>
+  <div class="stat"><div class="num">1줄</div><div class="label">근본 수정</div></div>
+  <div class="stat"><div class="num">✅</div><div class="label">MVP11 아카이빙</div></div>
+</div>
+
+<h2>🗓 오늘 뭘 했나</h2>
+<ul class="timeline">
+  <li><span class="t">오전 — 기능 마무리 + 정정 2건</span>
+    <p>왕복 버그(3× 거리)를 "역방향만 2×"로 재설계 + 전체 왕복 추가. 구현까지 끝냈던 초안 자동 저장·복원은 실사용 판정으로 제거.</p></li>
+  <li><span class="t">분기점 — 줌아웃 버그 4연패, 세션 리셋</span>
+    <p>4번의 수정이 전부 증상 패치. 5번째 시도 대신 코드를 되돌리고 인수인계 문서(확정 사실·막다른 길·금지사항·미해결 질문)를 남기고 세션 종료.</p></li>
+  <li><span class="t">오후 — 새 세션·상위 모델, 한 번에 해결</span>
+    <p>가설 → bounds 로그 계측 → 원인 확정 → <code>.ignoresSafeArea(.keyboard)</code> 1줄. 실기기 QA 전 시나리오 통과. SwiftData affinity 경고도 당일 수정, Swift 6 경고 40건은 백로그로.</p></li>
+  <li><span class="t">마무리 — MVP11 완결</span>
+    <p>아카이빙(산출물 6개 → history/mvp11), 병합·푸시(직접), 브랜치 삭제까지 루프 닫음.</p></li>
+</ul>
+
+<h2>🔀 줌아웃 버그의 여정</h2>
+<pre class="mermaid">
+graph TB
+    A["🐛 발견: 알럿 이름 입력 중<br>지도 줌아웃 (QA 시나리오 3)"] --> B["시도 1~4<br>'리사이즈 이후 값 수습' 계열"]
+    B -->|"전부 실패<br>패치가 패치를 낳음"| C["🔄 세션 리셋 결정"]
+    C --> D["인수인계 문서<br>확정 사실 · 막다른 길 4개<br>금지사항 · 미해결 질문"]
+    D --> E["새 세션 + 상위 모델"]
+    E --> F["가설: SwiftUI keyboard avoidance가<br>지도 프레임을 축소"]
+    F --> G["계측: bounds 임시 로그<br>+ 알럿 자동표시 스캐폴딩"]
+    G --> H["원인 관측: 키보드 등장 시<br>bounds 576 → 275"]
+    H --> I["수정 1줄: ignoresSafeArea(.keyboard)<br>body 최상위(인셋 바깥)"]
+    I --> J["검증: 키보드 떠 있어도<br>bounds 불변 = 원인 소멸"]
+    J --> K["✅ 실기기 QA 전체 통과<br>MVP11 아카이빙"]
+    style A fill:#FEF3C7
+    style C fill:#FDE68A
+    style H fill:#FED7AA
+    style K fill:#D9F99D
+</pre>
+
+<h2>⚖️ 핵심 의사결정</h2>
+
+<div class="card">
+  <span class="tag">결정 1 · 핵심</span>
+  <h3>"리사이즈 이후 수습" 전부 기각 → 레이아웃 층위에서 차단</h3>
+  <div class="kv"><b>상황:</b> 키보드가 뜨면 지도 프레임이 축소되고 region이 재계산돼 줌아웃. 이전 4회 시도는 전부 축소된 <i>이후</i>의 수습.</div>
+  <div class="kv"><b>선택지:</b> ① 수습을 더 정교하게 ② 축소 자체를 차단 ③ 알럿→sheet 구조 변경</div>
+  <div class="kv"><b>결정:</b> ② — <code>.ignoresSafeArea(.keyboard)</code>를 body 수정자 체인 <b>가장 바깥</b>에.</div>
+  <div class="kv"><b>왜:</b> 원인이 "프레임 축소"인데 축소된 값을 수습하는 건 정의상 증상 패치. 4연패가 증거.</div>
+  <div class="insight">💡 같은 수정자도 <b>적용 위치가 다르면 다른 답</b>. 이 답은 이전 세션에서 위치 문제로 "실패" 기각돼 있었다 — 정답이 조건 없는 기록 때문에 오답 처리된 것.</div>
+</div>
+
+<div class="card">
+  <span class="tag">결정 2 · 핵심</span>
+  <h3>왕복 재설계 — 역+정 3× 대신 "역방향만 2×"</h3>
+  <div class="kv"><b>상황:</b> 왕복 버튼이 거리를 2배가 아닌 3배로 (역+정 병합 버그).</div>
+  <div class="kv"><b>선택지:</b> ① 기존 의미 유지 + 거리 보정 ② 의미 자체를 "역방향 하나만"으로 교체</div>
+  <div class="kv"><b>결정:</b> ② — 자유 끝 구간에서 역방향만 붙여 정확히 2×.</div>
+  <div class="kv"><b>왜:</b> 백로그의 "되짚어 오기" 요구(막다른 길에서 돌아 나오기)가 정확히 이 동작 — 버그 수정과 기능 요구가 하나로 합쳐짐.</div>
+  <div class="insight">💡 버그 수정 방향을 정할 때 백로그를 먼저 보면 "고치기"와 "만들기"가 합쳐질 수 있다.</div>
+</div>
+
+<div class="card">
+  <span class="tag">결정 3 · 짧게</span>
+  <h3>세션 리셋 — 5번째 시도 대신 기록하고 멈추기</h3>
+  <p style="font-size:14px">컨텍스트가 실패한 방향에 고착되면 같은 곳만 판다. 실패 기록을 자산으로 압축해 넘겼더니 다음 세션이 재조사 없이 한 번에 해결 — <b>인수인계 문서가 작동한 첫 실증 사례</b>.</p>
+</div>
+
+<div class="card">
+  <span class="tag">결정 4 · 짧게</span>
+  <h3>초안 자동 저장 제거 — 만들어보니 아니었다</h3>
+  <p style="font-size:14px">구현 완료 후 실기기로 써보니 "저절로 되살아나는 동작" 자체가 원치 않는 것. 고치는 대신 제거하고 스펙 정정(완전 종료 = 빈 상태). 실사용 판정이 스펙 확정의 근거.</p>
+</div>
+
+<h2>💡 인사이트 & 교훈</h2>
+<ul class="plain">
+  <li><b>실패 기록에는 "어디에/어떻게"까지.</b> 조건 없이 기각된 가설 때문에 정답이 묻힐 뻔했다. 가설 기각 시 시도 조건(적용 위치·계층)을 반드시 함께 기록 → <code>docs/solutions/</code>에 박제.</li>
+  <li><b>막히면 더 파지 말고 리셋.</b> 3회 실패를 승격 기준선으로. 리셋은 후퇴가 아니라 실패 데이터를 압축해 넘기는 전달.</li>
+  <li><b>"고쳐졌다"의 기준은 원인의 소멸.</b> "줌아웃이 안 보인다"가 아니라 "리사이즈가 로그에서 사라졌다"가 통과 기준 — 증상 기준이었다면 수습 패치도 통과했을 것.</li>
+</ul>
+
+<h2>🔧 워크플로우 고민 — 버그에도 전체 플로우?</h2>
+<p style="font-size:14px">MVP 기능은 브레인스토밍→스펙→플랜이 맞지만, 버그는 "코드가 정해진 스펙과 다른 것"이라 열린 질문이 없다. 규모별 경로로 정리:</p>
+<table>
+  <tr><th>규모</th><th>경로</th><th>오늘의 실례</th></tr>
+  <tr><td><b>소형</b></td><td>백로그 기록 → 브랜치에서 바로 수정·테스트·커밋</td><td>SwiftData affinity</td></tr>
+  <tr><td><b>중형</b></td><td>systematic-debugging만: 가설→계측→수정→검증</td><td>줌아웃 (오후)</td></tr>
+  <tr><td><b>대형</b></td><td>3회+ 실패 시 → 인수인계 문서 + 세션 리셋</td><td>줌아웃 (오전)</td></tr>
+</table>
+<p style="font-size:13.5px">승격 기준: ① 제품 결정을 바꾸면 스펙/상의로 ② 3회 실패하면 대형으로. → <code>workflow.md</code> 규칙화 검토.</p>
+
+<h2>📚 배운 것</h2>
+<ul class="plain">
+  <li>알럿(UIAlertController)의 키보드에도 <b>배경 SwiftUI 뷰가 keyboard avoidance로 반응</b>한다 — 키보드 알림은 전역.</li>
+  <li><code>ignoresSafeArea</code>는 <b>수정자 체인의 위치</b>가 의미를 바꾼다 — 인셋보다 바깥이어야 함.</li>
+  <li>actor 직렬화 ≠ 컨텍스트 affinity — <code>ModelContext</code>는 쓰는 곳에서(lazy) 만든다.</li>
+  <li><b>증분 빌드는 경고를 숨긴다</b> — 전체 리빌드로 Swift 6 경고 40건 발견 (default MainActor isolation).</li>
+  <li>부분 수정은 경고를 옮길 뿐일 수 있다 — 타입 단위 문제는 일괄 정리로.</li>
+</ul>
+
+<h2>🫀 느낀 점</h2>
+<div class="feel">
+  4연패 후의 리셋은 자존심 상하는 결정이었지만, 그 문서에서 출발한 오후 세션이 1줄로 끝냈을 때의 통쾌함이 다 상쇄했다. <b>실패를 잘 기록하는 것이 다음 시도의 속도가 된다</b>는 걸 몸으로 확인한 날. 초안 자동 저장을 지울 땐 아까웠지만 써보기 전엔 몰랐을 판단이라 후회 없음. MVP11이 기능→버그→리셋→해결→QA→아카이빙까지 한 호흡에 닫혀서 뿌듯하다.
+</div>
+
+<h2>🌅 다음 할 일</h2>
+<ul class="plain">
+  <li><b>1. Swift 6 동시성 전면 리팩토링</b> — 범위 5개 정리 완료, 브레인스토밍 없이 spec/plan 직행. 달리기 기록 전 정지작업.</li>
+  <li><b>2. 킥오프 브레인스토밍에서 결정</b> — 달리기 기록 MVP vs 디자인 설계 (디자인급 논의는 별도 세션, 핸드오프 전 문서 갱신부터).</li>
+</ul>
+
+<footer>Trace · 2026-07-08 데일리 회고 · MVP11 完</footer>
+
+</div>
+</body>
+</html>
