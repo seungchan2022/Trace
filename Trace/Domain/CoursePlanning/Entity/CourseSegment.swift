@@ -1,6 +1,6 @@
 import Foundation
 
-enum CourseSegment: Equatable, Sendable {
+nonisolated enum CourseSegment: Equatable, Sendable {
     case tapped(coordinates: [CourseCoordinate], distanceMeters: Double)
     case drawn(coordinates: [CourseCoordinate], distanceMeters: Double)
     // 기존 구간 뒤에 삽입되는 "갔다 되돌아오기"(역+정 병합) — 좌표 복제라 라우팅 비호출 (MVP11 스펙 §4)
