@@ -14,12 +14,12 @@ actor MockCourseRepository: CourseRepositoryProtocol {
     }
 }
 
-@MainActor
-final class CoursePlannerViewModelPersistenceTests: XCTestCase {
+nonisolated final class CoursePlannerViewModelPersistenceTests: XCTestCase {
     private func coord(_ lat: Double, _ lon: Double) -> CourseCoordinate {
         CourseCoordinate(latitude: lat, longitude: lon)
     }
 
+    @MainActor
     private func makeViewModel(repo: MockCourseRepository) -> CoursePlannerPageViewModel {
         CoursePlannerPageViewModel(
             coursePlanningService: StubPlannerService(),
@@ -28,6 +28,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         )
     }
 
+    @MainActor
     func testSaveCurrentCourse_savesSnapshotWithTrimmedName() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
@@ -45,6 +46,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         XCTAssertEqual(saved.first?.segments, vm.course?.segments)
     }
 
+    @MainActor
     func testSaveCurrentCourse_emptyNameOrCourse_doesNothing() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
@@ -56,6 +58,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         XCTAssertTrue(saved.isEmpty)
     }
 
+    @MainActor
     func testPresentCourseList_loadsCoursesNewestFirst() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
@@ -75,6 +78,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         XCTAssertEqual(vm.savedCourses.map(\.name), ["B", "A"])
     }
 
+    @MainActor
     func testRequestLoad_emptySession_loadsImmediately() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
@@ -87,6 +91,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         XCTAssertNil(vm.pendingLoadCourse)
     }
 
+    @MainActor
     func testRequestLoad_nonEmptySession_asksConfirmationThenReplaces() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
@@ -111,6 +116,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         XCTAssertFalse(vm.isCourseListPresented) // 불러오면 시트 닫힘
     }
 
+    @MainActor
     func testDeleteSavedCourse_removesFromRepositoryAndList() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
@@ -129,6 +135,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         XCTAssertTrue(remaining.isEmpty)
     }
 
+    @MainActor
     func testInsertRoundTrip_viaViewModel_updatesCourseAndPersists() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
@@ -146,12 +153,14 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         XCTAssertNil(vm.selectedSegmentIndex)
     }
 
+    @MainActor
     func testCanInsertRoundTrip_unknownKey_false() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
         XCTAssertFalse(vm.canInsertRoundTrip(afterColorKey: 0)) // 빈 코스
     }
 
+    @MainActor
     func testInsertWholeCourseRoundTrip_viaViewModel_updatesCourseAndPersists() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)
@@ -169,6 +178,7 @@ final class CoursePlannerViewModelPersistenceTests: XCTestCase {
         XCTAssertNil(vm.selectedSegmentIndex)
     }
 
+    @MainActor
     func testCanInsertWholeCourseRoundTrip_emptyCourse_false() async {
         let repo = MockCourseRepository()
         let vm = makeViewModel(repo: repo)

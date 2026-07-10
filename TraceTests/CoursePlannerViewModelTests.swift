@@ -1,8 +1,8 @@
 import XCTest
 @testable import Trace
 
-@MainActor
-final class CoursePlannerViewModelTests: XCTestCase {
+nonisolated final class CoursePlannerViewModelTests: XCTestCase {
+    @MainActor
     private func makeSUT(locationError: Error? = nil) -> CoursePlannerPageViewModel {
         let locationService = StubLocationService()
         locationService.stubbedError = locationError
@@ -18,11 +18,13 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Mode switching
 
+    @MainActor
     func testDefaultModeIsTap() {
         let sut = makeSUT()
         XCTAssertEqual(sut.interactionMode, .tap)
     }
 
+    @MainActor
     func testToggleToDrawPreservesTapRouteAsHistory() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.5, longitude: 127.0))
@@ -36,6 +38,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNotNil(sut.course, "탭 경로가 session으로 보존되어야 함")
     }
 
+    @MainActor
     func testClearResetsAllState() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.5, longitude: 127.0))
@@ -55,6 +58,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Location permission
 
+    @MainActor
     func testBootstrapSetsAlertOnDenied() async {
         let sut = makeSUT(locationError: LocationError.denied)
         await sut.bootstrapLocation()
@@ -62,6 +66,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNotNil(sut.initialCameraCoordinate)
     }
 
+    @MainActor
     func testBootstrapNoAlertOnSuccess() async {
         let sut = makeSUT()
         await sut.bootstrapLocation()
@@ -71,6 +76,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Camera restore
 
+    @MainActor
     func testBootstrapDoesNotOverrideWhenCameraRestored() async {
         let store = CameraStateStore(defaults: UserDefaults(suiteName: "testBootstrap")!)
         UserDefaults(suiteName: "testBootstrap")!.removePersistentDomain(forName: "testBootstrap")
@@ -86,6 +92,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.initialCameraCoordinate)
     }
 
+    @MainActor
     func testBootstrapSetsCoordinateWhenNoCameraStored() async {
         let store = CameraStateStore(defaults: UserDefaults(suiteName: "testBootstrapEmpty")!)
         UserDefaults(suiteName: "testBootstrapEmpty")!.removePersistentDomain(forName: "testBootstrapEmpty")
@@ -102,6 +109,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Tap accumulation (MVP6 핵심)
 
+    @MainActor
     func testThirdTap_afterExistingSegment_autoConnectsWithSingleTap() async {
         let sut = makeSUT()
         // 최초 2탭: A→B, 세그먼트 1개
@@ -116,6 +124,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.session.segments.count, 2)
     }
 
+    @MainActor
     func testAutoConnect_choosesNearerEndpoint() async {
         let sut = makeSUT()
         // A(37.50)→B(37.51) 세그먼트
@@ -130,6 +139,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.course?.coordinates.first?.latitude ?? 0, 37.499, accuracy: 0.001)
     }
 
+    @MainActor
     func testFirstTap_setsPendingStart() async {
         let sut = makeSUT()
         let coord = CourseCoordinate(latitude: 37.5, longitude: 127.0)
@@ -138,6 +148,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.course, "첫 탭만으로 course가 생기면 안 됨")
     }
 
+    @MainActor
     func testSecondTap_routesAndCommitsToSession() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
@@ -147,6 +158,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNotNil(sut.course)
     }
 
+    @MainActor
     func testMultipleTapPairs_accumulate() async {
         let sut = makeSUT()
         // 첫 번째 쌍: A→B
@@ -164,6 +176,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNotNil(sut.course)
     }
 
+    @MainActor
     func testTapUndo_removesLastSegment() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
@@ -176,6 +189,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.session.segments.count, 2)
     }
 
+    @MainActor
     func testUndo_clearsSelectedSegmentIndex() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
@@ -191,6 +205,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.selectedSegmentIndex, "undo로 세그먼트 배열이 바뀌면 선택된 인덱스는 무효화되어야 함")
     }
 
+    @MainActor
     func testAttachPrepend_clearsSelectedSegmentIndex() async {
         let sut = makeSUT()
         // A(37.50)→B(37.51) 세그먼트
@@ -208,6 +223,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.selectedSegmentIndex, "prepend로 기존 인덱스가 가리키는 세그먼트가 바뀌므로 선택은 초기화되어야 함")
     }
 
+    @MainActor
     func testTapRouteNotFound_showsErrorAndDoesNotAttach() async {
         let service = StubCoursePlanningService()
         service.stubbedError = CoursePlanningError.routeNotFound
@@ -224,6 +240,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.errorMessage, "도보 경로를 찾을 수 없습니다.")
     }
 
+    @MainActor
     func testTapDegenerateRoute_singleCoordinate_showsErrorAndDoesNotAttach() async {
         let service = StubCoursePlanningService()
         let single = CourseCoordinate(latitude: 37.5665, longitude: 126.9780)
@@ -245,6 +262,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.errorMessage, "도보 경로를 찾을 수 없습니다.")
     }
 
+    @MainActor
     func testFailedAttach_doesNotResetSelectedSegmentIndex() async {
         let service = StubCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
@@ -268,6 +286,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Draw mode: stroke = segment
 
+    @MainActor
     func testAppendStroke_attachesOneSegmentPerStroke() async {
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
@@ -291,6 +310,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.session.segments.count, 2, "스트로크마다 세그먼트가 하나씩 붙어야 함")
     }
 
+    @MainActor
     func testAppendStroke_startNearExistingEnd_snapsToExactEndpointBeforeRouting() async {
         let service = StubCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
@@ -317,6 +337,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.course?.coordinates.last, c)
     }
 
+    @MainActor
     func testAppendStroke_startNearExistingStart_snapsAndReversesPrepend() async {
         let service = StubCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
@@ -343,6 +364,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.course?.coordinates.first, d, "반전 prepend로 코스 시작이 d로 바뀌어야 함 (유일한 반전 케이스)")
     }
 
+    @MainActor
     func testStrokeStartSnapsToPinHitRegardlessOfDistance() async {
         // 코스 생성 후, 힌트 .start로 그리기 시작 — 실거리 20m 밖이어도 출발 좌표로 치환되어
         // 반전 prepend(attach 규칙 3)가 성립해야 한다
@@ -358,6 +380,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(course.coordinates.first?.latitude, 37.49, "출발 방향 연장(prepend) 성립")
     }
 
+    @MainActor
     func testStrokeStartFallsBackToRealDistanceWithoutHint() async {
         // 힌트 없음 + 실거리 20m 이내 → 기존 폴백 동작 유지 (도착점 치환 append)
         let sut = makeSUT()
@@ -373,6 +396,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.session.segments.count, 2, "gap 라우팅 없이 이어붙음")
     }
 
+    @MainActor
     func testDrawUndo_removesOnlyLastSegment() async {
         let sut = CoursePlannerPageViewModel(
             coursePlanningService: StubCoursePlanningService(),
@@ -397,6 +421,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.session.segments.count, 1)
     }
 
+    @MainActor
     func testToggleModes_doesNotAttachExtraSegment() async {
         let sut = makeSUT()
         await sut.toggleDrawingMode()
@@ -412,6 +437,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.session.segments.count, 1, "모드 종료 자체는 세그먼트를 추가하지 않아야 함")
     }
 
+    @MainActor
     func testThrottleErrorDuringStroke_doesNotAttachSegment() async {
         let service = StubCoursePlanningService()
         service.stubbedError = CoursePlanningError.throttled
@@ -432,6 +458,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertTrue(sut.session.segments.isEmpty)
     }
 
+    @MainActor
     func testDrawStrokeFailure_keepsPreviousSegmentAndSetsError() async {
         let service = StubCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
@@ -461,6 +488,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Undo with session
 
+    @MainActor
     func testClearAlsoResetsSession() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
@@ -475,6 +503,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.pendingTapStart)
     }
 
+    @MainActor
     func testThrottleErrorShowsUserMessage() async {
         let service = StubCoursePlanningService()
         service.stubbedError = CoursePlanningError.throttled
@@ -496,6 +525,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Race condition
 
+    @MainActor
     func testToggleDuringRouteCalculationDiscardsStaleCourse() async {
         let service = BlockingCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
@@ -524,6 +554,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.course)
     }
 
+    @MainActor
     func testClear_duringInFlightStroke_discardsStaleCourse() async {
         let service = BlockingCoursePlanningService()
         let sut = CoursePlannerPageViewModel(
@@ -554,6 +585,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Path stitching
 
+    @MainActor
     func testTapRouteIsPreservedWhenEnteringDrawMode() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
@@ -570,6 +602,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Redo
 
+    @MainActor
     func testRedo_restoresCourseAndResetsSelection() async {
         let sut = makeSUT()
         await sut.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
@@ -590,6 +623,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Pin hit handling (round trip / no-op / info)
 
+    @MainActor
     func testHandleMapTap_startPinHit_appendsReturnLegSnappedToStart() async {
         let sut = makeSUT()
         let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
@@ -607,6 +641,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertTrue(sut.isClosedCourse)
     }
 
+    @MainActor
     func testHandleMapTap_endPinHit_isNoOpWithInfo() async {
         let sut = makeSUT()
         let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
@@ -619,6 +654,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.infoMessage, "이미 도착점입니다")
     }
 
+    @MainActor
     func testHandleMapTap_mergedPinHit_isNoOpWithInfo() async {
         let sut = makeSUT()
         let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
@@ -631,6 +667,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(sut.infoMessage, "이미 닫힌 코스입니다")
     }
 
+    @MainActor
     func testInfoMessage_clearedOnNextAction() async {
         let sut = makeSUT()
         let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
@@ -642,6 +679,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.infoMessage, "다음 액션에서 안내가 사라져야 함")
     }
 
+    @MainActor
     func testRoundTripHintVisible_onlyForOpenCourseInTapMode() async {
         let sut = makeSUT()
         XCTAssertFalse(sut.roundTripHintVisible, "코스 없으면 숨김")
@@ -655,6 +693,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Waypoint coordinates
 
+    @MainActor
     func testWaypointCoordinates_areSegmentBoundariesExceptFinal() async {
         let viewModel = makeSUT()
         let a = CourseCoordinate(latitude: 37.50, longitude: 127.00)
@@ -670,6 +709,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertEqual(waypoints.first, viewModel.course?.segments.first?.coordinates.last)
     }
 
+    @MainActor
     func testWaypointCoordinates_emptyForSingleSegment() async {
         let viewModel = makeSUT()
         await viewModel.handleMapTap(at: CourseCoordinate(latitude: 37.50, longitude: 127.00))
@@ -679,6 +719,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
 
     // MARK: - Pending tap marker (임시 마커, MVP10)
 
+    @MainActor
     func testPendingTapShowsMarkerOnlyWhenNoPinHit() {
         let sut = makeSUT()
         sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
@@ -687,6 +728,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.pendingTapMarker, "핀 위 탭은 임시 마커 없음")
     }
 
+    @MainActor
     func testPendingTapIgnoredInDrawMode() async {
         let sut = makeSUT()
         await sut.toggleDrawingMode()
@@ -694,6 +736,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.pendingTapMarker)
     }
 
+    @MainActor
     func testPendingTapCancelledClearsMarker() {
         let sut = makeSUT()
         sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)
@@ -701,6 +744,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.pendingTapMarker)
     }
 
+    @MainActor
     func testHandleMapTapClearsMarkerOnSuccess() async {
         // 첫 탭으로 pendingTapStart를 만든 뒤, 실제 라우팅을 트리거하는 두 번째 탭 "직전"에
         // 보류 마커를 다시 세팅해야 그 호출이 마커를 지우는지 검증할 수 있다
@@ -716,6 +760,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(sut.pendingTapMarker, "성공 경로: 확정 흐름이 끝나면 마커 제거")
     }
 
+    @MainActor
     func testHandleMapTapClearsMarkerOnFailure() async {
         // 실패 경로: 라우팅 실패해도 유령 마커가 남지 않음 (기존 실패 스텁 패턴 재사용)
         let service = StubCoursePlanningService()
@@ -734,6 +779,7 @@ final class CoursePlannerViewModelTests: XCTestCase {
         XCTAssertNil(failing.pendingTapMarker, "실패 경로에서도 마커가 제거되어야 함")
     }
 
+    @MainActor
     func testToggleDrawingModeClearsPendingMarker() async {
         let sut = makeSUT()
         sut.pendingTapBegan(at: CourseCoordinate(latitude: 37.5, longitude: 127.0), hitPin: nil)

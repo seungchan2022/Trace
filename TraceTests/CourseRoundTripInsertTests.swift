@@ -1,13 +1,13 @@
 import XCTest
 @testable import Trace
 
-@MainActor
-final class CourseRoundTripInsertTests: XCTestCase {
+nonisolated final class CourseRoundTripInsertTests: XCTestCase {
     private func coord(_ lat: Double, _ lon: Double) -> CourseCoordinate {
         CourseCoordinate(latitude: lat, longitude: lon)
     }
 
     // 코스: A→B (order 0), B→C (order 1), C→D (order 2)
+    @MainActor
     private func makeThreeSegmentSession() async throws -> CourseEditSession {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -21,6 +21,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
 
     // MARK: - 자유 끝 제한 (2026-07-08 정정: 중간 구간은 불가)
 
+    @MainActor
     func testCanInsertRoundTrip_falseForMiddleSegment() async throws {
         let session = try await makeThreeSegmentSession()
         XCTAssertFalse(session.canInsertRoundTrip(afterOrder: 1)) // B→C, 중간 구간
@@ -30,6 +31,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
 
     // MARK: - 뒤쪽 끝: append, 코스 끝이 대상 구간 시작점으로 이동
 
+    @MainActor
     func testInsertRoundTrip_lastSegment_appendsReversedWithSameDistance() async throws {
         let session = try await makeThreeSegmentSession()
         session.insertRoundTrip(afterOrder: 2) // C→D 대상
@@ -48,6 +50,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.course?.coordinates.last, coord(37.52, 127.00))
     }
 
+    @MainActor
     func testInsertRoundTrip_undoOnce_removesRoundTrip() async throws {
         let session = try await makeThreeSegmentSession()
         let before = session.segments
@@ -56,6 +59,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.segments, before)
     }
 
+    @MainActor
     func testInsertRoundTrip_undoRedo_restoresAfterAnchor() async throws {
         let session = try await makeThreeSegmentSession()
         session.insertRoundTrip(afterOrder: 2)
@@ -65,6 +69,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.segments, after)
     }
 
+    @MainActor
     func testInsertRoundTrip_clearsRedoStack() async throws {
         let session = try await makeThreeSegmentSession()
         session.undo() // order 2(C→D) 제거 — 남은 뒤쪽 끝은 order 1(B→C)
@@ -75,6 +80,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
 
     // MARK: - 앞쪽 끝: prepend, 코스 시작이 대상 구간 끝점으로 이동
 
+    @MainActor
     func testInsertRoundTrip_frontSegment_prependsReversedBeforeIt() async throws {
         let session = try await makeThreeSegmentSession()
         session.insertRoundTrip(afterOrder: 0) // A→B 대상
@@ -91,6 +97,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.course?.distanceMeters, 4000)
     }
 
+    @MainActor
     func testInsertRoundTrip_frontSegment_undoRedo_restoresBeforeAnchor() async throws {
         let session = try await makeThreeSegmentSession()
         session.insertRoundTrip(afterOrder: 0)
@@ -102,6 +109,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
 
     // MARK: - 경계 케이스
 
+    @MainActor
     func testInsertRoundTrip_onRoundTripSegment_allowed() async throws {
         let session = try await makeThreeSegmentSession()
         session.insertRoundTrip(afterOrder: 2) // 뒤쪽 끝에 왕복(order 3) 삽입
@@ -112,6 +120,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.segments[4].coordinates.first, session.segments[3].coordinates.last)
     }
 
+    @MainActor
     func testCanInsertRoundTrip_falseForUnknownOrder() async throws {
         let session = try await makeThreeSegmentSession()
         XCTAssertFalse(session.canInsertRoundTrip(afterOrder: 99))
@@ -119,6 +128,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.segments.count, 3)
     }
 
+    @MainActor
     func testCanInsertRoundTrip_falseWhenExceedingCoordinateCap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -130,6 +140,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.segments.count, 1) // no-op
     }
 
+    @MainActor
     func testInsertRoundTrip_singleSegmentCourse_appends() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -141,6 +152,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.course?.distanceMeters, 2000)
     }
 
+    @MainActor
     func testInsertRoundTrip_closedCourse_keepsClosure() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -156,11 +168,13 @@ final class CourseRoundTripInsertTests: XCTestCase {
 
     // MARK: - 전체 왕복 (2026-07-08 추가)
 
+    @MainActor
     func testCanInsertWholeCourseRoundTrip_falseForEmptyCourse() {
         let session = CourseEditSession()
         XCTAssertFalse(session.canInsertWholeCourseRoundTrip())
     }
 
+    @MainActor
     func testInsertWholeCourseRoundTrip_appendsFullReversedCourse() async throws {
         let session = try await makeThreeSegmentSession()
         session.insertWholeCourseRoundTrip()
@@ -179,6 +193,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.course?.distanceMeters, 6000)
     }
 
+    @MainActor
     func testInsertWholeCourseRoundTrip_undo_removesWholeSegment() async throws {
         let session = try await makeThreeSegmentSession()
         let before = session.segments
@@ -187,6 +202,7 @@ final class CourseRoundTripInsertTests: XCTestCase {
         XCTAssertEqual(session.segments, before)
     }
 
+    @MainActor
     func testCanInsertWholeCourseRoundTrip_falseWhenExceedingCoordinateCap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()

@@ -29,9 +29,10 @@ final class CoreLocationService: NSObject, LocationServiceProtocol, CLLocationMa
     }
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        let status = manager.authorizationStatus
         Task { @MainActor in
-            switch manager.authorizationStatus {
-            case .authorizedAlways, .authorizedWhenInUse: manager.requestLocation()
+            switch status {
+            case .authorizedAlways, .authorizedWhenInUse: self.manager.requestLocation()
             case .restricted, .denied: finish(.failure(LocationError.denied))
             case .notDetermined: break
             @unknown default: finish(.failure(LocationError.unavailable))

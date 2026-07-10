@@ -1,8 +1,8 @@
 import XCTest
 @testable import Trace
 
-@MainActor
-final class CourseEditSessionTests: XCTestCase {
+nonisolated final class CourseEditSessionTests: XCTestCase {
+
     private let A = CourseCoordinate(latitude: 37.50, longitude: 127.00)
     private let B = CourseCoordinate(latitude: 37.51, longitude: 127.00)
     private let C = CourseCoordinate(latitude: 37.52, longitude: 127.00)
@@ -10,6 +10,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - reversed()
 
+    @MainActor
     func testReversedTapped() {
         let seg = CourseSegment.tapped(coordinates: [A, B], distanceMeters: 100)
         let rev = seg.reversed()
@@ -17,6 +18,7 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(rev.distanceMeters, 100)
     }
 
+    @MainActor
     func testReversedDrawn() {
         let seg = CourseSegment.drawn(coordinates: [A, B, C], distanceMeters: 200)
         let rev = seg.reversed()
@@ -25,6 +27,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - attach: no existing course
 
+    @MainActor
     func testAttachFirstSegment_appendsDirectly() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -38,6 +41,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - attach: append (new start near existing end)
 
+    @MainActor
     func testAttach_appendNoGap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -52,6 +56,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - attach: 규칙 3 — 출발점에서 시작한 구간은 반전 prepend (유일한 반전)
 
+    @MainActor
     func testAttach_startNearExistingStart_reversePrepends() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -67,6 +72,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - attach: 규칙 4 — 양 끝점 모두에서 먼 스트로크는 그린 그대로 도착점 gap append
 
+    @MainActor
     func testAttach_farStroke_appendsAsDrawnWithGap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -82,6 +88,7 @@ final class CourseEditSessionTests: XCTestCase {
     // MARK: - attach: 새 규칙 4 — 원거리 스트로크 최근접 끝점 비교 (MVP10 마일스톤 4)
 
     /// 원거리 시작점이 출발점에 명백히 더 가까움 → 반전 prepend + gap 병합 (스펙 QA 케이스 324m vs 1241m 축소판)
+    @MainActor
     func testAttach_farStroke_nearerToStart_reversePrependsWithGap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -101,6 +108,7 @@ final class CourseEditSessionTests: XCTestCase {
     }
 
     /// near-tie 경계 (출발점 쪽): 이등분선보다 ~11m 출발점 쪽 → 결정론적으로 prepend
+    @MainActor
     func testAttach_nearTieBoundary_startSide_prepends() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -115,6 +123,7 @@ final class CourseEditSessionTests: XCTestCase {
     }
 
     /// near-tie 경계 (도착점 쪽): 이등분선보다 ~11m 도착점 쪽 → 결정론적으로 append
+    @MainActor
     func testAttach_nearTieBoundary_endSide_appends() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -129,6 +138,7 @@ final class CourseEditSessionTests: XCTestCase {
     }
 
     /// 닫힌 코스 + 원거리 스트로크 → 여전히 append (규칙 1 선점 = 진입 조건 게이트 검증)
+    @MainActor
     func testAttach_closedCourse_farStroke_stillAppends() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -152,6 +162,7 @@ final class CourseEditSessionTests: XCTestCase {
     /// 근처)으로 그으면, 끝점 근접을 못 보던 옛 코드는 이걸 원거리 규칙 4로 흘려보내 불필요한
     /// gap을 만들고 마커를 옛 위치(출발점) 근처에 남겼다. 끝점 ≈ 출발점이므로 gap 없이 그대로
     /// prepend되어, 스트로크의 진짜 새 지점(A)이 코스의 새 출발점이 되어야 한다.
+    @MainActor
     func testAttach_reportedBug_strokeEndsNearStart_prependsUnreversedNoGap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -170,6 +181,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     /// 대칭 케이스(도착점 쪽): 스트로크가 먼 지점에서 시작해 도착점 근처에서 끝나면 반전 후
     /// append되어, 스트로크의 진짜 새 지점(D)이 코스의 새 도착점이 되어야 한다.
+    @MainActor
     func testAttach_symmetric_strokeEndsNearEnd_appendsReversedNoGap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -191,6 +203,7 @@ final class CourseEditSessionTests: XCTestCase {
     /// 임계값(20m) 안에 동시에 든다. 절대 임계값 두 개를 독립으로 체크하면 코드 순서상
     /// 먼저 걸리는 쪽이 실제 상대 거리와 무관하게 이겨버려, 3배 더 가까운 핀이 있어도
     /// 결과가 틀릴 수 있다 — 상대 비교라야 올바른(더 가까운) 쪽으로 붙는다.
+    @MainActor
     func testAttach_nearClosedLoop_endNearBothPins_attachesToGenuinelyCloserPin() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -213,6 +226,7 @@ final class CourseEditSessionTests: XCTestCase {
     /// 뒤바뀌어야 한다 — 코드 순서에 고정된 답이 아니라 실제 상대 거리를 따른다는 것의 직접
     /// 검증. (브리프의 "동일 방향 유지" 변형 대신, 상대 거리에 따라 결과가 정확히 반대로
     /// 뒤바뀌는 것을 확인하는 형태를 택함 — 이 쪽이 "순서 비의존"을 더 직접적으로 검증한다.)
+    @MainActor
     func testAttach_nearClosedLoop_nearTie_resultFollowsTrueCloserSide() async throws {
         let A2 = CourseCoordinate(latitude: A.latitude + 0.00022, longitude: A.longitude)
 
@@ -236,6 +250,7 @@ final class CourseEditSessionTests: XCTestCase {
     }
 
     /// 출발점 쪽 gap 라우팅 실패 → 세션 상태 불변 + redo 스택 보존 (MVP9 에러 규칙의 새 분기 적용)
+    @MainActor
     func testAttach_farStrokeNearerToStart_gapFailure_preservesState() async throws {
         let session = CourseEditSession()
         let okService = StubCourseService()
@@ -264,6 +279,7 @@ final class CourseEditSessionTests: XCTestCase {
     /// 밖이지만 newStart보다 훨씬 가까움) → endMin < startMin이므로 anchor = newEnd, "출발점
     /// 쪽" 분기(반전 prepend + gap). 이중 반전이 맞물려 최종 좌표 순서는 원래 스트로크
     /// 순서([newStart, newEnd])에 gap이 덧붙는 형태가 되어야 한다.
+    @MainActor
     func testAttach_farCase_symmetricEndAnchor_startSide_reversePrependsWithGap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -293,6 +309,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     /// 원거리 회귀(대칭): newEnd가 existingEnd(C)에서 ~30m → anchor = newEnd지만 이번엔
     /// "도착점 쪽" 분기(append + gap)를 탄다. 최종 도착점은 newStart여야 한다.
+    @MainActor
     func testAttach_farCase_symmetricEndAnchor_endSide_appendsWithGap() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -323,6 +340,7 @@ final class CourseEditSessionTests: XCTestCase {
     /// 경계 크로스오버 변형 A: 기존 코스 A→C와 반대 방향으로 그은 스트로크. newEnd가 A에서
     /// ~29m로 newStart(C에서 ~30m)보다 근소하게 더 가까워 anchor가 newEnd(A측)로 뽑히고,
     /// 진짜 더 가까운 핀(A)에 붙어야 한다 — 코드 순서가 아니라 상대 거리가 결정함을 증명.
+    @MainActor
     func testAttach_farCase_crissCrossPair_startSideCloser_attachesToTrueCloserPin() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -351,6 +369,7 @@ final class CourseEditSessionTests: XCTestCase {
     /// 경계 크로스오버 변형 B: 위와 같은 newStart(C에서 ~30m)에, newEnd만 A에서 ~31m로 ~2m
     /// 멀어지면 anchor가 newStart(C측)로 뒤집혀 진짜 더 가까운 핀(C)에 붙어야 한다 — 변형
     /// A와 정반대 결과가 나오는 것으로 결과가 코드 순서가 아니라 실제 상대 거리를 따름을 증명.
+    @MainActor
     func testAttach_farCase_crissCrossPair_endSideCloser_attachesToTrueCloserPin() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -378,6 +397,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - attach: 규칙 2 — 왕복 스트로크(도착점에서 시작)는 항상 append
 
+    @MainActor
     func testAttach_roundTripStroke_appendsPreservingRunOrder() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -394,6 +414,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - attach: 규칙 1 — 닫힌 코스에는 무조건 append
 
+    @MainActor
     func testAttach_closedCourse_alwaysAppends() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -411,6 +432,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - undo
 
+    @MainActor
     func testUndo_removesLastSegment() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -421,6 +443,7 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(session.segments.count, 1)
     }
 
+    @MainActor
     func testUndo_empty_doesNothing() {
         let session = CourseEditSession()
         session.undo()
@@ -429,6 +452,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - clear
 
+    @MainActor
     func testClear_removesAll() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -440,6 +464,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - undo is exact unit (no dangling gap)
 
+    @MainActor
     func testUndo_withGap_removesGapAndSegmentTogether() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -455,6 +480,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - undo after prepend (시간순 vs 공간순)
 
+    @MainActor
     func testUndo_afterPrepend_removesMostRecentlyAttachedNotSpatialLast() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -476,6 +502,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - segmentColorKeys (attach 순서 기반, prepend에도 안정적)
 
+    @MainActor
     func testSegmentColorKeys_stableAcrossPrepend() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -492,6 +519,7 @@ final class CourseEditSessionTests: XCTestCase {
 
     // MARK: - redo
 
+    @MainActor
     func testRedo_restoresUndoneSegment() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -506,6 +534,7 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertFalse(session.canRedo)
     }
 
+    @MainActor
     func testRedo_restoresPrependPosition() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -523,6 +552,7 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(session.segmentColorKeys, [2, 0, 1], "colorKey 보존")
     }
 
+    @MainActor
     func testRedo_multiple_restoresInReverseUndoOrder() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -538,6 +568,7 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(session.course?.coordinates.last, D)
     }
 
+    @MainActor
     func testAttach_success_clearsRedoStack() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -549,6 +580,7 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertFalse(session.canRedo, "성공한 attach는 미래를 무효화")
     }
 
+    @MainActor
     func testAttach_failure_preservesRedoStack() async throws {
         let session = CourseEditSession()
         let okService = StubCourseService()
@@ -567,6 +599,7 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertEqual(session.segments.count, 1)
     }
 
+    @MainActor
     func testClear_clearsRedoStack() async throws {
         let session = CourseEditSession()
         let service = StubCourseService()
@@ -577,12 +610,14 @@ final class CourseEditSessionTests: XCTestCase {
         XCTAssertFalse(session.canRedo)
     }
 
+    @MainActor
     func testRedo_empty_doesNothing() {
         let session = CourseEditSession()
         session.redo()
         XCTAssertTrue(session.segments.isEmpty)
     }
 
+    @MainActor
     func testLoadSegments_reassignsSequentialOrders() {
         let session = CourseEditSession()
         let segs: [CourseSegment] = [

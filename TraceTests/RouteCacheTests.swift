@@ -1,8 +1,8 @@
 import XCTest
 @testable import Trace
 
-@MainActor
-final class RouteCacheTests: XCTestCase {
+nonisolated final class RouteCacheTests: XCTestCase {
+    @MainActor
     func testCacheHitSkipsAPICall() async throws {
         let service = SpyMapKitService()
         let start = CourseCoordinate(latitude: 37.50000, longitude: 127.00000)
@@ -15,6 +15,7 @@ final class RouteCacheTests: XCTestCase {
         XCTAssertEqual(first, second)
     }
 
+    @MainActor
     func testCacheMissCallsAPI() async throws {
         let service = SpyMapKitService()
         let a = CourseCoordinate(latitude: 37.50000, longitude: 127.00000)
@@ -27,6 +28,7 @@ final class RouteCacheTests: XCTestCase {
         XCTAssertEqual(service.apiCallCount, 2)
     }
 
+    @MainActor
     func testRoundingMatchesNearbyCoordinates() async throws {
         let service = SpyMapKitService()
         let start1 = CourseCoordinate(latitude: 37.500001, longitude: 127.000002)

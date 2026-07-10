@@ -34,7 +34,7 @@ final class ColoredPinAnnotation: NSObject, MKAnnotation {
     }
 }
 
-final class SegmentPolyline: MKPolyline {
+nonisolated final class SegmentPolyline: MKPolyline {
     var segmentIndex: Int = 0
     // segmentIndex는 배열상 위치(선택 하이라이트 매칭용), colorKey는 attach 생성 순서(색상 identity, prepend에도 안정적)
     var colorKey: Int = 0
@@ -108,7 +108,7 @@ final class WaypointDotsOverlay: NSObject, MKOverlay {
     }
 }
 
-final class WaypointDotsRenderer: MKOverlayRenderer {
+nonisolated final class WaypointDotsRenderer: MKOverlayRenderer {
     override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
         guard let dotsOverlay = overlay as? WaypointDotsOverlay else { return }
         let radius: CGFloat = 5 / zoomScale

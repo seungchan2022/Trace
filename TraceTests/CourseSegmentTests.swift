@@ -1,7 +1,7 @@
 import XCTest
 @testable import Trace
 
-final class CourseSegmentTests: XCTestCase {
+nonisolated final class CourseSegmentTests: XCTestCase {
     private let a = CourseCoordinate(latitude: 37.5, longitude: 127.0)
     private let b = CourseCoordinate(latitude: 37.6, longitude: 127.0)
 

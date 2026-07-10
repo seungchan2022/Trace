@@ -1,7 +1,7 @@
 import XCTest
 @testable import Trace
 
-final class CourseCoordinateGeoTests: XCTestCase {
+nonisolated final class CourseCoordinateGeoTests: XCTestCase {
     private let base = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
 
     /// base에서 동쪽 east(m), 북쪽 north(m) 이동한 좌표

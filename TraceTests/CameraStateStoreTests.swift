@@ -1,20 +1,23 @@
 import XCTest
 @testable import Trace
 
-final class CameraStateStoreTests: XCTestCase {
+nonisolated final class CameraStateStoreTests: XCTestCase {
     private let suiteName = "CameraStateStoreTests"
 
+    @MainActor
     private func makeSUT() -> CameraStateStore {
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
         return CameraStateStore(defaults: defaults)
     }
 
+    @MainActor
     func testRestoreReturnsNilWhenEmpty() {
         let sut = makeSUT()
         XCTAssertNil(sut.restore())
     }
 
+    @MainActor
     func testSaveAndRestoreRoundTrips() {
         let sut = makeSUT()
         sut.save(latitude: 37.5, longitude: 127.0, latitudinalMeters: 500, longitudinalMeters: 500)
@@ -25,6 +28,7 @@ final class CameraStateStoreTests: XCTestCase {
         XCTAssertEqual(bounds?.longitudinalMeters, 500)
     }
 
+    @MainActor
     func testSaveOverwritesPreviousValue() {
         let sut = makeSUT()
         sut.save(latitude: 37.5, longitude: 127.0, latitudinalMeters: 500, longitudinalMeters: 500)

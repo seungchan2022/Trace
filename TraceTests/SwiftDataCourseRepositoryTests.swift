@@ -1,7 +1,7 @@
 import XCTest
 @testable import Trace
 
-final class SwiftDataCourseRepositoryTests: XCTestCase {
+nonisolated final class SwiftDataCourseRepositoryTests: XCTestCase {
     private func coord(_ lat: Double, _ lon: Double) -> CourseCoordinate {
         CourseCoordinate(latitude: lat, longitude: lon)
     }

@@ -1,8 +1,8 @@
 import XCTest
 @testable import Trace
 
-@MainActor
-final class SnappedRouteTests: XCTestCase {
+nonisolated final class SnappedRouteTests: XCTestCase {
+    @MainActor
     func testStitchesLegsAndSumsDistance() async throws {
         let service = StubLegService()
         let p = [
@@ -16,6 +16,7 @@ final class SnappedRouteTests: XCTestCase {
         XCTAssertEqual(course.coordinates, [p[0], p[1], p[2]])
     }
 
+    @MainActor
     func testRetriesTransientLegFailureOnce() async throws {
         let service = StubLegService(failFirstCall: true)
         let p = [
@@ -27,6 +28,7 @@ final class SnappedRouteTests: XCTestCase {
         XCTAssertEqual(course.distanceMeters, 100)
     }
 
+    @MainActor
     func testThrowsRealErrorWhenRetryExhausted() async {
         let service = StubLegService(alwaysFail: true)
         let p = [
@@ -42,6 +44,7 @@ final class SnappedRouteTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testThrowsWhenFewerThanTwoPoints() async {
         let service = StubLegService()
         do {

@@ -1,11 +1,12 @@
 import XCTest
 @testable import Trace
 
-final class TapClassifierTests: XCTestCase {
+nonisolated final class TapClassifierTests: XCTestCase {
     private let p1 = CGPoint(x: 100, y: 100)
     private let near = CGPoint(x: 110, y: 110)   // 40pt 이내
     private let far = CGPoint(x: 300, y: 300)    // 40pt 밖
 
+    @MainActor
     func testSingleTapConfirmsAfterWindow() {
         let sut = TapClassifier()
         XCTAssertEqual(sut.tapEnded(at: p1, time: 0), [.pending(p1)])
@@ -13,6 +14,7 @@ final class TapClassifierTests: XCTestCase {
         XCTAssertFalse(sut.hasPending)
     }
 
+    @MainActor
     func testWindowNotElapsedYieldsNothing() {
         let sut = TapClassifier()
         _ = sut.tapEnded(at: p1, time: 0)
@@ -20,6 +22,7 @@ final class TapClassifierTests: XCTestCase {
         XCTAssertTrue(sut.hasPending)
     }
 
+    @MainActor
     func testDoubleTapCancelsAndSwallowsSecondTap() {
         let sut = TapClassifier()
         _ = sut.tapEnded(at: p1, time: 0)
@@ -28,6 +31,7 @@ final class TapClassifierTests: XCTestCase {
         XCTAssertEqual(sut.windowElapsed(time: 0.4), [])        // 잔여 타이머 발화는 무해
     }
 
+    @MainActor
     func testOneFingerZoomCancelsWithoutTapCompletion() {
         let sut = TapClassifier()
         _ = sut.tapEnded(at: p1, time: 0)
@@ -37,6 +41,7 @@ final class TapClassifierTests: XCTestCase {
         XCTAssertEqual(sut.tapEnded(at: far, time: 2.1), [.pending(far)])
     }
 
+    @MainActor
     func testFarQuickSecondTapConfirmsFirstEarly() {
         let sut = TapClassifier()
         _ = sut.tapEnded(at: p1, time: 0)
@@ -45,6 +50,7 @@ final class TapClassifierTests: XCTestCase {
         XCTAssertEqual(sut.tapEnded(at: far, time: 0.2), [.pending(far)])
     }
 
+    @MainActor
     func testResetCancelsPendingOnce() {
         let sut = TapClassifier()
         _ = sut.tapEnded(at: p1, time: 0)
@@ -52,6 +58,7 @@ final class TapClassifierTests: XCTestCase {
         XCTAssertEqual(sut.reset(), [])
     }
 
+    @MainActor
     func testLateTouchAfterWindowConfirmsPending() {
         let sut = TapClassifier()
         _ = sut.tapEnded(at: p1, time: 0)

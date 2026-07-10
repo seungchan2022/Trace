@@ -1,7 +1,7 @@
 import XCTest
 @testable import Trace
 
-final class DrawnPathSamplerTests: XCTestCase {
+nonisolated final class DrawnPathSamplerTests: XCTestCase {
     func testEmptyReturnsEmpty() {
         XCTAssertTrue(DrawnPathSampler.sample([], minSpacingMeters: 120).isEmpty)
     }

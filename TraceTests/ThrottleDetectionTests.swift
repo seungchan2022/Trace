@@ -1,14 +1,15 @@
 import XCTest
 @testable import Trace
 
-@MainActor
-final class ThrottleDetectionTests: XCTestCase {
+nonisolated final class ThrottleDetectionTests: XCTestCase {
+    @MainActor
     func testThrottleErrorIsDistinctFromRequestFailed() {
         let throttled = CoursePlanningError.throttled
         let failed = CoursePlanningError.requestFailed
         XCTAssertNotEqual(throttled, failed)
     }
 
+    @MainActor
     func testRouteWithRetryDoesNotRetryOnThrottle() async {
         let service = ThrottleStubService()
         // snappedRoute가 routeWithRetry를 사용하므로 간접 테스트

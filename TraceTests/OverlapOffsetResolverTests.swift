@@ -1,7 +1,7 @@
 import XCTest
 @testable import Trace
 
-final class OverlapOffsetResolverTests: XCTestCase {
+nonisolated final class OverlapOffsetResolverTests: XCTestCase {
     private let base = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
 
     private func point(east: Double, north: Double) -> CourseCoordinate {
@@ -35,6 +35,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
 
     // MARK: - 기본 동작
 
+    @MainActor
     func testNonOverlappingSegmentsUnchanged() {
         let a = segment(line(fromEast: 0, toEast: 200, north: 0, spacing: 10))
         let b = segment(line(fromEast: 0, toEast: 200, north: 100, spacing: 10)) // 100m 떨어진 평행선
@@ -45,6 +46,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
         XCTAssertEqual(display[1], b.coordinates)
     }
 
+    @MainActor
     func testOutAndBackOffsetsLaterCreatedSegmentOnly() {
         // 가는 길(동쪽 0→200m), 오는 길(동쪽 200→0m, 같은 도로)
         let outbound = segment(line(fromEast: 0, toEast: 200, north: 0, spacing: 10))
@@ -61,6 +63,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
         XCTAssertGreaterThan(display[1][mid].latitude, inbound.coordinates[mid].latitude)
     }
 
+    @MainActor
     func testPrependKeepsEarlierCreatedSegmentOnRoad() {
         // 공간 순서 ≠ 생성 순서: 새 구간(colorKey 1)이 prepend되어 배열 맨 앞
         let older = segment(line(fromEast: 0, toEast: 200, north: 0, spacing: 10))    // colorKey 0
@@ -73,6 +76,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
         XCTAssertEqual(midDisplacement(prepended.coordinates, display[0]), 4, accuracy: 1.0)
     }
 
+    @MainActor
     func testTripleOverlapUsesMultipliedOffset() {
         let first = segment(line(fromEast: 0, toEast: 200, north: 0, spacing: 10))
         let second = segment(line(fromEast: 200, toEast: 0, north: 0, spacing: 10))
@@ -88,6 +92,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
 
     // MARK: - 감지 방식 (점-대-선분)
 
+    @MainActor
     func testSparseVertexPolylineStillDetected() {
         // 라우팅 선처럼 정점이 희소(100m 간격)한 직선 + 그 위를 지나는 조밀(5m)한 그리기 스트로크
         let sparse = segment(line(fromEast: 0, toEast: 200, north: 0, spacing: 100)) // 정점 3개
@@ -98,6 +103,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
         XCTAssertGreaterThan(midDisplacement(dense.coordinates, display[1]), 3)
     }
 
+    @MainActor
     func testShortNoiseCrossingIgnored() {
         // 수직 교차: 임계 안에 드는 점이 1~2개뿐 → run 필터로 무시
         let horizontal = segment(line(fromEast: 0, toEast: 200, north: 0, spacing: 10))
@@ -111,6 +117,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
 
     // MARK: - 불변성
 
+    @MainActor
     func testOriginalSegmentsUntouched() {
         let outbound = segment(line(fromEast: 0, toEast: 200, north: 0, spacing: 10))
         let inbound = segment(line(fromEast: 200, toEast: 0, north: 0, spacing: 10))
@@ -123,6 +130,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
 
     // MARK: - 테이퍼 (실거리 15m 선형 보간)
 
+    @MainActor
     func testTaperRampsUpFromRunBoundary() {
         // 오는 길의 겹침 run 시작 부근: 오프셋이 0 → 4m로 점진 증가해야 한다
         let outbound = segment(line(fromEast: 0, toEast: 300, north: 0, spacing: 5))
@@ -144,6 +152,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testNTransitionHasNoStep() {
         // 세 번째 통과가 run 중간에서 겹침 수가 변해도(1겹→2겹) 단차 없이 보간되어야 한다
         // 구성: first는 동쪽 0~150m만, second는 0~300m 전체 왕복 → third(0~300m)는
@@ -167,6 +176,7 @@ final class OverlapOffsetResolverTests: XCTestCase {
 
     // MARK: - 핀 예외
 
+    @MainActor
     func testCourseEndpointsStayPinned() {
         // 왕복: 코스 마지막 좌표(도착 핀 지점)는 겹쳐도 원본 유지
         let outbound = segment(line(fromEast: 0, toEast: 200, north: 0, spacing: 10))
