@@ -1,10 +1,18 @@
 # Swift 6 Migration Implementation Plan
 
+> **완료(소급 확인) — 2026-07-11.** Task 1~7 전부 구현·리뷰·병합 완료(근거 커밋:
+> `67895f7`,`74a3f05`,`7458bbd`,`a54c4c7`,`a6ebbe1`,`86ab044`,`a6be795`,`18fa11a`). 아래 체크박스는
+> 진행 중 갱신되지 않은 채로 남아있어 소급으로만 확인 — 실제 작업 여부는 커밋 로그가 근거다.
+> **Task 7c(계획에 없던 추가 작업, 2026-07-11)**: Architecture 절이 확정한 전략 (a)를 구현 후
+> 재검토해서 반대 전략(기본 nonisolated + 명시 `@MainActor`)으로 뒤집음 — 근거 커밋 `85e4899`,
+> 결정 기록은 `docs/agent-rules/project-decisions.md`. 최종 상태는 이 문서의 Architecture 절이
+> 아니라 project-decisions.md를 기준으로 본다. `main`에 통합 완료(`6e2a968`), 브랜치 삭제됨.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Swift 6 언어 모드 전환 — 암묵/명시 isolation 정리, Sendable 정합, GCD 현대화, `SWIFT_VERSION = 6.0` + 경고 0.
 
-**Architecture:** 스펙 `docs/superpowers/specs/2026-07-10-swift6-migration-design.md` 확정 전략 (a): `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` 유지, 비-UI 타입만 `nonisolated` 명시. step 0에서 strict concurrency와 테스트 타깃 격리를 먼저 정렬해 확정 인벤토리를 얻고, 마지막에 순수 버전 플립.
+**Architecture (최초 확정안 — 이후 Task 7c에서 뒤집힘, 위 소급 노트 참고):** 스펙 `docs/superpowers/specs/2026-07-10-swift6-migration-design.md` 확정 전략 (a): `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` 유지, 비-UI 타입만 `nonisolated` 명시. step 0에서 strict concurrency와 테스트 타깃 격리를 먼저 정렬해 확정 인벤토리를 얻고, 마지막에 순수 버전 플립.
 
 **Tech Stack:** Swift 6.x / Xcode(`Trace.xcodeproj`, scheme `Trace`) / XCTest / SwiftLint
 
