@@ -783,9 +783,9 @@ Rename the `@State` property, wire `topBar` into the top inset, move the bottom 
 
 Keep `mapPins`, `saveCameraPosition()`, `regionFitting(_:)` exactly as they are today (no change in this task).
 
-- [ ] **Step 2 (repeat check): remove now-dead `statusPanel`** — delete the old `private var statusPanel` computed property from `CoursePlannerPage.swift` entirely (its content moved into `sheetHeader` in the new bottom sheet file).
+- [ ] **Step 4: Remove the now-dead `statusPanel`** — delete the old `private var statusPanel` computed property from `CoursePlannerPage.swift` entirely (its content moved into `sheetHeader` in the new bottom sheet file).
 
-- [ ] **Step 3: BUILD**
+- [ ] **Step 5: BUILD**
 
 ```bash
 xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination "platform=iOS Simulator,id=$SIM_UDID" build
@@ -793,7 +793,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destinat
 
 Expected: builds clean. If `isSegmentPanelExpanded` or `segmentPanel` are referenced anywhere else (grep first: `grep -rn "isSegmentPanelExpanded\|segmentPanel\b" Trace/`), update those call sites too — there should be none left outside the files touched above.
 
-- [ ] **Step 4: Manual regression pass on simulator (this is the test cycle for a structural task — there is no new business logic to unit-test)**
+- [ ] **Step 6: Manual regression pass on simulator (this is the test cycle for a structural task — there is no new business logic to unit-test)**
 
 Use XcodeBuildMCP: `build_run_sim`, then:
 1. Tap twice on map → route appears in the new bottom sheet header (distance text). Tap the header → sheet expands to show segment rows. Tap again → collapses.
@@ -804,7 +804,7 @@ Use XcodeBuildMCP: `build_run_sim`, then:
 
 Expected: all five pass with no regressions.
 
-- [ ] **Step 5: TEST + LINT + stamp + commit**
+- [ ] **Step 7: TEST + LINT + stamp + commit**
 
 ```bash
 xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destination "platform=iOS Simulator,id=$SIM_UDID" -parallel-testing-enabled NO test
@@ -870,6 +870,9 @@ extension CoursePlannerPage {
 
     private func segmentToggleButton(title: String, systemImage: String, isActive: Bool) -> some View {
         Button {
+            // toggleDrawingMode()는 상태를 뒤집는 순수 토글이라, 이미 활성인 세그먼트를 다시
+            // 탭하면 반대 모드로 넘어가 버린다 — 세그먼트 컨트롤은 활성 항목 재탭이 no-op이어야 한다.
+            guard !isActive else { return }
             Task { await viewModel.toggleDrawingMode() }
         } label: {
             Label(title, systemImage: systemImage)
@@ -894,7 +897,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destinat
 
 Use XcodeBuildMCP `build_run_sim` + `screenshot` once in light appearance and once with the simulator's appearance toggled to dark (Settings app or `xcrun simctl ui $SIM_UDID appearance dark`). Compare the top bar against spec §1.1/§2: accent circle logo, glass segmented control, glass folder button — both appearances should use the correct token colors (no hardcoded black/white leaking through).
 
-- [ ] **Step 3: Manual regression** — tap/draw toggle still switches modes; course list button still opens the sheet; `coursePlanner.drawToggle` and `coursePlanner.courseList` identifiers still present (`grep -n "coursePlanner.drawToggle\|coursePlanner.courseList" Trace/Pages/CoursePlannerPage/UIComponent/CoursePlannerPage+ControlsComponent.swift`).
+- [ ] **Step 3: Manual regression** — tap/draw toggle still switches modes; **tapping the already-active segment (e.g. tapping "경로 찍기" while already in tap mode) must be a no-op, not flip into draw mode** — this is the idempotence check Step 1's `guard !isActive` exists for; course list button still opens the sheet; `coursePlanner.drawToggle` and `coursePlanner.courseList` identifiers still present (`grep -n "coursePlanner.drawToggle\|coursePlanner.courseList" Trace/Pages/CoursePlannerPage/UIComponent/CoursePlannerPage+ControlsComponent.swift`).
 
 - [ ] **Step 4: TEST + LINT + stamp + commit**
 
@@ -1037,22 +1040,25 @@ git commit -m "style: FAB 스택(되돌리기·앞으로·초기화·내 위치)
         return nil
     }
 
+    // SwiftUI는 Button 라벨 안에 또 다른 Button을 중첩하면 탭 판정이 불안정해진다(어느 쪽이
+    // 반응할지 보장 안 됨). 그래서 "펼치기/접기" 탭 영역(거리·서브타이틀)과 "저장"/"전체 왕복"은
+    // 하나의 Button label 안에 넣지 않고, 바깥 HStack의 형제(sibling)로 둔다.
     private var sheetHeader: some View {
-        Button {
-            // 스펙 §1.4 시트 높이 전환(0.32s) — 펼침/접힘 모두 이 spring으로 애니메이션.
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
-                isBottomSheetExpanded.toggle()
-            }
-            if !isBottomSheetExpanded {
-                let keys = viewModel.segmentColorKeys
-                let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
-                let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
-                panelWasNearLatestAtCollapse = SegmentPanelLogic.shouldAutoScroll(
-                    anchorIndex: anchorIndex, previousLatestIndex: latestIndex
-                )
-            }
-        } label: {
-            HStack(alignment: .firstTextBaseline) {
+        HStack(alignment: .firstTextBaseline) {
+            Button {
+                // 스펙 §1.4 시트 높이 전환(0.32s) — 펼침/접힘 모두 이 spring으로 애니메이션.
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+                    isBottomSheetExpanded.toggle()
+                }
+                if !isBottomSheetExpanded {
+                    let keys = viewModel.segmentColorKeys
+                    let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
+                    let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
+                    panelWasNearLatestAtCollapse = SegmentPanelLogic.shouldAutoScroll(
+                        anchorIndex: anchorIndex, previousLatestIndex: latestIndex
+                    )
+                }
+            } label: {
                 VStack(alignment: .leading, spacing: 4) {
                     if let distanceText = viewModel.distanceText {
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -1074,40 +1080,44 @@ git commit -m "style: FAB 스택(되돌리기·앞으로·초기화·내 위치)
                         .foregroundStyle(DesignToken.Color.ink2)
                         .accessibilityIdentifier(subtitleAccessibilityIdentifier)
                 }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("coursePlanner.segmentPanel.collapsed")
 
-                Spacer()
+            Spacer()
 
-                VStack(alignment: .trailing, spacing: 8) {
-                    if let kind = sheetHeaderStatusChipKind {
-                        StatusChip(kind: kind)
+            VStack(alignment: .trailing, spacing: 8) {
+                if let kind = sheetHeaderStatusChipKind {
+                    StatusChip(kind: kind)
+                }
+                HStack(spacing: 8) {
+                    // "저장"은 텍스트+아이콘 캡슐이라 GlassIconButtonStyle(42×42 고정 프레임)에
+                    // 억지로 끼우면 라벨이 잘린다 — 이 버튼만 인라인 Capsule 배경을 직접 사용한다.
+                    Button { viewModel.isSavePromptPresented = true } label: {
+                        Label("저장", systemImage: "bookmark.fill")
+                            .font(DesignToken.Typography.chip)
+                            .foregroundStyle(DesignToken.Color.accentInk)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Capsule().fill(DesignToken.Color.accent))
                     }
-                    HStack(spacing: 8) {
-                        Button { viewModel.isSavePromptPresented = true } label: {
-                            Label("저장", systemImage: "bookmark.fill")
-                                .font(DesignToken.Typography.chip)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                        }
-                        .buttonStyle(.glassIcon(prominent: true, disabled: !viewModel.canSaveCourse))
-                        .disabled(!viewModel.canSaveCourse)
-                        .fixedSize()
-                        .accessibilityIdentifier("coursePlanner.saveCourse")
+                    .disabled(!viewModel.canSaveCourse)
+                    .opacity(viewModel.canSaveCourse ? 1 : 0.4)
+                    .accessibilityIdentifier("coursePlanner.saveCourse")
 
-                        Button { viewModel.insertWholeCourseRoundTrip() } label: {
-                            Text("전체 왕복")
-                                .font(DesignToken.Typography.sectionLabel)
-                                .foregroundStyle(DesignToken.Color.accent)
-                        }
-                        .disabled(!viewModel.canInsertWholeCourseRoundTrip)
-                        .accessibilityIdentifier("coursePlanner.wholeCourseRoundTrip")
+                    Button { viewModel.insertWholeCourseRoundTrip() } label: {
+                        Text("전체 왕복")
+                            .font(DesignToken.Typography.sectionLabel)
+                            .foregroundStyle(DesignToken.Color.accent)
                     }
+                    .disabled(!viewModel.canInsertWholeCourseRoundTrip)
+                    .accessibilityIdentifier("coursePlanner.wholeCourseRoundTrip")
                 }
             }
-            .padding(.horizontal, DesignToken.Size.sheetPadding)
-            .padding(.vertical, 16)
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("coursePlanner.segmentPanel.collapsed")
+        .padding(.horizontal, DesignToken.Size.sheetPadding)
+        .padding(.vertical, 16)
     }
 
     private var subtitleText: String {
@@ -1137,7 +1147,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destinat
 
 Drive each subtitle state manually on the simulator (empty → tap once → tap twice → toggle draw mode → force an error by tapping open water) and confirm the copy in §2.1 of the spec appears verbatim for each.
 
-- [ ] **Step 3: Manual regression** — save button still opens the name alert (and keyboard doesn't zoom the map — Global Constraint re-check since this task touches the header inside the sheet that sits in the bottom `safeAreaInset`); whole round trip button still inserts a round trip when enabled; tapping the header still expands/collapses the sheet with a visible spring animation (not an instant snap).
+- [ ] **Step 3: Manual regression** — save button still opens the name alert (and keyboard doesn't zoom the map — Global Constraint re-check since this task touches the header inside the sheet that sits in the bottom `safeAreaInset`); whole round trip button still inserts a round trip when enabled; **tapping "저장" or "전체 왕복" must only fire that button's own action and must NOT also expand/collapse the sheet** (this is what the sibling-not-nested restructure in Step 1 is for); tapping the distance/subtitle area still expands/collapses the sheet with a visible spring animation (not an instant snap).
 
 - [ ] **Step 4: TEST + LINT + stamp + commit**
 
@@ -1236,7 +1246,7 @@ Add supporting state near the other `@State` declarations, and a side-effect-fre
     }
 ```
 
-In `mapView`, add another overlay (order after the `fabStack` overlay, before `.onGeometryChange`) plus the `onChange` that drives the 2.6s auto-dismiss:
+In `mapView`, add another overlay (order after the `fabStack` overlay, before `.onGeometryChange`) plus the `onChange`/`.task(id:)` pair that drives the 2.6s auto-dismiss. `.task(id: topHintText)` automatically cancels its previous sleep the moment `topHintText` changes to a new value (SwiftUI's built-in behavior for `id`-keyed tasks), so a second error arriving before the first one's 2.6s elapses restarts the clock instead of the first timer prematurely dismissing the second error:
 
 ```swift
         .overlay(alignment: .top) {
@@ -1246,17 +1256,15 @@ In `mapView`, add another overlay (order after the `fabStack` overlay, before `.
                     .transition(.opacity)
             }
         }
-        .onChange(of: topHintText) { _, newValue in
+        .onChange(of: topHintText) { _, _ in
             isTopHintDismissed = false
-            guard newValue != nil else { return }
-            Task {
-                try? await Task.sleep(for: .seconds(HintPill.autoDismissDelay))
-                isTopHintDismissed = true
-            }
+        }
+        .task(id: topHintText) {
+            guard topHintText != nil else { return }
+            try? await Task.sleep(for: .seconds(HintPill.autoDismissDelay))
+            isTopHintDismissed = true
         }
 ```
-
-A fresh error replaces an already-dismissed one correctly: `topHintText` changing (old error → new error, or nil → error) always fires `onChange`, which resets `isTopHintDismissed = false` before starting a new 2.6s timer.
 
 - [ ] **Step 3: BUILD, then screenshot check** — segment rows show the color bar/title/subtitle/distance layout, selected row shows accent border + tinted background, top hint pill appears for drawing-mode guidance and for errors, and the error pill disappears on its own after ~2.6s.
 
