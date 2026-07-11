@@ -656,21 +656,21 @@ Rename the `@State` property, and rebuild `body` as a `ZStack` with the full-ble
             // 지도가 풀블리드 배경, 아래 VStack은 그 위에 뜨는 크롬(탑바/FAB/시트) — safeAreaInset이
             // 아니므로 시트가 펼쳐져도 지도 프레임(mapView의 onGeometryChange 측정값)이 바뀌지 않는다.
             // .ignoresSafeArea()를 이 VStack에는 걸지 않아 상태바/노치·홈 인디케이터는 자동으로 피한다.
+            // 히트테스트는 별도 처리가 필요 없다 — `Spacer()`는 렌더링되는 콘텐츠가 없어 기본적으로
+            // 터치를 가로채지 않으므로, 빈 공간(Spacer 자리)은 항상 지도로 전달되고 실제 콘텐츠가
+            // 있는 topBar/fabStack/bottomSheet만 자연스럽게 반응한다. (부모에 `.allowsHitTesting(false)`를
+            // 걸고 자식에서 `.allowsHitTesting(true)`로 되살리는 방식은 이 SwiftUI 버전에서 자식의
+            // `true`가 부모의 `false`를 덮어쓰지 못해 크롬 전체가 먹통이 되는 것으로 실기기 검증됨 —
+            // 이 패턴은 쓰지 않는다.)
             VStack(spacing: 0) {
                 topBar
-                    .allowsHitTesting(true)
                 Spacer()
                 HStack {
                     Spacer()
                     fabStack
-                        .allowsHitTesting(true)
                 }
                 bottomSheet
-                    .allowsHitTesting(true)
             }
-            // 이 VStack 전체는 히트테스트를 끄고(Spacer 영역이 지도 탭을 가로채지 않도록) 각 크롬
-            // 요소에서만 개별적으로 다시 켠다 — 지도 중앙을 탭/드로잉해도 항상 지도로 전달돼야 한다.
-            .allowsHitTesting(false)
         }
         .task {
             if let bounds = cameraStateStore.restore() {
@@ -820,7 +820,7 @@ Use XcodeBuildMCP: `build_run_sim`, then:
 4. Undo/redo/clear (now in `fabStack`, floating just above the bottom sheet) all work identically to before.
 5. Tap "저장" in the sheet header → name alert appears → keyboard shows → **map does not zoom out** (Global Constraint check).
 6. Tap the course-list button (top bar) → list sheet opens, load/delete unchanged.
-7. **Map hit-testing through the floating chrome:** tap/draw a course using a point in the middle of the screen (not on the top bar, FAB stack, or bottom sheet) and confirm it registers as a map interaction — this verifies the chrome `VStack`'s `Spacer()` regions correctly pass touches through to the map (via the `allowsHitTesting(false)`/`true` split) rather than swallowing them.
+7. **Map hit-testing through the floating chrome:** tap/draw a course using a point in the middle of the screen (not on the top bar, FAB stack, or bottom sheet) and confirm it registers as a map interaction — this verifies the chrome `VStack`'s `Spacer()` regions correctly pass touches through to the map (relying on `Spacer()` having no hit-testable content by default — no explicit `allowsHitTesting` modifiers needed or used) rather than swallowing them.
 
 Expected: all seven pass with no regressions.
 
