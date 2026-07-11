@@ -1,6 +1,6 @@
 import Foundation
 
-nonisolated struct PlannedCourse: Equatable, Sendable {
+struct PlannedCourse: Equatable, Sendable {
     var segments: [CourseSegment]
 
     // 세그먼트 사이 첫 좌표 중복 제거: i>0이면 첫 좌표를 dropFirst

@@ -2,6 +2,7 @@ import CoreLocation
 import Foundation
 import MapKit
 
+@MainActor
 final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
     private var cache: [String: PlannedCourse] = [:]
 

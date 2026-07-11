@@ -42,7 +42,7 @@ This file records defaults until the user chooses otherwise.
 - Development tooling: Codex and Claude Code are used interchangeably across sessions; rules, prompts, plans, and git are shared in the repo, while only the entry file (`AGENTS.md` / `CLAUDE.md`) and the command directory are tool-specific. See `docs/agent-rules/dual-tool.md`.
 - Workflow plugins: `superpowers`, `compound-engineering`, and `XcodeBuildMCP` are installed in both tools; every execute→review cycle ends with `ce-compound` to capture reusable lessons. See `docs/agent-rules/skills.md` and `docs/prompts/setup-claude.md`.
 - Advisor usage (Claude Code): consult the Opus advisor only at decision points (approach choice, recurring failure, completion check), not every turn; the advisor advises while the main model writes. See `docs/agent-rules/dual-tool.md`. (Which model/effort/advisor the user runs is per-tool config set with `/model` `/effort` `/advisor`, not a repo rule.)
-- Swift 언어 모드: Swift 6 (2026-07-10, MVP12) — `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` 유지 + 비-UI 타입(nonisolated)·Domain 프로토콜(nonisolated protocol) 명시 전략. 새 타입 작성 시 이 규칙을 따른다. 상세: `docs/superpowers/specs/2026-07-10-swift6-migration-design.md` §1
+- Swift 언어 모드: Swift 6 (2026-07-10, MVP12) — 격리 기본값은 클래식 모델(기본 nonisolated, Swift 툴체인 원래 기본값) + UI/상태 타입에 명시적 `@MainActor`. `SWIFT_DEFAULT_ACTOR_ISOLATION`은 미설정. 최초 `MainActor` 기본 전략(Task 1~7)에서 2026-07-11 전환 — 이유: 프레임워크 연동 타입(MapKit `NSObject` 서브클래스)이 기본 MainActor로 격리를 잘못 물려받아 실제 크래시가 난 사례(커밋 `18fa11a`) 발견, 프레임워크 연동이 많은 코드베이스에는 기본 무격리가 더 안전한 실패 모드로 판단. 새 타입 작성 시: SwiftUI View/ViewModel/@Observable 등 main-thread 상태를 다루는 타입에만 명시적 `@MainActor`를 붙인다.
 
 ## Decisions the User May Need to Make Later
 

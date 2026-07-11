@@ -2,7 +2,7 @@ import Foundation
 
 // 직렬화 포맷은 어댑터 내부 DTO — 도메인 타입에 Codable을 직접 붙이면 도메인 리팩터링이
 // 기존 blob을 해독 불가로 만든다. blob에는 포맷 버전을 둔다 (MVP11 스펙 §2).
-nonisolated enum CoursePersistenceDTO: Sendable {
+enum CoursePersistenceDTO: Sendable {
     static let currentVersion = 1
 
     struct Coordinate: Codable {
@@ -27,7 +27,7 @@ nonisolated enum CoursePersistenceDTO: Sendable {
 
 // MARK: - 도메인 ↔ DTO 매핑
 
-nonisolated extension CoursePersistenceDTO.Coordinate {
+extension CoursePersistenceDTO.Coordinate {
     init(_ c: CourseCoordinate) {
         self.init(lat: c.latitude, lon: c.longitude)
     }
@@ -36,7 +36,7 @@ nonisolated extension CoursePersistenceDTO.Coordinate {
     }
 }
 
-nonisolated extension CoursePersistenceDTO.Segment {
+extension CoursePersistenceDTO.Segment {
     init(_ segment: CourseSegment) {
         let coords = segment.coordinates.map(CoursePersistenceDTO.Coordinate.init)
         switch segment {

@@ -1,6 +1,6 @@
 import Foundation
 
-nonisolated enum LocationError: Error, Equatable, Sendable {
+enum LocationError: Error, Equatable, Sendable {
     case denied
     case unavailable
 }

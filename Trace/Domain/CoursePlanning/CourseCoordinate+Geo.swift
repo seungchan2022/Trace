@@ -1,6 +1,6 @@
 import Foundation
 
-nonisolated extension CourseCoordinate {
+extension CourseCoordinate {
     /// 두 좌표 사이의 대략적 지표면 거리(미터, Haversine).
     func distanceMeters(to other: CourseCoordinate) -> Double {
         let earthRadius = 6_371_000.0

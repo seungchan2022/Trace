@@ -16,6 +16,7 @@ enum CoursePinRole: Equatable {
 }
 
 @Observable
+@MainActor
 final class CoursePlannerPageViewModel {
     // Application layer: mutable course being planned
     let session = CourseEditSession()

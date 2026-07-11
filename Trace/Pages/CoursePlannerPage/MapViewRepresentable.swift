@@ -18,7 +18,7 @@ struct MapPin: Equatable {
     }
 }
 
-nonisolated final class ColoredPinAnnotation: NSObject, MKAnnotation {
+final class ColoredPinAnnotation: NSObject, MKAnnotation {
     let coordinate: CLLocationCoordinate2D
     let title: String?
     let color: UIColor
@@ -34,13 +34,13 @@ nonisolated final class ColoredPinAnnotation: NSObject, MKAnnotation {
     }
 }
 
-nonisolated final class SegmentPolyline: MKPolyline {
+final class SegmentPolyline: MKPolyline {
     var segmentIndex: Int = 0
     // segmentIndex는 배열상 위치(선택 하이라이트 매칭용), colorKey는 attach 생성 순서(색상 identity, prepend에도 안정적)
     var colorKey: Int = 0
 }
 
-nonisolated final class SegmentDistanceAnnotation: NSObject, MKAnnotation {
+final class SegmentDistanceAnnotation: NSObject, MKAnnotation {
     let coordinate: CLLocationCoordinate2D
     let distanceText: String
     let color: UIColor
@@ -83,7 +83,7 @@ final class SegmentDistanceAnnotationView: MKAnnotationView {
 // MapKit은 오버레이를 항상 애노테이션보다 아래에 그린다는 구조적 보장이 있어서,
 // 거리 라벨(annotation)과의 z-order 경쟁(추가 순서·zPosition 둘 다 실기기에서 불안정했음) 없이
 // 항상 라벨 아래에 위치한다 — 실기기 QA에서 두 방식 모두 재발해 오버레이 레이어로 옮김(2026-07-04).
-nonisolated final class WaypointDotsOverlay: NSObject, MKOverlay {
+final class WaypointDotsOverlay: NSObject, MKOverlay {
     let coordinate: CLLocationCoordinate2D
     let boundingMapRect: MKMapRect
     let points: [CLLocationCoordinate2D]
@@ -108,7 +108,7 @@ nonisolated final class WaypointDotsOverlay: NSObject, MKOverlay {
     }
 }
 
-nonisolated final class WaypointDotsRenderer: MKOverlayRenderer {
+final class WaypointDotsRenderer: MKOverlayRenderer {
     override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
         guard let dotsOverlay = overlay as? WaypointDotsOverlay else { return }
         let radius: CGFloat = 5 / zoomScale
@@ -341,6 +341,7 @@ struct MapViewRepresentable: UIViewRepresentable {
 // MARK: - Coordinator
 
 extension MapViewRepresentable {
+    @MainActor
     final class Coordinator: NSObject, MKMapViewDelegate, UIGestureRecognizerDelegate {
         var parent: MapViewRepresentable
         fileprivate var lastSegmentSnapshots: [SegmentSnapshot] = []

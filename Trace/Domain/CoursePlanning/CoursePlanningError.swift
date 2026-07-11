@@ -1,6 +1,6 @@
 import Foundation
 
-nonisolated enum CoursePlanningError: Error, Equatable, Sendable {
+enum CoursePlanningError: Error, Equatable, Sendable {
     case routeNotFound
     case requestFailed
     case throttled

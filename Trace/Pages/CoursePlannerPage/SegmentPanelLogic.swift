@@ -2,7 +2,7 @@ import Foundation
 
 // 구간 패널의 스크롤 정책 판정. 뷰에서 분리한 순수 함수 — 스펙의 "판정은 순수 함수로 분리해
 // 유닛 테스트한다" 요구사항 (2026-07-02-course-ux-polish-design.md).
-nonisolated enum SegmentPanelLogic {
+enum SegmentPanelLogic {
     /// 가장 최근에 attach된 구간(생성 순번 최대)의 배열 인덱스.
     /// prepend 시 배열 맨 앞이 최신일 수 있으므로 "마지막 행"이 아니라 colorKey 최대값으로 찾는다.
     static func latestIndex(colorKeys: [Int]) -> Int? {
