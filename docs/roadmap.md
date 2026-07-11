@@ -21,7 +21,7 @@
 > 새 디자인 코드가 처음부터 Swift 6 모드에서 작성되게.
 
 - [x] **design-direction** — 기존 목업("Trace 경로 짜기 v2") 검토 → 디자인 시스템 추출 + 미커버 화면(코스 저장/목록·왕복·redo) 확장 설계. 노브 기본값·SF 네이티브 폰트·시스템 테마 연동(인앱 토글 제거) 확정(2026-07-10 인터뷰). 경량 사이클(문서 전용), 스펙: `docs/superpowers/specs/2026-07-10-design-direction-design.md`
-- [ ] **swift6-migration** — 암묵 isolation 정리, 명시 @MainActor 감사, Sendable 정합, 동시성 문법 현대화, `SWIFT_VERSION = 6` 전환 + 경고 0 (사이클 1)
+- [x] **swift6-migration** — 암묵 isolation 정리, 명시 @MainActor 감사, Sendable 정합, 동시성 문법 현대화, `SWIFT_VERSION = 6` 전환 + 경고 0 (사이클 1)
 - [ ] **design-apply** — 확정된 디자인 시스템을 플래너 화면·구간 패널·저장/목록 sheet에 적용 + UX 보류 항목(구간 패널 prepend 스크롤 등) 재검토 (사이클 2)
 
 ### MVP11 — 코스 저장 + 구간 왕복   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp11/`](history/mvp11/))
