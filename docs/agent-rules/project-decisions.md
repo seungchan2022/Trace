@@ -43,6 +43,9 @@ This file records defaults until the user chooses otherwise.
 - Workflow plugins: `superpowers`, `compound-engineering`, and `XcodeBuildMCP` are installed in both tools; every execute→review cycle ends with `ce-compound` to capture reusable lessons. See `docs/agent-rules/skills.md` and `docs/prompts/setup-claude.md`.
 - Advisor usage (Claude Code): consult the Opus advisor only at decision points (approach choice, recurring failure, completion check), not every turn; the advisor advises while the main model writes. See `docs/agent-rules/dual-tool.md`. (Which model/effort/advisor the user runs is per-tool config set with `/model` `/effort` `/advisor`, not a repo rule.)
 - Swift 언어 모드: Swift 6 (2026-07-10, MVP12) — 격리 기본값은 클래식 모델(기본 nonisolated, Swift 툴체인 원래 기본값) + UI/상태 타입에 명시적 `@MainActor`. `SWIFT_DEFAULT_ACTOR_ISOLATION`은 미설정. 최초 `MainActor` 기본 전략(Task 1~7)에서 2026-07-11 전환 — 이유: 프레임워크 연동 타입(MapKit `NSObject` 서브클래스)이 기본 MainActor로 격리를 잘못 물려받아 실제 크래시가 난 사례(커밋 `18fa11a`) 발견, 프레임워크 연동이 많은 코드베이스에는 기본 무격리가 더 안전한 실패 모드로 판단. 새 타입 작성 시: SwiftUI View/ViewModel/@Observable 등 main-thread 상태를 다루는 타입에만 명시적 `@MainActor`를 붙인다.
+- 프레젠테이션 공용 레이어: `Trace/DesignSystem/`(Tokens.swift + Component/) 신설 — Pages와 별도 계층, 추후 모듈 분리 대상 (결정 2026-07-11, MVP12 design-apply). 상세: `docs/superpowers/specs/2026-07-10-design-direction-design.md` §4
+- design-apply 범위: P1(토큰·탑바·FAB·시트·구간리스트·핀/폴리라인·저장/목록/왕복/redo 재배치)만 적용, P2(시트 드래그 리사이즈·지도 halo·km 마커·점선 애니메이션·다크 글로우·커스텀 저장 다이얼로그)는 백로그로 이연 (결정 2026-07-11, 킥오프 인터뷰). 상세: `docs/superpowers/specs/2026-07-10-design-direction-design.md` §5
+- 바텀시트 배경 모양: 위쪽 모서리만 둥글고(UnevenRoundedRectangle) 배경이 화면 하단까지 확장(.ignoresSafeArea(edges: .bottom)), 콘텐츠는 안전영역 유지 — 풀블리드 지도 위 네이티브 바텀시트처럼 보이도록 (결정 2026-07-11/12, design-apply 진행 중 제품 피드백으로 추가)
 
 ## Decisions the User May Need to Make Later
 

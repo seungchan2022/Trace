@@ -22,7 +22,7 @@
 
 - [x] **design-direction** — 기존 목업("Trace 경로 짜기 v2") 검토 → 디자인 시스템 추출 + 미커버 화면(코스 저장/목록·왕복·redo) 확장 설계. 노브 기본값·SF 네이티브 폰트·시스템 테마 연동(인앱 토글 제거) 확정(2026-07-10 인터뷰). 경량 사이클(문서 전용), 스펙: `docs/superpowers/specs/2026-07-10-design-direction-design.md`
 - [x] **swift6-migration** — 암묵 isolation 정리, 명시 @MainActor 감사, Sendable 정합, 동시성 문법 현대화, `SWIFT_VERSION = 6` 전환 + 경고 0 (사이클 1)
-- [ ] **design-apply** — 확정된 디자인 시스템을 플래너 화면·구간 패널·저장/목록 sheet에 적용 + UX 보류 항목(구간 패널 prepend 스크롤 등) 재검토 (사이클 2)
+- [x] **design-apply** — 확정된 디자인 시스템을 플래너 화면·구간 패널·저장/목록 sheet에 적용 + UX 보류 항목(구간 패널 prepend 스크롤 등) 재검토 (사이클 2). 토큰·탑바·FAB·시트·구간리스트·핀/폴리라인·저장/목록/왕복/redo 재배치까지 P1 전 범위 적용 완료, 바텀시트 풀블리드 배경(위쪽 모서리만 둥글게) 애드혹 수정 포함. P2 6건은 `docs/backlog.md`로 이연. 실기기 QA 체크리스트: `docs/qa/2026-07-11-design-apply-device-checklist.md` (완료 2026-07-12)
 
 ### MVP11 — 코스 저장 + 구간 왕복   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp11/`](history/mvp11/))
 
