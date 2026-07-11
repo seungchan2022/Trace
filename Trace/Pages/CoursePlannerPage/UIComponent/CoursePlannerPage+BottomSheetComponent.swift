@@ -3,79 +3,139 @@ import SwiftUI
 extension CoursePlannerPage {
     var bottomSheet: some View {
         VStack(alignment: .leading, spacing: 0) {
+            Capsule()
+                .fill(DesignToken.Color.grabber)
+                .frame(width: 38, height: 5)
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity)
+
             sheetHeader
+
             if isBottomSheetExpanded {
                 expandedSheetBody
             }
         }
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .padding()
+        .background {
+            if isBottomSheetExpanded {
+                RoundedRectangle(cornerRadius: DesignToken.Corner.sheetTop)
+                    .fill(DesignToken.Color.surface)
+            } else {
+                RoundedRectangle(cornerRadius: DesignToken.Corner.sheetTop)
+                    .fill(.regularMaterial)
+            }
+        }
         .accessibilityIdentifier("coursePlanner.segmentPanel")
     }
 
-    // 기존 statusPanel 내용을 그대로 흡수 — 헤더는 항상 보이고, 탭하면 구간 리스트가 펼쳐진다.
-    private var sheetHeader: some View {
-        Button {
-            isBottomSheetExpanded.toggle()
-            // 펼침 시엔 expandedSheetBody의 ScrollViewReader.onAppear(restoreScrollPosition)가
-            // 위치 복원을 전담하므로 여기선 접힘(collapse) 케이스만 기록한다.
-            if !isBottomSheetExpanded {
-                let keys = viewModel.segmentColorKeys
-                let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
-                let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
-                panelWasNearLatestAtCollapse = SegmentPanelLogic.shouldAutoScroll(
-                    anchorIndex: anchorIndex, previousLatestIndex: latestIndex
-                )
+    private var sheetHeaderStatusChipKind: StatusChipKind? {
+        if viewModel.isLoading { return .calculating }
+        if let errorMessage = viewModel.errorMessage { return .error(errorMessage) }
+        if viewModel.distanceText != nil {
+            if let index = viewModel.selectedSegmentIndex {
+                return .route(segmentLabel: "구간 \(index + 1)")
             }
-        } label: {
-            VStack(alignment: .leading, spacing: 8) {
-                if viewModel.isLoading {
-                    Text("경로 계산 중")
-                        .accessibilityIdentifier("coursePlanner.loading")
-                } else if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
-                        .accessibilityIdentifier("coursePlanner.error")
-                } else if let infoMessage = viewModel.infoMessage {
-                    Text(infoMessage)
-                        .foregroundStyle(.secondary)
-                        .accessibilityIdentifier("coursePlanner.info")
-                } else if let distanceText = viewModel.distanceText {
-                    HStack(spacing: 6) {
-                        Text(distanceText)
-                            .fontWeight(.semibold)
-                            .accessibilityIdentifier("coursePlanner.distance")
-                        if viewModel.roundTripHintVisible {
-                            Text("· 출발핀을 탭하면 왕복 완성")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .accessibilityIdentifier("coursePlanner.roundTripHint")
-                        }
-                    }
-                } else {
-                    Text(viewModel.isDrawingMode ? "경로를 그려주세요" : "지도에서 출발지를 선택하세요")
-                        .accessibilityIdentifier("coursePlanner.prompt")
-                }
+            return .startSet
+        }
+        return nil
+    }
 
-                HStack(spacing: 12) {
+    // SwiftUI는 Button 라벨 안에 또 다른 Button을 중첩하면 탭 판정이 불안정해진다(어느 쪽이
+    // 반응할지 보장 안 됨). 그래서 "펼치기/접기" 탭 영역(거리·서브타이틀)과 "저장"/"전체 왕복"은
+    // 하나의 Button label 안에 넣지 않고, 바깥 HStack의 형제(sibling)로 둔다.
+    private var sheetHeader: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Button {
+                // 스펙 §1.4 시트 높이 전환(0.32s) — 펼침/접힘 모두 이 spring으로 애니메이션.
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+                    isBottomSheetExpanded.toggle()
+                }
+                if !isBottomSheetExpanded {
+                    let keys = viewModel.segmentColorKeys
+                    let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
+                    let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
+                    panelWasNearLatestAtCollapse = SegmentPanelLogic.shouldAutoScroll(
+                        anchorIndex: anchorIndex, previousLatestIndex: latestIndex
+                    )
+                }
+            } label: {
+                VStack(alignment: .leading, spacing: 4) {
+                    if let distanceText = viewModel.distanceText {
+                        // viewModel.distanceText는 "1.43 km"처럼 단위가 이미 포함된 문자열이다
+                        // (ViewModel은 이 작업 범위 밖 — Global Constraint). 스펙 §2가 요구하는
+                        // "44pt 숫자 + 17pt 'km' 단위" 분리 표기를 위해 뷰 레이어에서만 단위를 떼어낸다.
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
+                            Text(distanceText.replacingOccurrences(of: " km", with: ""))
+                                .font(DesignToken.Typography.distanceHeadline)
+                                .foregroundStyle(DesignToken.Color.ink)
+                                .accessibilityIdentifier("coursePlanner.distance")
+                            Text("km")
+                                .font(DesignToken.Typography.distanceUnit)
+                                .foregroundStyle(DesignToken.Color.ink2)
+                        }
+                    } else {
+                        Text("0")
+                            .font(DesignToken.Typography.distanceHeadline)
+                            .foregroundStyle(DesignToken.Color.ink2)
+                    }
+                    Text(subtitleText)
+                        .font(DesignToken.Typography.subtitle)
+                        .foregroundStyle(DesignToken.Color.ink2)
+                        .accessibilityIdentifier(subtitleAccessibilityIdentifier)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("coursePlanner.segmentPanel.collapsed")
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 8) {
+                if let kind = sheetHeaderStatusChipKind {
+                    StatusChip(kind: kind)
+                }
+                HStack(spacing: 8) {
+                    // "저장"은 텍스트+아이콘 캡슐이라 GlassIconButtonStyle(42×42 고정 프레임)에
+                    // 억지로 끼우면 라벨이 잘린다 — 이 버튼만 인라인 Capsule 배경을 직접 사용한다.
                     Button { viewModel.isSavePromptPresented = true } label: {
-                        Image(systemName: "square.and.arrow.down")
+                        Label("저장", systemImage: "bookmark.fill")
+                            .font(DesignToken.Typography.chip)
+                            .foregroundStyle(DesignToken.Color.accentInk)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Capsule().fill(DesignToken.Color.accent))
                     }
                     .disabled(!viewModel.canSaveCourse)
+                    .opacity(viewModel.canSaveCourse ? 1 : 0.4)
                     .accessibilityIdentifier("coursePlanner.saveCourse")
 
                     Button { viewModel.insertWholeCourseRoundTrip() } label: {
-                        Image(systemName: "arrow.triangle.2.circlepath")
+                        Text("전체 왕복")
+                            .font(DesignToken.Typography.sectionLabel)
+                            .foregroundStyle(DesignToken.Color.accent)
                     }
                     .disabled(!viewModel.canInsertWholeCourseRoundTrip)
                     .accessibilityIdentifier("coursePlanner.wholeCourseRoundTrip")
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("coursePlanner.segmentPanel.collapsed")
+        .padding(.horizontal, DesignToken.Size.sheetPadding)
+        .padding(.vertical, 16)
+    }
+
+    private var subtitleText: String {
+        if viewModel.isLoading { return "경로를 계산하고 있어요" }
+        if viewModel.errorMessage != nil { return "도로에 더 가까운 지점을 눌러보세요" }
+        if let infoMessage = viewModel.infoMessage { return infoMessage }
+        if viewModel.distanceText != nil { return "도보 기준 · 탭해서 이어 그리기" }
+        if viewModel.isDrawingMode { return "지도에 손으로 경로를 그려보세요" }
+        return "지도를 탭해 출발지를 선택하세요"
+    }
+
+    private var subtitleAccessibilityIdentifier: String {
+        if viewModel.isLoading { return "coursePlanner.loading" }
+        if viewModel.errorMessage != nil { return "coursePlanner.error" }
+        if viewModel.infoMessage != nil { return "coursePlanner.info" }
+        return "coursePlanner.prompt"
     }
 
     // 행 identity는 colorKey(생성 순번) — prepend로 인덱스가 밀려도 행 정체성과
