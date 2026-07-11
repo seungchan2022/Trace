@@ -10,7 +10,8 @@
 
 ## Global Constraints
 
-- **Keyboard-avoidance fix must stay at `body` top level.** `CoursePlannerPage.swift` currently applies `.ignoresSafeArea(.keyboard)` as the outermost modifier on `body` (after the save alert, before nothing else) — this is the MVP11 fix for the save-alert map-zoom-out bug (`docs/solutions/design-patterns/swiftui-keyboard-avoidance-shrinks-representable.md`). Every task that rewrites `body` must keep this modifier as the outermost one, applied after all `safeAreaInset`/`sheet`/`alert` modifiers, never nested inside an inset. Verify per task: open the save alert (tap "저장" flow), keyboard appears, map must **not** zoom out.
+- **The map is a full-bleed background layer; all chrome floats on top of it** (2026-07-11 correction, made mid-Task-3 — see Task 3 for why). `CoursePlannerPage.body` is a `ZStack` with `mapView.ignoresSafeArea()` as the base and a `VStack` of `topBar` / `fabStack` / `bottomSheet` as a sibling overlay on top — **not** `.safeAreaInset`, which would shrink the map's own layout frame every time the sheet expands/collapses (this was the root cause of a confirmed scroll-position regression found during Task 3; the full-bleed ZStack removes the map-frame coupling that caused it). Every task touching `body` must preserve this: the map's measured size must stay constant regardless of `isBottomSheetExpanded`. The middle of the screen (the `Spacer()` regions of the chrome `VStack`) must still pass taps/gestures through to the map underneath — verify this per task that touches `body` (tap/draw a course in the middle of the screen, away from any chrome, and confirm it still works).
+- **Keyboard-avoidance fix must stay at `body` top level.** `CoursePlannerPage.swift` applies `.ignoresSafeArea(.keyboard)` as the outermost modifier on `body` (after the save alert, before nothing else) — this is the MVP11 fix for the save-alert map-zoom-out bug (`docs/solutions/design-patterns/swiftui-keyboard-avoidance-shrinks-representable.md`). Every task that rewrites `body` must keep this modifier as the outermost one, applied after all `sheet`/`alert` modifiers, never nested inside an inset. Verify per task: open the save alert (tap "저장" flow), keyboard appears, map must **not** zoom out.
 - **Domain/persistence/ViewModel are out of scope.** No task may add a public property or method to `CoursePlannerPageViewModel`, `PlannedCourse`, `CourseSegment`, `CourseRepositoryProtocol`, or any `Domain/`/`Application/`/`Infrastructure/` type. New view-only state (sheet expansion, pill visibility timers, etc.) is `@State` in the View layer only.
 - **Preserve existing accessibility identifiers** when relocating a control (e.g. `coursePlanner.saveCourse`, `coursePlanner.undo`, `coursePlanner.redo`, `coursePlanner.clear`, `coursePlanner.courseList`, `coursePlanner.wholeCourseRoundTrip`, `coursePlanner.segmentPanel.*`, `coursePlanner.map`). Only `coursePlanner.map` is exercised by the current `TraceUITests`, but keeping the rest costs nothing and avoids future breakage.
 - **`TraceTests` (2824 lines) must stay green, unmodified**, on every task — it is the proof that the ViewModel/domain layer is untouched.
@@ -378,6 +379,8 @@ git commit -m "feat: design-apply 공용 컴포넌트(GlassIconButtonStyle·Stat
 
 This is the highest-regression task: it moves button ownership and merges two separate structures (`statusPanel` bottom inset + `segmentPanel` top-trailing overlay) into one bottom-anchored sheet, **without changing visuals yet** (system colors/fonts are fine here — styling is Tasks 4–7). The goal is a single commit after which the app **builds and runs** with the new structure and all existing behavior intact.
 
+**Layout mechanism: full-bleed map + floating chrome, not `safeAreaInset`.** The design spec (`docs/superpowers/specs/2026-07-10-design-direction-design.md` §2) positions the top bar, FAB stack, and bottom sheet as floating elements over an edge-to-edge map (matching the "Trace 경로 짜기 v2" mockup) — not a map squeezed between a top inset and a bottom inset. Use a `ZStack` with `mapView.ignoresSafeArea()` as the base layer and a plain `VStack` (topBar / Spacer / fabStack-row / bottomSheet) as a sibling on top, letting the `VStack` respect the safe area on its own (no `.ignoresSafeArea()` on it) so the top bar clears the status bar/Dynamic Island and the bottom sheet clears the home indicator automatically — the same clearing `safeAreaInset` used to give for free. This also has a structural benefit discovered during this task's first pass: `safeAreaInset` shrinks the map's own layout frame every time the bottom sheet expands/collapses, which raced the segment list's initial `scrollTo` against the map's `onGeometryChange` and caused a confirmed cold-mount scroll-to-latest regression. With the map as a `ZStack` sibling instead of a view whose frame the sheet's insets shrink, the map's measured size stops changing when the sheet expands — removing the race at its root instead of patching its timing.
+
 **Files:**
 - Modify: `Trace/Pages/CoursePlannerPage/CoursePlannerPage.swift`
 - Modify: `Trace/Pages/CoursePlannerPage/UIComponent/CoursePlannerPage+ControlsComponent.swift`
@@ -629,7 +632,7 @@ extension CoursePlannerPage {
 
 - [ ] **Step 3: Rewrite `CoursePlannerPage.swift` body/mapView to use the three new regions**
 
-Rename the `@State` property, wire `topBar` into the top inset, move the bottom inset to `bottomSheet`, and fold undo/redo/clear into the existing bottom-trailing overlay (now `fabStack`) alongside recenter. Replace the whole `body`/`mapView`/`statusPanel` section with:
+Rename the `@State` property, and rebuild `body` as a `ZStack` with the full-bleed map as the base layer and `topBar`/`fabStack`/`bottomSheet` as a floating `VStack` on top (see the Global Constraint above and this task's intro for why — this replaces the original brief's `safeAreaInset`-based approach). Replace the whole `body`/`mapView`/`statusPanel` section with:
 
 ```swift
     @State private var cameraRegion: MKCoordinateRegion = MKCoordinateRegion(
@@ -645,73 +648,89 @@ Rename the `@State` property, wire `topBar` into the top inset, move the bottom 
     @State var panelWasNearLatestAtCollapse = true
 
     var body: some View {
-        mapView
-            .accessibilityIdentifier("coursePlanner.map")
-            .safeAreaInset(edge: .top) {
+        ZStack(alignment: .bottom) {
+            mapView
+                .ignoresSafeArea()
+                .accessibilityIdentifier("coursePlanner.map")
+
+            // 지도가 풀블리드 배경, 아래 VStack은 그 위에 뜨는 크롬(탑바/FAB/시트) — safeAreaInset이
+            // 아니므로 시트가 펼쳐져도 지도 프레임(mapView의 onGeometryChange 측정값)이 바뀌지 않는다.
+            // .ignoresSafeArea()를 이 VStack에는 걸지 않아 상태바/노치·홈 인디케이터는 자동으로 피한다.
+            VStack(spacing: 0) {
                 topBar
-            }
-            .safeAreaInset(edge: .bottom) {
+                    .allowsHitTesting(true)
+                Spacer()
+                HStack {
+                    Spacer()
+                    fabStack
+                        .allowsHitTesting(true)
+                }
                 bottomSheet
+                    .allowsHitTesting(true)
             }
-            .task {
-                if let bounds = cameraStateStore.restore() {
-                    cameraRegion = MKCoordinateRegion(
-                        center: CLLocationCoordinate2D(latitude: bounds.latitude, longitude: bounds.longitude),
-                        latitudinalMeters: bounds.latitudinalMeters,
-                        longitudinalMeters: bounds.longitudinalMeters
-                    )
-                }
-                await viewModel.bootstrapLocation()
-                if let center = viewModel.initialCameraCoordinate {
-                    cameraRegion = MKCoordinateRegion(
-                        center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
-                        latitudinalMeters: 500,
-                        longitudinalMeters: 500
-                    )
-                }
-            }
-            .onChange(of: viewModel.selectedSegmentIndex) { _, newIndex in
-                guard let newIndex,
-                      let segments = viewModel.course?.segments,
-                      newIndex < segments.count,
-                      let region = regionFitting(segments[newIndex].coordinates) else { return }
-                cameraRegion = region
-            }
-            .onChange(of: scenePhase) { _, newPhase in
-                if newPhase == .background { saveCameraPosition() }
-            }
-            .alert("위치 권한이 필요합니다", isPresented: $viewModel.showLocationDeniedAlert) {
-                Button("설정으로 이동") {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
-                }
-                Button("닫기", role: .cancel) {}
-            }
-            .sheet(isPresented: $viewModel.isCourseListPresented) {
-                courseListSheet
-            }
-            .alert("코스 이름", isPresented: $viewModel.isSavePromptPresented) {
-                TextField("예: 한강 5km", text: $viewModel.courseNameInput)
-                Button("저장") { Task { await viewModel.saveCurrentCourse() } }
-                Button("취소", role: .cancel) { viewModel.courseNameInput = "" }
-            } message: {
-                Text("현재 코스를 저장합니다")
-            }
-            .alert(
-                "지금 만들던 코스를 대체할까요?",
-                isPresented: Binding(
-                    get: { viewModel.pendingLoadCourse != nil },
-                    set: { _ in }
+            // 이 VStack 전체는 히트테스트를 끄고(Spacer 영역이 지도 탭을 가로채지 않도록) 각 크롬
+            // 요소에서만 개별적으로 다시 켠다 — 지도 중앙을 탭/드로잉해도 항상 지도로 전달돼야 한다.
+            .allowsHitTesting(false)
+        }
+        .task {
+            if let bounds = cameraStateStore.restore() {
+                cameraRegion = MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: bounds.latitude, longitude: bounds.longitude),
+                    latitudinalMeters: bounds.latitudinalMeters,
+                    longitudinalMeters: bounds.longitudinalMeters
                 )
-            ) {
-                Button("대체", role: .destructive) { Task { await viewModel.confirmPendingLoad() } }
-                Button("취소", role: .cancel) { viewModel.cancelPendingLoad() }
-            } message: {
-                Text("작업 중인 코스는 사라집니다")
             }
-            // Global Constraint: keyboard-avoidance fix — 반드시 body 최상위, 다른 모든 모디파이어 뒤.
-            .ignoresSafeArea(.keyboard)
+            await viewModel.bootstrapLocation()
+            if let center = viewModel.initialCameraCoordinate {
+                cameraRegion = MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
+                    latitudinalMeters: 500,
+                    longitudinalMeters: 500
+                )
+            }
+        }
+        .onChange(of: viewModel.selectedSegmentIndex) { _, newIndex in
+            guard let newIndex,
+                  let segments = viewModel.course?.segments,
+                  newIndex < segments.count,
+                  let region = regionFitting(segments[newIndex].coordinates) else { return }
+            cameraRegion = region
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background { saveCameraPosition() }
+        }
+        .alert("위치 권한이 필요합니다", isPresented: $viewModel.showLocationDeniedAlert) {
+            Button("설정으로 이동") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("닫기", role: .cancel) {}
+        }
+        .sheet(isPresented: $viewModel.isCourseListPresented) {
+            courseListSheet
+        }
+        .alert("코스 이름", isPresented: $viewModel.isSavePromptPresented) {
+            TextField("예: 한강 5km", text: $viewModel.courseNameInput)
+            Button("저장") { Task { await viewModel.saveCurrentCourse() } }
+            Button("취소", role: .cancel) { viewModel.courseNameInput = "" }
+        } message: {
+            Text("현재 코스를 저장합니다")
+        }
+        .alert(
+            "지금 만들던 코스를 대체할까요?",
+            isPresented: Binding(
+                get: { viewModel.pendingLoadCourse != nil },
+                set: { _ in }
+            )
+        ) {
+            Button("대체", role: .destructive) { Task { await viewModel.confirmPendingLoad() } }
+            Button("취소", role: .cancel) { viewModel.cancelPendingLoad() }
+        } message: {
+            Text("작업 중인 코스는 사라집니다")
+        }
+        // Global Constraint: keyboard-avoidance fix — 반드시 body 최상위, 다른 모든 모디파이어 뒤.
+        .ignoresSafeArea(.keyboard)
     }
 
     private var mapView: some View {
@@ -740,9 +759,6 @@ Rename the `@State` property, wire `topBar` into the top inset, move the bottom 
             }
             .allowsHitTesting(false)
         }
-        .overlay(alignment: .bottomTrailing) {
-            fabStack
-        }
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { height in
@@ -751,6 +767,8 @@ Rename the `@State` property, wire `topBar` into the top inset, move the bottom 
     }
 
     // Task 5에서 스타일링. 지금은 기존 되돌리기/앞으로/초기화/내 위치 버튼을 그대로 옮겨온 골격.
+    // 이전엔 mapView 안의 .overlay(alignment: .bottomTrailing)였으나, 지도가 풀블리드 ZStack
+    // 베이스가 되면서 바텀시트 바로 위(HStack 안 trailing)에 배치되도록 바깥 VStack의 형제로 옮겼다.
     private var fabStack: some View {
         VStack(spacing: 12) {
             Button { Task { await viewModel.undo() } } label: { Image(systemName: "arrow.uturn.backward") }
@@ -798,11 +816,13 @@ Expected: builds clean. If `isSegmentPanelExpanded` or `segmentPanel` are refere
 Use XcodeBuildMCP: `build_run_sim`, then:
 1. Tap twice on map → route appears in the new bottom sheet header (distance text). Tap the header → sheet expands to show segment rows. Tap again → collapses.
 2. Add enough segments to require scrolling; while viewing an old segment, add a new one — panel should **not** auto-jump (verifies `panelWasNearLatestAtCollapse`/anchor logic survived the move).
-3. Undo/redo/clear (now in `fabStack`, bottom-trailing over the map) all work identically to before.
-4. Tap "저장" in the sheet header → name alert appears → keyboard shows → **map does not zoom out** (Global Constraint check).
-5. Tap the course-list button (top bar) → list sheet opens, load/delete unchanged.
+3. **Cold-mount first-expand scroll check:** fresh app launch, build 8-9 segments via map taps *without ever expanding the sheet first*, then tap the collapsed header once (the first expand this session) — the list must open already scrolled to the latest segment, not resting at the top. Repeat this full fresh-launch cycle 3 times (3/3 must pass). This exercises the exact failure mode the full-bleed `ZStack` restructure (vs. the original brief's `safeAreaInset` approach) exists to prevent — the map's measured size must stay constant when the sheet expands, so this must now pass reliably where a `safeAreaInset`-based layout would race.
+4. Undo/redo/clear (now in `fabStack`, floating just above the bottom sheet) all work identically to before.
+5. Tap "저장" in the sheet header → name alert appears → keyboard shows → **map does not zoom out** (Global Constraint check).
+6. Tap the course-list button (top bar) → list sheet opens, load/delete unchanged.
+7. **Map hit-testing through the floating chrome:** tap/draw a course using a point in the middle of the screen (not on the top bar, FAB stack, or bottom sheet) and confirm it registers as a map interaction — this verifies the chrome `VStack`'s `Spacer()` regions correctly pass touches through to the map (via the `allowsHitTesting(false)`/`true` split) rather than swallowing them.
 
-Expected: all five pass with no regressions.
+Expected: all seven pass with no regressions.
 
 - [ ] **Step 7: TEST + LINT + stamp + commit**
 
@@ -1147,7 +1167,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug -destinat
 
 Drive each subtitle state manually on the simulator (empty → tap once → tap twice → toggle draw mode → force an error by tapping open water) and confirm the copy in §2.1 of the spec appears verbatim for each.
 
-- [ ] **Step 3: Manual regression** — save button still opens the name alert (and keyboard doesn't zoom the map — Global Constraint re-check since this task touches the header inside the sheet that sits in the bottom `safeAreaInset`); whole round trip button still inserts a round trip when enabled; **tapping "저장" or "전체 왕복" must only fire that button's own action and must NOT also expand/collapse the sheet** (this is what the sibling-not-nested restructure in Step 1 is for); tapping the distance/subtitle area still expands/collapses the sheet with a visible spring animation (not an instant snap).
+- [ ] **Step 3: Manual regression** — save button still opens the name alert (and keyboard doesn't zoom the map — Global Constraint re-check since this task touches the header inside the bottom-floating sheet); whole round trip button still inserts a round trip when enabled; **tapping "저장" or "전체 왕복" must only fire that button's own action and must NOT also expand/collapse the sheet** (this is what the sibling-not-nested restructure in Step 1 is for); tapping the distance/subtitle area still expands/collapses the sheet with a visible spring animation (not an instant snap).
 
 - [ ] **Step 4: TEST + LINT + stamp + commit**
 
