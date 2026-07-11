@@ -16,13 +16,26 @@ extension CoursePlannerPage {
             }
         }
         .background {
-            if isBottomSheetExpanded {
-                RoundedRectangle(cornerRadius: DesignToken.Corner.sheetTop)
+            Group {
+                if isBottomSheetExpanded {
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: DesignToken.Corner.sheetTop,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: DesignToken.Corner.sheetTop
+                    )
                     .fill(DesignToken.Color.surface)
-            } else {
-                RoundedRectangle(cornerRadius: DesignToken.Corner.sheetTop)
+                } else {
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: DesignToken.Corner.sheetTop,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: DesignToken.Corner.sheetTop
+                    )
                     .fill(.regularMaterial)
+                }
             }
+            .ignoresSafeArea(edges: .bottom)
         }
         .accessibilityIdentifier("coursePlanner.segmentPanel")
     }
