@@ -9,7 +9,7 @@ struct CoursePlannerPage: View {
         longitudinalMeters: 500
     )
     @State private var currentStrokePoints: [CGPoint] = []
-    @State var isSegmentPanelExpanded = false
+    @State var isBottomSheetExpanded = false
     @State var panelContentHeight: CGFloat = 0
     @State var panelMaxListHeight: CGFloat = 300
     @State var panelAnchorColorKey: Int?
@@ -39,10 +39,10 @@ struct CoursePlannerPage: View {
         mapView
             .accessibilityIdentifier("coursePlanner.map")
             .safeAreaInset(edge: .top) {
-                controls
+                topBar
             }
             .safeAreaInset(edge: .bottom) {
-                statusPanel
+                bottomSheet
             }
             .task {
                 if let bounds = cameraStateStore.restore() {
@@ -109,7 +109,7 @@ struct CoursePlannerPage: View {
                 Text("작업 중인 코스는 사라집니다")
             }
             // 저장 알럿의 키보드가 뜰 때 SwiftUI 자동 keyboard avoidance가 지도 프레임을
-            // 축소시켜 줌아웃되는 것을 레이아웃 층위에서 차단한다. safeAreaInset(하단 statusPanel)보다
+            // 축소시켜 줌아웃되는 것을 레이아웃 층위에서 차단한다. safeAreaInset(하단 bottomSheet)보다
             // 바깥에 있어야 keyboard 리전이 인셋 레이아웃에 도달하기 전에 제거된다 (2026-07-08 시뮬레이터 로그 검증).
             .ignoresSafeArea(.keyboard)
     }
@@ -141,14 +141,32 @@ struct CoursePlannerPage: View {
             .allowsHitTesting(false)
         }
         .overlay(alignment: .bottomTrailing) {
+            fabStack
+        }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: { height in
+            panelMaxListHeight = height * 0.4
+        }
+    }
+
+    // Task 5에서 스타일링. 지금은 기존 되돌리기/앞으로/초기화/내 위치 버튼을 그대로 옮겨온 골격.
+    private var fabStack: some View {
+        VStack(spacing: 12) {
+            Button { Task { await viewModel.undo() } } label: { Image(systemName: "arrow.uturn.backward") }
+                .disabled(!viewModel.canUndo)
+                .accessibilityIdentifier("coursePlanner.undo")
+            Button { viewModel.redo() } label: { Image(systemName: "arrow.uturn.forward") }
+                .disabled(!viewModel.canRedo)
+                .accessibilityIdentifier("coursePlanner.redo")
+            Button { viewModel.clear() } label: { Image(systemName: "xmark") }
+                .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
+                .accessibilityIdentifier("coursePlanner.clear")
             Button {
                 Task {
                     if let location = await viewModel.recenterToCurrentLocation() {
                         cameraRegion = MKCoordinateRegion(
-                            center: CLLocationCoordinate2D(
-                                latitude: location.latitude,
-                                longitude: location.longitude
-                            ),
+                            center: CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude),
                             latitudinalMeters: 500,
                             longitudinalMeters: 500
                         )
@@ -156,20 +174,10 @@ struct CoursePlannerPage: View {
                 }
             } label: {
                 Image(systemName: "location.fill")
-                    .font(.title2)
-                    .padding(12)
-                    .background(.regularMaterial, in: Circle())
             }
-            .padding()
         }
-        .onGeometryChange(for: CGFloat.self) { proxy in
-            proxy.size.height
-        } action: { height in
-            panelMaxListHeight = height * 0.4
-        }
-        .overlay(alignment: .topTrailing) {
-            segmentPanel
-        }
+        .buttonStyle(.borderedProminent)
+        .padding()
     }
 
     private var mapPins: [MapPin] {
@@ -254,42 +262,6 @@ struct CoursePlannerPage: View {
             longitudeDelta: max((maxLon - minLon) * 1.6, 0.003)
         )
         return MKCoordinateRegion(center: center, span: span)
-    }
-
-    private var statusPanel: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if viewModel.isLoading {
-                Text("경로 계산 중")
-                    .accessibilityIdentifier("coursePlanner.loading")
-            } else if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .foregroundStyle(.red)
-                    .accessibilityIdentifier("coursePlanner.error")
-            } else if let infoMessage = viewModel.infoMessage {
-                Text(infoMessage)
-                    .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("coursePlanner.info")
-            } else if let distanceText = viewModel.distanceText {
-                HStack(spacing: 6) {
-                    Text(distanceText)
-                        .fontWeight(.semibold)
-                        .accessibilityIdentifier("coursePlanner.distance")
-                    if viewModel.roundTripHintVisible {
-                        Text("· 출발핀을 탭하면 왕복 완성")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .accessibilityIdentifier("coursePlanner.roundTripHint")
-                    }
-                }
-            } else {
-                Text(viewModel.isDrawingMode ? "경로를 그려주세요" : "지도에서 출발지를 선택하세요")
-                    .accessibilityIdentifier("coursePlanner.prompt")
-            }
-        }
-        .font(.body)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(.regularMaterial)
     }
 }
 

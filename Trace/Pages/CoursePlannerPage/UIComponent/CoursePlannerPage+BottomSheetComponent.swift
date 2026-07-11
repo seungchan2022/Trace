@@ -1,12 +1,11 @@
 import SwiftUI
 
 extension CoursePlannerPage {
-    var segmentPanel: some View {
-        VStack(alignment: .trailing, spacing: 0) {
-            if isSegmentPanelExpanded {
-                expandedSegmentList
-            } else {
-                collapsedSegmentChip
+    var bottomSheet: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            sheetHeader
+            if isBottomSheetExpanded {
+                expandedSheetBody
             }
         }
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
@@ -14,15 +13,68 @@ extension CoursePlannerPage {
         .accessibilityIdentifier("coursePlanner.segmentPanel")
     }
 
-    private var collapsedSegmentChip: some View {
+    // 기존 statusPanel 내용을 그대로 흡수 — 헤더는 항상 보이고, 탭하면 구간 리스트가 펼쳐진다.
+    private var sheetHeader: some View {
         Button {
-            isSegmentPanelExpanded = true
+            isBottomSheetExpanded.toggle()
+            // 펼침 시엔 expandedSheetBody의 ScrollViewReader.onAppear(restoreScrollPosition)가
+            // 위치 복원을 전담하므로 여기선 접힘(collapse) 케이스만 기록한다.
+            if !isBottomSheetExpanded {
+                let keys = viewModel.segmentColorKeys
+                let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
+                let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
+                panelWasNearLatestAtCollapse = SegmentPanelLogic.shouldAutoScroll(
+                    anchorIndex: anchorIndex, previousLatestIndex: latestIndex
+                )
+            }
         } label: {
-            Text(viewModel.distanceText ?? "0.00 km")
-                .font(.footnote.weight(.semibold))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+            VStack(alignment: .leading, spacing: 8) {
+                if viewModel.isLoading {
+                    Text("경로 계산 중")
+                        .accessibilityIdentifier("coursePlanner.loading")
+                } else if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
+                        .foregroundStyle(.red)
+                        .accessibilityIdentifier("coursePlanner.error")
+                } else if let infoMessage = viewModel.infoMessage {
+                    Text(infoMessage)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("coursePlanner.info")
+                } else if let distanceText = viewModel.distanceText {
+                    HStack(spacing: 6) {
+                        Text(distanceText)
+                            .fontWeight(.semibold)
+                            .accessibilityIdentifier("coursePlanner.distance")
+                        if viewModel.roundTripHintVisible {
+                            Text("· 출발핀을 탭하면 왕복 완성")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .accessibilityIdentifier("coursePlanner.roundTripHint")
+                        }
+                    }
+                } else {
+                    Text(viewModel.isDrawingMode ? "경로를 그려주세요" : "지도에서 출발지를 선택하세요")
+                        .accessibilityIdentifier("coursePlanner.prompt")
+                }
+
+                HStack(spacing: 12) {
+                    Button { viewModel.isSavePromptPresented = true } label: {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .disabled(!viewModel.canSaveCourse)
+                    .accessibilityIdentifier("coursePlanner.saveCourse")
+
+                    Button { viewModel.insertWholeCourseRoundTrip() } label: {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                    }
+                    .disabled(!viewModel.canInsertWholeCourseRoundTrip)
+                    .accessibilityIdentifier("coursePlanner.wholeCourseRoundTrip")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
         }
+        .buttonStyle(.plain)
         .accessibilityIdentifier("coursePlanner.segmentPanel.collapsed")
     }
 
@@ -43,30 +95,8 @@ extension CoursePlannerPage {
         }
     }
 
-    private var expandedSegmentList: some View {
+    private var expandedSheetBody: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("구간")
-                    .font(.footnote.weight(.semibold))
-                Spacer()
-                Button {
-                    // 접기 전, 지금 보던 위치가 최신 근처였는지 기록 — 재펼침 시 이 값으로
-                    // "옛 위치 복원" vs "최신 계속 따라가기"를 가른다 (autoScrollIfNearLatest와 동일 판정 로직).
-                    let keys = viewModel.segmentColorKeys
-                    let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
-                    let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
-                    panelWasNearLatestAtCollapse = SegmentPanelLogic.shouldAutoScroll(
-                        anchorIndex: anchorIndex, previousLatestIndex: latestIndex
-                    )
-                    isSegmentPanelExpanded = false
-                } label: {
-                    Image(systemName: "chevron.up")
-                }
-                .accessibilityIdentifier("coursePlanner.segmentPanel.collapse")
-            }
-            .padding(.horizontal, 12)
-            .padding(.top, 12)
-
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
