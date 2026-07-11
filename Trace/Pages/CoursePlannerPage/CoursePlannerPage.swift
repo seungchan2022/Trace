@@ -166,20 +166,29 @@ struct CoursePlannerPage: View {
         }
     }
 
-    // Task 5에서 스타일링. 지금은 기존 되돌리기/앞으로/초기화/내 위치 버튼을 그대로 옮겨온 골격.
-    // 이전엔 mapView 안의 .overlay(alignment: .bottomTrailing)였으나, 지도가 풀블리드 ZStack
-    // 베이스가 되면서 바텀시트 바로 위(HStack 안 trailing)에 배치되도록 바깥 VStack의 형제로 옮겼다.
     private var fabStack: some View {
         VStack(spacing: 12) {
-            Button { Task { await viewModel.undo() } } label: { Image(systemName: "arrow.uturn.backward") }
-                .disabled(!viewModel.canUndo)
-                .accessibilityIdentifier("coursePlanner.undo")
-            Button { viewModel.redo() } label: { Image(systemName: "arrow.uturn.forward") }
-                .disabled(!viewModel.canRedo)
-                .accessibilityIdentifier("coursePlanner.redo")
-            Button { viewModel.clear() } label: { Image(systemName: "xmark") }
-                .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
-                .accessibilityIdentifier("coursePlanner.clear")
+            Button { Task { await viewModel.undo() } } label: {
+                Image(systemName: "arrow.uturn.backward")
+            }
+            .buttonStyle(.glassIcon(disabled: !viewModel.canUndo))
+            .disabled(!viewModel.canUndo)
+            .accessibilityIdentifier("coursePlanner.undo")
+
+            Button { viewModel.redo() } label: {
+                Image(systemName: "arrow.uturn.forward")
+            }
+            .buttonStyle(.glassIcon(disabled: !viewModel.canRedo))
+            .disabled(!viewModel.canRedo)
+            .accessibilityIdentifier("coursePlanner.redo")
+
+            Button { viewModel.clear() } label: {
+                Image(systemName: "xmark")
+            }
+            .buttonStyle(.glassIcon(disabled: viewModel.course == nil && viewModel.pendingTapStart == nil))
+            .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
+            .accessibilityIdentifier("coursePlanner.clear")
+
             Button {
                 Task {
                     if let location = await viewModel.recenterToCurrentLocation() {
@@ -193,9 +202,15 @@ struct CoursePlannerPage: View {
             } label: {
                 Image(systemName: "location.fill")
             }
+            .buttonStyle(.glassIcon)
         }
-        .buttonStyle(.borderedProminent)
-        .padding()
+        .frame(width: DesignToken.Size.fab)
+        .padding(.trailing, DesignToken.Size.screenMargin)
+        .padding(.bottom, 16)
+        .opacity(isBottomSheetExpanded ? 0 : 1)
+        .offset(x: isBottomSheetExpanded ? 24 : 0)
+        .animation(.easeInOut(duration: 0.2), value: isBottomSheetExpanded)
+        .allowsHitTesting(!isBottomSheetExpanded)
     }
 
     private var mapPins: [MapPin] {
@@ -292,4 +307,3 @@ struct CoursePlannerPage: View {
         courseRepository: container.courseRepository
     )
 }
-
