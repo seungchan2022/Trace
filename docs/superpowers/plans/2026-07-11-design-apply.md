@@ -1266,9 +1266,24 @@ Add supporting state near the other `@State` declarations, and a side-effect-fre
     }
 ```
 
-In `mapView`, add another overlay (order after the `fabStack` overlay, before `.onGeometryChange`) plus the `onChange`/`.task(id:)` pair that drives the 2.6s auto-dismiss. `.task(id: topHintText)` automatically cancels its previous sleep the moment `topHintText` changes to a new value (SwiftUI's built-in behavior for `id`-keyed tasks), so a second error arriving before the first one's 2.6s elapses restarts the clock instead of the first timer prematurely dismissing the second error:
+**Attach this to the outer `ZStack` in `body` (right after its closing brace, before `.task`), NOT inside `mapView`.** `mapView` is the ZStack's *first* child (the full-bleed base layer per the Global Constraint), and the chrome `VStack` (`topBar`/`fabStack`/`bottomSheet`) is added *after* it — later ZStack children paint on top of earlier ones. An overlay attached to `mapView` itself would render underneath `topBar` and could be visually occluded by it; attaching it to the `ZStack` puts the hint pill in the same top-level paint order as the chrome, above everything. Add the overlay plus the `onChange`/`.task(id:)` pair that drives the 2.6s auto-dismiss. `.task(id: topHintText)` automatically cancels its previous sleep the moment `topHintText` changes to a new value (SwiftUI's built-in behavior for `id`-keyed tasks), so a second error arriving before the first one's 2.6s elapses restarts the clock instead of the first timer prematurely dismissing the second error:
 
 ```swift
+        ZStack(alignment: .bottom) {
+            mapView
+                .ignoresSafeArea()
+                .accessibilityIdentifier("coursePlanner.map")
+
+            VStack(spacing: 0) {
+                topBar
+                Spacer()
+                HStack {
+                    Spacer()
+                    fabStack
+                }
+                bottomSheet
+            }
+        }
         .overlay(alignment: .top) {
             if let hint = topHintText, !isTopHintDismissed {
                 HintPill(text: hint, isError: viewModel.errorMessage != nil)
@@ -1285,6 +1300,8 @@ In `mapView`, add another overlay (order after the `fabStack` overlay, before `.
             isTopHintDismissed = true
         }
 ```
+
+(The `ZStack` body shown above is unchanged from Task 3 — reproduced here only to show exactly where the new modifiers attach in the chain.)
 
 - [ ] **Step 3: BUILD, then screenshot check** — segment rows show the color bar/title/subtitle/distance layout, selected row shows accent border + tinted background, top hint pill appears for drawing-mode guidance and for errors, and the error pill disappears on its own after ~2.6s.
 
