@@ -16,7 +16,14 @@ struct CoursePlannerPage: View {
     // 접기 직전 "최신 근처를 보고 있었는가" — 재펼침 시 이 값이 true면 옛 앵커 대신 최신을 따라간다.
     // 기본값 true: 첫 펼침(앵커 없음)에서는 restoreScrollPosition의 fallback 분기가 이미 최신으로 보내므로 무해하다.
     @State var panelWasNearLatestAtCollapse = true
+    @State private var isTopHintDismissed = false
     @Environment(\.scenePhase) private var scenePhase
+
+    private var topHintText: String? {
+        if let errorMessage = viewModel.errorMessage { return errorMessage }
+        if viewModel.isDrawingMode && viewModel.course == nil { return "손으로 경로를 그려보세요" }
+        return nil
+    }
 
     private let cameraStateStore: CameraStateStore
 
@@ -61,6 +68,21 @@ struct CoursePlannerPage: View {
                 }
                 bottomSheet
             }
+        }
+        .overlay(alignment: .top) {
+            if let hint = topHintText, !isTopHintDismissed {
+                HintPill(text: hint, isError: viewModel.errorMessage != nil)
+                    .padding(.top, 60)
+                    .transition(.opacity)
+            }
+        }
+        .onChange(of: topHintText) { _, _ in
+            isTopHintDismissed = false
+        }
+        .task(id: topHintText) {
+            guard topHintText != nil else { return }
+            try? await Task.sleep(for: .seconds(HintPill.autoDismissDelay))
+            isTopHintDismissed = true
         }
         .task {
             if let bounds = cameraStateStore.restore() {

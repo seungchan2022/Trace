@@ -196,39 +196,52 @@ extension CoursePlannerPage {
             Button {
                 viewModel.selectSegment(at: row.index)
             } label: {
-                HStack(spacing: 8) {
-                    Circle()
+                HStack(spacing: 10) {
+                    RoundedRectangle(cornerRadius: 6)
                         .fill(Color(uiColor: SegmentPalette.color(at: row.colorKey)))
-                        .frame(width: 10, height: 10)
-                    Text("\(row.index + 1)")
-                        .font(.caption.weight(.semibold))
-                    if row.segment.isRoundTrip {
-                        // 왕복 구간 표식 — 저장·불러오기를 통과해도 유지된다 (스펙 §4)
-                        Image(systemName: "arrow.left.arrow.right")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .accessibilityLabel("왕복 구간")
+                        .frame(width: 10, height: 34)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("구간 \(row.index + 1)")
+                            .font(DesignToken.Typography.segmentRowTitle)
+                            .foregroundStyle(DesignToken.Color.ink)
+                        Text(row.segment.isRoundTrip ? "왕복" : "지점 연결")
+                            .font(DesignToken.Typography.segmentRowSubtitle)
+                            .foregroundStyle(DesignToken.Color.ink2)
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(String(format: "%.0fm", row.segment.distanceMeters))
-                            .font(.caption)
+                            .font(DesignToken.Typography.segmentRowDistance)
+                            .foregroundStyle(DesignToken.Color.ink)
                         Text(String(format: "누적 %.2fkm", cumulativeDistanceMeters(upTo: row.index) / 1000))
                             .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(DesignToken.Color.ink2)
                     }
                 }
+                .padding(10)
+                .background(
+                    RoundedRectangle(cornerRadius: DesignToken.Corner.row)
+                        .fill(row.index == viewModel.selectedSegmentIndex ? DesignToken.Color.surface2 : Color.clear)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignToken.Corner.row)
+                        .strokeBorder(
+                            row.index == viewModel.selectedSegmentIndex ? DesignToken.Color.accent : Color.clear,
+                            lineWidth: 1.5
+                        )
+                )
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("coursePlanner.segmentPanel.item.\(row.index)")
 
-            // 왕복 추가: 이 구간 뒤에 "갔다 되돌아오기" 삽입 (스펙 §4)
             Button {
                 viewModel.insertRoundTrip(afterColorKey: row.colorKey)
             } label: {
                 Image(systemName: "arrow.uturn.down.circle")
                     .font(.callout)
+                    .foregroundStyle(DesignToken.Color.ink2)
+                    .frame(width: 42, height: 42)
             }
             .buttonStyle(.plain)
             .disabled(!viewModel.canInsertRoundTrip(afterColorKey: row.colorKey))
