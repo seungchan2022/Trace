@@ -36,82 +36,101 @@ struct CoursePlannerPage: View {
     }
 
     var body: some View {
-        mapView
-            .accessibilityIdentifier("coursePlanner.map")
-            .safeAreaInset(edge: .top) {
+        ZStack(alignment: .bottom) {
+            mapView
+                .ignoresSafeArea()
+                .accessibilityIdentifier("coursePlanner.map")
+
+            // 지도가 풀블리드 배경, 아래 VStack은 그 위에 뜨는 크롬(탑바/FAB/시트) — safeAreaInset이
+            // 아니므로 시트가 펼쳐져도 지도 프레임(mapView의 onGeometryChange 측정값)이 바뀌지 않는다.
+            // .ignoresSafeArea()를 이 VStack에는 걸지 않아 상태바/노치·홈 인디케이터는 자동으로 피한다.
+            //
+            // 히트테스트: 이 VStack엔 .allowsHitTesting을 아예 걸지 않는다. 원래 계획은 VStack 전체에
+            // false를 걸고 topBar/fabStack/bottomSheet 각각에 true를 다시 거는 것이었으나, 시뮬레이터 검증 중
+            // 그 조합이 자식의 true를 무시하고 크롬 전체를 히트테스트 불가 상태로 만드는 것을 확인했다
+            // (버튼이 전혀 반응하지 않고 모든 탭이 그 밑 지도로 흘러들어가 탭할 때마다 구간이 추가됨,
+            // 2026-07-11 재현). Spacer()는 원래 그려지는 콘텐츠가 없어 히트테스트 대상이 되지 않으므로,
+            // allowsHitTesting을 아무 데도 걸지 않아도 버튼은 정상 동작하고 Spacer 영역은 자동으로
+            // 지도로 탭을 흘려보낸다 — 이 방식으로 로직 없이 두 요구사항이 모두 충족된다.
+            VStack(spacing: 0) {
                 topBar
-            }
-            .safeAreaInset(edge: .bottom) {
+                Spacer()
+                HStack {
+                    Spacer()
+                    fabStack
+                }
                 bottomSheet
             }
-            .task {
-                if let bounds = cameraStateStore.restore() {
-                    cameraRegion = MKCoordinateRegion(
-                        center: CLLocationCoordinate2D(latitude: bounds.latitude, longitude: bounds.longitude),
-                        latitudinalMeters: bounds.latitudinalMeters,
-                        longitudinalMeters: bounds.longitudinalMeters
-                    )
-                }
-
-                await viewModel.bootstrapLocation()
-
-                if let center = viewModel.initialCameraCoordinate {
-                    cameraRegion = MKCoordinateRegion(
-                        center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
-                        latitudinalMeters: 500,
-                        longitudinalMeters: 500
-                    )
-                }
-            }
-            .onChange(of: viewModel.selectedSegmentIndex) { _, newIndex in
-                guard let newIndex,
-                      let segments = viewModel.course?.segments,
-                      newIndex < segments.count,
-                      let region = regionFitting(segments[newIndex].coordinates) else { return }
-                cameraRegion = region
-            }
-            .onChange(of: scenePhase) { _, newPhase in
-                if newPhase == .background {
-                    saveCameraPosition()
-                }
-            }
-            .alert("위치 권한이 필요합니다", isPresented: $viewModel.showLocationDeniedAlert) {
-                Button("설정으로 이동") {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
-                }
-                Button("닫기", role: .cancel) {}
-            }
-            .sheet(isPresented: $viewModel.isCourseListPresented) {
-                courseListSheet
-            }
-            .alert("코스 이름", isPresented: $viewModel.isSavePromptPresented) {
-                TextField("예: 한강 5km", text: $viewModel.courseNameInput)
-                Button("저장") { Task { await viewModel.saveCurrentCourse() } }
-                Button("취소", role: .cancel) { viewModel.courseNameInput = "" }
-            } message: {
-                Text("현재 코스를 저장합니다")
-            }
-            .alert(
-                "지금 만들던 코스를 대체할까요?",
-                isPresented: Binding(
-                    get: { viewModel.pendingLoadCourse != nil },
-                    // 의도된 no-op: SwiftUI가 대체/취소 버튼 탭 모두에서 이 setter를 먼저 호출하므로,
-                    // 여기서 상태를 지우면 confirmPendingLoad()의 Task가 읽기 전에 값이 사라지는
-                    // 경쟁 상태가 재발한다. 상태 정리는 버튼 액션(confirmPendingLoad/cancelPendingLoad)에서만.
-                    set: { _ in }
+        }
+        .task {
+            if let bounds = cameraStateStore.restore() {
+                cameraRegion = MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: bounds.latitude, longitude: bounds.longitude),
+                    latitudinalMeters: bounds.latitudinalMeters,
+                    longitudinalMeters: bounds.longitudinalMeters
                 )
-            ) {
-                Button("대체", role: .destructive) { Task { await viewModel.confirmPendingLoad() } }
-                Button("취소", role: .cancel) { viewModel.cancelPendingLoad() }
-            } message: {
-                Text("작업 중인 코스는 사라집니다")
             }
-            // 저장 알럿의 키보드가 뜰 때 SwiftUI 자동 keyboard avoidance가 지도 프레임을
-            // 축소시켜 줌아웃되는 것을 레이아웃 층위에서 차단한다. safeAreaInset(하단 bottomSheet)보다
-            // 바깥에 있어야 keyboard 리전이 인셋 레이아웃에 도달하기 전에 제거된다 (2026-07-08 시뮬레이터 로그 검증).
-            .ignoresSafeArea(.keyboard)
+
+            await viewModel.bootstrapLocation()
+
+            if let center = viewModel.initialCameraCoordinate {
+                cameraRegion = MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
+                    latitudinalMeters: 500,
+                    longitudinalMeters: 500
+                )
+            }
+        }
+        .onChange(of: viewModel.selectedSegmentIndex) { _, newIndex in
+            guard let newIndex,
+                  let segments = viewModel.course?.segments,
+                  newIndex < segments.count,
+                  let region = regionFitting(segments[newIndex].coordinates) else { return }
+            cameraRegion = region
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background {
+                saveCameraPosition()
+            }
+        }
+        .alert("위치 권한이 필요합니다", isPresented: $viewModel.showLocationDeniedAlert) {
+            Button("설정으로 이동") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("닫기", role: .cancel) {}
+        }
+        .sheet(isPresented: $viewModel.isCourseListPresented) {
+            courseListSheet
+        }
+        .alert("코스 이름", isPresented: $viewModel.isSavePromptPresented) {
+            TextField("예: 한강 5km", text: $viewModel.courseNameInput)
+            Button("저장") { Task { await viewModel.saveCurrentCourse() } }
+            Button("취소", role: .cancel) { viewModel.courseNameInput = "" }
+        } message: {
+            Text("현재 코스를 저장합니다")
+        }
+        .alert(
+            "지금 만들던 코스를 대체할까요?",
+            isPresented: Binding(
+                get: { viewModel.pendingLoadCourse != nil },
+                // 의도된 no-op: SwiftUI가 대체/취소 버튼 탭 모두에서 이 setter를 먼저 호출하므로,
+                // 여기서 상태를 지우면 confirmPendingLoad()의 Task가 읽기 전에 값이 사라지는
+                // 경쟁 상태가 재발한다. 상태 정리는 버튼 액션(confirmPendingLoad/cancelPendingLoad)에서만.
+                set: { _ in }
+            )
+        ) {
+            Button("대체", role: .destructive) { Task { await viewModel.confirmPendingLoad() } }
+            Button("취소", role: .cancel) { viewModel.cancelPendingLoad() }
+        } message: {
+            Text("작업 중인 코스는 사라집니다")
+        }
+        // 저장 알럿의 키보드가 뜰 때 SwiftUI 자동 keyboard avoidance가 지도 프레임을
+        // 축소시켜 줌아웃되는 것을 레이아웃 층위에서 차단한다. body 전체(ZStack 바깥)의 최상위,
+        // 다른 모든 모디파이어보다 뒤에 있어야 keyboard 리전이 제거된다 (2026-07-08 시뮬레이터 로그 검증;
+        // ZStack/safeAreaInset 어느 구조든 이 위치 규칙은 동일하게 적용된다).
+        .ignoresSafeArea(.keyboard)
     }
 
     private var mapView: some View {
@@ -140,9 +159,6 @@ struct CoursePlannerPage: View {
             }
             .allowsHitTesting(false)
         }
-        .overlay(alignment: .bottomTrailing) {
-            fabStack
-        }
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { height in
@@ -151,6 +167,8 @@ struct CoursePlannerPage: View {
     }
 
     // Task 5에서 스타일링. 지금은 기존 되돌리기/앞으로/초기화/내 위치 버튼을 그대로 옮겨온 골격.
+    // 이전엔 mapView 안의 .overlay(alignment: .bottomTrailing)였으나, 지도가 풀블리드 ZStack
+    // 베이스가 되면서 바텀시트 바로 위(HStack 안 trailing)에 배치되도록 바깥 VStack의 형제로 옮겼다.
     private var fabStack: some View {
         VStack(spacing: 12) {
             Button { Task { await viewModel.undo() } } label: { Image(systemName: "arrow.uturn.backward") }
