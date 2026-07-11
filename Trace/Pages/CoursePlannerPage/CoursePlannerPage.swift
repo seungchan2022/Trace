@@ -236,6 +236,8 @@ struct CoursePlannerPage: View {
     }
 
     private var mapPins: [MapPin] {
+        let accentUIColor = UIColor(named: "AccentColor") ?? .systemGreen
+        let dangerUIColor = UIColor(named: "Danger") ?? .systemRed
         var pins: [MapPin] = []
         if let course = viewModel.course {
             if viewModel.isClosedCourse, let first = course.coordinates.first {
@@ -243,7 +245,7 @@ struct CoursePlannerPage: View {
                 pins.append(MapPin(
                     coordinate: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
                     title: "출발/도착",
-                    color: .systemGreen,
+                    color: accentUIColor,
                     systemImage: "figure.run",
                     role: .merged
                 ))
@@ -252,7 +254,7 @@ struct CoursePlannerPage: View {
                     pins.append(MapPin(
                         coordinate: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
                         title: "출발",
-                        color: .systemGreen,
+                        color: accentUIColor,
                         systemImage: "figure.run",
                         role: .start
                     ))
@@ -261,7 +263,7 @@ struct CoursePlannerPage: View {
                     pins.append(MapPin(
                         coordinate: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude),
                         title: "도착",
-                        color: .systemRed,
+                        color: dangerUIColor,
                         systemImage: "flag.checkered",
                         role: .end
                     ))
@@ -273,7 +275,7 @@ struct CoursePlannerPage: View {
             pins.append(MapPin(
                 coordinate: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude),
                 title: "출발",
-                color: .systemGreen,
+                color: accentUIColor,
                 systemImage: "figure.run",
                 role: .pendingStart
             ))

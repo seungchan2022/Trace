@@ -1,6 +1,12 @@
 import MapKit
 import SwiftUI
 
+private let polylineCasingColor = UIColor { traits in
+    traits.userInterfaceStyle == .dark
+        ? UIColor.black.withAlphaComponent(0.35)
+        : UIColor.white.withAlphaComponent(0.6)
+}
+
 // MARK: - Supporting Types
 
 struct MapPin: Equatable {
@@ -37,6 +43,13 @@ final class ColoredPinAnnotation: NSObject, MKAnnotation {
 final class SegmentPolyline: MKPolyline {
     var segmentIndex: Int = 0
     // segmentIndex는 배열상 위치(선택 하이라이트 매칭용), colorKey는 attach 생성 순서(색상 identity, prepend에도 안정적)
+    var colorKey: Int = 0
+}
+
+// 컬러 스트로크 아래에 깔리는 넓은 케이싱 레이어 — MapKit은 두 색 스트로크(케이싱)를 네이티브 지원하지 않아
+// 같은 좌표로 두 개의 폴리라인을 겹쳐 그리는 2-pass 방식으로 흉내낸다 (케이싱을 먼저 addOverlay해 아래에 깔림).
+final class SegmentCasingPolyline: MKPolyline {
+    var segmentIndex: Int = 0
     var colorKey: Int = 0
 }
 
@@ -244,6 +257,12 @@ struct MapViewRepresentable: UIViewRepresentable {
                 }
                 guard coords.count >= 2 else { continue }
                 let colorKey = index < segmentColorKeys.count ? segmentColorKeys[index] : index
+
+                let casing = SegmentCasingPolyline(coordinates: &coords, count: coords.count)
+                casing.segmentIndex = index
+                casing.colorKey = colorKey
+                uiView.addOverlay(casing)
+
                 let polyline = SegmentPolyline(coordinates: &coords, count: coords.count)
                 polyline.segmentIndex = index
                 polyline.colorKey = colorKey
@@ -265,10 +284,15 @@ struct MapViewRepresentable: UIViewRepresentable {
         if context.coordinator.lastSelectedIndex != selectedSegmentIndex {
             context.coordinator.lastSelectedIndex = selectedSegmentIndex
             for overlay in uiView.overlays {
-                guard let polyline = overlay as? SegmentPolyline,
-                      let renderer = uiView.renderer(for: polyline) as? MKPolylineRenderer else { continue }
-                configureRenderer(renderer, segmentIndex: polyline.segmentIndex, colorKey: polyline.colorKey, selected: selectedSegmentIndex)
-                renderer.setNeedsDisplay()
+                if let polyline = overlay as? SegmentPolyline,
+                   let renderer = uiView.renderer(for: polyline) as? MKPolylineRenderer {
+                    configureRenderer(renderer, segmentIndex: polyline.segmentIndex, colorKey: polyline.colorKey, selected: selectedSegmentIndex)
+                    renderer.setNeedsDisplay()
+                } else if let casing = overlay as? SegmentCasingPolyline,
+                          let renderer = uiView.renderer(for: casing) as? MKPolylineRenderer {
+                    renderer.lineWidth = casing.segmentIndex == selectedSegmentIndex ? 11 : 9.5
+                    renderer.setNeedsDisplay()
+                }
             }
         }
 
@@ -306,7 +330,7 @@ struct MapViewRepresentable: UIViewRepresentable {
 
     private func configureRenderer(_ renderer: MKPolylineRenderer, segmentIndex: Int, colorKey: Int, selected: Int?) {
         renderer.strokeColor = SegmentPalette.color(at: colorKey)
-        renderer.lineWidth = segmentIndex == selected ? 9 : 6
+        renderer.lineWidth = segmentIndex == selected ? 7 : 5.5
     }
 
     // 배열 인덱스 절반이 아니라 실제 누적 거리 절반 지점을 찾는다.
@@ -358,6 +382,12 @@ extension MapViewRepresentable {
             if let dotsOverlay = overlay as? WaypointDotsOverlay {
                 return WaypointDotsRenderer(overlay: dotsOverlay)
             }
+            if let casing = overlay as? SegmentCasingPolyline {
+                let renderer = MKPolylineRenderer(polyline: casing)
+                renderer.strokeColor = polylineCasingColor
+                renderer.lineWidth = casing.segmentIndex == parent.selectedSegmentIndex ? 11 : 9.5
+                return renderer
+            }
             guard let polyline = overlay as? SegmentPolyline else {
                 return MKOverlayRenderer(overlay: overlay)
             }
@@ -369,6 +399,9 @@ extension MapViewRepresentable {
         // MARK: Annotation
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+            if annotation is MKUserLocation {
+                return nil // 시스템 기본 파란 점 + 펄스 유지 — 재색상은 안정적 공개 API가 없어 보류
+            }
             if let distanceAnnotation = annotation as? SegmentDistanceAnnotation {
                 let identifier = "segmentDistance"
                 let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? SegmentDistanceAnnotationView
@@ -384,13 +417,14 @@ extension MapViewRepresentable {
             // 출발/도착 핀은 거리 라벨과 겹쳐도 MapKit 충돌 처리로 가려지면 안 됨(최대 2개뿐이라 성능 영향 없음)
             view.displayPriority = .required
             view.collisionMode = .none
+            view.animatesWhenAdded = true
             view.isEnabled = false
             view.subviews.filter { $0.tag == Self.mergedBadgeTag }.forEach { $0.removeFromSuperview() }
             if pin.role == .merged {
                 let badge = UIImageView(image: UIImage(systemName: "flag.checkered"))
                 badge.tag = Self.mergedBadgeTag
                 badge.tintColor = .white
-                badge.backgroundColor = .systemRed
+                badge.backgroundColor = UIColor(named: "Danger") ?? .systemRed
                 badge.layer.cornerRadius = 10
                 badge.clipsToBounds = true
                 badge.contentMode = .scaleAspectFit
