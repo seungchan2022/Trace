@@ -119,6 +119,12 @@ SwiftLint is configured by `.swiftlint.yml`.
 
 ## UI and Simulator Checks
 
+- **UI/애니메이션/레이아웃 수정은 코드 추론만으로 "완료"라고 보고하지 않는다.** 커밋하거나
+  결과를 보고하기 전에 시뮬레이터를 직접 실행해 해당 화면·상태로 조작하고, 스크린샷(또는
+  화면 녹화 프레임)으로 실제 렌더링 결과를 확인한다. "이렇게 고치면 될 것" 같은 추론은 확인
+  전까지 가설일 뿐이다 — 2026-07-13 MVP12 회고, 같은 실수(완료 선언 후 재발견)가 한 사이클
+  안에서 세 번 반복된 뒤 확정한 규칙. 정적 접근성 트리 스냅샷으로 안 잡히는 애니메이션/전환
+  버그는 위 "UI 테스트 실패 원인 파악 순서"의 개별 하위 뷰 실측 기법을 쓴다.
 - Use simulator verification for navigation, visible UI, gestures, permissions, and lifecycle behavior.
 - Use XCUITest or ViewInspector for UI tests.
 - Use `ios-debugger-agent` and XcodeBuildMCP-backed workflows for simulator build/run/debug tasks — **not for running the test suite**; see Simulator Discipline above for why.
