@@ -481,7 +481,14 @@ extension MapViewRepresentable {
         // MARK: Camera
 
         func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
-            parent.region = mapView.region
+            // MapKit은 이 델리게이트를 setRegion(animated:) 호출 자체가 일어난 같은 뷰 업데이트
+            // 트랜잭션 안에서 동기 호출할 수 있다 — 그 안에서 곧바로 @Binding을 쓰면 "Modifying
+            // state during view update" 경고가 난다(2026-07-12 드래그 제스처에서 같은 패턴 확인).
+            // 다음 런루프로 한 틱 미뤄 현재 트랜잭션 밖에서 쓰게 한다.
+            let region = mapView.region
+            DispatchQueue.main.async { [weak self] in
+                self?.parent.region = region
+            }
         }
 
         // MARK: Gesture Delegate
