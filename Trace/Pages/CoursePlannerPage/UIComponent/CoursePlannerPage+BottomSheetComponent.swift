@@ -16,25 +16,13 @@ extension CoursePlannerPage {
             }
         }
         .background {
-            Group {
-                if isBottomSheetExpanded {
-                    UnevenRoundedRectangle(
-                        topLeadingRadius: DesignToken.Corner.sheetTop,
-                        bottomLeadingRadius: 0,
-                        bottomTrailingRadius: 0,
-                        topTrailingRadius: DesignToken.Corner.sheetTop
-                    )
-                    .fill(DesignToken.Color.surface)
-                } else {
-                    UnevenRoundedRectangle(
-                        topLeadingRadius: DesignToken.Corner.sheetTop,
-                        bottomLeadingRadius: 0,
-                        bottomTrailingRadius: 0,
-                        topTrailingRadius: DesignToken.Corner.sheetTop
-                    )
-                    .fill(.regularMaterial)
-                }
-            }
+            UnevenRoundedRectangle(
+                topLeadingRadius: DesignToken.Corner.sheetTop,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: DesignToken.Corner.sheetTop
+            )
+            .fill(isBottomSheetExpanded ? AnyShapeStyle(DesignToken.Color.surface) : AnyShapeStyle(.regularMaterial))
             .ignoresSafeArea(edges: .bottom)
         }
         .accessibilityIdentifier("coursePlanner.segmentPanel")
@@ -127,6 +115,7 @@ extension CoursePlannerPage {
                             .foregroundStyle(DesignToken.Color.accent)
                     }
                     .disabled(!viewModel.canInsertWholeCourseRoundTrip)
+                    .opacity(viewModel.canInsertWholeCourseRoundTrip ? 1 : 0.4)
                     .accessibilityIdentifier("coursePlanner.wholeCourseRoundTrip")
                 }
             }
@@ -258,6 +247,7 @@ extension CoursePlannerPage {
             }
             .buttonStyle(.plain)
             .disabled(!viewModel.canInsertRoundTrip(afterColorKey: row.colorKey))
+            .opacity(viewModel.canInsertRoundTrip(afterColorKey: row.colorKey) ? 1 : 0.4)
             .accessibilityIdentifier("coursePlanner.segmentPanel.roundTrip.\(row.index)")
         }
     }

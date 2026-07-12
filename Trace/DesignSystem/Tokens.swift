@@ -6,18 +6,23 @@ enum DesignToken {
         static let ink2 = SwiftUI.Color("Ink2")
         static let surface = SwiftUI.Color("Surface")
         static let surface2 = SwiftUI.Color("Surface2")
+        // 현재 미사용 — 향후 마일스톤에서 소비될 수 있어 보류 (reserved for future use).
         static let border = SwiftUI.Color("Border")
+        // 현재 미사용 — 실제 컴포넌트는 .ultraThinMaterial/.regularMaterial을 직접 써서 대체됨.
         static let glass = SwiftUI.Color("Glass")
         static let glassBorder = SwiftUI.Color("GlassBorder")
         static let accent = SwiftUI.Color("AccentColor")
         static let accentInk = SwiftUI.Color("AccentInk")
         static let danger = SwiftUI.Color("Danger")
+        // 현재 미사용 — MKUserLocation 재색상은 안정적 공개 API가 없어 보류 (MapViewRepresentable 참고).
         static let locBlue = SwiftUI.Color("LocBlue")
         static let grabber = SwiftUI.Color("Grabber")
+        // 현재 미사용 — 향후 마일스톤에서 소비될 수 있어 보류 (reserved for future use).
         static let markerFill = SwiftUI.Color("MarkerFill")
     }
 
     enum Corner {
+        // 현재 미사용 — 향후 마일스톤에서 소비될 수 있어 보류 (reserved for future use).
         static let chrome: CGFloat = 15
         static let sheetTop: CGFloat = 26
         static let row: CGFloat = 15

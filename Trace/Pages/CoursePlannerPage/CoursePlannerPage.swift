@@ -177,7 +177,7 @@ struct CoursePlannerPage: View {
                 guard currentStrokePoints.count > 1 else { return }
                 var path = Path()
                 path.addLines(currentStrokePoints)
-                context.stroke(path, with: .color(.orange), lineWidth: 4)
+                context.stroke(path, with: .color(DesignToken.Color.accent), lineWidth: 4)
             }
             .allowsHitTesting(false)
         }
