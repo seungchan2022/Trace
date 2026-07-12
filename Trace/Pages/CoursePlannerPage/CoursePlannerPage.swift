@@ -29,6 +29,9 @@ struct CoursePlannerPage: View {
     @State private var currentStrokePoints: [CGPoint] = []
     @State var sheetDetent: SheetDetent = .collapsed
     @State var panelMaxListHeight: CGFloat = 300
+    @State var mapHeight: CGFloat = 750
+    @State var topSafeAreaInset: CGFloat = 0
+    @State var sheetHeaderHeight: CGFloat = 140
     @State var panelAnchorColorKey: Int?
     // 접기 직전 "최신 근처를 보고 있었는가" — 재펼침 시 이 값이 true면 옛 앵커 대신 최신을 따라간다.
     // 기본값 true: 첫 펼침(앵커 없음)에서는 restoreScrollPosition의 fallback 분기가 이미 최신으로 보내므로 무해하다.
@@ -65,12 +68,12 @@ struct CoursePlannerPage: View {
                 .ignoresSafeArea()
                 .accessibilityIdentifier("coursePlanner.map")
 
-            // 지도가 풀블리드 배경, 아래 VStack은 그 위에 뜨는 크롬(탑바/FAB/시트) — safeAreaInset이
+            // 지도가 풀블리드 배경, 아래 VStack은 그 위에 뜨는 크롬(탑바/FAB) — safeAreaInset이
             // 아니므로 시트가 펼쳐져도 지도 프레임(mapView의 onGeometryChange 측정값)이 바뀌지 않는다.
             // .ignoresSafeArea()를 이 VStack에는 걸지 않아 상태바/노치·홈 인디케이터는 자동으로 피한다.
             //
             // 히트테스트: 이 VStack엔 .allowsHitTesting을 아예 걸지 않는다. 원래 계획은 VStack 전체에
-            // false를 걸고 topBar/fabStack/bottomSheet 각각에 true를 다시 거는 것이었으나, 시뮬레이터 검증 중
+            // false를 걸고 topBar/fabStack 각각에 true를 다시 거는 것이었으나, 시뮬레이터 검증 중
             // 그 조합이 자식의 true를 무시하고 크롬 전체를 히트테스트 불가 상태로 만드는 것을 확인했다
             // (버튼이 전혀 반응하지 않고 모든 탭이 그 밑 지도로 흘러들어가 탭할 때마다 구간이 추가됨,
             // 2026-07-11 재현). Spacer()는 원래 그려지는 콘텐츠가 없어 히트테스트 대상이 되지 않으므로,
@@ -83,8 +86,23 @@ struct CoursePlannerPage: View {
                     Spacer()
                     fabStack
                 }
-                bottomSheet
             }
+
+            // bottomSheet는 위 VStack과 별개의 형제 레이어다 — 같은 VStack에 있으면 "거의 다" 단계처럼
+            // 시트가 아주 커질 때 Spacer가 0으로 눌리면서 topBar까지 화면 위로 밀려나 상태바를 뚫고
+            // 올라가는 버그가 있었다(2026-07-12 실기기 확인). 분리하면 시트가 아무리 커져도 topBar/FAB를
+            // 밀어내지 않고 시스템 시트처럼 그 위를 덮기만 한다.
+            bottomSheet
+        }
+        // 시트가 커질수록 이 값 자체가 시스템에 의해 더 작게 보고되는 피드백 루프가 있었다
+        // (2026-07-12, XCUITest로 실측: medium 62pt → full 40pt, mapHeight/sheetHeaderHeight는
+        // 그대로인데 이 값만 줄어들며 maxSheetHeight를 더 키워 시트가 상태바를 덮는 원인이었다).
+        // 한 번 잡은 값보다 작은 값은 무시해 루프를 끊는다 — 기기 회전이 없는 이 화면에서 진짜
+        // 안전영역은 고정값이라 더 큰 값만 갱신을 허용해도 안전하다.
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.safeAreaInsets.top
+        } action: { newValue in
+            if newValue > topSafeAreaInset { topSafeAreaInset = newValue }
         }
         .overlay(alignment: .top) {
             if let hint = topHintText, !isTopHintDismissed {
@@ -201,20 +219,37 @@ struct CoursePlannerPage: View {
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { height in
+            mapHeight = height
             panelMaxListHeight = height * 0.4
         }
     }
 
     private var fabStack: some View {
-        // 스펙(§2 FAB 스택): undo/redo/clear는 편집 중에만 뜨고 시트 확장 시 숨김(fade+slide),
-        // 현재 위치 버튼은 "항상 내 위치" — 시트 확장 여부와 무관하게 항상 보여야 한다.
+        // 원 스펙(§2 FAB 스택)은 현재 위치 버튼을 "항상 내 위치"(시트 확장 여부 무관 항상 노출)로
+        // 정의했으나, fabStack이 화면 하단 고정이라 시트가 커질수록(특히 full 디텐트) 이 버튼이
+        // 그 위에 뜬 시트에 가려져 실제로는 이미 "항상"이 아니었다(2026-07-13, 실기기 확인).
+        // 시트 상단 기준으로 동적으로 띄우는 방안도 검토했으나, full 디텐트에서 시트 상단이 topBar와
+        // 거의 같은 높이까지 올라와 topBar와 겹치는 문제가 있어 기각 — 대신 현재 위치 버튼도
+        // undo/redo/clear와 동일하게 시트 확장 시 같이 숨기는 쪽으로 스펙을 의도적으로 변경한다
+        // (결정 2026-07-13, 사용자 — `project-decisions.md` 기록). 펼친 상태에서 지도 가시 영역
+        // 자체가 작아 재가운데맞춤 가치도 낮으므로, 필요하면 시트를 collapsed로 접어 사용한다.
+        //
+        // 이 스택은 fabStack 전체가 이제 collapsed에서만 보이므로, 화면 하단이 아니라 collapsed
+        // 시트(그래버+헤더) 바로 위 16pt에 앵커해야 한다 — 이전엔 화면 하단 고정 16pt였는데, 그
+        // 자리가 이미 collapsed 시트 영역 안이라 되돌리기 한 개만 보이고 앞으로/초기화/현재위치
+        // 3개는 시트에 가려 애초에 안 보이고 있었다(2026-07-13, XCUITest 프레임 실측 + 스크린샷으로
+        // 확인). collapsed 높이는 콘텐츠 무관 고정값(그래버+헤더)이라 이 값에 앵커해도 안전하다.
         VStack(spacing: 12) {
             editingFabGroup
             recenterButton
         }
         .frame(width: DesignToken.Size.fab)
         .padding(.trailing, DesignToken.Size.screenMargin)
-        .padding(.bottom, 16)
+        .padding(.bottom, grabberTotalHeight + sheetHeaderHeight + 16)
+        .opacity(sheetDetent == .collapsed ? 1 : 0)
+        .offset(x: sheetDetent == .collapsed ? 0 : 24)
+        .animation(.easeInOut(duration: 0.2), value: sheetDetent)
+        .allowsHitTesting(sheetDetent == .collapsed)
     }
 
     private var editingFabGroup: some View {
@@ -240,10 +275,6 @@ struct CoursePlannerPage: View {
             .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
             .accessibilityIdentifier("coursePlanner.clear")
         }
-        .opacity(sheetDetent == .collapsed ? 1 : 0)
-        .offset(x: sheetDetent == .collapsed ? 0 : 24)
-        .animation(.easeInOut(duration: 0.2), value: sheetDetent)
-        .allowsHitTesting(sheetDetent == .collapsed)
     }
 
     private var recenterButton: some View {

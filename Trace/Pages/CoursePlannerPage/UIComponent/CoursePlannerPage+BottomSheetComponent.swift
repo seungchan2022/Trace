@@ -49,16 +49,11 @@ extension CoursePlannerPage {
             .onEnded { value in
                 let threshold: CGFloat = 40
                 guard abs(value.translation.height) > threshold else { return }
-                // 빈 경로(구간 없음)에서는 드래그 자체는 되지만 보여줄 게 없으니 방향과 무관하게
-                // 기본 상태로 돌아간다 (2026-07-12, 사용자 확인).
-                let hasRoute = !(viewModel.course?.segments.isEmpty ?? true)
+                // 탭 토글도 경로 유무와 무관하게 기본↔중간을 오가므로, 드래그도 똑같이 경로
+                // 유무와 무관하게 단계를 이동한다 — 둘의 동작이 다르면 안 된다는 사용자 확인
+                // (2026-07-12: "빈 경로일 때 버튼을 누르면 시트가 올라가는데 드래그로는 안돼").
                 let goingUp = value.translation.height < 0
-                let nextDetent: SheetDetent
-                if !hasRoute {
-                    nextDetent = .collapsed
-                } else {
-                    nextDetent = goingUp ? sheetDetent.steppedUp : sheetDetent.steppedDown
-                }
+                let nextDetent: SheetDetent = goingUp ? sheetDetent.steppedUp : sheetDetent.steppedDown
                 // Gesture의 onEnded는 Button 액션과 달리 SwiftUI가 안전하게 지연 디스패치하지
                 // 않는다 — 여기서 곧바로 @State를 쓰면 "Modifying state during view update"
                 // 경고가 발생한다(2026-07-12 실기기 콘솔 로그로 재현·확정, 탭 토글에서는 없음).
@@ -111,8 +106,13 @@ extension CoursePlannerPage {
         }
     }
 
+    // .firstTextBaseline이었을 때 로딩 중 헤더가 순간적으로 커지는 움찔거림이 있었다(2026-07-13,
+    // XCUITest로 헤더 높이 실측: 대기 105pt → 로딩 중 131pt). StatusChip의 첫 자식이 .calculating일
+    // 땐 ProgressView(텍스트 아님), .route일 땐 Text라서, 이 헤더 HStack이 baseline 정렬을 쓰면
+    // 두 상태의 암묵적 베이스라인 기준점이 달라져 전체 높이가 흔들렸다. .top으로 바꿔 이 클래스의
+    // 버그 자체를 없앤다.
     private var sheetHeader: some View {
-        HStack(alignment: .firstTextBaseline) {
+        HStack(alignment: .top) {
             Button {
                 // 탭은 기본↔중간만 오간다 — "거의 다"는 드래그로만 도달(2026-07-12, 사용자 확인).
                 setSheetDetent(sheetDetent == .collapsed ? .medium : .collapsed)
@@ -149,9 +149,14 @@ extension CoursePlannerPage {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 8) {
-                if let kind = sheetHeaderStatusChipKind {
-                    StatusChip(kind: kind)
-                }
+                // 칩을 조건부로 넣고 빼면(nil ↔ 값) 그 자리만큼 헤더 전체 높이가 바뀐다 — 저장/전체
+                // 왕복 버튼처럼 opacity로만 숨기고 자리는 항상 차지하게 해서, 로딩 시작 등으로 칩이
+                // 나타나는 순간 헤더(그리고 시트 전체)가 살짝 커졌다 줄어드는 움찔거림을 없앤다
+                // (2026-07-12, 사용자 — "계산중에 해당하는 부분들이 보일때 시트가 살짝 올라갔다
+                // 다시 내려오는 느낌").
+                StatusChip(kind: sheetHeaderStatusChipKind ?? .route(segmentLabel: " "))
+                    .opacity(sheetHeaderStatusChipKind == nil ? 0 : 1)
+                    .accessibilityHidden(sheetHeaderStatusChipKind == nil)
                 HStack(spacing: 8) {
                     // "저장"은 텍스트+아이콘 캡슐이라 GlassIconButtonStyle(42×42 고정 프레임)에
                     // 억지로 끼우면 라벨이 잘린다 — 이 버튼만 인라인 Capsule 배경을 직접 사용한다.
@@ -185,6 +190,13 @@ extension CoursePlannerPage {
             Color.clear
                 .contentShape(Rectangle())
                 .gesture(sheetDragGesture)
+        }
+        // "거의 다" 단계의 최대 높이를 계산하려면 헤더 자신의 높이가 필요하다 — 리스트 높이가
+        // 헤더 높이에 영향을 주지 않으므로(반대 방향 의존) 순환이 아니다.
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: { height in
+            sheetHeaderHeight = height
         }
     }
 
@@ -226,11 +238,44 @@ extension CoursePlannerPage {
     // 짜여 있어 구간이 늘어날 때마다 시트가 실측 높이만큼 점점 커지는 문제가 있었다(2026-07-12,
     // 사용자 확인 — "추가할 때마다 늘어나면 안 된다"). collapsed는 expandedSheetBody 자체가
     // 렌더되지 않아 이 값이 쓰이지 않는다.
+    // fabStack이 collapsed 시트 높이를 계산할 때도 참조하므로(CoursePlannerPage.swift) private가 아니다.
+    var grabberTotalHeight: CGFloat { 25 }
+
+    // 시트가 top safe area 계산에 쓰는 여유값보다 더 커질수록, 시스템이 실제 top safe area
+    // 자체를 조금씩 더 작게 보고하는 잔여 현상이 남아있다(2026-07-12, 피드백 루프를 끊은 뒤에도
+    // XCUITest 실측: topBar가 여전히 11pt 밀림). 12pt로는 이 잔여분을 못 흡수해 상태바/다이내믹
+    // 아일랜드와 살짝 겹쳤다 — 여유를 넉넉히 둬서 흡수한다.
+    private var sheetTopMargin: CGFloat { 40 }
+
+    // 풀 시트가 다이내믹 아일랜드/상태 바 바로 아래에서 멈추도록 하는 상한 — 시스템 시트의
+    // large detent와 같은 발상. expandedListHeight(.full)의 리스트 높이 계산에만 쓴다.
+    //
+    // 한 번은 이 값을 bottomSheet 자체에도 .frame(maxHeight:, alignment: .top)으로 강제해
+    // 오버슈트를 물리적으로 막으려 했으나, ZStack이 자식에게 화면 전체 높이를 제안하는 상황에서
+    // maxHeight만 있고 exact height가 없는 프레임은 제안받은 크기(여기선 화면 높이)까지 그대로
+    // 차지해버려 시트 전체가 화면 위쪽 절반을 덮는 보이지 않는 히트테스트 영역이 되었다 — collapsed/
+    // medium 단계에서 지도 탭이 그 영역에 흡수되어 경로 생성 자체가 안 되는 회귀였다(2026-07-12,
+    // XCUITest 접근성 트리 덤프로 확인 후 되돌림). 오버슈트 방어는 다시 시도하더라도 bottomSheet
+    // 전체가 아니라 expandedSheetBody의 리스트 높이 안쪽에서만 해야 한다.
+    private var maxSheetHeight: CGFloat {
+        mapHeight - topSafeAreaInset - sheetTopMargin
+    }
+
+    // presentationDetents처럼 단계별 고정 높이 — 콘텐츠 양은 높이에 전혀 영향을 주지 않는다.
+    // 구간이 적으면 그냥 빈 공간이 남고, 많으면 스크롤된다. 이전엔 min(실측 콘텐츠 높이, 상한)으로
+    // 짜여 있어 구간이 늘어날 때마다 시트가 실측 높이만큼 점점 커지는 문제가 있었다(2026-07-12,
+    // 사용자 확인 — "추가할 때마다 늘어나면 안 된다"). collapsed는 expandedSheetBody 자체가
+    // 렌더되지 않아 이 값이 쓰이지 않는다.
     private var expandedListHeight: CGFloat {
         switch sheetDetent {
         case .collapsed: return 0
         case .medium: return panelMaxListHeight
-        case .full: return panelMaxListHeight * 1.8
+        case .full:
+            // 시스템 시트의 large detent처럼 위쪽 안전영역(+여백)만 남기고 나머지를 채운다 —
+            // 이전엔 panelMaxListHeight의 고정 배수를 써서 기기에 따라 시트가 상태바까지
+            // 뚫고 올라가는 버그가 있었다(2026-07-12 실기기 확인, 사용자 스크린샷).
+            let maxListHeight = maxSheetHeight - grabberTotalHeight - sheetHeaderHeight
+            return max(panelMaxListHeight, maxListHeight)
         }
     }
 
