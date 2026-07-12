@@ -11,18 +11,20 @@
 
 ## 진행 중 / 예정
 
-### MVP12 — 달리기 기록 착수 전 기반 정비: Swift 6 + 디자인   (상태: 진행 중 · 킥오프 2026-07-10)
+### MVP12 — 달리기 기록 착수 전 기반 정비: Swift 6 + 디자인   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp12/`](history/mvp12/))
 
-> 달리기 기록(차기 MVP)이 새 화면과 persistence 확장을 얹기 전에 기반을 정비한다.
-> 코드는 Swift 6 언어 모드 전환(동시성 경고 ~40건 일괄 정리, `docs/backlog.md` 2026-07-08 항목)으로,
-> 외관은 기능 프로토타입 상태인 "러닝 전" 화면 전체에 디자인 시스템을 입히는 것으로.
-> 디자인은 사용자가 Claude Design으로 만든 기존 목업("Trace 경로 짜기 v2", 다크=Cyber/라이트=Glass
-> 하이브리드)을 기반으로 하고, 코드 적용은 Swift 6 사이클 완료 후에 진행한다 —
-> 새 디자인 코드가 처음부터 Swift 6 모드에서 작성되게.
+> 달리기 기록(차기 MVP)이 새 화면과 persistence 확장을 얹기 전에 기반을 정비했다.
+> 코드는 Swift 6 언어 모드 전환(동시성 경고 ~40건 일괄 정리)으로, 외관은 기존 목업("Trace 경로
+> 짜기 v2") 기반 디자인 시스템을 플래너 화면 전체(탑바·FAB·시트·구간리스트·핀/폴리라인·저장/목록/
+> 왕복/redo)에 적용하는 것으로. design-apply 완료 선언(2026-07-12) 이후에도 실사용 중 바텀시트
+> 버그(드래그-리사이즈 3단계 확장, 안전영역 피드백 루프로 상태바 가림, 헤더 베이스라인 정렬로
+> 로딩 중 움찔거림, FAB 스택이 collapsed 시트에 가려지던 문제)가 연속 발견돼 같은 브랜치에서
+> 추가 수정(2026-07-13). 전체 테스트 178개 그린, 실기기 QA 체크리스트 통과.
+> 회고: [`260713_mvp12_completion_retro`](history/mvp12/260713_mvp12_completion_retro.md)
 
-- [x] **design-direction** — 기존 목업("Trace 경로 짜기 v2") 검토 → 디자인 시스템 추출 + 미커버 화면(코스 저장/목록·왕복·redo) 확장 설계. 노브 기본값·SF 네이티브 폰트·시스템 테마 연동(인앱 토글 제거) 확정(2026-07-10 인터뷰). 경량 사이클(문서 전용), 스펙: `docs/superpowers/specs/2026-07-10-design-direction-design.md`
-- [x] **swift6-migration** — 암묵 isolation 정리, 명시 @MainActor 감사, Sendable 정합, 동시성 문법 현대화, `SWIFT_VERSION = 6` 전환 + 경고 0 (사이클 1)
-- [x] **design-apply** — 확정된 디자인 시스템을 플래너 화면·구간 패널·저장/목록 sheet에 적용 + UX 보류 항목(구간 패널 prepend 스크롤 등) 재검토 (사이클 2). 토큰·탑바·FAB·시트·구간리스트·핀/폴리라인·저장/목록/왕복/redo 재배치까지 P1 전 범위 적용 완료, 바텀시트 풀블리드 배경(위쪽 모서리만 둥글게) 애드혹 수정 포함. P2 6건은 `docs/backlog.md`로 이연. 실기기 QA 체크리스트: `docs/qa/2026-07-11-design-apply-device-checklist.md` (완료 2026-07-12)
+- [x] **design-direction** — 기존 목업 검토 → 디자인 시스템 추출 + 미커버 화면(코스 저장/목록·왕복·redo) 확장 설계. 노브 기본값·SF 네이티브 폰트·시스템 테마 연동(인앱 토글 제거) 확정(2026-07-10 인터뷰). 경량 사이클(문서 전용)
+- [x] **swift6-migration** — 암묵 isolation 정리, 명시 @MainActor 감사, Sendable 정합, 동시성 문법 현대화, `SWIFT_VERSION = 6` 전환 + 경고 0. 실기기 크래시(MapKit NSObject 서브클래스 격리 오상속) 발견 후 격리 기본값 전략을 반대 방향(기본 nonisolated + 명시 @MainActor)으로 재전환
+- [x] **design-apply** — 확정된 디자인 시스템을 플래너 화면 전체에 적용. 토큰·탑바·FAB·시트·구간리스트·핀/폴리라인·저장/목록/왕복/redo 재배치까지 P1 전 범위 적용 완료. P2 6건은 `docs/backlog.md`로 이연. 완료 선언 후에도 바텀시트 안전영역 피드백 루프·헤더 베이스라인 정렬(`HStack(alignment: .firstTextBaseline)` → `.top`)·FAB 스택 가림 버그를 추가로 수정(2026-07-13) — 상세: `docs/solutions/ui-bugs/`
 
 ### MVP11 — 코스 저장 + 구간 왕복   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp11/`](history/mvp11/))
 

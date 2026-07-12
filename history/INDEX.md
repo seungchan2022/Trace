@@ -23,6 +23,26 @@
 
 ---
 
+## MVP12 — Swift 6 + 디자인 (2026-07-10 ~ 07-13)
+
+> 달리기 기록(차기 MVP) 착수 전 기반 정비: Swift 6 언어 모드 전환(동시성 경고 ~40건 정리) +
+> 기존 목업 기반 디자인 시스템을 플래너 화면 전체(탑바·FAB·시트·구간리스트·핀/폴리라인·저장/목록/
+> 왕복/redo)에 적용. 마일스톤 3개. design-apply는 완료 선언 후에도 실사용 중 바텀시트 버그
+> (드래그-리사이즈 3단계·안전영역 피드백 루프·헤더 베이스라인 정렬·FAB 스택 가림)가 연속 발견돼
+> 같은 브랜치에서 추가 수정.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [design-direction 설계](mvp12/2026-07-10-design-direction-design.md) | 목업 검토 → 디자인 토큰·타이포·컴포넌트 스펙 추출 |
+| 기획 | [swift6-migration 설계](mvp12/2026-07-10-swift6-migration-design.md) | 격리 전략, Sendable 정합, 언어 모드 전환 계획 |
+| 플랜 | [swift6-migration 플랜](mvp12/2026-07-10-swift6-migration.md) | Task 1~7c(소급 완료), 격리 기본값 전략 재전환 포함 |
+| 플랜 | [design-apply 플랜](mvp12/2026-07-11-design-apply.md) | P1 전 범위 적용(소급 완료) + 완료 후 바텀시트 버그 수정 커밋들 |
+| QA | [swift6 실기기 체크리스트](mvp12/2026-07-11-swift6-migration-device-checklist.md) | 격리 전환 후 실기기 검증 |
+| QA | [design-apply 실기기 체크리스트](mvp12/2026-07-11-design-apply-device-checklist.md) | 디자인 적용 전 시나리오 검증, 전체 통과 |
+| 회고 | [MVP12 완료 회고](mvp12/260713_mvp12_completion_retro.md) | 실측 우선 디버깅, "완료" 문서 재검증 없이 신뢰한 대가, SwiftUI 베이스라인/안전영역 SURPRISE |
+
+---
+
 ## MVP11 — 코스 저장 + 구간 왕복 (2026-07-07 ~ 07-08)
 
 > 이름 저장/목록/불러오기/삭제(SwiftData) + 구간 왕복(역방향 2×로 재설계) + 전체 왕복.

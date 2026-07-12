@@ -1,5 +1,15 @@
 # MVP12 design-apply Implementation Plan
 
+> **완료(소급 확인) — 2026-07-13.** 아래 체크박스는 진행 중 갱신되지 않은 채로 남아있어
+> 소급으로만 확인 — 실제 작업 여부는 커밋 로그가 근거다. P1 전 범위(토큰·탑바·FAB·시트·
+> 구간리스트·핀/폴리라인·저장/목록/왕복/redo) 적용 완료, 실기기 QA 체크리스트 전체 통과
+> (2026-07-12, `history/mvp12/2026-07-11-design-apply-device-checklist.md`). 마일스톤
+> 완료 커밋 `81e6e0b` 이후에도 실사용 중 발견된 버그(바텀시트 드래그-리사이즈 3단계 확장,
+> 안전영역 피드백 루프로 인한 상태바 가림, 헤더 베이스라인 정렬로 인한 로딩 중 움찔거림,
+> FAB 스택이 collapsed 시트에 가려지던 문제)를 같은 브랜치에서 계속 수정 —
+> 근거 커밋: `8f26867`,`a4da480`,`a008d48`,`49f4ece`,`29c3304`,`015bac1`,`f98e945`,
+> `ce464f5`,`ae6e1a1`,`73e4251`. 최종 상태는 `docs/agent-rules/project-decisions.md` 기준.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Apply the confirmed Trace design system (`docs/superpowers/specs/2026-07-10-design-direction-design.md`) to `CoursePlannerPage` and its sheets — tokens, top bar, FAB stack, bottom sheet, segment rows, map pins/polylines, course list, save/round-trip/redo — without changing any domain, persistence, or ViewModel behavior. Scope is **P1 only** (2026-07-11 kickoff decision, see Task 10 Step 4 for the recorded decision and deferred P2 backlog entries).
