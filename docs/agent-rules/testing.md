@@ -109,6 +109,30 @@ SwiftLint is configured by `.swiftlint.yml`.
 - Save the feature-specific checklist as `docs/qa/YYYY-MM-DD-<feature>-device-checklist.md` and hand it to the user. Use the template below.
 - Capture feedback from manual testing into `docs/backlog.md`: genuinely broken behavior is fixed in the current session, but intent-mismatches and improvements are recorded as backlog items (where/now/desired) and deferred to a later milestone — do not expand the current milestone to chase them. The backlog is consumed at milestone start; see `docs/agent-rules/skills.md`.
 
+### 체크리스트 배치 처리 (2026-07-13)
+
+사용자는 체크리스트 전체를 실기기에서 다 채운 뒤 한 번에 전달한다(항목별로 나눠 보고하지
+않음). 이 배치를 받았을 때의 처리 순서:
+
+1. **통과 항목은 조치 없음** — 백로그에도 등록하지 않는다. 확인 끝.
+2. **실패 항목만 모아 분류** — 항목별로 `docs/agent-rules/workflow.md`의 "버그 처리 경로"
+   1번(분류: 진짜 고장 → 지금 고침 / 의도 불일치·개선 → 백로그)을 그대로 적용한다. 백로그
+   행은 이 시점에 즉시 기록하고, 사용자에게 "무엇을 지금 고치고 무엇을 백로그로 보냈는지" 1차
+   보고를 한다. 이후 최종 보고에서 백로그 항목을 다시 언급하지 않는다.
+3. **"지금 고침" 항목끼리 연관성 판단** — 같은 원인으로 보이는 항목은 하나로 묶는다(예:
+   항목 1·2가 연관, 항목 3은 무관이면 [1,2] 묶음 하나 + [3] 묶음 하나).
+4. **묶음 단위로 위임** — 서로 무관한 묶음은 각각 별도 서브에이전트로 **병렬** 위임한다
+   (`superpowers:dispatching-parallel-agents`). 같은 묶음 안의 항목은 원인을 공유한다고 보고
+   한 서브에이전트가 함께 처리한다. 각 서브에이전트는 `docs/agent-rules/workflow.md`의 버그
+   처리 경로(2·3번: systematic-debugging, 시도 자가관리, 3회 실패 시 되돌리기+인수인계)를
+   그대로 따른다 — 묶은 항목들은 한 원인으로 보고 시도 횟수를 합산해서 센다(항목별 3회가
+   아니다).
+5. **컨트롤러 검증** — 서브에이전트가 완료를 보고하면 컨트롤러가 diff와 테스트 결과를 직접
+   확인한 뒤 승인한다. 서브에이전트가 이미 통과시킨 동일 테스트를 그대로 재실행하지는 않되,
+   확인 자체를 생략하지 않는다.
+6. **최종 보고는 한 번에** — 모든 묶음이 끝나면 고친 항목 / 되돌리고 인수인계한 항목을 한
+   번에 정리해 보고한다.
+
 ### Real-Device Checklist Template
 
 Use a scenario card for any test that needs multiple physical steps or a specific gesture sequence. Keep plain single-line checkboxes only for one-shot checks (build/install, known-limitations notes).
