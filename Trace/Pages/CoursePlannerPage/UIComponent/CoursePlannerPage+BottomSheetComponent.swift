@@ -38,10 +38,28 @@ extension CoursePlannerPage {
         .accessibilityIdentifier("coursePlanner.segmentPanel")
     }
 
-    // 드래그 제스처는 그래버에만 건다 — sheetHeader나 시트 전체에 걸면 그 안의 Button들과
-    // 히트테스트가 충돌해 전부 먹통이 되는 회귀가 실제로 있었다(2026-07-12, bottomSheet 배경
-    // 히트테스트 백스톱 작업 중 확인). 그래버는 Button이 없는 순수 장식 요소라 안전하다.
-    // 탭 토글(sheetHeader)은 그대로 유지 — 드래그는 추가 입력 방식이지 대체가 아니다.
+    // 그래버(38x5, 상하 10pt 패딩)만으로는 손가락으로 잡기엔 너무 좁다는 실기기 피드백(2026-07-12)
+    // — sheetHeader 영역 전체에서도 드래그가 되도록 이 제스처를 sheetHeader의 배경(뒷면 레이어)에도
+    // 건다. 배경은 foreground(버튼들)와 별개 형제 레이어라 히트테스트가 경쟁하지 않는다 — sheetHeader나
+    // 시트 전체에 *직접* 걸면(래핑) 그 안의 Button들이 전부 먹통이 되는 회귀가 실제로 있었다
+    // (2026-07-12, bottomSheet 배경 히트테스트 백스톱 작업 중 확인). 그래버 자체에도 남겨 시각적
+    // 어포던스가 있는 곳에서도 그대로 동작하게 한다.
+    private var sheetDragGesture: some Gesture {
+        DragGesture(minimumDistance: 8)
+            .onEnded { value in
+                let threshold: CGFloat = 40
+                guard abs(value.translation.height) > threshold else { return }
+                // Gesture의 onEnded는 Button 액션과 달리 SwiftUI가 안전하게 지연 디스패치하지
+                // 않는다 — 여기서 곧바로 @State를 쓰면 "Modifying state during view update"
+                // 경고가 발생한다(2026-07-12 실기기 콘솔 로그로 재현·확정, 탭 토글에서는 없음).
+                // 다음 런루프로 한 틱 미뤄 현재 진행 중인 뷰 업데이트 트랜잭션 밖에서 쓰게 한다.
+                let expand = value.translation.height < 0
+                DispatchQueue.main.async {
+                    setSheetExpanded(expand)
+                }
+            }
+    }
+
     private var grabberHandle: some View {
         Capsule()
             .fill(DesignToken.Color.grabber)
@@ -49,21 +67,7 @@ extension CoursePlannerPage {
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 8)
-                    .onEnded { value in
-                        let threshold: CGFloat = 40
-                        guard abs(value.translation.height) > threshold else { return }
-                        // Gesture의 onEnded는 Button 액션과 달리 SwiftUI가 안전하게 지연 디스패치하지
-                        // 않는다 — 여기서 곧바로 @State를 쓰면 "Modifying state during view update"
-                        // 경고가 발생한다(2026-07-12 실기기 콘솔 로그로 재현·확정, 탭 토글에서는 없음).
-                        // 다음 런루프로 한 틱 미뤄 현재 진행 중인 뷰 업데이트 트랜잭션 밖에서 쓰게 한다.
-                        let expand = value.translation.height < 0
-                        DispatchQueue.main.async {
-                            setSheetExpanded(expand)
-                        }
-                    }
-            )
+            .gesture(sheetDragGesture)
             .accessibilityIdentifier("coursePlanner.segmentPanel.grabber")
     }
 
@@ -166,6 +170,12 @@ extension CoursePlannerPage {
         }
         .padding(.horizontal, DesignToken.Size.sheetPadding)
         .padding(.vertical, 16)
+        .background {
+            // 드래그 히트 영역 확장용 — 배경이라 foreground의 Button들과 히트테스트가 경쟁하지 않는다.
+            Color.clear
+                .contentShape(Rectangle())
+                .gesture(sheetDragGesture)
+        }
     }
 
     private var subtitleText: String {
