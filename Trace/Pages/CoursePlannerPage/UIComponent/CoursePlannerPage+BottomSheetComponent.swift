@@ -16,14 +16,30 @@ extension CoursePlannerPage {
             }
         }
         .background {
-            UnevenRoundedRectangle(
+            let shape = UnevenRoundedRectangle(
                 topLeadingRadius: DesignToken.Corner.sheetTop,
                 bottomLeadingRadius: 0,
                 bottomTrailingRadius: 0,
                 topTrailingRadius: DesignToken.Corner.sheetTop
             )
-            .fill(isBottomSheetExpanded ? AnyShapeStyle(DesignToken.Color.surface) : AnyShapeStyle(.regularMaterial))
-            .ignoresSafeArea(edges: .bottom)
+            // 유리 재질(블러)은 항상 깔아둔 채 그 위에 surface 틴트를 얹는다 — 다크는 surface 알파가
+            // 1.0이라 블러가 완전히 가려져 솔리드로 보이고(스펙: "다크 시트는 유리 아님"), 라이트는
+            // surface 알파가 .74라 블러된 지도 위에 은은하게 겹쳐 보인다(스펙: 라이트 = Glassmorphism).
+            // 이전엔 펼침 여부로 material/flat-color를 스위칭해 펼친 상태(라이트)에서 블러 없이 알파색만
+            // 깔려 지도 글자가 또렷하게 비쳐 보이는 버그가 있었다 (2026-07-12 실기기 확인).
+            //
+            // 히트테스트 백스톱도 겸한다: .background 콘텐츠는 foreground(위 VStack)와 별개의
+            // 형제 레이어라 Button 히트테스트와 경쟁하지 않는다 — 실제로 VStack 바깥쪽에 직접
+            // contentShape+onTapGesture를 걸었더니 "저장" 버튼 등 모든 자식 Button이 먹통이 되는
+            // 회귀가 있어(2026-07-12 실기기 확인) 이 방식으로 바꿨다. 여기 건 gesture는 배경 프레임
+            // (VStack 자연 크기 + ignoresSafeArea로 확장된 홈 인디케이터 영역)에서만 탭을 흡수해,
+            // 시트 안 빈 곳(예: sheetHeader의 Spacer())이나 맨 아래 띠를 눌러도 지도로 새지 않는다.
+            shape
+                .fill(.regularMaterial)
+                .overlay(shape.fill(DesignToken.Color.surface))
+                .ignoresSafeArea(edges: .bottom)
+                .contentShape(Rectangle())
+                .onTapGesture {}
         }
         .accessibilityIdentifier("coursePlanner.segmentPanel")
     }

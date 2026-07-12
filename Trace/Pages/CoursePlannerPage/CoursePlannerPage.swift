@@ -189,6 +189,18 @@ struct CoursePlannerPage: View {
     }
 
     private var fabStack: some View {
+        // 스펙(§2 FAB 스택): undo/redo/clear는 편집 중에만 뜨고 시트 확장 시 숨김(fade+slide),
+        // 현재 위치 버튼은 "항상 내 위치" — 시트 확장 여부와 무관하게 항상 보여야 한다.
+        VStack(spacing: 12) {
+            editingFabGroup
+            recenterButton
+        }
+        .frame(width: DesignToken.Size.fab)
+        .padding(.trailing, DesignToken.Size.screenMargin)
+        .padding(.bottom, 16)
+    }
+
+    private var editingFabGroup: some View {
         VStack(spacing: 12) {
             Button { Task { await viewModel.undo() } } label: {
                 Image(systemName: "arrow.uturn.backward")
@@ -210,29 +222,29 @@ struct CoursePlannerPage: View {
             .buttonStyle(.glassIcon(disabled: viewModel.course == nil && viewModel.pendingTapStart == nil))
             .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
             .accessibilityIdentifier("coursePlanner.clear")
-
-            Button {
-                Task {
-                    if let location = await viewModel.recenterToCurrentLocation() {
-                        cameraRegion = MKCoordinateRegion(
-                            center: CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude),
-                            latitudinalMeters: 500,
-                            longitudinalMeters: 500
-                        )
-                    }
-                }
-            } label: {
-                Image(systemName: "location.fill")
-            }
-            .buttonStyle(.glassIcon)
         }
-        .frame(width: DesignToken.Size.fab)
-        .padding(.trailing, DesignToken.Size.screenMargin)
-        .padding(.bottom, 16)
         .opacity(isBottomSheetExpanded ? 0 : 1)
         .offset(x: isBottomSheetExpanded ? 24 : 0)
         .animation(.easeInOut(duration: 0.2), value: isBottomSheetExpanded)
         .allowsHitTesting(!isBottomSheetExpanded)
+    }
+
+    private var recenterButton: some View {
+        Button {
+            Task {
+                if let location = await viewModel.recenterToCurrentLocation() {
+                    cameraRegion = MKCoordinateRegion(
+                        center: CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude),
+                        latitudinalMeters: 500,
+                        longitudinalMeters: 500
+                    )
+                }
+            }
+        } label: {
+            Image(systemName: "location.fill")
+        }
+        .buttonStyle(.glassIcon)
+        .accessibilityIdentifier("coursePlanner.recenter")
     }
 
     private var mapPins: [MapPin] {
