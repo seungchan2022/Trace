@@ -54,7 +54,14 @@ extension CoursePlannerPage {
                     .onEnded { value in
                         let threshold: CGFloat = 40
                         guard abs(value.translation.height) > threshold else { return }
-                        setSheetExpanded(value.translation.height < 0)
+                        // Gesture의 onEnded는 Button 액션과 달리 SwiftUI가 안전하게 지연 디스패치하지
+                        // 않는다 — 여기서 곧바로 @State를 쓰면 "Modifying state during view update"
+                        // 경고가 발생한다(2026-07-12 실기기 콘솔 로그로 재현·확정, 탭 토글에서는 없음).
+                        // 다음 런루프로 한 틱 미뤄 현재 진행 중인 뷰 업데이트 트랜잭션 밖에서 쓰게 한다.
+                        let expand = value.translation.height < 0
+                        DispatchQueue.main.async {
+                            setSheetExpanded(expand)
+                        }
                     }
             )
             .accessibilityIdentifier("coursePlanner.segmentPanel.grabber")
