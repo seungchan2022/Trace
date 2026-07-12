@@ -7,7 +7,7 @@ extension CoursePlannerPage {
 
             sheetHeader
 
-            if isBottomSheetExpanded {
+            if sheetDetent != .collapsed {
                 expandedSheetBody
             }
         }
@@ -49,13 +49,22 @@ extension CoursePlannerPage {
             .onEnded { value in
                 let threshold: CGFloat = 40
                 guard abs(value.translation.height) > threshold else { return }
+                // 빈 경로(구간 없음)에서는 드래그 자체는 되지만 보여줄 게 없으니 방향과 무관하게
+                // 기본 상태로 돌아간다 (2026-07-12, 사용자 확인).
+                let hasRoute = !(viewModel.course?.segments.isEmpty ?? true)
+                let goingUp = value.translation.height < 0
+                let nextDetent: SheetDetent
+                if !hasRoute {
+                    nextDetent = .collapsed
+                } else {
+                    nextDetent = goingUp ? sheetDetent.steppedUp : sheetDetent.steppedDown
+                }
                 // Gesture의 onEnded는 Button 액션과 달리 SwiftUI가 안전하게 지연 디스패치하지
                 // 않는다 — 여기서 곧바로 @State를 쓰면 "Modifying state during view update"
                 // 경고가 발생한다(2026-07-12 실기기 콘솔 로그로 재현·확정, 탭 토글에서는 없음).
                 // 다음 런루프로 한 틱 미뤄 현재 진행 중인 뷰 업데이트 트랜잭션 밖에서 쓰게 한다.
-                let expand = value.translation.height < 0
                 DispatchQueue.main.async {
-                    setSheetExpanded(expand)
+                    setSheetDetent(nextDetent)
                 }
             }
     }
@@ -87,12 +96,12 @@ extension CoursePlannerPage {
     // 하나의 Button label 안에 넣지 않고, 바깥 HStack의 형제(sibling)로 둔다.
     // 탭 토글과 드래그 제스처가 공유하는 단일 진입점 — 앵커 스크롤 위치 계산이
     // 두 입력 방식 모두에서 똑같이 일어나도록 한다(2026-07-12, 드래그 리사이즈 추가하며 분리).
-    private func setSheetExpanded(_ newValue: Bool) {
-        // 스펙 §1.4 시트 높이 전환(0.32s) — 펼침/접힘 모두 이 spring으로 애니메이션.
+    private func setSheetDetent(_ newDetent: SheetDetent) {
+        // 스펙 §1.4 시트 높이 전환(0.32s) — 모든 단계 전환에 이 spring을 쓴다.
         withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
-            isBottomSheetExpanded = newValue
+            sheetDetent = newDetent
         }
-        if !newValue {
+        if newDetent == .collapsed {
             let keys = viewModel.segmentColorKeys
             let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
             let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
@@ -105,7 +114,8 @@ extension CoursePlannerPage {
     private var sheetHeader: some View {
         HStack(alignment: .firstTextBaseline) {
             Button {
-                setSheetExpanded(!isBottomSheetExpanded)
+                // 탭은 기본↔중간만 오간다 — "거의 다"는 드래그로만 도달(2026-07-12, 사용자 확인).
+                setSheetDetent(sheetDetent == .collapsed ? .medium : .collapsed)
             } label: {
                 VStack(alignment: .leading, spacing: 4) {
                     if let distanceText = viewModel.distanceText {
@@ -211,6 +221,17 @@ extension CoursePlannerPage {
         }
     }
 
+    // 중간 단계는 기존 "펼침" 높이(지도 높이 40%)를 그대로 쓰고, "거의 다"는 그보다 훨씬 큰
+    // 상한을 준다 — 지도 대부분을 덮는 느낌(2026-07-12, 사용자 확인 "거의 다 닫힘"). collapsed는
+    // expandedSheetBody 자체가 렌더되지 않아 이 값이 쓰이지 않는다.
+    private var expandedListHeight: CGFloat {
+        switch sheetDetent {
+        case .collapsed: return 0
+        case .medium: return panelMaxListHeight
+        case .full: return panelMaxListHeight * 1.8
+        }
+    }
+
     private var expandedSheetBody: some View {
         VStack(alignment: .leading, spacing: 8) {
             ScrollViewReader { proxy in
@@ -227,8 +248,8 @@ extension CoursePlannerPage {
                         panelContentHeight = height
                     }
                 }
-                // ScrollView는 greedy — 내용이 적으면 내용 높이만큼, 많으면 지도 높이 40% 상한
-                .frame(height: min(panelContentHeight, panelMaxListHeight))
+                // ScrollView는 greedy — 내용이 적으면 내용 높이만큼, 많으면 단계별 상한(중간/거의 다)
+                .frame(height: min(panelContentHeight, expandedListHeight))
                 // 콘텐츠 여백만 12pt로 주고 스크롤 인디케이터는 기본 여백(에지에 붙게) 유지 —
                 // .padding()으로 ScrollView 전체를 감싸면 인디케이터까지 같이 밀려 보인다 (실기기 QA 발견).
                 .contentMargins(.horizontal, 12, for: .scrollContent)

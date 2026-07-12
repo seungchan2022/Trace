@@ -1,6 +1,24 @@
 import MapKit
 import SwiftUI
 
+// 바텀시트 3단계 — 기본(헤더만) → 중간(기존 펼침 높이) → 거의 다(지도를 거의 덮는 높이).
+// 드래그로 한 번에 한 단계씩 이동(기본↔중간↔거의 다), 탭 토글은 기본↔중간만 오간다
+// (2026-07-12, 사용자 피드백 — "구간을 추가할 때마다 조금씩 올라오는 게 아니라 가장 최소
+// 상태로 쌓인다": 단계는 순전히 제스처로만 바뀌고 구간 개수와는 무관하다).
+enum SheetDetent: Int {
+    case collapsed = 0
+    case medium = 1
+    case full = 2
+
+    var steppedUp: SheetDetent {
+        SheetDetent(rawValue: min(rawValue + 1, SheetDetent.full.rawValue)) ?? .full
+    }
+
+    var steppedDown: SheetDetent {
+        SheetDetent(rawValue: max(rawValue - 1, SheetDetent.collapsed.rawValue)) ?? .collapsed
+    }
+}
+
 struct CoursePlannerPage: View {
     @State var viewModel: CoursePlannerPageViewModel
     @State private var cameraRegion: MKCoordinateRegion = MKCoordinateRegion(
@@ -9,7 +27,7 @@ struct CoursePlannerPage: View {
         longitudinalMeters: 500
     )
     @State private var currentStrokePoints: [CGPoint] = []
-    @State var isBottomSheetExpanded = false
+    @State var sheetDetent: SheetDetent = .collapsed
     @State var panelContentHeight: CGFloat = 0
     @State var panelMaxListHeight: CGFloat = 300
     @State var panelAnchorColorKey: Int?
@@ -223,10 +241,10 @@ struct CoursePlannerPage: View {
             .disabled(viewModel.course == nil && viewModel.pendingTapStart == nil)
             .accessibilityIdentifier("coursePlanner.clear")
         }
-        .opacity(isBottomSheetExpanded ? 0 : 1)
-        .offset(x: isBottomSheetExpanded ? 24 : 0)
-        .animation(.easeInOut(duration: 0.2), value: isBottomSheetExpanded)
-        .allowsHitTesting(!isBottomSheetExpanded)
+        .opacity(sheetDetent == .collapsed ? 1 : 0)
+        .offset(x: sheetDetent == .collapsed ? 0 : 24)
+        .animation(.easeInOut(duration: 0.2), value: sheetDetent)
+        .allowsHitTesting(sheetDetent == .collapsed)
     }
 
     private var recenterButton: some View {
