@@ -3,11 +3,7 @@ import SwiftUI
 extension CoursePlannerPage {
     var bottomSheet: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Capsule()
-                .fill(DesignToken.Color.grabber)
-                .frame(width: 38, height: 5)
-                .padding(.top, 8)
-                .frame(maxWidth: .infinity)
+            grabberHandle
 
             sheetHeader
 
@@ -42,6 +38,28 @@ extension CoursePlannerPage {
         .accessibilityIdentifier("coursePlanner.segmentPanel")
     }
 
+    // 드래그 제스처는 그래버에만 건다 — sheetHeader나 시트 전체에 걸면 그 안의 Button들과
+    // 히트테스트가 충돌해 전부 먹통이 되는 회귀가 실제로 있었다(2026-07-12, bottomSheet 배경
+    // 히트테스트 백스톱 작업 중 확인). 그래버는 Button이 없는 순수 장식 요소라 안전하다.
+    // 탭 토글(sheetHeader)은 그대로 유지 — 드래그는 추가 입력 방식이지 대체가 아니다.
+    private var grabberHandle: some View {
+        Capsule()
+            .fill(DesignToken.Color.grabber)
+            .frame(width: 38, height: 5)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 8)
+                    .onEnded { value in
+                        let threshold: CGFloat = 40
+                        guard abs(value.translation.height) > threshold else { return }
+                        setSheetExpanded(value.translation.height < 0)
+                    }
+            )
+            .accessibilityIdentifier("coursePlanner.segmentPanel.grabber")
+    }
+
     // "출발 지정됨" 상태는 없앴다 — 구간이 몇 개든 특정 구간을 선택 중이 아니면 항상 이 문구가
     // 떠서 의미가 없었다(2026-07-12, 사용자 확인 — project-decisions.md 기록). 경로가 있으면
     // 선택된 구간, 없으면 가장 최근 구간 번호를 보여주고, 경로 자체가 없으면 칩을 아예 띄우지 않는다.
@@ -56,21 +74,27 @@ extension CoursePlannerPage {
     // SwiftUI는 Button 라벨 안에 또 다른 Button을 중첩하면 탭 판정이 불안정해진다(어느 쪽이
     // 반응할지 보장 안 됨). 그래서 "펼치기/접기" 탭 영역(거리·서브타이틀)과 "저장"/"전체 왕복"은
     // 하나의 Button label 안에 넣지 않고, 바깥 HStack의 형제(sibling)로 둔다.
+    // 탭 토글과 드래그 제스처가 공유하는 단일 진입점 — 앵커 스크롤 위치 계산이
+    // 두 입력 방식 모두에서 똑같이 일어나도록 한다(2026-07-12, 드래그 리사이즈 추가하며 분리).
+    private func setSheetExpanded(_ newValue: Bool) {
+        // 스펙 §1.4 시트 높이 전환(0.32s) — 펼침/접힘 모두 이 spring으로 애니메이션.
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+            isBottomSheetExpanded = newValue
+        }
+        if !newValue {
+            let keys = viewModel.segmentColorKeys
+            let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
+            let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
+            panelWasNearLatestAtCollapse = SegmentPanelLogic.shouldAutoScroll(
+                anchorIndex: anchorIndex, previousLatestIndex: latestIndex
+            )
+        }
+    }
+
     private var sheetHeader: some View {
         HStack(alignment: .firstTextBaseline) {
             Button {
-                // 스펙 §1.4 시트 높이 전환(0.32s) — 펼침/접힘 모두 이 spring으로 애니메이션.
-                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
-                    isBottomSheetExpanded.toggle()
-                }
-                if !isBottomSheetExpanded {
-                    let keys = viewModel.segmentColorKeys
-                    let anchorIndex = panelAnchorColorKey.flatMap { keys.firstIndex(of: $0) }
-                    let latestIndex = SegmentPanelLogic.latestIndex(colorKeys: keys)
-                    panelWasNearLatestAtCollapse = SegmentPanelLogic.shouldAutoScroll(
-                        anchorIndex: anchorIndex, previousLatestIndex: latestIndex
-                    )
-                }
+                setSheetExpanded(!isBottomSheetExpanded)
             } label: {
                 VStack(alignment: .leading, spacing: 4) {
                     if let distanceText = viewModel.distanceText {
