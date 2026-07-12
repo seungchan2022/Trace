@@ -39,6 +39,7 @@ Read the relevant rule file before making changes:
 - Documentation and rule-file authoring: `docs/agent-rules/authoring.md`
 - Working across Codex and Claude Code (handoff, shared vs tool-specific setup): `docs/agent-rules/dual-tool.md`
 - Documented solutions and reusable learnings (bugs, design patterns, workflow gotchas): `docs/solutions/` — organized by category with YAML frontmatter (`module`, `tags`, `problem_type`); relevant when implementing or debugging in a documented area, maintained via `ce-compound`.
+- Shared domain vocabulary (entities, named processes, status concepts with project-specific meaning): `CONCEPTS.md` at repo root — relevant when orienting to a module or citing a term precisely; accretes via `ce-compound`/`ce-compound-refresh`.
 
 ## Working Rules
 

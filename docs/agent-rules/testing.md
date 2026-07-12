@@ -46,6 +46,29 @@ xcrun simctl boot $SIM_UDID
 
 다른 UDID로 전환하는 것은 복구가 아니라 좀비 누적의 원인이다.
 
+**"Busy"/preflight 실패는 위 절차로 안 풀린다 (2026-07-12 확인):** 짧은 시간에 boot/erase/install/실행을 수십 번 반복하면 `Error Domain=FBSOpenApplicationErrorDomain Code=6 "Application failed preflight checks", BSErrorCodeDescription=Busy`가 나면서 앱 실행 자체가 거부된다. `simctl shutdown all` + 재부팅만으로는 이 상태가 풀리지 않는다 — CoreSimulator 데몬 자체를 재시작해야 한다:
+
+```bash
+xcrun simctl shutdown all
+killall -9 com.apple.CoreSimulator.CoreSimulatorService
+xcrun simctl boot $SIM_UDID
+```
+
+이 증상이 나타났다고 그 시점에 조사 중이던 앱/테스트 코드까지 "환경 문제"로 성급히 결론짓지 않는다 — 별개의 문제일 수 있다(아래 "UI 테스트 실패 원인 파악 순서" 참고).
+
+### UI 테스트 실패 원인 파악 순서
+
+UI 테스트가 "요소가 나타나지 않는다"는 형태로 실패하면, 타임아웃 조정·병렬 시뮬레이터 경합·테스트 호스트 오염 같은 환경 가설을 세우기 **전에** 먼저 실패 시점의 접근성 트리부터 확인한다. XCTest는 실패한 모든 `waitForExistence`/쿼리 단언에 대해 전체 접근성 트리("Debug description")를 커스텀 계측 없이 이미 `.xcresult`에 자동 캡처해 둔다:
+
+```bash
+xcrun xcresulttool export attachments --path <xcresult-path> --output-path <dir>
+```
+
+`<xcresult-path>`는 테스트 실행 로그에 출력되는 `Test session results...` 경로(보통 `~/Library/Developer/Xcode/DerivedData/<project>/Logs/Test/*.xcresult`)다. export된 "Debug description" 텍스트 파일을 읽으면 실패 순간 화면에 정확히 무엇이 렌더링되어 있었는지(엘리먼트 위치, 라벨, disabled 여부 등) 바로 보인다 — 타이밍/환경 가설을 며칠씩 뒤쫓는 대신 몇 분 만에 근본 원인에 도달할 수 있다. 상세 사례는
+`docs/solutions/ui-bugs/frame-maxheight-inflates-zstack-child-and-swallows-taps.md` 참고.
+
+**"레이아웃이 잠깐 움찔거렸다 돌아온다"는 애니메이션/전환 중 버그는 접근성 트리 정적 덤프로 안 잡힌다** — 위 기법은 실패 시점의 한 프레임짜리 스냅샷이라, 몇백 ms 동안만 나타났다 사라지는 크기 변화는 코드 추론만으로 찾으려 하지 말고 직접 실측한다: 의심되는 하위 뷰마다 임시 `onGeometryChange`를 붙이고 그 값을 `-traceUITesting` 플래그로 게이팅한 숨김 `Text`(`.opacity(0.01)` + `accessibilityIdentifier`)로 노출한 뒤, XCUITest에서 짧은 간격(20~80ms)으로 폴링해 전이 순간의 실제 값을 잡는다. 목업 서비스가 즉시 응답해 관찰 창이 폴링 간격보다 짧으면, 목업에 짧은 인위적 지연(`Task.sleep`, 임시 launch-argument로 게이팅)을 추가해 창을 넓힌다. 확인 후 진단 코드는 전부 제거한다. 이 방식으로 잡은 두 사례: `docs/solutions/ui-bugs/firsttextbaseline-alignment-jiggle-with-mixed-child-types.md`, `docs/solutions/ui-bugs/safe-area-top-inset-shrinks-with-sibling-size-feedback-loop.md`. bottomSheet 내부 자식은 accessibilityIdentifier가 부모로 뭉개지는 별도 이슈가 있으니 `docs/solutions/workflow-issues/child-accessibility-identifiers-collapse-to-parent-in-bottomsheet.md`도 참고.
+
 ## Baseline
 
 Before claiming completion, run the strongest practical verification for the change.
