@@ -40,6 +40,16 @@ cp docs/prompts/trace-study.md   ~/.codex/prompts/trace-study.md
 → 이후 Codex에서 `/trace-archive`, `/trace-study`로 호출.
 단위·흐름 규칙은 `docs/agent-rules/workflow.md` 참고.
 
+## 1-3. trace-video-review 프롬프트 등록
+
+외부 영상/콘텐츠 팁을 현재 Trace 규칙과 대조해 적용 여부를 판단하는 커맨드:
+
+```bash
+cp docs/prompts/trace-video-review.md ~/.codex/prompts/trace-video-review.md
+```
+
+→ 이후 Codex에서 `/trace-video-review`로 호출.
+
 ---
 
 ## 2. 컨텍스트 보존 (컴팩션)

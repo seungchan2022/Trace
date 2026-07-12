@@ -14,6 +14,7 @@
 
 - `/trace-init`: restore Trace session state at the start of a new chat.
 - `/daily-retro`: summarize the day and capture lessons or follow-up work.
+- `/trace-video-review`: review an external video/content tip (e.g. YouTube) against current Trace rules and memories, and judge whether it's worth adopting.
 
 These are custom prompts, not skills. The canonical sources live in `docs/prompts/`.
 Codex registers them by copying into `~/.codex/prompts/` (may need a restart/new session after edits);

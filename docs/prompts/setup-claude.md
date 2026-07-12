@@ -15,6 +15,7 @@
 | `/daily-retro` | `.claude/commands/daily-retro.md` → `../../docs/prompts/daily-retro.md` 심볼릭 | 하루 회고 프롬프트. 복사 불필요. |
 | `/trace-archive` | `.claude/commands/trace-archive.md` → `../../docs/prompts/trace-archive.md` 심볼릭 | MVP 아카이빙 프롬프트. 복사 불필요. |
 | `/trace-study` | `.claude/commands/trace-study.md` → `../../docs/prompts/trace-study.md` 심볼릭 | MVP 학습 정리 프롬프트. 복사 불필요. |
+| `/trace-video-review` | `.claude/commands/trace-video-review.md` → `../../docs/prompts/trace-video-review.md` 심볼릭 | 외부 영상/콘텐츠 팁 리뷰 프롬프트. 복사 불필요. |
 
 → 즉 **추가 설치 단계가 없다.** 새 머신에서 클론하면 그대로 동작한다.
 
@@ -32,6 +33,7 @@
    ln -sf ../../docs/prompts/daily-retro.md .claude/commands/daily-retro.md
    ln -sf ../../docs/prompts/trace-archive.md .claude/commands/trace-archive.md
    ln -sf ../../docs/prompts/trace-study.md .claude/commands/trace-study.md
+   ln -sf ../../docs/prompts/trace-video-review.md .claude/commands/trace-video-review.md
    ```
 
 ## 설치된 워크플로 플러그인 / MCP (2026-06-17 기준)
