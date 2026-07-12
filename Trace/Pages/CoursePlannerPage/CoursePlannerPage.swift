@@ -28,7 +28,6 @@ struct CoursePlannerPage: View {
     )
     @State private var currentStrokePoints: [CGPoint] = []
     @State var sheetDetent: SheetDetent = .collapsed
-    @State var panelContentHeight: CGFloat = 0
     @State var panelMaxListHeight: CGFloat = 300
     @State var panelAnchorColorKey: Int?
     // 접기 직전 "최신 근처를 보고 있었는가" — 재펼침 시 이 값이 true면 옛 앵커 대신 최신을 따라간다.

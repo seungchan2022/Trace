@@ -221,9 +221,11 @@ extension CoursePlannerPage {
         }
     }
 
-    // 중간 단계는 기존 "펼침" 높이(지도 높이 40%)를 그대로 쓰고, "거의 다"는 그보다 훨씬 큰
-    // 상한을 준다 — 지도 대부분을 덮는 느낌(2026-07-12, 사용자 확인 "거의 다 닫힘"). collapsed는
-    // expandedSheetBody 자체가 렌더되지 않아 이 값이 쓰이지 않는다.
+    // presentationDetents처럼 단계별 고정 높이 — 콘텐츠 양은 높이에 전혀 영향을 주지 않는다.
+    // 구간이 적으면 그냥 빈 공간이 남고, 많으면 스크롤된다. 이전엔 min(실측 콘텐츠 높이, 상한)으로
+    // 짜여 있어 구간이 늘어날 때마다 시트가 실측 높이만큼 점점 커지는 문제가 있었다(2026-07-12,
+    // 사용자 확인 — "추가할 때마다 늘어나면 안 된다"). collapsed는 expandedSheetBody 자체가
+    // 렌더되지 않아 이 값이 쓰이지 않는다.
     private var expandedListHeight: CGFloat {
         switch sheetDetent {
         case .collapsed: return 0
@@ -242,14 +244,11 @@ extension CoursePlannerPage {
                         }
                     }
                     .scrollTargetLayout()
-                    .onGeometryChange(for: CGFloat.self) { proxy in
-                        proxy.size.height
-                    } action: { height in
-                        panelContentHeight = height
-                    }
                 }
-                // ScrollView는 greedy — 내용이 적으면 내용 높이만큼, 많으면 단계별 상한(중간/거의 다)
-                .frame(height: min(panelContentHeight, expandedListHeight))
+                // 고정 높이 — 자기 콘텐츠를 측정해서 자기 프레임에 다시 먹이는 순환(측정→적용→재측정)이
+                // 없다. 이 순환이 구간 선택처럼 콘텐츠가 미세하게 바뀔 때마다 레이아웃이 잠깐
+                // 움찔거리는 원인 중 하나였다(2026-07-12, 사용자 확인).
+                .frame(height: expandedListHeight)
                 // 콘텐츠 여백만 12pt로 주고 스크롤 인디케이터는 기본 여백(에지에 붙게) 유지 —
                 // .padding()으로 ScrollView 전체를 감싸면 인디케이터까지 같이 밀려 보인다 (실기기 QA 발견).
                 .contentMargins(.horizontal, 12, for: .scrollContent)
