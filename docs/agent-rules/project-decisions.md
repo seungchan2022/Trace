@@ -46,6 +46,9 @@ This file records defaults until the user chooses otherwise.
 - 프레젠테이션 공용 레이어: `Trace/DesignSystem/`(Tokens.swift + Component/) 신설 — Pages와 별도 계층, 추후 모듈 분리 대상 (결정 2026-07-11, MVP12 design-apply). 상세: `docs/superpowers/specs/2026-07-10-design-direction-design.md` §4
 - design-apply 범위: P1(토큰·탑바·FAB·시트·구간리스트·핀/폴리라인·저장/목록/왕복/redo 재배치)만 적용, P2(시트 드래그 리사이즈·지도 halo·km 마커·점선 애니메이션·다크 글로우·커스텀 저장 다이얼로그)는 백로그로 이연 (결정 2026-07-11, 킥오프 인터뷰). 상세: `docs/superpowers/specs/2026-07-10-design-direction-design.md` §5
 - 바텀시트 배경 모양: 위쪽 모서리만 둥글고(UnevenRoundedRectangle) 배경이 화면 하단까지 확장(.ignoresSafeArea(edges: .bottom)), 콘텐츠는 안전영역 유지 — 풀블리드 지도 위 네이티브 바텀시트처럼 보이도록 (결정 2026-07-11/12, design-apply 진행 중 제품 피드백으로 추가)
+- 바텀시트 라이트 모드 반투명 → 완전 불투명 솔리드로 변경 (스펙 §1.3의 "라이트=Glassmorphism, 유리 재질" 원칙에서 이탈, 결정 2026-07-12, 사용자). 이유: 실기기 확인 결과 라이트 모드에서 지도 텍스트/폴리라인이 시트 리스트 위로 그대로 겹쳐 보여 거의 읽을 수 없었음 — 사용자 판단은 "글래스처럼 보이는 게 오히려 아무것도 잘 안 보이는 문제". `Surface.colorset` 라이트 알파를 0.740→1.000으로 변경, 다크와 동일하게 완전 불투명 처리. **주의**: 향후 리뷰에서 라이트 모드를 다시 반투명으로 "고치지" 말 것 — 스펙과의 불일치는 의도된 것.
+- "출발 지정됨" 상태 칩 제거 (스펙 §2 "출발 지정됨(민트 점)" 상태에서 이탈, 결정 2026-07-12, 사용자). 이유: 기존 로직이 구간이 몇 개든 특정 구간을 선택 중이 아니면 항상 "출발 지정됨"을 표시해 사실상 의미 없는 상태였음. 경로가 있으면 선택된 구간(없으면 최신 구간) 번호 칩만 표시하고, 경로 자체가 없으면 칩을 아예 띄우지 않는다. `StatusChipKind.startSet` 케이스 삭제됨.
+- 구간 선택 시 지도 위 halo 하이라이트 — P2 백로그 항목이었으나 트리거 조건("카메라 핏만으로 선택 구간 식별이 어렵다는 피드백")이 실제로 충족돼 지금 구현으로 당김 (결정 2026-07-12, 사용자). `MapViewRepresentable`에 `SegmentHaloPolyline` 3-pass 렌더링 추가(케이싱 아래 넓고 옅은 accent 스트로크). `docs/backlog.md`의 해당 항목은 완료 처리.
 
 ## Decisions the User May Need to Make Later
 

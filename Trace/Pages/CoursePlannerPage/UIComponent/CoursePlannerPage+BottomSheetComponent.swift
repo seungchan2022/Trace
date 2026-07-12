@@ -22,11 +22,10 @@ extension CoursePlannerPage {
                 bottomTrailingRadius: 0,
                 topTrailingRadius: DesignToken.Corner.sheetTop
             )
-            // 유리 재질(블러)은 항상 깔아둔 채 그 위에 surface 틴트를 얹는다 — 다크는 surface 알파가
-            // 1.0이라 블러가 완전히 가려져 솔리드로 보이고(스펙: "다크 시트는 유리 아님"), 라이트는
-            // surface 알파가 .74라 블러된 지도 위에 은은하게 겹쳐 보인다(스펙: 라이트 = Glassmorphism).
-            // 이전엔 펼침 여부로 material/flat-color를 스위칭해 펼친 상태(라이트)에서 블러 없이 알파색만
-            // 깔려 지도 글자가 또렷하게 비쳐 보이는 버그가 있었다 (2026-07-12 실기기 확인).
+            // 완전 불투명 솔리드 — 스펙 원안은 라이트를 반투명 유리(Glassmorphism)로 뒀으나,
+            // 실기기 확인 결과 지도 텍스트가 그대로 겹쳐 보여 거의 읽을 수 없었다. 라이트/다크 모두
+            // 불투명으로 통일하기로 결정 (2026-07-12, 사용자 — project-decisions.md 기록).
+            // surface 컬러 자체가 라이트/다크 모두 알파 1.0이라 별도 material 블러가 필요 없다.
             //
             // 히트테스트 백스톱도 겸한다: .background 콘텐츠는 foreground(위 VStack)와 별개의
             // 형제 레이어라 Button 히트테스트와 경쟁하지 않는다 — 실제로 VStack 바깥쪽에 직접
@@ -35,8 +34,7 @@ extension CoursePlannerPage {
             // (VStack 자연 크기 + ignoresSafeArea로 확장된 홈 인디케이터 영역)에서만 탭을 흡수해,
             // 시트 안 빈 곳(예: sheetHeader의 Spacer())이나 맨 아래 띠를 눌러도 지도로 새지 않는다.
             shape
-                .fill(.regularMaterial)
-                .overlay(shape.fill(DesignToken.Color.surface))
+                .fill(DesignToken.Color.surface)
                 .ignoresSafeArea(edges: .bottom)
                 .contentShape(Rectangle())
                 .onTapGesture {}
@@ -44,16 +42,15 @@ extension CoursePlannerPage {
         .accessibilityIdentifier("coursePlanner.segmentPanel")
     }
 
+    // "출발 지정됨" 상태는 없앴다 — 구간이 몇 개든 특정 구간을 선택 중이 아니면 항상 이 문구가
+    // 떠서 의미가 없었다(2026-07-12, 사용자 확인 — project-decisions.md 기록). 경로가 있으면
+    // 선택된 구간, 없으면 가장 최근 구간 번호를 보여주고, 경로 자체가 없으면 칩을 아예 띄우지 않는다.
     private var sheetHeaderStatusChipKind: StatusChipKind? {
         if viewModel.isLoading { return .calculating }
         if let errorMessage = viewModel.errorMessage { return .error(errorMessage) }
-        if viewModel.distanceText != nil {
-            if let index = viewModel.selectedSegmentIndex {
-                return .route(segmentLabel: "구간 \(index + 1)")
-            }
-            return .startSet
-        }
-        return nil
+        guard let segments = viewModel.course?.segments, !segments.isEmpty else { return nil }
+        let index = viewModel.selectedSegmentIndex ?? (segments.count - 1)
+        return .route(segmentLabel: "구간 \(index + 1)")
     }
 
     // SwiftUI는 Button 라벨 안에 또 다른 Button을 중첩하면 탭 판정이 불안정해진다(어느 쪽이

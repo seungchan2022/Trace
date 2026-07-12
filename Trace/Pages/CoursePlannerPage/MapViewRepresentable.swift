@@ -7,6 +7,8 @@ private let polylineCasingColor = UIColor { traits in
         : UIColor.white.withAlphaComponent(0.6)
 }
 
+private let polylineHaloColor = (UIColor(named: "AccentColor") ?? .systemGreen).withAlphaComponent(0.35)
+
 // MARK: - Supporting Types
 
 struct MapPin: Equatable {
@@ -51,6 +53,13 @@ final class SegmentPolyline: MKPolyline {
 final class SegmentCasingPolyline: MKPolyline {
     var segmentIndex: Int = 0
     var colorKey: Int = 0
+}
+
+// 선택된 구간에만 존재하는 3번째 패스 — 케이싱보다 더 아래, 훨씬 넓고 옅은 accent 스트로크로
+// "halo" 효과를 낸다. 선택 여부가 바뀔 때마다 새로 만들어 insertOverlay(_:below:)로 해당
+// 구간의 케이싱 바로 아래에 끼워 넣는다(백로그 P2 항목을 사용자 요청으로 당김, 2026-07-12).
+final class SegmentHaloPolyline: MKPolyline {
+    var segmentIndex: Int = 0
 }
 
 final class SegmentDistanceAnnotation: NSObject, MKAnnotation {
@@ -279,6 +288,7 @@ struct MapViewRepresentable: UIViewRepresentable {
                 uiView.addOverlay(WaypointDotsOverlay(points: waypoints))
             }
             context.coordinator.lastSegmentSnapshots = currentSnapshots
+            syncHalo(in: uiView, coordinator: context.coordinator)
         }
 
         if context.coordinator.lastSelectedIndex != selectedSegmentIndex {
@@ -294,6 +304,7 @@ struct MapViewRepresentable: UIViewRepresentable {
                     renderer.setNeedsDisplay()
                 }
             }
+            syncHalo(in: uiView, coordinator: context.coordinator)
         }
 
         let existing = uiView.annotations.compactMap { $0 as? ColoredPinAnnotation }
@@ -333,6 +344,24 @@ struct MapViewRepresentable: UIViewRepresentable {
         renderer.lineWidth = segmentIndex == selected ? 7 : 5.5
     }
 
+    // 선택된 구간의 halo를 최신 상태로 맞춘다 — 기존 halo는 제거하고, 선택된 구간이 있으면 그
+    // 구간의 케이싱과 같은 좌표로 새 halo를 만들어 케이싱 바로 아래에 끼워 넣는다.
+    private func syncHalo(in uiView: MKMapView, coordinator: Coordinator) {
+        if let existingHalo = coordinator.currentHaloOverlay {
+            uiView.removeOverlay(existingHalo)
+            coordinator.currentHaloOverlay = nil
+        }
+        guard let selectedSegmentIndex,
+              let casing = uiView.overlays.first(where: { ($0 as? SegmentCasingPolyline)?.segmentIndex == selectedSegmentIndex }) as? SegmentCasingPolyline
+        else { return }
+        var coords = [CLLocationCoordinate2D](repeating: kCLLocationCoordinate2DInvalid, count: casing.pointCount)
+        casing.getCoordinates(&coords, range: NSRange(location: 0, length: casing.pointCount))
+        let halo = SegmentHaloPolyline(coordinates: &coords, count: coords.count)
+        halo.segmentIndex = selectedSegmentIndex
+        uiView.insertOverlay(halo, below: casing)
+        coordinator.currentHaloOverlay = halo
+    }
+
     // 배열 인덱스 절반이 아니라 실제 누적 거리 절반 지점을 찾는다.
     // 라우팅 결과는 좌표 밀도가 균일하지 않아(커브에 촘촘, 직선에 듬성) 인덱스 기준으로는
     // 라벨이 경로 중간이 아니라 엉뚱한 곳(핀·경유점 근처 등)에 찍히는 문제가 있었다 (2026-07-04 실기기 확인).
@@ -370,6 +399,7 @@ extension MapViewRepresentable {
         var parent: MapViewRepresentable
         fileprivate var lastSegmentSnapshots: [SegmentSnapshot] = []
         var lastSelectedIndex: Int?
+        var currentHaloOverlay: SegmentHaloPolyline?
         static let mergedBadgeTag = 990
 
         init(parent: MapViewRepresentable) {
@@ -381,6 +411,14 @@ extension MapViewRepresentable {
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
             if let dotsOverlay = overlay as? WaypointDotsOverlay {
                 return WaypointDotsRenderer(overlay: dotsOverlay)
+            }
+            if let halo = overlay as? SegmentHaloPolyline {
+                let renderer = MKPolylineRenderer(polyline: halo)
+                renderer.strokeColor = polylineHaloColor
+                renderer.lineWidth = 18
+                renderer.lineCap = .round
+                renderer.lineJoin = .round
+                return renderer
             }
             if let casing = overlay as? SegmentCasingPolyline {
                 let renderer = MKPolylineRenderer(polyline: casing)
