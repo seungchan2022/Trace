@@ -74,7 +74,7 @@ struct RunPage: View {
             Text("GPS 신호 찾는 중…")
                 .font(DesignToken.Typography.subtitle)
                 .foregroundStyle(DesignToken.Color.ink)
-            Button("취소") { viewModel.session.finishAcquiringCancelled() }
+            Button("취소") { viewModel.cancelAcquiring() }
                 .font(DesignToken.Typography.chip)
         }
         .padding(DesignToken.Size.sheetPadding)

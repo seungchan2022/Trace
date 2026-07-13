@@ -63,6 +63,10 @@ final class RunPageViewModel {
         cameraPosition = .userLocation(fallback: .automatic)
     }
 
+    func cancelAcquiring() {
+        session.finishAcquiringCancelled()
+    }
+
     private static func fittingRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion? {
         guard let first = coordinates.first else { return nil }
         var minLat = first.latitude, maxLat = first.latitude

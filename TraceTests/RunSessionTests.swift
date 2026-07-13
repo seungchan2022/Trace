@@ -161,7 +161,6 @@ final class RunSessionTests: XCTestCase {
         await session.start()
         XCTAssertEqual(session.state, .acquiring)
         session.finishAcquiringCancelled()
-        await waitUntil { session.state == .idle }
         XCTAssertEqual(session.state, .idle)
         XCTAssertTrue(session.track.samples.isEmpty)
         XCTAssertNil(session.startedAt)
