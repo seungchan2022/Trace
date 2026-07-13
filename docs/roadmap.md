@@ -23,7 +23,7 @@
 > (Task 10개, 전부 미착수 — **구현은 새 세션에서 시작**, 2026-07-13 기준. 브랜치
 > `feature/run-tracking`에 스펙·플랜 커밋만 있음. Task 7은 Xcode GUI 사용자 개입 1회 필요)
 
-- [ ] **run-tracking** — 탭 구조 + 러닝 탭(대기→트래킹→종료 요약), 연속 GPS 스트림(백그라운드 포함), 필터링·파생값(거리·시간·페이스·고도) 실시간 계산. 저장 없음
+- [x] **run-tracking** — 탭 구조 + 러닝 탭(대기→트래킹→종료 요약), 연속 GPS 스트림(백그라운드 포함), 필터링·파생값(거리·시간·페이스·고도) 실시간 계산. 저장 없음
 - [ ] **run-live-activity** — 잠금화면 Live Activity + Dynamic Island: 트래킹 중 거리·시간·페이스 실시간 표시 (Widget Extension 타깃 신설)
 - [ ] **run-record-save** — 기록 저장(SwiftData, 타임스탬프 샘플 스트림 스키마) + 기록 목록/상세
 
