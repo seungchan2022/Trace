@@ -84,6 +84,15 @@ final class RunSessionTests: XCTestCase {
         XCTAssertFalse(session.isSignalWeak)
     }
 
+    func test_신호확보중_유효샘플없이_첫샘플이_탈락하면_즉시_약신호로_표시한다() async {
+        await session.start()
+        stream.yield(sample(at: Date(), hAcc: 80))
+        await drain()
+        XCTAssertTrue(session.isSignalWeak)
+        XCTAssertEqual(session.state, .acquiring)
+        XCTAssertTrue(session.track.samples.isEmpty)
+    }
+
     func test_종료하면_요약상태가_되고_스트림을_멈춘다() async {
         await session.start()
         stream.yield(sample(at: Date()))
