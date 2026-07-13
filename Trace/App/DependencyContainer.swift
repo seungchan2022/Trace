@@ -5,6 +5,7 @@ struct DependencyContainer {
     let locationService: LocationServiceProtocol
     let cameraStateStore: CameraStateStore
     let courseRepository: CourseRepositoryProtocol
+    let runSession: RunSession
 
     @MainActor
     static func live() -> DependencyContainer {
@@ -12,7 +13,8 @@ struct DependencyContainer {
             coursePlanningService: MapKitCoursePlanningService(),
             locationService: CoreLocationService(),
             cameraStateStore: CameraStateStore(),
-            courseRepository: SwiftDataCourseRepository()
+            courseRepository: SwiftDataCourseRepository(),
+            runSession: RunSession(locationStream: RunLocationTracker())
         )
     }
 
@@ -24,7 +26,8 @@ struct DependencyContainer {
             locationService: UITestingLocationService(),
             cameraStateStore: CameraStateStore(defaults: uiTestingDefaults),
             // in-memory: UI 테스트가 실기기/다른 테스트의 저장 코스 데이터와 격리되도록
-            courseRepository: SwiftDataCourseRepository(inMemory: true)
+            courseRepository: SwiftDataCourseRepository(inMemory: true),
+            runSession: RunSession(locationStream: UITestingRunLocationStream())
         )
     }
 }

@@ -21,12 +21,19 @@ struct TraceApp: App {
 
     var body: some Scene {
         WindowGroup {
-            CoursePlannerPage(
-                coursePlanningService: container.coursePlanningService,
-                locationService: container.locationService,
-                cameraStateStore: container.cameraStateStore,
-                courseRepository: container.courseRepository
-            )
+            TabView {
+                CoursePlannerPage(
+                    coursePlanningService: container.coursePlanningService,
+                    locationService: container.locationService,
+                    cameraStateStore: container.cameraStateStore,
+                    courseRepository: container.courseRepository
+                )
+                .tabItem { Label("코스", systemImage: "map") }
+
+                RunPage(session: container.runSession)
+                    .tabItem { Label("러닝", systemImage: "figure.run") }
+            }
+            .tint(DesignToken.Color.accent)
         }
     }
 }
