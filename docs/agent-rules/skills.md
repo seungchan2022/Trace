@@ -40,6 +40,7 @@ and `docs/agent-rules/dual-tool.md` for the shared-vs-tool-specific split.
 - When proposing options or asking the user to make a decision, ask **in chat as plain text** using an `A / B / C` list, and mark the recommended option with `(추천)`. Do not use the built-in interview/question UI (e.g. the `AskUserQuestion` tool or any skill's structured-question prompt) for this.
 - This applies to essentially every time you propose something or ask the user to choose, including inside `superpowers:brainstorming` and other skills that would otherwise pop a structured question UI. The skill flow still applies — only its asking mechanism changes to A/B/C chat.
 - Kept here (not in any plugin SKILL.md) so it survives plugin updates and applies in both Codex and Claude Code. Established 2026-06-20 at user request.
+- **Multi-question sequences (e.g. `daily-retro` Phase 2, brainstorming's clarifying questions):** when a user's answer to one question includes elaboration or a tangent, do not act on it immediately (no editing, no implementing) — note it, finish asking the remaining questions in the list first, then synthesize all answers together before moving to the next phase. (2026-07-13, after repeated mid-interview implementation drift.)
 
 ## iOS Skill Index
 
