@@ -17,6 +17,7 @@ struct TraceApp: App {
         } else {
             container = .live()
         }
+        container.runActivityController.startObserving()
     }
 
     var body: some Scene {
