@@ -57,6 +57,11 @@ This file records defaults until the user chooses otherwise.
   2. **원 스펙 "현재 위치는 항상 노출" 폐기**: 시트 상단 기준으로 동적으로 띄우는 방안도 검토했으나 full 디텐트에서 시트 상단이 topBar 높이까지 올라와 겹치는 문제가 있어 기각. 대신 현재 위치 버튼도 undo/redo/clear와 동일하게 시트가 collapsed가 아니면 같이 숨기도록 스펙을 의도적으로 변경(원 스펙 "항상 내 위치"에서 이탈). 펼친 상태는 지도 가시 영역 자체가 작아 재가운데맞춤 가치가 낮다고 판단; 실사용 중 불편하면 재검토.
   - 실기기 사용 후 여전히 불편하면 추가 조정 예정 — 지금은 임시 확정이 아니라 "일단 이렇게 두고 써본다" 단계.
 
+- **제품 구조: 두 독립 기둥** (결정 2026-07-13, MVP13 킥오프) — 기존 "러닝 전→중→후" 로드맵(2026-07-07)을 정정: 러닝(기록)은 코스 탐색(계획)의 부속 단계가 아니라 **독립 기둥**이다. 일반 러닝앱처럼 코스 없이 그냥 뛰어도 되고, 코스 연동(코스 골라 뛰기 + 계획 vs 실제 비교)은 두 기둥 위의 제3의 경험(별도 MVP). 앱 루트는 `TabView`(코스/러닝) — 풀스크린 진입·허브 분기 대안은 기각. 상세: `docs/superpowers/specs/2026-07-13-run-tracking-design.md` §0·§3
+- **러닝 측정 범위: GPS 열만 + 샘플 스트림 원칙** (결정 2026-07-13, MVP13) — 이번 기둥의 측정은 CLLocation에서 나오는 것(경로·거리·시간·페이스·고도)으로 한정. 심박·케이던스·칼로리는 Apple Watch 없이 사실상 불가라 워치 연동 MVP로 이연(그때 HealthKit 심층 조사 — 일반 HealthKit은 entitlement+동의만으로 사용 가능함은 확인됨, 기관 협력 불요. 기능 없이 entitlement만 미리 넣는 것은 YAGNI+심사 리스크라 기각). 미래 대비의 실체는 저장 스키마의 "기록 = 타임스탬프 샘플 스트림 묶음" 원칙 — 심박은 나중에 스트림 하나를 옆에 추가(additive). 상세: 같은 스펙 §2
+- **러닝 위치 API: `@MainActor` + `CLLocationManager` delegate** (결정 2026-07-13, MVP13) — 기존 `CoreLocationService` 선례와 일관. iOS 17 `CLLocationUpdate.liveUpdates`는 기각: `LiveConfiguration(.fitness)`는 있으나 `allowsBackgroundLocationUpdates` 미적용(`CLBackgroundActivitySession` 별도 관리 필요), `desiredAccuracy`·`distanceFilter` 세밀 제어 부재. 권한은 "앱 사용 중" + Background Modes(location)로 충분(Always 불필요, 러닝앱 표준). 상세: 같은 스펙 §4
+- **러닝 지도: SwiftUI `Map` + 폴리라인 스로틀** (결정 2026-07-13, MVP13) — 러닝 화면은 표시 전용이라 SwiftUI Map으로 시작(플래너가 MKMapView로 간 이유인 그리기 제스처 소유권 문제가 없음). 자라는 폴리라인 갱신은 3초/20m 스로틀, 본 러닝 QA에서 프레임 드랍 확인 시 MKMapView 표시 전용 래퍼로 폴백. 상세: 같은 스펙 §4
+
 ## Decisions the User May Need to Make Later
 
 - Whether data is local-only or synced

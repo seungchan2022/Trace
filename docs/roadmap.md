@@ -18,7 +18,10 @@
 > 측정은 GPS 열(경로·거리·시간·페이스·고도)만 — 심박 등 HealthKit/워치 연동은 이후 MVP.
 > 코스 연동(코스 골라 뛰기 + 계획 vs 실제 비교)도 다음 MVP. 사이클 2개: ①+②(표준) / ③(경량,
 > ① 실기기 QA 결과를 저장 스키마에 반영하기 위해 분리). 본 러닝 QA는 ② 완료 후 통합 실행.
-> 스펙: `docs/superpowers/specs/2026-07-13-run-tracking-design.md`
+> 스펙: `docs/superpowers/specs/2026-07-13-run-tracking-design.md` (ce-doc-review 6페르소나
+> 리뷰 반영 완료) · 사이클 1 플랜: `docs/superpowers/plans/2026-07-13-run-tracking.md`
+> (Task 10개, 전부 미착수 — **구현은 새 세션에서 시작**, 2026-07-13 기준. 브랜치
+> `feature/run-tracking`에 스펙·플랜 커밋만 있음. Task 7은 Xcode GUI 사용자 개입 1회 필요)
 
 - [ ] **run-tracking** — 탭 구조 + 러닝 탭(대기→트래킹→종료 요약), 연속 GPS 스트림(백그라운드 포함), 필터링·파생값(거리·시간·페이스·고도) 실시간 계산. 저장 없음
 - [ ] **run-live-activity** — 잠금화면 Live Activity + Dynamic Island: 트래킹 중 거리·시간·페이스 실시간 표시 (Widget Extension 타깃 신설)
