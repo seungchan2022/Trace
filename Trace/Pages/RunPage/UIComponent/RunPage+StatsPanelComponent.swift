@@ -82,7 +82,7 @@ struct RunStatsPanel: View {
     }
 }
 
-/// 종료 요약 패널: 총 거리·시간·평균 페이스·고도 상승 + 닫기 (+ DEBUG 덤프는 Task 6)
+/// 종료 요약 패널: 총 거리·시간·평균 페이스·고도 상승 + 닫기 (+ DEBUG 전용 샘플 덤프 내보내기)
 struct RunSummaryPanel: View {
     let viewModel: RunPageViewModel
 
@@ -102,6 +102,14 @@ struct RunSummaryPanel: View {
                     summaryItem(String(format: "%.0f m", viewModel.session.track.elevationGainMeters), "고도 상승")
                 }
             }
+            #if DEBUG
+            if let dumpURL = try? writeDumpFile() {
+                ShareLink(item: dumpURL) {
+                    Label("샘플 덤프 내보내기 (DEBUG)", systemImage: "square.and.arrow.up")
+                        .font(DesignToken.Typography.chip)
+                }
+            }
+            #endif
             Button("닫기") { viewModel.closeSummary() }
                 .font(.system(size: 16, weight: .semibold))
         }
@@ -118,6 +126,20 @@ struct RunSummaryPanel: View {
         let total = Int(viewModel.session.track.duration)
         return String(format: "%d:%02d:%02d", total / 3600, (total % 3600) / 60, total % 60)
     }
+
+    #if DEBUG
+    private func writeDumpFile() throws -> URL {
+        let session = viewModel.session
+        let data = try RunSampleDumpEncoder.jsonData(
+            entries: session.dumpEntries,
+            startedAt: session.startedAt ?? Date()
+        )
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("run-dump-\(Int(Date().timeIntervalSince1970)).json")
+        try data.write(to: url)
+        return url
+    }
+    #endif
 
     private func summaryItem(_ value: String, _ label: String) -> some View {
         VStack(spacing: 2) {
