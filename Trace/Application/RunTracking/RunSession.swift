@@ -83,6 +83,18 @@ final class RunSession {
         state = .summary
     }
 
+    /// 신호 확보 중 사용자가 취소한 경우 — 아직 유효 샘플이 없으므로 요약 없이 바로 대기로 복귀한다.
+    func finishAcquiringCancelled() {
+        guard state == .acquiring else { return }
+        stopStream()
+        state = .idle
+        track = RunTrack()
+        startedAt = nil
+        #if DEBUG
+        dumpEntries = []
+        #endif
+    }
+
     func dismissSummary() {
         guard state == .summary else { return }
         state = .idle

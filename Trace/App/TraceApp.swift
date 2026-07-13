@@ -32,6 +32,7 @@ struct TraceApp: App {
 
                 RunPage(session: container.runSession)
                     .tabItem { Label("러닝", systemImage: "figure.run") }
+                    .badge(container.runSession.isActive ? "●" : nil)
             }
             .tint(DesignToken.Color.accent)
         }

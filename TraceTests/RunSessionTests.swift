@@ -156,6 +156,17 @@ final class RunSessionTests: XCTestCase {
         XCTAssertEqual(session.state, .idle)
         XCTAssertEqual(session.lastStartFailure, .permissionDenied)
     }
+
+    func test_신호_확보_중_취소하면_대기로_돌아온다() async {
+        await session.start()
+        XCTAssertEqual(session.state, .acquiring)
+        session.finishAcquiringCancelled()
+        await waitUntil { session.state == .idle }
+        XCTAssertEqual(session.state, .idle)
+        XCTAssertTrue(session.track.samples.isEmpty)
+        XCTAssertNil(session.startedAt)
+        XCTAssertTrue(stream.stopped)
+    }
 }
 
 @MainActor
