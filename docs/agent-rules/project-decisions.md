@@ -62,7 +62,8 @@ This file records defaults until the user chooses otherwise.
 - **러닝 위치 API: `@MainActor` + `CLLocationManager` delegate** (결정 2026-07-13, MVP13) — 기존 `CoreLocationService` 선례와 일관. iOS 17 `CLLocationUpdate.liveUpdates`는 기각: `LiveConfiguration(.fitness)`는 있으나 `allowsBackgroundLocationUpdates` 미적용(`CLBackgroundActivitySession` 별도 관리 필요), `desiredAccuracy`·`distanceFilter` 세밀 제어 부재. 권한은 "앱 사용 중" + Background Modes(location)로 충분(Always 불필요, 러닝앱 표준). 상세: 같은 스펙 §4
 - **러닝 지도: SwiftUI `Map` + 폴리라인 스로틀** (결정 2026-07-13, MVP13) — 러닝 화면은 표시 전용이라 SwiftUI Map으로 시작(플래너가 MKMapView로 간 이유인 그리기 제스처 소유권 문제가 없음). 자라는 폴리라인 갱신은 3초/20m 스로틀, 본 러닝 QA에서 프레임 드랍 확인 시 MKMapView 표시 전용 래퍼로 폴백. 상세: 같은 스펙 §4
 - **사이클 1 완료 후 추가 검증: 실기기 왕복 데이터 대조** (2026-07-14) — 같은 경로를 반대 방향으로 2회 실행한 DEBUG 덤프를 원시 GPS로 재계산해 화면 표시값(거리·페이스·고도)과 오차 없이 일치함을 확인, 정확도/고도 필터의 실전 동작도 검증됨. 버그 없음, 순수 확인. 상세: `docs/backlog.md` MVP13 QA 섹션.
-- **러닝 기록 저장 트리거: 자동 저장** (결정 2026-07-14, MVP13 사이클 2 `run-record-save` 킥오프 브레인스토밍 중) — 러닝 종료(요약 화면 진입) 시 별도 확인 없이 바로 SwiftData에 저장(코스처럼 이름 붙여 저장할지 묻지 않음 — 러닝은 소장품이 아니라 활동 이력이라는 판단). 삭제는 목록 화면에서 가능. **아직 브레인스토밍 진행 중** — 스펙 문서 미작성, 다음 결정 사항: 저장 샘플 필드 범위(원시 스트림 전체 vs 축소), 목록/상세 화면 구성. 기존 코스 저장 패턴(`CourseRecord` — `payload: Data` blob + `CourseRepositoryProtocol`) 참고 가능.
+- **러닝 기록 저장 트리거: 자동 저장** (결정 2026-07-14, MVP13 사이클 2 `run-record-save` 킥오프 브레인스토밍 중) — 러닝 종료(요약 화면 진입) 시 별도 확인 없이 바로 SwiftData에 저장(코스처럼 이름 붙여 저장할지 묻지 않음 — 러닝은 소장품이 아니라 활동 이력이라는 판단). 아주 짧은 러닝도 일단 저장(임계값 없음), 삭제는 목록 화면에서 가능.
+- **러닝 기록 저장 스키마·화면** (결정 2026-07-14, 같은 브레인스토밍에서 확정) — ① 샘플 필드 범위: 원시 5필드(시각·위도·경도·고도·속도) 전부, 다운샘플링 없음(QA 실측으로 용량 무해 확인 — 최적화는 원본이 있는 한 나중에 가능, 역방향 불가). 정확도 2필드는 저장 제외(사이클 1 §2 확정 유지). GPS 공백 구간 별도 저장 없음(시각 간격에서 파생 가능 — 사이클 1 이연 결정 종결). ② 거리·시간·고도 상승은 목록 성능용 캐시로 컬럼 병행 저장. ③ 러닝 기록은 코스와 **별도 스토어 파일**(마이그레이션 리스크 0). ④ 목록 입구는 러닝 탭 대기 화면 버튼(통계가 커지면 그때 탭 승격 — 되돌리기 쉬운 결정). 상세: `docs/superpowers/specs/2026-07-14-run-record-save-design.md`
 
 ## Decisions the User May Need to Make Later
 
