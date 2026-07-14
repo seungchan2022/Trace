@@ -17,11 +17,14 @@
 > 그냥 뛰어도 시작→GPS 트래킹→종료 요약→기록 저장이 되는 기능. 탭 구조(코스/러닝) 도입.
 > 측정은 GPS 열(경로·거리·시간·페이스·고도)만 — 심박 등 HealthKit/워치 연동은 이후 MVP.
 > 코스 연동(코스 골라 뛰기 + 계획 vs 실제 비교)도 다음 MVP. 사이클 2개: ①+②(표준) / ③(경량,
-> ① 실기기 QA 결과를 저장 스키마에 반영하기 위해 분리). 본 러닝 QA는 ② 완료 후 통합 실행.
+> ① 실기기 QA 결과를 저장 스키마에 반영하기 위해 분리).
 > 스펙: `docs/superpowers/specs/2026-07-13-run-tracking-design.md` (ce-doc-review 6페르소나
 > 리뷰 반영 완료) · 사이클 1 플랜: `docs/superpowers/plans/2026-07-13-run-tracking.md`
-> (Task 10개, 전부 미착수 — **구현은 새 세션에서 시작**, 2026-07-13 기준. 브랜치
-> `feature/run-tracking`에 스펙·플랜 커밋만 있음. Task 7은 Xcode GUI 사용자 개입 1회 필요)
+> (Task 10개 + 최종 브랜치 리뷰(opus) + 후속 수정 전부 완료, 2026-07-14. 브랜치
+> `feature/run-tracking`. Task 7은 Xcode GUI 사용자 개입 1회로 처리됨). 본 러닝 QA
+> (`docs/qa/2026-07-14-run-tracking-device-checklist.md`) 실기기 실행 완료 — 시나리오
+> 8(환경 의존, 건물 밀집지 없어 스킵)·10(강제종료 후 카드 정리, 코드/리뷰 완료·실기기
+> 시각 확인만 남음) 제외 전부 통과. 사이클 2(`run-record-save`) 착수 전 대기 중.
 
 - [x] **run-tracking** — 탭 구조 + 러닝 탭(대기→트래킹→종료 요약), 연속 GPS 스트림(백그라운드 포함), 필터링·파생값(거리·시간·페이스·고도) 실시간 계산. 저장 없음
 - [x] **run-live-activity** — 잠금화면 Live Activity + Dynamic Island: 트래킹 중 거리·시간·페이스 실시간 표시 (Widget Extension 타깃 신설)
