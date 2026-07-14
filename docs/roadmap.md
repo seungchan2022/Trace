@@ -24,7 +24,12 @@
 > `feature/run-tracking`. Task 7은 Xcode GUI 사용자 개입 1회로 처리됨). 본 러닝 QA
 > (`docs/qa/2026-07-14-run-tracking-device-checklist.md`) 실기기 실행 완료 — 시나리오
 > 8(환경 의존, 건물 밀집지 없어 스킵)·10(강제종료 후 카드 정리, 코드/리뷰 완료·실기기
-> 시각 확인만 남음) 제외 전부 통과. 사이클 2(`run-record-save`) 착수 전 대기 중.
+> 시각 확인만 남음) 제외 전부 통과. 추가로 같은 경로 왕복 2회 실행의 DEBUG 덤프를
+> 원시 데이터로 재계산해 거리·페이스·고도 전부 화면 표시값과 정확히 일치함을 확인
+> (정확도·고도 필터의 실전 동작도 함께 검증, 2026-07-14 — 상세: `docs/backlog.md`
+> MVP13 QA 섹션). 사이클 2(`run-record-save`) 브레인스토밍 킥오프 진행 중 — 결정 1건
+> (러닝 종료 시 자동 저장, 상세는 `project-decisions.md`), 다음 결정 사항은 저장 샘플
+> 필드 범위·목록/상세 화면 구성. 스펙 문서는 아직 미작성.
 
 - [x] **run-tracking** — 탭 구조 + 러닝 탭(대기→트래킹→종료 요약), 연속 GPS 스트림(백그라운드 포함), 필터링·파생값(거리·시간·페이스·고도) 실시간 계산. 저장 없음
 - [x] **run-live-activity** — 잠금화면 Live Activity + Dynamic Island: 트래킹 중 거리·시간·페이스 실시간 표시 (Widget Extension 타깃 신설)
