@@ -89,6 +89,7 @@ struct RunSummaryPanel: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("러닝 요약").font(DesignToken.Typography.segmentRowTitle)
+            saveStatusLine
             Grid(horizontalSpacing: 28, verticalSpacing: 12) {
                 GridRow {
                     summaryItem(String(format: "%.2f km", viewModel.session.track.totalDistanceMeters / 1000), "거리")
@@ -122,12 +123,36 @@ struct RunSummaryPanel: View {
         )
     }
 
+    @ViewBuilder
+    private var saveStatusLine: some View {
+        switch viewModel.session.saveStatus {
+        case .saving:
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.small)
+                Text("저장 중…").font(DesignToken.Typography.chip)
+                    .foregroundStyle(DesignToken.Color.ink2)
+            }
+        case .saved:
+            Label("기록 저장됨", systemImage: "checkmark.circle.fill")
+                .font(DesignToken.Typography.chip)
+                .foregroundStyle(DesignToken.Color.accent)
+        case .failed:
+            HStack(spacing: 8) {
+                Label("저장 실패", systemImage: "exclamationmark.triangle.fill")
+                    .font(DesignToken.Typography.chip)
+                    .foregroundStyle(DesignToken.Color.danger)
+                Button("다시 시도") { viewModel.session.retrySave() }
+                    .font(DesignToken.Typography.chip)
+            }
+        case nil:
+            EmptyView()
+        }
+    }
+
     private var durationText: String {
         // 트래킹 화면·Live Activity가 보여준 벽시계 경과 시간과 맞춘다(스펙 리뷰 Fix 2).
         // GPS 샘플 구간(`RunTrack.duration`)은 신호확보 공백·후행 필터링 샘플 때문에 실제보다 짧게 잡힐 수 있다.
-        let elapsed = viewModel.summaryElapsedSeconds ?? viewModel.session.track.duration
-        let total = Int(elapsed)
-        return String(format: "%d:%02d:%02d", total / 3600, (total % 3600) / 60, total % 60)
+        RunDurationFormatter.string(seconds: viewModel.summaryElapsedSeconds ?? viewModel.session.track.duration)
     }
 
     #if DEBUG

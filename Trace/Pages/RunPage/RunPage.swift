@@ -3,9 +3,12 @@ import SwiftUI
 
 struct RunPage: View {
     @State private var viewModel: RunPageViewModel
+    @State private var historyViewModel: RunHistoryViewModel
+    @State private var showsHistory = false
 
-    init(session: RunSession) {
+    init(session: RunSession, recordRepository: RunRecordRepositoryProtocol) {
         _viewModel = State(initialValue: RunPageViewModel(session: session))
+        _historyViewModel = State(initialValue: RunHistoryViewModel(repository: recordRepository))
     }
 
     var body: some View {
@@ -27,6 +30,19 @@ struct RunPage: View {
             Button("취소", role: .cancel) {}
         } message: {
             Text("러닝을 기록하려면 위치 접근을 허용해 주세요.")
+        }
+        .overlay(alignment: .topTrailing) {
+            if viewModel.session.state == .idle {
+                Button { showsHistory = true } label: {
+                    Image(systemName: "list.bullet.rectangle")
+                }
+                .buttonStyle(GlassIconButtonStyle())
+                .padding(.trailing, DesignToken.Size.screenMargin)
+                .accessibilityIdentifier("run.historyButton")
+            }
+        }
+        .sheet(isPresented: $showsHistory) {
+            RunHistorySheet(viewModel: historyViewModel)
         }
     }
 
