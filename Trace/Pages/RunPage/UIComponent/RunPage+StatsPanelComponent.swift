@@ -123,7 +123,10 @@ struct RunSummaryPanel: View {
     }
 
     private var durationText: String {
-        let total = Int(viewModel.session.track.duration)
+        // 트래킹 화면·Live Activity가 보여준 벽시계 경과 시간과 맞춘다(스펙 리뷰 Fix 2).
+        // GPS 샘플 구간(`RunTrack.duration`)은 신호확보 공백·후행 필터링 샘플 때문에 실제보다 짧게 잡힐 수 있다.
+        let elapsed = viewModel.summaryElapsedSeconds ?? viewModel.session.track.duration
+        let total = Int(elapsed)
         return String(format: "%d:%02d:%02d", total / 3600, (total % 3600) / 60, total % 60)
     }
 

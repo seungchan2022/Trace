@@ -14,7 +14,16 @@ final class RunActivityController {
     }
 
     func startObserving() {
+        endOrphanedActivities()
         observeOnce()
+    }
+
+    /// 강제 종료 후 재실행 시 세션은 항상 .idle로 새로 시작하고 이전 세션을 복구하지 않으므로
+    /// (스펙 범위 밖), 실행 시점에 남아 있는 Activity는 예외 없이 고아다 — 즉시 정리한다(중요 리뷰 항목).
+    private func endOrphanedActivities() {
+        for activity in Activity<RunActivityAttributes>.activities {
+            Task { await activity.end(nil, dismissalPolicy: .immediate) }
+        }
     }
 
     private func observeOnce() {

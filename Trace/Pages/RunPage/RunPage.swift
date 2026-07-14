@@ -69,13 +69,20 @@ struct RunPage: View {
     }
 
     private var acquiringPanel: some View {
-        HStack(spacing: 10) {
-            ProgressView()
-            Text("GPS 신호 찾는 중…")
-                .font(DesignToken.Typography.subtitle)
-                .foregroundStyle(DesignToken.Color.ink)
-            Button("취소") { viewModel.cancelAcquiring() }
-                .font(DesignToken.Typography.chip)
+        VStack(spacing: 10) {
+            if viewModel.session.isSignalWeak {
+                Text("GPS 신호 약함")
+                    .font(DesignToken.Typography.chip)
+                    .foregroundStyle(DesignToken.Color.danger)
+            }
+            HStack(spacing: 10) {
+                ProgressView()
+                Text("GPS 신호 찾는 중…")
+                    .font(DesignToken.Typography.subtitle)
+                    .foregroundStyle(DesignToken.Color.ink)
+                Button("취소") { viewModel.cancelAcquiring() }
+                    .font(DesignToken.Typography.chip)
+            }
         }
         .padding(DesignToken.Size.sheetPadding)
         .background(DesignToken.Color.surface, in: RoundedRectangle(cornerRadius: DesignToken.Corner.chrome))
