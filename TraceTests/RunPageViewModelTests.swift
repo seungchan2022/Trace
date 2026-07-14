@@ -59,4 +59,21 @@ final class RunPageViewModelTests: XCTestCase {
         viewModel.endRun()
         XCTAssertNil(viewModel.summaryElapsedSeconds)
     }
+
+    /// 이전 러닝의 요약 시간이 다음 러닝에 잘못 이어붙지 않아야 한다 — 예를 들어 권한 회수로
+    /// `endRun()` 없이(streamEnded 경로) 두 번째 러닝이 끝나면 캡처 로직이 다시 값을 세팅하지
+    /// 않으므로, 첫 러닝의 값이 남아 있으면 잘못된 요약 시간이 노출된다(스펙 리뷰 Fix 2 후속).
+    /// 다음 러닝을 시작하는 시점에 초기화해 이 낡은 값 노출을 막는다.
+    func test_다음_러닝을_시작하면_이전_요약_경과시간이_초기화된다() async {
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+        viewModel.endRun()
+        XCTAssertNotNil(viewModel.summaryElapsedSeconds)
+
+        viewModel.closeSummary()
+        await viewModel.startTapped()
+
+        XCTAssertNil(viewModel.summaryElapsedSeconds)
+    }
 }

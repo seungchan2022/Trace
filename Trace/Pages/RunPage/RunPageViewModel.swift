@@ -29,6 +29,7 @@ final class RunPageViewModel {
         case nil:
             displayedCoordinates = []
             polylineThrottle = PolylineThrottle()
+            summaryElapsedSeconds = nil
             recenter()
         }
     }
