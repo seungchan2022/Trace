@@ -26,6 +26,12 @@ final class RunSession {
         case permissionDenied
     }
 
+    enum SaveStatus: Equatable {
+        case saving
+        case saved
+        case failed
+    }
+
     static let maxHorizontalAccuracyMeters: Double = 30
     static let weakSignalTimeoutSeconds: TimeInterval = 10
 
@@ -37,14 +43,20 @@ final class RunSession {
     #if DEBUG
     private(set) var dumpEntries: [RunSampleDumpEntry] = []
     #endif
+    private(set) var saveStatus: SaveStatus?
+    /// 저장(또는 재시도) 대상 기록 — 재시도가 같은 id로 저장되게 값을 보관한다
+    private var pendingRun: SavedRun?
+    private var endedAt: Date?
 
     var isActive: Bool { state == .acquiring || state == .tracking }
 
     private let locationStream: RunLocationStreamProtocol
+    private let recordRepository: RunRecordRepositoryProtocol
     private var streamTask: Task<Void, Never>?
 
-    init(locationStream: RunLocationStreamProtocol) {
+    init(locationStream: RunLocationStreamProtocol, recordRepository: RunRecordRepositoryProtocol) {
         self.locationStream = locationStream
+        self.recordRepository = recordRepository
     }
 
     func start() async {
@@ -80,7 +92,9 @@ final class RunSession {
     func finish() {
         guard isActive else { return }
         stopStream()
+        endedAt = Date()
         state = .summary
+        startRecordSave()
     }
 
     /// 신호 확보 중 사용자가 취소한 경우 — 아직 유효 샘플이 없으므로 요약 없이 바로 대기로 복귀한다.
@@ -100,6 +114,9 @@ final class RunSession {
         state = .idle
         track = RunTrack()
         startedAt = nil
+        endedAt = nil
+        saveStatus = nil
+        pendingRun = nil
         #if DEBUG
         dumpEntries = []
         #endif
@@ -145,7 +162,9 @@ final class RunSession {
             startedAt = nil
             lastStartFailure = .permissionDenied
         } else {
+            endedAt = Date()
             state = .summary
+            startRecordSave()
         }
     }
 
@@ -154,5 +173,48 @@ final class RunSession {
         streamTask = nil
         locationStream.stopUpdates()
         isSignalWeak = false
+    }
+
+    // MARK: - 자동 저장 (스펙 §3)
+
+    private func startRecordSave() {
+        guard let startedAt, let endedAt, track.samples.isEmpty == false else { return }
+        let run = SavedRun(
+            summary: SavedRunSummary(
+                id: UUID(),
+                startedAt: startedAt,
+                distanceMeters: track.totalDistanceMeters,
+                // 벽시계 경과 시간 — 요약 화면이 보여주는 시간과 같은 기준(GPS 샘플 구간 아님)
+                duration: endedAt.timeIntervalSince(startedAt),
+                elevationGainMeters: track.elevationGainMeters
+            ),
+            samples: track.samples.map(SavedRunSample.init)
+        )
+        pendingRun = run
+        performSave(run)
+    }
+
+    /// 저장 실패 후 재시도 — 같은 pendingRun(같은 id)을 다시 저장하므로 중복 기록이 생기지 않는다
+    func retrySave() {
+        guard saveStatus == .failed, let pendingRun else { return }
+        performSave(pendingRun)
+    }
+
+    private func performSave(_ run: SavedRun) {
+        saveStatus = .saving
+        Task { [weak self, recordRepository] in
+            do {
+                try await recordRepository.save(run)
+                self?.markSaveFinished(for: run, status: .saved)
+            } catch {
+                self?.markSaveFinished(for: run, status: .failed)
+            }
+        }
+    }
+
+    /// 요약을 닫은 뒤(또는 다음 세션에서) 완료된 이전 저장이 상태를 오염시키지 않게 id로 가드한다
+    private func markSaveFinished(for run: SavedRun, status: SaveStatus) {
+        guard pendingRun?.summary.id == run.summary.id else { return }
+        saveStatus = status
     }
 }

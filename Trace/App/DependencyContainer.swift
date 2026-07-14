@@ -5,17 +5,20 @@ struct DependencyContainer {
     let locationService: LocationServiceProtocol
     let cameraStateStore: CameraStateStore
     let courseRepository: CourseRepositoryProtocol
+    let runRecordRepository: RunRecordRepositoryProtocol
     let runSession: RunSession
     let runActivityController: RunActivityController
 
     @MainActor
     static func live() -> DependencyContainer {
-        let runSession = RunSession(locationStream: RunLocationTracker())
+        let runRecordRepository = SwiftDataRunRecordRepository()
+        let runSession = RunSession(locationStream: RunLocationTracker(), recordRepository: runRecordRepository)
         return DependencyContainer(
             coursePlanningService: MapKitCoursePlanningService(),
             locationService: CoreLocationService(),
             cameraStateStore: CameraStateStore(),
             courseRepository: SwiftDataCourseRepository(),
+            runRecordRepository: runRecordRepository,
             runSession: runSession,
             runActivityController: RunActivityController(session: runSession)
         )
@@ -24,13 +27,15 @@ struct DependencyContainer {
     @MainActor
     static func uiTesting() -> DependencyContainer {
         let uiTestingDefaults = UserDefaults(suiteName: "uiTesting") ?? .standard
-        let runSession = RunSession(locationStream: UITestingRunLocationStream())
+        let runRecordRepository = SwiftDataRunRecordRepository(inMemory: true)
+        let runSession = RunSession(locationStream: UITestingRunLocationStream(), recordRepository: runRecordRepository)
         return DependencyContainer(
             coursePlanningService: UITestingCoursePlanningService(),
             locationService: UITestingLocationService(),
             cameraStateStore: CameraStateStore(defaults: uiTestingDefaults),
             // in-memory: UI 테스트가 실기기/다른 테스트의 저장 코스 데이터와 격리되도록
             courseRepository: SwiftDataCourseRepository(inMemory: true),
+            runRecordRepository: runRecordRepository,
             runSession: runSession,
             runActivityController: RunActivityController(session: runSession)
         )

@@ -5,7 +5,8 @@ import XCTest
 final class RunPageViewModelTests: XCTestCase {
     // XCTest는 테스트 메서드마다 새 인스턴스를 만드므로 필드 초기화만으로 setUp과 동일하게 매번 새로 생성된다.
     private let stream = MockRunLocationStream()
-    private lazy var session = RunSession(locationStream: stream)
+    private let recordRepository = MockRunRecordRepository()
+    private lazy var session = RunSession(locationStream: stream, recordRepository: recordRepository)
     private lazy var viewModel = RunPageViewModel(session: session)
 
     private func sample(at date: Date) -> RunSample {

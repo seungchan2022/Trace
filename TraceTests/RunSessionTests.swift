@@ -6,7 +6,8 @@ final class RunSessionTests: XCTestCase {
     // XCTest는 테스트 메서드마다 새 인스턴스를 만들므로 필드 초기화만으로 setUp과 동일하게 매번 새로 생성된다.
     // (setUp() 오버라이드 대신 필드 초기화를 쓴 이유: `var x: T!` IUO는 프로젝트 린트 규칙 위반이라 사용하지 않는다)
     private let stream = MockRunLocationStream()
-    private lazy var session = RunSession(locationStream: stream)
+    private let recordRepository = MockRunRecordRepository()
+    private lazy var session = RunSession(locationStream: stream, recordRepository: recordRepository)
 
     private func sample(
         at date: Date,
@@ -165,6 +166,88 @@ final class RunSessionTests: XCTestCase {
         XCTAssertTrue(session.track.samples.isEmpty)
         XCTAssertNil(session.startedAt)
         XCTAssertTrue(stream.stopped)
+    }
+
+    func test_종료하면_기록이_자동저장된다() async {
+        await session.start()
+        let start = Date()
+        stream.yield(sample(at: start))
+        stream.yield(sample(at: start.addingTimeInterval(10), latOffsetMeters: 30))
+        await waitUntil { self.session.track.samples.count == 2 }
+
+        session.finish()
+        await waitUntil { self.session.saveStatus == .saved }
+
+        let savedRuns = await recordRepository.savedRuns
+        XCTAssertEqual(savedRuns.count, 1)
+        let saved = savedRuns[0]
+        XCTAssertEqual(saved.samples.count, 2)
+        XCTAssertEqual(saved.summary.distanceMeters, session.track.totalDistanceMeters)
+        XCTAssertEqual(saved.summary.startedAt, session.startedAt)
+        XCTAssertGreaterThan(saved.summary.duration, 0) // 벽시계 경과 시간
+    }
+
+    func test_저장실패시_상태가_failed가_되고_재시도로_저장된다() async {
+        await recordRepository.failNextSave()
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { self.session.track.samples.count == 1 }
+
+        session.finish()
+        await waitUntil { self.session.saveStatus == .failed }
+        let savedRunsAfterFailure = await recordRepository.savedRuns
+        XCTAssertTrue(savedRunsAfterFailure.isEmpty)
+
+        session.retrySave()
+        await waitUntil { self.session.saveStatus == .saved }
+        let savedRuns = await recordRepository.savedRuns
+        XCTAssertEqual(savedRuns.count, 1)
+    }
+
+    func test_재시도해도_같은_id로_저장된다_중복기록_방지() async {
+        await recordRepository.failNextSave()
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { self.session.track.samples.count == 1 }
+        session.finish()
+        await waitUntil { self.session.saveStatus == .failed }
+
+        session.retrySave()
+        await waitUntil { self.session.saveStatus == .saved }
+        let savedRuns = await recordRepository.savedRuns
+        XCTAssertEqual(savedRuns.count, 1) // 실패분이 중복 저장되지 않는다
+    }
+
+    func test_신호확보중_취소하면_저장하지_않는다() async {
+        await session.start()
+        session.finishAcquiringCancelled()
+        await drainNoOp()
+        XCTAssertNil(session.saveStatus)
+        let savedRuns = await recordRepository.savedRuns
+        XCTAssertTrue(savedRuns.isEmpty)
+    }
+
+    func test_요약을_닫으면_저장상태가_초기화된다() async {
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { self.session.track.samples.count == 1 }
+        session.finish()
+        await waitUntil { self.session.saveStatus == .saved }
+
+        session.dismissSummary()
+        XCTAssertNil(session.saveStatus)
+    }
+
+    func test_스트림이_끊겨_요약으로_가도_자동저장된다() async {
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { self.session.track.samples.count == 1 }
+
+        stream.finish() // 권한 회수 등으로 스트림 종료 (MockRunLocationStream의 기존 헬퍼)
+        await waitUntil { self.session.state == .summary }
+        await waitUntil { self.session.saveStatus == .saved }
+        let savedRuns = await recordRepository.savedRuns
+        XCTAssertEqual(savedRuns.count, 1)
     }
 }
 
