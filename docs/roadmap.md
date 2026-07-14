@@ -31,15 +31,22 @@
 > 자동 저장·샘플 필드 범위(원시 5필드 전부)·요약 컬럼 캐시·별도 스토어 파일·목록 입구
 > (러닝 탭 버튼) 확정, 상세는 `project-decisions.md`. 스펙:
 > `docs/superpowers/specs/2026-07-14-run-record-save-design.md` · 플랜:
-> `docs/superpowers/plans/2026-07-14-run-record-save.md` (Task 5개, 체크박스 전부 미착수 —
-> 구현 0%). **다음 세션 재개 지점**: 브랜치 `feature/run-record-save`를 만들어
-> subagent-driven-development로 플랜 실행(경량 사이클 — 문서 서브에이전트 리뷰·최종 브랜치
-> 리뷰 생략, TDD·커밋 전 코드리뷰·실기기 QA 유지). 문서 작업 브랜치
+> `docs/superpowers/plans/2026-07-14-run-record-save.md` (Task 5개, 브랜치
+> `feature/run-record-save`에서 subagent-driven-development로 전부 구현 완료, 2026-07-14 —
+> 경량 사이클 결정대로 문서 서브에이전트 리뷰·최종 브랜치 전체 리뷰는 생략하고 Task별
+> TDD+커밋 전 코드리뷰(sonnet)는 4개 태스크 전부 수행, 0 Critical/Important). Task 3에서
+> 브리프의 `MockRunRecordRepository`(`@MainActor final class`)가 Swift 6.3 툴체인에서
+> Sendable-refining 프로토콜 제약으로 컴파일 불가해 `actor`로 교체(기존
+> `MockCourseRepository` 선례와 동일 패턴, 리뷰에서 독립 검증 완료 — 오히려 실제
+> 프로덕션의 actor 기반 어댑터와 더 일치). 시뮬레이터에서 저장→목록→상세 흐름 눈 확인
+> 완료(스와이프 삭제 제스처만 UI 자동화 도구 한계로 실기기 QA로 이연). 실기기 QA
+> 체크리스트 작성 완료: `docs/qa/2026-07-14-run-record-save-device-checklist.md`. **현재
+> 상태: 구현 완료, 실기기 QA 대기** — QA 통과 후 아래 마일스톤 체크 예정. 문서 작업 브랜치
 > `docs/run-record-save-kickoff`는 통합 대기.
 
 - [x] **run-tracking** — 탭 구조 + 러닝 탭(대기→트래킹→종료 요약), 연속 GPS 스트림(백그라운드 포함), 필터링·파생값(거리·시간·페이스·고도) 실시간 계산. 저장 없음
 - [x] **run-live-activity** — 잠금화면 Live Activity + Dynamic Island: 트래킹 중 거리·시간·페이스 실시간 표시 (Widget Extension 타깃 신설)
-- [ ] **run-record-save** — 기록 저장(SwiftData, 타임스탬프 샘플 스트림 스키마) + 기록 목록/상세
+- [ ] **run-record-save** — 기록 저장(SwiftData, 타임스탬프 샘플 스트림 스키마) + 기록 목록/상세 — 구현 완료, 실기기 QA 대기
 
 ### MVP12 — 달리기 기록 착수 전 기반 정비: Swift 6 + 디자인   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp12/`](history/mvp12/))
 
