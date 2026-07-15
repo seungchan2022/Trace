@@ -13,6 +13,8 @@ struct RunTrack: Equatable, Sendable {
     // 고도 상승 임계값 누적 상태(GPS 고도 노이즈 억제 — 스펙 §2)
     private var lastValidAltitudeMeters: Double?
     private var pendingRiseMeters: Double = 0
+    // 재개 직후 첫 샘플의 거리 가산 억제 플래그(일시정지 경계 순간이동 방지 — 스펙 §3.1)
+    private var pendingGap = false
 
     var duration: TimeInterval {
         guard let first = samples.first, let last = samples.last else { return 0 }
@@ -35,10 +37,16 @@ struct RunTrack: Equatable, Sendable {
         return 1000 / averageSpeed
     }
 
+    /// 다음 append 1회에 한해 직전 샘플과의 거리를 가산하지 않는다 — 일시정지 재개 시 호출.
+    mutating func markGap() {
+        pendingGap = true
+    }
+
     mutating func append(_ sample: RunSample) {
-        if let previous = samples.last {
+        if let previous = samples.last, pendingGap == false {
             totalDistanceMeters += previous.coordinate.distanceMeters(to: sample.coordinate)
         }
+        pendingGap = false
         accumulateElevation(from: sample)
         samples.append(sample)
     }

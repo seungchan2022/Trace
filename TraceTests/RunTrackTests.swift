@@ -88,4 +88,18 @@ final class RunTrackTests: XCTestCase {
         track.append(sample(at: 20, altitude: 100, vAcc: 50))   // 10m 초과
         XCTAssertEqual(track.elevationGainMeters, 0, accuracy: 0.001)
     }
+
+    func test_markGap_후_첫_샘플은_거리를_가산하지_않는다() {
+        var track = RunTrack()
+        track.append(sample(at: 0, latOffsetMeters: 0))
+        track.append(sample(at: 30, latOffsetMeters: 100))
+        let beforeGap = track.totalDistanceMeters
+        track.markGap()
+        // 일시정지 중 500m 이동했다고 가정 — 이 구간은 거리에 안 들어가야 한다
+        track.append(sample(at: 300, latOffsetMeters: 600))
+        XCTAssertEqual(track.totalDistanceMeters, beforeGap, accuracy: 1.0)
+        // gap 다음 샘플부터는 다시 정상 가산
+        track.append(sample(at: 330, latOffsetMeters: 700))
+        XCTAssertEqual(track.totalDistanceMeters, beforeGap + 100, accuracy: 2.0)
+    }
 }
