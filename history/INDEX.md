@@ -23,6 +23,26 @@
 
 ---
 
+## MVP13 — 자유 러닝 트래킹 + 기록 (2026-07-13 ~ 07-15)
+
+> Trace의 두 번째 독립 기둥 "러닝(기록)"을 코스 탐색과 분리해 세움. 마일스톤 3개: 사이클
+> 1(run-tracking + run-live-activity)은 Task 10개 + 최종 브랜치 전체 리뷰(opus), 사이클
+> 2(run-record-save)는 경량 사이클(Task별 리뷰만)로 진행 — 사이클 1의 실기기 QA 결과(원시
+> GPS 재계산 대조 포함)를 저장 스키마 설계에 반영하기 위해 의도적으로 분리했다. 전체 테스트
+> 228개 그린, 두 사이클 모두 실기기 QA 통과.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [run-tracking 설계](mvp13/2026-07-13-run-tracking-design.md) | 탭 구조(코스/러닝), GPS 스트림·필터링·파생값, Live Activity 아키텍처 |
+| 플랜 | [run-tracking 플랜](mvp13/2026-07-13-run-tracking.md) | Task 1~10(소급 완료), 최종 브랜치 리뷰(opus) + 후속 수정 포함 |
+| QA | [run-tracking 실기기 체크리스트](mvp13/2026-07-14-run-tracking-device-checklist.md) | 트래킹·Live Activity 실기기 검증, 원시 GPS 재계산 대조 |
+| 기획 | [run-record-save 설계](mvp13/2026-07-14-run-record-save-design.md) | 자동 저장 트리거, 샘플 필드 범위, 별도 스토어 파일, 목록/상세 화면 |
+| 플랜 | [run-record-save 플랜](mvp13/2026-07-14-run-record-save.md) | Task 1~5(소급 완료), 경량 사이클(Task별 리뷰만) |
+| QA | [run-record-save 실기기 체크리스트](mvp13/2026-07-14-run-record-save-device-checklist.md) | 저장·목록·상세·삭제 실기기 검증 |
+| 회고 | [MVP13 완료 회고](mvp13/260715_mvp13_completion_retro.md) | 스키마-QA 순서, 별도 스토어 파일, Mock 편차 검증 루프, 시뮬레이터 HID 한계 |
+
+---
+
 ## MVP12 — Swift 6 + 디자인 (2026-07-10 ~ 07-13)
 
 > 달리기 기록(차기 MVP) 착수 전 기반 정비: Swift 6 언어 모드 전환(동시성 경고 ~40건 정리) +

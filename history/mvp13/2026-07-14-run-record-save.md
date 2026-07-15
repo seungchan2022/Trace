@@ -2,6 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **완료(소급 확인):** Task 1~5 전부 완료, 2026-07-14~15. 브랜치 `feature/run-record-save`,
+> Task별 코드 리뷰(sonnet) 4건 전부 Approved(0 Critical/Important). 경량 사이클 결정에 따라
+> 문서 서브에이전트 리뷰·최종 브랜치 전체 리뷰는 생략. 실기기 QA
+> (`docs/qa/2026-07-14-run-record-save-device-checklist.md`) 통과, 2026-07-15. main으로
+> fast-forward 통합 완료(최종 커밋 `fc021db`). 진행 중 체크박스가 갱신되지 않은 채 남아
+> 있던 것으로, 실제 구현 완료 여부와는 무관하다.
+
 **Goal:** 러닝 종료 시 기록을 SwiftData에 자동 저장하고, 러닝 탭에서 기록 목록/상세를 볼 수 있게 한다 (MVP13 사이클 2, 경량).
 
 **Architecture:** 코스 저장 패턴(Domain 포트 + SwiftData actor 어댑터 + 버전 blob DTO)을 미러링하되 **별도 스토어 파일**(`TraceRunStore.store`)을 쓴다. 목록은 요약 컬럼만 읽고(blob 미디코드), 상세만 단건 blob을 디코드한다. 자동 저장은 `RunSession`이 종료 시점에 주입받은 리포지토리로 직접 수행하고 저장 상태(진행/성공/실패+재시도)를 요약 화면에 노출한다.

@@ -2,6 +2,12 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **완료(소급 확인):** Task 1~10 + 최종 브랜치 리뷰(opus) + 후속 수정 전부 완료, 2026-07-14.
+> 브랜치 `feature/run-tracking`, 최종 커밋 `0ce36cf`(fix wave `7440796`까지). 실기기 QA
+> (`docs/qa/2026-07-14-run-tracking-device-checklist.md`) 통과. 진행 중 체크박스가 갱신되지
+> 않은 채 남아 있던 것으로, 실제 구현 완료 여부와는 무관하다 — 상세 근거는 SDD 진행 로그와
+> roadmap의 MVP13 항목 참고.
+
 **Goal:** 코스 없이 그냥 뛰어도 되는 자유 러닝 트래킹(시작→백그라운드 GPS→종료 요약)과 잠금화면 Live Activity를 러닝 탭으로 추가한다. 저장 없음(DEBUG 덤프만).
 
 **Architecture:** 스펙 `docs/superpowers/specs/2026-07-13-run-tracking-design.md` 기준. Domain(`RunSample`/`RunTrack`/포트) → Infrastructure(`RunLocationTracker`, @MainActor CLLocationManager delegate→AsyncStream 브리지) → Application(`RunSession` @Observable, DependencyContainer 소유) → Pages(`RunPage`, SwiftUI Map). Live Activity는 Widget Extension 타깃 + 앱 쪽 `RunActivityController`가 세션을 구독해 갱신.
