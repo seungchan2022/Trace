@@ -40,13 +40,14 @@
 > `MockCourseRepository` 선례와 동일 패턴, 리뷰에서 독립 검증 완료 — 오히려 실제
 > 프로덕션의 actor 기반 어댑터와 더 일치). 시뮬레이터에서 저장→목록→상세 흐름 눈 확인
 > 완료(스와이프 삭제 제스처만 UI 자동화 도구 한계로 실기기 QA로 이연). 실기기 QA
-> 체크리스트 작성 완료: `docs/qa/2026-07-14-run-record-save-device-checklist.md`. **현재
-> 상태: 구현 완료, 실기기 QA 대기** — QA 통과 후 아래 마일스톤 체크 예정. 문서 작업 브랜치
-> `docs/run-record-save-kickoff`는 통합 대기.
+> 체크리스트(`docs/qa/2026-07-14-run-record-save-device-checklist.md`) 실기기(제주) 실행
+> 완료, 2026-07-15 — 핵심 시나리오 1~5(저장·목록·상세·완전종료 후 유지·스와이프 삭제)
+> 전부 통과(시나리오 1~3은 스크린샷으로 직접 확인, 4~5는 사용자 확인). **run-record-save
+> 마일스톤 완료.** 문서 작업 브랜치 `docs/run-record-save-kickoff`는 통합 대기.
 
 - [x] **run-tracking** — 탭 구조 + 러닝 탭(대기→트래킹→종료 요약), 연속 GPS 스트림(백그라운드 포함), 필터링·파생값(거리·시간·페이스·고도) 실시간 계산. 저장 없음
 - [x] **run-live-activity** — 잠금화면 Live Activity + Dynamic Island: 트래킹 중 거리·시간·페이스 실시간 표시 (Widget Extension 타깃 신설)
-- [ ] **run-record-save** — 기록 저장(SwiftData, 타임스탬프 샘플 스트림 스키마) + 기록 목록/상세 — 구현 완료, 실기기 QA 대기
+- [x] **run-record-save** — 기록 저장(SwiftData, 타임스탬프 샘플 스트림 스키마) + 기록 목록/상세, 실기기 QA 통과(2026-07-15)
 
 ### MVP12 — 달리기 기록 착수 전 기반 정비: Swift 6 + 디자인   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp12/`](history/mvp12/))
 
