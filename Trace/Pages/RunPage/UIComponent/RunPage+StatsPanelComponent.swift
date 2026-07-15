@@ -17,14 +17,22 @@ struct RunStatsPanel: View {
                     value: String(format: "%.2f", viewModel.session.track.totalDistanceMeters / 1000),
                     unit: "km"
                 )
-                if let startedAt = viewModel.session.startedAt {
-                    VStack(spacing: 2) {
-                        Text(startedAt, style: .timer)
+                VStack(spacing: 2) {
+                    if viewModel.session.isPaused {
+                        // 멈춘 시간 고정 표시 — activeElapsedSeconds는 일시정지 중 상수라 안전
+                        Text(RunDurationFormatter.string(
+                            seconds: viewModel.session.activeElapsedSeconds() ?? 0
+                        ))
+                        .font(DesignToken.Typography.segmentRowDistance)
+                        .monospacedDigit()
+                        .foregroundStyle(DesignToken.Color.ink2)
+                    } else if let timerStart = viewModel.session.displayTimerStart {
+                        Text(timerInterval: timerStart...Date.distantFuture, countsDown: false)
                             .font(DesignToken.Typography.segmentRowDistance)
                             .monospacedDigit()
-                        Text("시간").font(DesignToken.Typography.sectionLabel)
-                            .foregroundStyle(DesignToken.Color.ink2)
                     }
+                    Text("시간").font(DesignToken.Typography.sectionLabel)
+                        .foregroundStyle(DesignToken.Color.ink2)
                 }
                 stat(
                     value: RunPaceFormatter.string(
@@ -33,7 +41,15 @@ struct RunStatsPanel: View {
                     unit: "페이스"
                 )
             }
-            endButton
+            if viewModel.session.isPaused {
+                Text("일시정지됨")
+                    .font(DesignToken.Typography.chip)
+                    .foregroundStyle(DesignToken.Color.ink2)
+            }
+            HStack(spacing: 12) {
+                pauseResumeButton
+                endButton
+            }
         }
         .padding(DesignToken.Size.sheetPadding)
         .frame(maxWidth: .infinity)
@@ -58,6 +74,23 @@ struct RunStatsPanel: View {
             } onPressingChanged: { pressing in
                 withAnimation(.easeInOut(duration: 0.15)) { isPressingEnd = pressing }
             }
+    }
+
+    private var pauseResumeButton: some View {
+        Button {
+            if viewModel.session.isPaused {
+                viewModel.session.resume()
+            } else {
+                viewModel.session.pause()
+            }
+        } label: {
+            Image(systemName: viewModel.session.isPaused ? "play.fill" : "pause.fill")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(DesignToken.Color.accentInk)
+                .frame(width: 52, height: 52)
+                .background(DesignToken.Color.accent, in: Circle())
+        }
+        .accessibilityIdentifier("run.pauseResumeButton")
     }
 
     private var recenterButton: some View {
