@@ -355,6 +355,30 @@ final class RunSessionTests: XCTestCase {
         XCTAssertTrue(session.completedPauses.isEmpty)
         XCTAssertEqual(session.totalPausedSeconds(), 0, accuracy: 0.001)
     }
+
+}
+
+// 클래스 본문이 swiftlint type_body_length(300줄) 임계를 넘지 않도록 신규 테스트를 확장으로 분리한다.
+extension RunSessionTests {
+    func test_저장되는_기록의_duration은_일시정지를_제외하고_pauses를_포함한다() async {
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+        guard let startedAt = session.startedAt else { return XCTFail("startedAt 없음") }
+
+        let pauseStart = startedAt.addingTimeInterval(60)
+        session.pause(now: pauseStart)
+        session.resume(now: pauseStart.addingTimeInterval(30))
+        session.finish()
+        await waitUntil { session.saveStatus == .saved }
+
+        guard let saved = await recordRepository.savedRuns.first else { return XCTFail("저장 없음") }
+        XCTAssertEqual(saved.pauses.count, 1)
+        XCTAssertEqual(saved.pauses[0].duration, 30, accuracy: 0.001)
+        // duration + 일시정지합 ≈ 벽시계 경과(오차 1초 이내 — finish까지의 실행 지연)
+        let wallElapsed = Date().timeIntervalSince(startedAt)
+        XCTAssertEqual(saved.summary.duration + 30, wallElapsed, accuracy: 1.0)
+    }
 }
 
 @MainActor

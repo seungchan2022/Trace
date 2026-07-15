@@ -12,7 +12,7 @@ final class RunPageViewModel {
     private(set) var displayedCoordinates: [CLLocationCoordinate2D] = []
     var showsAccuracyAlert = false
     var showsPermissionAlert = false
-    /// 요약 화면에 보여줄 벽시계 경과 시간 — 트래킹 화면·Live Activity가 보여준 시간과 같은 기준(스펙 리뷰 Fix 2).
+    /// 요약 화면에 보여줄 활동 시간(일시정지 제외) — 트래킹 화면·Live Activity가 보여준 시간과 같은 기준(MVP14 §3.1).
     /// `RunTrack.duration`(GPS 샘플 구간)과는 다른 측정치라 별도로 종료 시점에 캡처해 둔다.
     private(set) var summaryElapsedSeconds: TimeInterval?
     private var polylineThrottle = PolylineThrottle()
@@ -35,9 +35,7 @@ final class RunPageViewModel {
     }
 
     func endRun() {
-        if let startedAt = session.startedAt {
-            summaryElapsedSeconds = Date().timeIntervalSince(startedAt)
-        }
+        summaryElapsedSeconds = session.activeElapsedSeconds()
         session.finish()
         // 요약: 경로 전체가 보이도록 카메라 핏
         let coordinates = session.track.samples.map(\.coordinate)

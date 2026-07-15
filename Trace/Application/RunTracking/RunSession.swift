@@ -240,11 +240,12 @@ final class RunSession {
                 id: UUID(),
                 startedAt: startedAt,
                 distanceMeters: track.totalDistanceMeters,
-                // 벽시계 경과 시간 — 요약 화면이 보여주는 시간과 같은 기준(GPS 샘플 구간 아님)
-                duration: endedAt.timeIntervalSince(startedAt),
+                // 활동 시간(벽시계 − 일시정지 합) — 트래킹 화면·요약이 보여주는 시간과 같은 기준(MVP14 §3.1)
+                duration: endedAt.timeIntervalSince(startedAt) - totalPausedSeconds(now: endedAt),
                 elevationGainMeters: track.elevationGainMeters
             ),
-            samples: track.samples.map(SavedRunSample.init)
+            samples: track.samples.map(SavedRunSample.init),
+            pauses: completedPauses
         )
         pendingRun = run
         performSave(run)

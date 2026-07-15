@@ -77,4 +77,19 @@ final class RunPageViewModelTests: XCTestCase {
 
         XCTAssertNil(viewModel.summaryElapsedSeconds)
     }
+
+    func test_종료시_요약_시간은_일시정지를_제외한_활동시간이다() async {
+        await viewModel.startTapped()
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+        guard let startedAt = session.startedAt else { return XCTFail("startedAt 없음") }
+
+        let pauseStart = startedAt.addingTimeInterval(50)
+        session.pause(now: pauseStart)
+        session.resume(now: pauseStart.addingTimeInterval(20))
+        viewModel.endRun()
+
+        let wallElapsed = Date().timeIntervalSince(startedAt)
+        XCTAssertEqual((viewModel.summaryElapsedSeconds ?? -1) + 20, wallElapsed, accuracy: 1.0)
+    }
 }
