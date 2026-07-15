@@ -41,7 +41,8 @@ final class RunActivityController {
 
     private func sync() {
         switch session.state {
-        case .tracking:
+        case .tracking, .paused:
+            // paused는 Task 2가 도입한 컴파일 shim — 실제 일시정지 표시(타이머 정지 등)는 Task 6이 담당한다.
             if activity == nil {
                 startActivity()
             } else {

@@ -18,6 +18,7 @@ final class RunSession {
         case idle
         case acquiring
         case tracking
+        case paused
         case summary
     }
 
@@ -47,8 +48,33 @@ final class RunSession {
     /// 저장(또는 재시도) 대상 기록 — 재시도가 같은 id로 저장되게 값을 보관한다
     private var pendingRun: SavedRun?
     private var endedAt: Date?
+    /// 닫힌 일시정지 구간들 — 저장 payload에 그대로 들어간다(스펙 §4)
+    private(set) var completedPauses: [RunPauseInterval] = []
+    /// 열린 일시정지의 시작 시각 — paused 상태에서만 non-nil
+    private var pausedAt: Date?
 
-    var isActive: Bool { state == .acquiring || state == .tracking }
+    var isActive: Bool { state == .acquiring || state == .tracking || state == .paused }
+    var isPaused: Bool { state == .paused }
+
+    /// 닫힌 구간 합 + (일시정지 중이면) 열린 구간까지 — "지금까지 멈춘 총 시간"
+    func totalPausedSeconds(now: Date = Date()) -> TimeInterval {
+        let completed = completedPauses.reduce(0) { $0 + $1.duration }
+        let open = pausedAt.map { now.timeIntervalSince($0) } ?? 0
+        return completed + open
+    }
+
+    /// 활동 시간 = 벽시계 경과 − 일시정지 합. 시간·페이스·기록의 새 기준(스펙 §3.1).
+    func activeElapsedSeconds(now: Date = Date()) -> TimeInterval? {
+        guard let startedAt else { return nil }
+        return now.timeIntervalSince(startedAt) - totalPausedSeconds(now: now)
+    }
+
+    /// 타이머 UI용 보정 시작 시각 — 여기서부터 지금까지가 곧 활동 시간이 되도록 민 값.
+    /// 트래킹 중에는 열린 구간이 없어 고정값이다(Text(timerInterval:)의 기준으로 안전).
+    var displayTimerStart: Date? {
+        guard let startedAt else { return nil }
+        return startedAt.addingTimeInterval(totalPausedSeconds())
+    }
 
     private let locationStream: RunLocationStreamProtocol
     private let recordRepository: RunRecordRepositoryProtocol
@@ -89,10 +115,32 @@ final class RunSession {
         }
     }
 
+    func pause(now: Date = Date()) {
+        guard state == .tracking else { return }
+        pausedAt = now
+        state = .paused
+    }
+
+    func resume(now: Date = Date()) {
+        guard state == .paused, let pausedAt else { return }
+        completedPauses.append(RunPauseInterval(start: pausedAt, end: now))
+        self.pausedAt = nil
+        track.markGap()
+        state = .tracking
+    }
+
+    private func closeOpenPause(at date: Date) {
+        guard let pausedAt else { return }
+        completedPauses.append(RunPauseInterval(start: pausedAt, end: date))
+        self.pausedAt = nil
+    }
+
     func finish() {
         guard isActive else { return }
         stopStream()
-        endedAt = Date()
+        let end = Date()
+        closeOpenPause(at: end)
+        endedAt = end
         state = .summary
         startRecordSave()
     }
@@ -104,6 +152,8 @@ final class RunSession {
         state = .idle
         track = RunTrack()
         startedAt = nil
+        completedPauses = []
+        pausedAt = nil
         #if DEBUG
         dumpEntries = []
         #endif
@@ -117,6 +167,8 @@ final class RunSession {
         endedAt = nil
         saveStatus = nil
         pendingRun = nil
+        completedPauses = []
+        pausedAt = nil
         #if DEBUG
         dumpEntries = []
         #endif
@@ -124,6 +176,8 @@ final class RunSession {
 
     private func ingest(_ sample: RunSample, sessionStart: Date) {
         guard isActive else { return }
+        // 일시정지 중 샘플은 통째로 무시 — 적산·덤프·약신호 갱신 없음(스펙 §3.1 전이표)
+        guard state != .paused else { return }
         // 시작 직후 도착하는 캐시된 옛 샘플은 버린다(스펙 §4 필터링)
         guard sample.timestamp >= sessionStart else { return }
 
@@ -162,7 +216,9 @@ final class RunSession {
             startedAt = nil
             lastStartFailure = .permissionDenied
         } else {
-            endedAt = Date()
+            let end = Date()
+            closeOpenPause(at: end)
+            endedAt = end
             state = .summary
             startRecordSave()
         }

@@ -249,6 +249,112 @@ final class RunSessionTests: XCTestCase {
         let savedRuns = await recordRepository.savedRuns
         XCTAssertEqual(savedRuns.count, 1)
     }
+
+    func test_트래킹중_일시정지하면_paused_상태가_되고_세션은_계속_활성이다() async {
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+        session.pause()
+        XCTAssertEqual(session.state, .paused)
+        XCTAssertTrue(session.isActive)
+        XCTAssertTrue(session.isPaused)
+    }
+
+    func test_신호확보중에는_일시정지가_무시된다() async {
+        await session.start()
+        session.pause()
+        XCTAssertEqual(session.state, .acquiring)
+    }
+
+    func test_일시정지중_샘플은_통째로_무시된다() async {
+        await session.start()
+        let base = Date()
+        stream.yield(sample(at: base))
+        await waitUntil { session.track.samples.count == 1 }
+        session.pause()
+        stream.yield(sample(at: base.addingTimeInterval(5), latOffsetMeters: 50))
+        await drainNoOp()
+        XCTAssertEqual(session.track.samples.count, 1)
+        #if DEBUG
+        XCTAssertEqual(session.dumpEntries.count, 1)
+        #endif
+        XCTAssertFalse(session.isSignalWeak)
+    }
+
+    func test_재개하면_닫힌_일시정지구간이_기록되고_경계_거리는_가산되지_않는다() async {
+        await session.start()
+        let base = Date()
+        stream.yield(sample(at: base))
+        stream.yield(sample(at: base.addingTimeInterval(10), latOffsetMeters: 30))
+        await waitUntil { session.track.samples.count == 2 }
+        let distanceBeforePause = session.track.totalDistanceMeters
+
+        let pauseStart = base.addingTimeInterval(20)
+        session.pause(now: pauseStart)
+        session.resume(now: pauseStart.addingTimeInterval(60))
+
+        XCTAssertEqual(session.state, .tracking)
+        XCTAssertEqual(session.completedPauses.count, 1)
+        XCTAssertEqual(session.completedPauses[0].duration, 60, accuracy: 0.001)
+
+        // 일시정지 동안 200m 떨어진 곳에서 재개 — 그 구간 거리는 미가산
+        stream.yield(sample(at: pauseStart.addingTimeInterval(61), latOffsetMeters: 230))
+        await waitUntil { session.track.samples.count == 3 }
+        XCTAssertEqual(session.track.totalDistanceMeters, distanceBeforePause, accuracy: 1.0)
+    }
+
+    func test_활동시간은_일시정지_시간을_제외한다() async {
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+        guard let startedAt = session.startedAt else { return XCTFail("startedAt 없음") }
+
+        let pauseStart = startedAt.addingTimeInterval(100)
+        session.pause(now: pauseStart)
+        session.resume(now: pauseStart.addingTimeInterval(40))
+
+        let now = startedAt.addingTimeInterval(200)
+        XCTAssertEqual(session.totalPausedSeconds(now: now), 40, accuracy: 0.001)
+        XCTAssertEqual(session.activeElapsedSeconds(now: now) ?? -1, 160, accuracy: 0.001)
+        XCTAssertEqual(
+            session.displayTimerStart?.timeIntervalSince(startedAt) ?? -1, 40, accuracy: 0.001
+        )
+    }
+
+    func test_일시정지중_활동시간은_고정된다() async {
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+        guard let startedAt = session.startedAt else { return XCTFail("startedAt 없음") }
+
+        session.pause(now: startedAt.addingTimeInterval(100))
+        let atT150 = session.activeElapsedSeconds(now: startedAt.addingTimeInterval(150))
+        let atT300 = session.activeElapsedSeconds(now: startedAt.addingTimeInterval(300))
+        XCTAssertEqual(atT150 ?? -1, 100, accuracy: 0.001)
+        XCTAssertEqual(atT300 ?? -1, 100, accuracy: 0.001)
+    }
+
+    func test_일시정지중_종료하면_열린_구간이_닫히고_요약으로_간다() async {
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+        session.pause()
+        session.finish()
+        XCTAssertEqual(session.state, .summary)
+        XCTAssertEqual(session.completedPauses.count, 1)
+        XCTAssertTrue(stream.stopped)
+    }
+
+    func test_요약을_닫으면_일시정지_기록도_초기화된다() async {
+        await session.start()
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+        session.pause()
+        session.finish()
+        session.dismissSummary()
+        XCTAssertTrue(session.completedPauses.isEmpty)
+        XCTAssertEqual(session.totalPausedSeconds(), 0, accuracy: 0.001)
+    }
 }
 
 @MainActor

@@ -64,7 +64,8 @@ struct RunPage: View {
             startButton
         case .acquiring:
             acquiringPanel
-        case .tracking:
+        case .tracking, .paused:
+            // paused는 Task 2가 도입한 컴파일 shim — 일시정지/재개 버튼·전용 UI는 Task 5가 담당한다.
             RunStatsPanel(viewModel: viewModel)
         case .summary:
             RunSummaryPanel(viewModel: viewModel)
