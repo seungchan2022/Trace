@@ -52,4 +52,12 @@ struct SavedRunSample: Equatable, Sendable {
 struct SavedRun: Equatable, Sendable {
     let summary: SavedRunSummary
     let samples: [SavedRunSample]
+    /// 일시정지 구간(시각 쌍) — 샘플 간격에서 파생 불가(GPS 끊김과 구분 안 됨)라 명시 저장(MVP14 §4)
+    let pauses: [RunPauseInterval]
+
+    init(summary: SavedRunSummary, samples: [SavedRunSample], pauses: [RunPauseInterval] = []) {
+        self.summary = summary
+        self.samples = samples
+        self.pauses = pauses
+    }
 }

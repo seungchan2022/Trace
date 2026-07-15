@@ -52,7 +52,8 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
         guard let context else { throw RepositoryError.storeUnavailable }
         let dto = RunPersistenceDTO.Run(
             version: RunPersistenceDTO.currentVersion,
-            samples: run.samples.map(RunPersistenceDTO.Sample.init)
+            samples: run.samples.map(RunPersistenceDTO.Sample.init),
+            pauses: run.pauses.map(RunPersistenceDTO.Pause.init)
         )
         let payload = try JSONEncoder().encode(dto)
         context.insert(RunRecordModel(
@@ -90,7 +91,7 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
         )
         guard let record = try? context.fetch(descriptor).first else { return nil }
         // 해독 실패(손상·미래 버전)는 nil — 목록 요약은 컬럼 기반이라 계속 유효(스펙 §6 우아한 강등)
-        guard let samples = Self.decodeRunSamples(record.payload) else { return nil }
+        guard let payload = Self.decodeRunPayload(record.payload) else { return nil }
         return SavedRun(
             summary: SavedRunSummary(
                 id: record.id, startedAt: record.startedAt,
@@ -98,7 +99,8 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
                 duration: record.durationSeconds,
                 elevationGainMeters: record.elevationGainMeters
             ),
-            samples: samples
+            samples: payload.samples,
+            pauses: payload.pauses
         )
     }
 
@@ -114,9 +116,11 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
 
     // MARK: - Decode (테스트 가능한 손상 처리 경로)
 
-    static func decodeRunSamples(_ data: Data) -> [SavedRunSample]? {
+    static func decodeRunPayload(
+        _ data: Data
+    ) -> (samples: [SavedRunSample], pauses: [RunPauseInterval])? {
         guard let dto = try? JSONDecoder().decode(RunPersistenceDTO.Run.self, from: data),
               dto.version <= RunPersistenceDTO.currentVersion else { return nil }
-        return dto.samples.map(\.domain)
+        return (dto.samples.map(\.domain), (dto.pauses ?? []).map(\.domain))
     }
 }

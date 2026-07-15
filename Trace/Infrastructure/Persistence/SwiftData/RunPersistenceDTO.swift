@@ -4,7 +4,8 @@ import Foundation
 // 기존 blob을 해독 불가로 만든다. blob에는 포맷 버전을 둔다 (코스 DTO와 동일 원칙, 스펙 §2).
 // 미래 심박·케이던스는 Run에 스트림 배열 하나를 옆에 추가 + version 증가로 끝난다(additive).
 enum RunPersistenceDTO: Sendable {
-    static let currentVersion = 1
+    // v2: pauses 추가(additive). v1 blob은 pauses 부재 → 빈 배열로 해독(하위호환).
+    static let currentVersion = 2
 
     struct Sample: Codable {
         let t: Date
@@ -14,9 +15,15 @@ enum RunPersistenceDTO: Sendable {
         let spd: Double
     }
 
+    struct Pause: Codable {
+        let s: Date
+        let e: Date
+    }
+
     struct Run: Codable {
         let version: Int
         let samples: [Sample]
+        let pauses: [Pause]?
     }
 }
 
@@ -35,5 +42,15 @@ extension RunPersistenceDTO.Sample {
             timestamp: t, latitude: lat, longitude: lon,
             altitudeMeters: alt, speedMetersPerSecond: spd
         )
+    }
+}
+
+extension RunPersistenceDTO.Pause {
+    init(_ interval: RunPauseInterval) {
+        self.init(s: interval.start, e: interval.end)
+    }
+
+    var domain: RunPauseInterval {
+        RunPauseInterval(start: s, end: e)
     }
 }
