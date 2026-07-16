@@ -4,6 +4,10 @@ import SwiftUI
 struct RunStatsPanel: View {
     let viewModel: RunPageViewModel
     @State private var isPressingEnd = false
+    #if DEBUG
+    // 사이클 2 오디오 스파이크 전용 — 배선(Task 6)에서 제거
+    @State private var spikeAnnouncer = SpeechVoiceAnnouncer()
+    #endif
 
     var body: some View {
         VStack(spacing: 14) {
@@ -46,6 +50,16 @@ struct RunStatsPanel: View {
                     .font(DesignToken.Typography.chip)
                     .foregroundStyle(DesignToken.Color.ink2)
             }
+            #if DEBUG
+            Button("10초 후 발화 (스파이크)") {
+                let announcer = spikeAnnouncer
+                Task {
+                    try? await Task.sleep(nanoseconds: 10_000_000_000)
+                    announcer.announce("백그라운드 오디오 테스트. 지금 음악 볼륨이 줄었다가 다시 돌아오면 성공입니다.")
+                }
+            }
+            .font(DesignToken.Typography.chip)
+            #endif
             HStack(spacing: 12) {
                 pauseResumeButton
                 endButton
