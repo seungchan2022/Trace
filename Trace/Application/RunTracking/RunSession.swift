@@ -76,6 +76,13 @@ final class RunSession {
         return startedAt.addingTimeInterval(totalPausedSeconds())
     }
 
+    /// 종료 시각 기준으로 고정된 최종 활동 시간 — summary 상태에서만 non-nil.
+    /// activeElapsedSeconds()는 now 기준이라 종료 후에도 계속 자란다 — 종료 발화·요약용은 이 값.
+    var summaryActiveElapsedSeconds: TimeInterval? {
+        guard let startedAt, let endedAt else { return nil }
+        return endedAt.timeIntervalSince(startedAt) - totalPausedSeconds(now: endedAt)
+    }
+
     private let locationStream: RunLocationStreamProtocol
     private let recordRepository: RunRecordRepositoryProtocol
     private var streamTask: Task<Void, Never>?
