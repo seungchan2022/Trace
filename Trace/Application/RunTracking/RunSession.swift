@@ -111,6 +111,10 @@ final class RunSession {
             for await sample in stream {
                 self?.ingest(sample, sessionStart: sessionStart)
             }
+            // stopStream()이 취소한 뒤 finish()를 호출한 경우(의도적 종료·재시작)는 이 태스크가
+            // 뒤늦게 깨어나 streamEnded()를 부르면 그 사이 새로 시작된 세션을 오염시킨다 — 취소된
+            // 경우는 건너뛴다. 취소 없이 스트림이 스스로 끝난 경우(권한 회수 등)만 실제로 처리한다.
+            guard Task.isCancelled == false else { return }
             self?.streamEnded()
         }
     }
