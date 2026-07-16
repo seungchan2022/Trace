@@ -8,11 +8,13 @@ struct DependencyContainer {
     let runRecordRepository: RunRecordRepositoryProtocol
     let runSession: RunSession
     let runActivityController: RunActivityController
+    let runAudioCoach: RunAudioCoach
 
     @MainActor
     static func live() -> DependencyContainer {
         let runRecordRepository = SwiftDataRunRecordRepository()
         let runSession = RunSession(locationStream: RunLocationTracker(), recordRepository: runRecordRepository)
+        let runAudioCoach = RunAudioCoach(session: runSession, announcer: SpeechVoiceAnnouncer())
         return DependencyContainer(
             coursePlanningService: MapKitCoursePlanningService(),
             locationService: CoreLocationService(),
@@ -20,7 +22,8 @@ struct DependencyContainer {
             courseRepository: SwiftDataCourseRepository(),
             runRecordRepository: runRecordRepository,
             runSession: runSession,
-            runActivityController: RunActivityController(session: runSession)
+            runActivityController: RunActivityController(session: runSession),
+            runAudioCoach: runAudioCoach
         )
     }
 
@@ -29,6 +32,7 @@ struct DependencyContainer {
         let uiTestingDefaults = UserDefaults(suiteName: "uiTesting") ?? .standard
         let runRecordRepository = SwiftDataRunRecordRepository(inMemory: true)
         let runSession = RunSession(locationStream: UITestingRunLocationStream(), recordRepository: runRecordRepository)
+        let runAudioCoach = RunAudioCoach(session: runSession, announcer: NoopVoiceAnnouncer())
         return DependencyContainer(
             coursePlanningService: UITestingCoursePlanningService(),
             locationService: UITestingLocationService(),
@@ -37,7 +41,8 @@ struct DependencyContainer {
             courseRepository: SwiftDataCourseRepository(inMemory: true),
             runRecordRepository: runRecordRepository,
             runSession: runSession,
-            runActivityController: RunActivityController(session: runSession)
+            runActivityController: RunActivityController(session: runSession),
+            runAudioCoach: runAudioCoach
         )
     }
 }
@@ -71,4 +76,9 @@ private final class UITestingLocationService: LocationServiceProtocol {
     func currentLocation() async throws -> CourseCoordinate {
         CourseCoordinate(latitude: 37.5666, longitude: 126.9784) // 서울시청 고정
     }
+}
+
+@MainActor
+private final class NoopVoiceAnnouncer: VoiceAnnouncerProtocol {
+    func announce(_ text: String) {}
 }

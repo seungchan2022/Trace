@@ -18,6 +18,7 @@ struct TraceApp: App {
             container = .live()
         }
         container.runActivityController.startObserving()
+        container.runAudioCoach.startObserving()
     }
 
     var body: some Scene {
