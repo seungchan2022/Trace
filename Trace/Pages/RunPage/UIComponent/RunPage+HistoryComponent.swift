@@ -93,8 +93,15 @@ struct RunRecordDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             detailMap
-            statsGrid
-                .padding(DesignToken.Size.sheetPadding)
+            ScrollView {
+                statsGrid
+                    .padding(DesignToken.Size.sheetPadding)
+                if let loadedRun {
+                    RunSplitsSection(result: RunSplitCalculator.splits(
+                        samples: loadedRun.samples, pauses: loadedRun.pauses
+                    ))
+                }
+            }
         }
         .navigationTitle(summary.startedAt.formatted(date: .abbreviated, time: .shortened))
         .navigationBarTitleDisplayMode(.inline)
@@ -165,5 +172,52 @@ struct RunRecordDetailView: View {
                 longitudeDelta: max((maxLon - minLon) * 1.4, 0.005)
             )
         ))
+    }
+}
+
+/// km 스플릿 표 — 완성 구간은 1km 페이스(=구간 시간), 마지막 미완성 구간은 실거리 환산 페이스(스펙 §3.2)
+private struct RunSplitsSection: View {
+    let result: RunSplitResult
+
+    var body: some View {
+        if result.completed.isEmpty == false || result.partial != nil {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("킬로미터별 페이스")
+                    .font(DesignToken.Typography.sectionLabel)
+                    .foregroundStyle(DesignToken.Color.ink2)
+                ForEach(result.completed, id: \.index) { split in
+                    row(
+                        label: "\(split.index) km",
+                        pace: RunPaceFormatter.string(secondsPerKm: split.paceSecondsPerKm)
+                    )
+                }
+                if let partial = result.partial {
+                    row(
+                        label: String(format: "%.2f km", partial.distanceMeters / 1000),
+                        pace: RunPaceFormatter.string(secondsPerKm: partialPace(partial))
+                    )
+                }
+            }
+            .padding(.horizontal, DesignToken.Size.sheetPadding)
+            .padding(.bottom, DesignToken.Size.sheetPadding)
+        }
+    }
+
+    private func partialPace(_ partial: RunSplitPartial) -> Double? {
+        guard partial.distanceMeters > 0 else { return nil }
+        return partial.durationSeconds / (partial.distanceMeters / 1000)
+    }
+
+    private func row(label: String, pace: String) -> some View {
+        HStack {
+            Text(label)
+                .font(DesignToken.Typography.segmentRowTitle)
+                .foregroundStyle(DesignToken.Color.ink)
+            Spacer()
+            Text(pace)
+                .font(DesignToken.Typography.segmentRowDistance)
+                .monospacedDigit()
+                .foregroundStyle(DesignToken.Color.ink)
+        }
     }
 }
