@@ -21,7 +21,7 @@
 > 스펙: `docs/superpowers/specs/2026-07-15-run-experience-design.md`
 
 - [x] **run-pause-resume** — 수동 일시정지/재개: `RunSession` 상태 확장, 멈춘 시간 제외 계산, 트래킹 UI 버튼, 일시정지 구간 저장(additive), Live Activity 일시정지 표시. Task 7개 구현 완료(각 태스크 리뷰 통과 + 최종 브랜치 리뷰(opus)에서 요약 화면 평균 페이스 버그 발견·수정), 실기기 QA 통과(2026-07-16, 시나리오 1~6 전부 통과). 이월 확인(강제종료 잠금화면 정리·배터리 체감)은 `docs/backlog.md`로 재이월. 플랜: `docs/superpowers/plans/2026-07-15-run-pause-resume.md`
-- [ ] **run-splits-audio** — km 스플릿 엔진(Domain 순수 로직, 라이브·소급 공용) + 기록 상세 스플릿 표 + 음성 안내(TTS·덕킹·백그라운드 오디오, km 경계/상태 전환 발화)
+- [~] **run-splits-audio** — km 스플릿 엔진(Domain 순수 로직, 라이브·소급 공용) + 기록 상세 스플릿 표 + 음성 안내(TTS·덕킹·백그라운드 오디오, km 경계/상태 전환 발화). 플랜 작성 완료(2026-07-16, 스펙 이연 결정 종결: 오디오 세션 활성화 실패 시 발화 스킵), 구현은 다음 세션에서 착수. 플랜: `docs/superpowers/plans/2026-07-16-run-splits-audio.md`
 - [ ] **run-goal** — 시작 모드 선택(자유/거리/시간) + 트래킹 중 진행률 + 목표 발화(절반/달성), 목표 정보 기록 저장
 
 ### MVP13 — 자유 러닝 트래킹 + 기록   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp13/`](history/mvp13/))
