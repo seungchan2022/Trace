@@ -130,7 +130,7 @@ struct RunSummaryPanel: View {
                 }
                 GridRow {
                     summaryItem(
-                        RunPaceFormatter.string(secondsPerKm: viewModel.session.track.averagePaceSecondsPerKm),
+                        RunPaceFormatter.string(secondsPerKm: viewModel.summaryAveragePaceSecondsPerKm),
                         "평균 페이스"
                     )
                     summaryItem(String(format: "%.0f m", viewModel.session.track.elevationGainMeters), "고도 상승")

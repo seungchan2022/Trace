@@ -17,6 +17,16 @@ final class RunPageViewModel {
     private(set) var summaryElapsedSeconds: TimeInterval?
     private var polylineThrottle = PolylineThrottle()
 
+    /// 요약 화면에 보여줄 평균 페이스 — 활동 시간(`summaryElapsedSeconds`) 기준.
+    /// `RunTrack.averagePaceSecondsPerKm`(GPS 샘플 구간, 일시정지 포함)을 쓰면 같은 화면의 시간 필드·
+    /// 저장된 기록의 페이스(`SavedRunSummary.averagePaceSecondsPerKm`)와 값이 어긋난다(MVP14 §3.1, 최종 브랜치 리뷰).
+    var summaryAveragePaceSecondsPerKm: Double? {
+        guard let elapsed = summaryElapsedSeconds, elapsed > 0 else { return nil }
+        let distanceMeters = session.track.totalDistanceMeters
+        guard distanceMeters > 0 else { return nil }
+        return elapsed / (distanceMeters / 1000)
+    }
+
     init(session: RunSession) {
         self.session = session
     }

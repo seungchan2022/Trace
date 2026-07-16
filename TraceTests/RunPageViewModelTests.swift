@@ -9,10 +9,10 @@ final class RunPageViewModelTests: XCTestCase {
     private lazy var session = RunSession(locationStream: stream, recordRepository: recordRepository)
     private lazy var viewModel = RunPageViewModel(session: session)
 
-    private func sample(at date: Date) -> RunSample {
+    private func sample(at date: Date, latOffsetMeters: Double = 0) -> RunSample {
         RunSample(
             timestamp: date,
-            latitude: 37.5666,
+            latitude: 37.5666 + latOffsetMeters / 111_320.0,
             longitude: 126.9784,
             altitudeMeters: 10,
             speedMetersPerSecond: 3,
@@ -91,5 +91,46 @@ final class RunPageViewModelTests: XCTestCase {
 
         let wallElapsed = Date().timeIntervalSince(startedAt)
         XCTAssertEqual((viewModel.summaryElapsedSeconds ?? -1) + 20, wallElapsed, accuracy: 1.0)
+    }
+
+    /// 요약 화면 평균 페이스는 활동 시간(일시정지 제외) 기준이어야 한다(최종 브랜치 리뷰 Task 7).
+    /// `RunTrack.averagePaceSecondsPerKm`(첫·마지막 샘플 타임스탬프 간격, 일시정지 포함)을 쓰면
+    /// 같은 화면의 "시간" 필드·저장된 기록의 페이스와 값이 어긋난다 — 일시정지로 부풀려진 만큼 느리게 보인다.
+    func test_요약_평균_페이스는_일시정지를_제외한_활동시간_기준이다() async throws {
+        await viewModel.startTapped()
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+
+        try await Task.sleep(nanoseconds: 50_000_000) // 일시정지 전 실제로 뛴 시간
+        session.pause(now: Date())
+        try await Task.sleep(nanoseconds: 80_000_000) // 일시정지 구간 — 활동 시간에서 제외돼야 한다
+        session.resume(now: Date())
+
+        // 재개 직후 첫 샘플은 순간이동 방지로 거리 가산이 억제된다(RunTrack.markGap) — 위치만 갱신.
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.track.samples.count == 2 }
+
+        try await Task.sleep(nanoseconds: 30_000_000)
+        // 1km 지점 샘플 — 첫 샘플과의 타임스탬프 간격(RunTrack.duration)에는 방금 그
+        // 일시정지 구간이 그대로 섞여 들어간다(샘플이 드롭될 뿐 0으로 채워지지 않으므로).
+        stream.yield(sample(at: Date(), latOffsetMeters: 1000))
+        await waitUntil { session.track.samples.count == 3 }
+
+        try await Task.sleep(nanoseconds: 20_000_000)
+        viewModel.endRun()
+
+        let distanceKm = session.track.totalDistanceMeters / 1000
+        XCTAssertGreaterThan(distanceKm, 0)
+        let elapsed = try XCTUnwrap(viewModel.summaryElapsedSeconds)
+        XCTAssertGreaterThan(elapsed, 0)
+
+        let expectedPace = elapsed / distanceKm
+        let actualPace = try XCTUnwrap(viewModel.summaryAveragePaceSecondsPerKm)
+        XCTAssertEqual(actualPace, expectedPace, accuracy: 0.0001)
+
+        // 버그가 있었다면 이 값(RunTrack.duration 기준, 일시정지 포함)이 쓰였을 것이고
+        // 활동 시간 기준보다 항상 더 느린(큰) 페이스로 나타난다.
+        let buggyPace = try XCTUnwrap(session.track.averagePaceSecondsPerKm)
+        XCTAssertLessThan(actualPace, buggyPace)
     }
 }
