@@ -85,8 +85,19 @@ struct RunStatsPanel: View {
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .background(DesignToken.Color.danger, in: Capsule())
+            .overlay {
+                // 누르는 동안 1초에 걸쳐 테두리를 따라 차오르는 진행 링(스펙 §1.2)
+                Capsule()
+                    .trim(from: 0, to: isPressingEnd ? 1 : 0)
+                    .stroke(.white, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                    .animation(
+                        isPressingEnd ? .linear(duration: 1.0) : .easeOut(duration: 0.2),
+                        value: isPressingEnd
+                    )
+            }
             .scaleEffect(isPressingEnd ? 0.95 : 1)
             .onLongPressGesture(minimumDuration: 1.0) {
+                UINotificationFeedbackGenerator().notificationOccurred(.success) // 완료 햅틱
                 viewModel.endRun()
             } onPressingChanged: { pressing in
                 withAnimation(.easeInOut(duration: 0.15)) { isPressingEnd = pressing }
