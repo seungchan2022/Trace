@@ -7,9 +7,14 @@
 /// 세션 활성화 실패(통화 중 등) 시 그 발화는 건너뛴다(재시도 없음 — 플랜 결정, project-decisions.md).
 @MainActor
 final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
+    /// 실기기 QA에서 튜닝해 확정한다(스펙 §1.3) — 시스템 기본 0.5가 빠르다는 실사용 피드백으로 하향
+    private static let speechRate: Float = 0.45
+
     private let synthesizer = AVSpeechSynthesizer()
     /// 큐에 남아 있는 발화 수 — 0이 되는 시점(큐 소진)에만 세션을 비활성화한다
     private var pendingCount = 0
+    /// holdAudioSession으로 세션을 보유 중인지 — 보유 중엔 발화별 활성화/비활성화를 건너뛴다
+    private var isHeld = false
 
     override init() {
         super.init()
@@ -17,7 +22,7 @@ final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
     }
 
     func announce(_ text: String) {
-        if pendingCount == 0 {
+        if pendingCount == 0 && isHeld == false {
             do {
                 let audioSession = AVAudioSession.sharedInstance()
                 try audioSession.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
@@ -29,12 +34,36 @@ final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
         pendingCount += 1
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
+        utterance.rate = Self.speechRate
         synthesizer.speak(utterance)
+    }
+
+    func holdAudioSession() {
+        guard isHeld == false else { return }
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+            try audioSession.setActive(true)
+            isHeld = true
+        } catch {
+            // 활성화 실패 — 보유 없이 진행하면 announce가 발화별 활성화로 폴백한다
+        }
+    }
+
+    func releaseAudioSession() {
+        guard isHeld else { return }
+        isHeld = false
+        guard pendingCount == 0 else { return } // 남은 발화의 utteranceEnded가 비활성화를 맡는다
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    func stopSpeaking() {
+        synthesizer.stopSpeaking(at: .immediate) // didCancel 델리게이트가 pendingCount를 정리한다
     }
 
     private func utteranceEnded() {
         pendingCount = max(0, pendingCount - 1)
-        guard pendingCount == 0 else { return }
+        guard pendingCount == 0, isHeld == false else { return }
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 }
