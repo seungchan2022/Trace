@@ -50,4 +50,15 @@ final class RunAnnouncementBuilderTests: XCTestCase {
         XCTAssertNil(RunAnnouncementBuilder.spokenPace(0))
         XCTAssertNil(RunAnnouncementBuilder.spokenPace(3600)) // 60분/km 초과는 표시 규칙과 동일하게 무효
     }
+
+    func test_목표_절반_문구() {
+        XCTAssertEqual(RunAnnouncementBuilder.goalHalf, "절반 왔습니다")
+    }
+
+    func test_목표_달성_문구() {
+        XCTAssertEqual(
+            RunAnnouncementBuilder.goalAchieved(distanceMeters: 5000, totalSeconds: 1750),
+            "목표 달성! 5킬로미터, 29분 10초"
+        )
+    }
 }

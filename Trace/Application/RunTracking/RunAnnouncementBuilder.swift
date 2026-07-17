@@ -7,6 +7,13 @@ enum RunAnnouncementBuilder {
     static let pause = "일시정지"
     static let resume = "재개합니다"
 
+    static let goalHalf = "절반 왔습니다"
+
+    /// "목표 달성! 5킬로미터, 29분 10초" — 모드 무관하게 실제 총거리·활동시간을 읽는다(스펙 §3.4)
+    static func goalAchieved(distanceMeters: Double, totalSeconds: TimeInterval) -> String {
+        "목표 달성! \(spokenDistance(distanceMeters)), \(spokenDuration(totalSeconds))"
+    }
+
     /// "3킬로미터. 총 시간 18분 30초. 평균 페이스 6분 10초"
     static func kilometer(km: Int, totalSeconds: TimeInterval, averagePaceSecondsPerKm: Double?) -> String {
         var text = "\(km)킬로미터. 총 시간 \(spokenDuration(totalSeconds))"
