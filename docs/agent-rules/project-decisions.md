@@ -69,6 +69,8 @@ This file records defaults until the user chooses otherwise.
 
 - **오디오 세션 활성화 실패 시 발화 스킵** (결정 2026-07-16, run-splits-audio 플랜 — 스펙 §5 이연 결정의 종결) — 백그라운드에서 `.playback` 활성화가 실패(통화 중 등)하면 그 발화는 버린다(재시도 없음). 재시도는 시점이 지난 값을 읽게 되고(다음 km 경계 발화가 곧 온다), 통화 중 TTS 개입도 부적절하다는 판단. 플랜: `docs/superpowers/plans/2026-07-16-run-splits-audio.md`
 
+- **MVP15 러닝 경험 보강 — 킥오프 결정 묶음** (결정 2026-07-17, 브레인스토밍 + 스펙 리뷰) — ① 코스 연동보다 러닝 기둥 보강 우선(두 기둥을 잇기 전에 러닝 기능이 단단해야 연동 QA에서 원인 분리 가능). ② 포인트(달리면서 구간 거리 찍기)는 기록 저장까지(B안) — 타임스탬프+좌표+누적거리 캐시의 additive 스트림. 코스 변환(C안)은 코스 연동 MVP로 이연(GPS 폴리라인 코스와 라우팅 코스의 공존 설계 필요). ③ 시작 카운트다운 3-2-1: 숫자 발화 포함(덕킹은 한 번만), 권한·정확도 프롬프트는 카운트다운 전 완료, 종료 시 GPS 미확보면 세션 시작 후 "신호 확보 중" 전이, 백그라운드 진입에도 계속 진행("시작 누르고 바로 잠금"이 표준 흐름). ④ 목표 거리·시간 직접 입력(km/분): 단위 상시 표시 + 직전값 프리필 + 인라인 에러. ⑤ 잠금화면 포인트 버튼 도입(LiveActivityIntent, 무세션 no-op 가드) — 잠금화면 일시정지 버튼은 계속 미도입(빈도·흐름 잣대에서 반대 결론). ⑥ 오탭 복구는 기록 상세 포인트 개별 삭제로(연타 임계값 없음 유지). ⑦ 러닝 탭 UI 구조 개편(대기 화면 지도 제거 검토 등)은 MVP16 후보로 백로그 씨앗만. 상세: `docs/superpowers/specs/2026-07-17-run-detail-waypoints-design.md`
+
 ## Decisions the User May Need to Make Later
 
 - Whether data is local-only or synced
