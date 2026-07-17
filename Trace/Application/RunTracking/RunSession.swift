@@ -52,6 +52,11 @@ final class RunSession {
     private(set) var completedPauses: [RunPauseInterval] = []
     /// 열린 일시정지의 시작 시각 — paused 상태에서만 non-nil
     private var pausedAt: Date?
+    /// 이번 러닝의 목표 — start(goal:)에서 정해지고 요약을 닫을 때 리셋된다(스펙 §3.4)
+    private(set) var goal: RunGoal = .open
+    /// 절반/달성 플래그 — 한 번 true면 러닝 끝까지 유지(각 1회 발화는 소비자가 전이로 감지)
+    private(set) var goalHalfReached = false
+    private(set) var goalAchieved = false
 
     var isActive: Bool { state == .acquiring || state == .tracking || state == .paused }
     var isPaused: Bool { state == .paused }
@@ -92,7 +97,7 @@ final class RunSession {
         self.recordRepository = recordRepository
     }
 
-    func start() async {
+    func start(goal: RunGoal = .open) async {
         guard state == .idle else { return }
         lastStartFailure = nil
 
@@ -111,6 +116,9 @@ final class RunSession {
         #if DEBUG
         dumpEntries = []
         #endif
+        self.goal = goal
+        goalHalfReached = false
+        goalAchieved = false
         state = .acquiring
 
         let stream = locationStream.startUpdates()
@@ -165,6 +173,9 @@ final class RunSession {
         startedAt = nil
         completedPauses = []
         pausedAt = nil
+        goal = .open
+        goalHalfReached = false
+        goalAchieved = false
         #if DEBUG
         dumpEntries = []
         #endif
@@ -180,6 +191,9 @@ final class RunSession {
         pendingRun = nil
         completedPauses = []
         pausedAt = nil
+        goal = .open
+        goalHalfReached = false
+        goalAchieved = false
         #if DEBUG
         dumpEntries = []
         #endif
@@ -205,6 +219,18 @@ final class RunSession {
         track.append(sample)
         isSignalWeak = false
         if state == .acquiring { state = .tracking }
+        updateGoalProgress(now: sample.timestamp)
+    }
+
+    /// 샘플 도착 시점 판정 — 시간 목표도 샘플 타임스탬프 기준(별도 타이머 없음, 지연 ≤ 샘플 간격)
+    private func updateGoalProgress(now: Date) {
+        guard goal != .open, goalAchieved == false else { return }
+        guard let fraction = goal.progressFraction(
+            distanceMeters: track.totalDistanceMeters,
+            activeSeconds: activeElapsedSeconds(now: now) ?? 0
+        ) else { return }
+        if fraction >= 1 { goalAchieved = true }
+        if fraction >= 0.5 { goalHalfReached = true }
     }
 
     private func updateWeakSignal(now: Date) {
