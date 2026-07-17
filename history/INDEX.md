@@ -23,6 +23,29 @@
 
 ---
 
+## MVP14 — 기본 러닝 경험 완성 (2026-07-15 ~ 07-17)
+
+> 러닝 기둥을 "진짜 러닝앱" 수준으로 끌어올림. 마일스톤 3개: 사이클 1(run-pause-resume,
+> 표준)은 Task 7개 + 최종 브랜치 리뷰(opus)에서 요약 평균 페이스 버그 발견·수정, 사이클
+> 2(run-splits-audio, 표준)는 Task 7개 + 최종 브랜치 리뷰(opus) + 실기기 QA 중 발견된
+> 스플릿 표 시간 기준 불일치 버그 수정, 사이클 3(run-goal, 경량 — 열린 결정 없음)은 Task
+> 7개를 태스크별 리뷰만으로 진행(최종 브랜치 리뷰 생략). 세 사이클 모두 실기기 QA 통과 —
+> 사이클 3부터는 GPX 시뮬레이션(Xcode Simulate Location)으로 실제로 뛰지 않고 QA를
+> 진행하는 방식을 확립했다(`docs/solutions/workflow-issues/gpx-simulated-location-real-device-qa.md`).
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [run-experience 설계](mvp14/2026-07-15-run-experience-design.md) | 일시정지/재개, km 스플릿+음성 안내, 목표 설정(자유/거리/시간) 통합 설계 |
+| 플랜 | [run-pause-resume 플랜](mvp14/2026-07-15-run-pause-resume.md) | Task 1~7(소급 완료), 활동 시간 재정의 + 일시정지 구간 저장(DTO v2) |
+| QA | [run-pause-resume 실기기 체크리스트](mvp14/2026-07-16-run-pause-resume-device-checklist.md) | 일시정지/재개 UI·타이머·Live Activity 실기기 검증 |
+| 플랜 | [run-splits-audio 플랜](mvp14/2026-07-16-run-splits-audio.md) | Task 1~7(소급 완료), km 스플릿 엔진 + TTS 덕킹 발화 |
+| QA | [run-splits-audio 실기기 체크리스트](mvp14/2026-07-17-run-splits-audio-device-checklist.md) | 음성 안내·덕킹·스플릿 표 실기기 검증 |
+| 플랜 | [run-goal 플랜](mvp14/2026-07-17-run-goal.md) | Task 1~7(소급 완료), 목표 값 타입 + 절반/달성 발화 + payload DTO v3 |
+| QA | [run-goal 실기기 체크리스트](mvp14/2026-07-17-run-goal-device-checklist.md) | GPX 시뮬레이션으로 9개 시나리오 전부 검증(첫 GPX 기반 QA 사이클) |
+| 회고 | [MVP14 완료 회고](mvp14/260717_mvp14_completion_retro.md) | 활동 시간 개념 전파 버그 2연속, GPX QA 전환, 소급 체크박스 정리 |
+
+---
+
 ## MVP13 — 자유 러닝 트래킹 + 기록 (2026-07-13 ~ 07-15)
 
 > Trace의 두 번째 독립 기둥 "러닝(기록)"을 코스 탐색과 분리해 세움. 마일스톤 3개: 사이클

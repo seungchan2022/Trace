@@ -1,5 +1,11 @@
 # run-splits-audio (MVP14 사이클 2) Implementation Plan
 
+> **완료(소급 확인):** Task 1~7 전부 구현·리뷰·검증 완료(커밋 `e5584d4`..`31dfc20`, 최종 브랜치
+> 리뷰(opus) Ready to merge: Yes), 실기기 QA 진행 중 발견된 평균 페이스 시간 기준 불일치
+> 버그 수정(`f306791`) 후 QA 통과(2026-07-17, 핵심 시나리오 전부 통과, 커밋 `e250c89`).
+> 아래 체크박스는 실행 당시 갱신되지 않았으나 `docs/roadmap.md`의 완료 기록과 git 히스토리로
+> 완료가 확인되어 소급 복원하지 않는다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** km 스플릿 엔진(라이브·소급 공용) + 기록 상세 스플릿 표 + 러닝 음성 안내(TTS, 덕킹, 백그라운드 오디오, km 경계/상태 전환 발화)를 구현한다.

@@ -1,5 +1,10 @@
 # run-pause-resume (MVP14 사이클 1) Implementation Plan
 
+> **완료(소급 확인):** Task 1~7 전부 구현·리뷰·검증 완료(커밋 `6c8ad94`..`2e418e5`, 최종 브랜치
+> 리뷰(opus) Ready to merge: Yes), 실기기 QA 통과(2026-07-16, 시나리오 1~6 전부 통과, 커밋
+> `8c12c6d`). 아래 체크박스는 실행 당시 갱신되지 않았으나 `docs/roadmap.md`의 완료 기록과
+> git 히스토리로 완료가 확인되어 소급 복원하지 않는다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 러닝 수동 일시정지/재개 — 멈춘 시간을 시간·페이스·기록에서 제외하고, 일시정지 구간을 저장하며, 트래킹 UI와 잠금화면(Live Activity)에 일시정지 상태를 표시한다.
