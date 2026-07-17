@@ -360,6 +360,53 @@ final class RunSessionTests: XCTestCase {
 
 // 클래스 본문이 swiftlint type_body_length(300줄) 임계를 넘지 않도록 신규 테스트를 확장으로 분리한다.
 extension RunSessionTests {
+    func test_prepareStart_예열중_샘플은_적산되지_않는다() async {
+        let prepared = await session.prepareStart()
+        XCTAssertTrue(prepared)
+        stream.yield(sample(at: Date()))
+        await drainNoOp() // 예열 샘플은 관측 가능한 상태 변화가 없어야 한다
+        XCTAssertEqual(session.state, .idle)
+        XCTAssertTrue(session.track.samples.isEmpty)
+        XCTAssertNil(session.startedAt)
+    }
+
+    func test_beginTracking_이후_첫_유효샘플로_tracking_전이() async {
+        _ = await session.prepareStart()
+        session.beginTracking()
+        XCTAssertEqual(session.state, .acquiring)
+        stream.yield(sample(at: Date().addingTimeInterval(1)))
+        await waitUntil { self.session.state == .tracking }
+        XCTAssertEqual(session.track.samples.count, 1)
+    }
+
+    func test_beginTracking_전_시각의_샘플은_시작후에도_버린다() async {
+        _ = await session.prepareStart()
+        session.beginTracking(now: Date())
+        stream.yield(sample(at: Date(timeIntervalSinceNow: -5))) // 카운트다운 중 캐시된 옛 샘플
+        await drainNoOp()
+        XCTAssertEqual(session.state, .acquiring) // 전이 없음
+        XCTAssertTrue(session.track.samples.isEmpty)
+    }
+
+    func test_cancelPreparation_스트림정지_idle유지() async {
+        _ = await session.prepareStart()
+        session.cancelPreparation()
+        XCTAssertTrue(stream.stopped)
+        XCTAssertEqual(session.state, .idle)
+        session.beginTracking() // 취소 후에는 no-op이어야 한다
+        XCTAssertEqual(session.state, .idle)
+        XCTAssertNil(session.startedAt)
+    }
+
+    func test_prepareStart_정확도부족이면_false와_실패사유() async {
+        stream.accuracy = .reduced
+        stream.accuracyAfterRequest = .reduced
+        let prepared = await session.prepareStart()
+        XCTAssertFalse(prepared)
+        XCTAssertEqual(session.lastStartFailure, .reducedAccuracy)
+        XCTAssertEqual(session.state, .idle)
+    }
+
     func test_저장되는_기록의_duration은_일시정지를_제외하고_pauses를_포함한다() async {
         await session.start()
         stream.yield(sample(at: Date()))

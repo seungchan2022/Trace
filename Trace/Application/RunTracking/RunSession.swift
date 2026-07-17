@@ -91,14 +91,18 @@ final class RunSession {
     private let locationStream: RunLocationStreamProtocol
     private let recordRepository: RunRecordRepositoryProtocol
     private var streamTask: Task<Void, Never>?
+    /// 예열 단계 여부 — prepareStart~beginTracking 사이(카운트다운 중)에만 true
+    private var isPreparing = false
 
     init(locationStream: RunLocationStreamProtocol, recordRepository: RunRecordRepositoryProtocol) {
         self.locationStream = locationStream
         self.recordRepository = recordRepository
     }
 
-    func start(goal: RunGoal = .open) async {
-        guard state == .idle else { return }
+    /// 카운트다운 전 단계(스펙 §1.1): 정확도 게이트(시스템 프롬프트 포함)와 GPS 예열만 수행한다.
+    /// 상태는 idle 유지·startedAt 미설정 — 스트림 태스크의 startedAt 가드가 예열 샘플을 버린다.
+    func prepareStart(goal: RunGoal = .open) async -> Bool {
+        guard state == .idle, isPreparing == false else { return false }
         lastStartFailure = nil
 
         var accuracy = locationStream.currentAccuracy()
@@ -107,24 +111,24 @@ final class RunSession {
         }
         guard accuracy == .full else {
             lastStartFailure = .reducedAccuracy
-            return
+            return false
         }
 
-        let sessionStart = Date()
-        startedAt = sessionStart
         track = RunTrack()
+        startedAt = nil
         #if DEBUG
         dumpEntries = []
         #endif
         self.goal = goal
         goalHalfReached = false
         goalAchieved = false
-        state = .acquiring
+        isPreparing = true
 
         let stream = locationStream.startUpdates()
         streamTask = Task { [weak self] in
             for await sample in stream {
-                self?.ingest(sample, sessionStart: sessionStart)
+                guard let self, let sessionStart = self.startedAt else { continue } // 예열 샘플 폐기
+                self.ingest(sample, sessionStart: sessionStart)
             }
             // stopStream()이 취소한 뒤 finish()를 호출한 경우(의도적 종료·재시작)는 이 태스크가
             // 뒤늦게 깨어나 streamEnded()를 부르면 그 사이 새로 시작된 세션을 오염시킨다 — 취소된
@@ -132,6 +136,32 @@ final class RunSession {
             guard Task.isCancelled == false else { return }
             self?.streamEnded()
         }
+        return true
+    }
+
+    /// 카운트다운 종료 시점 — 여기부터가 세션 시작(활동 시간·거리 적산 기준, 스펙 §1.1)
+    func beginTracking(now: Date = Date()) {
+        guard isPreparing, state == .idle else { return }
+        isPreparing = false
+        guard lastStartFailure == nil else { stopStream(); return } // 예열 중 스트림 사망(권한 회수)
+        startedAt = now
+        state = .acquiring
+    }
+
+    /// 카운트다운 취소 — 예열 스트림을 내리고 대기 상태로 되돌린다
+    func cancelPreparation() {
+        guard isPreparing else { return }
+        isPreparing = false
+        stopStream()
+        startedAt = nil
+        goal = .open
+        goalHalfReached = false
+        goalAchieved = false
+    }
+
+    func start(goal: RunGoal = .open) async {
+        guard await prepareStart(goal: goal) else { return }
+        beginTracking()
     }
 
     func pause(now: Date = Date()) {
@@ -246,6 +276,12 @@ final class RunSession {
 
     /// 스트림이 밖에서 끊긴 경우(러닝 도중 권한 회수 등) — 수집분을 버리지 않는다(스펙 §6)
     private func streamEnded() {
+        if isPreparing { // 예열 중 스트림 사망(권한 회수 등) — beginTracking이 시작을 거부하게 표시
+            isPreparing = false
+            locationStream.stopUpdates()
+            lastStartFailure = .permissionDenied
+            return
+        }
         guard isActive else { return }
         stopStream()
         if track.samples.isEmpty {
