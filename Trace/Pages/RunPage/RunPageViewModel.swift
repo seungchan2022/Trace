@@ -3,6 +3,23 @@ import MapKit
 import Observation
 import SwiftUI
 
+/// 대기 화면 목표 선택 세그먼트의 3모드 — 조립 결과는 RunGoal(Domain)
+enum RunGoalMode: String, CaseIterable, Identifiable {
+    case open
+    case distance
+    case time
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .open: "자유"
+        case .distance: "거리"
+        case .time: "시간"
+        }
+    }
+}
+
 @MainActor
 @Observable
 final class RunPageViewModel {
@@ -16,6 +33,28 @@ final class RunPageViewModel {
     /// `RunTrack.duration`(GPS 샘플 구간)과는 다른 측정치라 별도로 종료 시점에 캡처해 둔다.
     private(set) var summaryElapsedSeconds: TimeInterval?
     private var polylineThrottle = PolylineThrottle()
+
+    // 목표 선택 상태(대기 화면) — 러닝 시작 시 composedGoal로 조립해 세션에 넘긴다
+    var goalMode: RunGoalMode = .open
+    var goalDistanceKm = 5
+    var goalTimeMinutes = 30
+
+    var composedGoal: RunGoal {
+        switch goalMode {
+        case .open: .open
+        case .distance: .distance(meters: Double(goalDistanceKm) * 1000)
+        case .time: .time(seconds: TimeInterval(goalTimeMinutes * 60))
+        }
+    }
+
+    /// 트래킹 중 목표 진행률(1로 캡 — 달성 후 100% 고정 표시). 자유 러닝은 nil
+    var goalProgressFraction: Double? {
+        guard let fraction = session.goal.progressFraction(
+            distanceMeters: session.track.totalDistanceMeters,
+            activeSeconds: session.activeElapsedSeconds() ?? 0
+        ) else { return nil }
+        return min(1, fraction)
+    }
 
     /// 요약 화면에 보여줄 평균 페이스 — 활동 시간(`summaryElapsedSeconds`) 기준.
     /// `RunTrack.averagePaceSecondsPerKm`(GPS 샘플 구간, 일시정지 포함)을 쓰면 같은 화면의 시간 필드·
@@ -32,7 +71,7 @@ final class RunPageViewModel {
     }
 
     func startTapped() async {
-        await session.start()
+        await session.start(goal: composedGoal)
         switch session.lastStartFailure {
         case .reducedAccuracy: showsAccuracyAlert = true
         case .permissionDenied: showsPermissionAlert = true

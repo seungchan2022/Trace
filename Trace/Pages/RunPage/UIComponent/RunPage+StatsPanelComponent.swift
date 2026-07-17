@@ -46,6 +46,23 @@ struct RunStatsPanel: View {
                     .font(DesignToken.Typography.chip)
                     .foregroundStyle(DesignToken.Color.ink2)
             }
+            if let label = RunGoalFormatter.label(viewModel.session.goal),
+               let fraction = viewModel.goalProgressFraction {
+                VStack(spacing: 4) {
+                    HStack {
+                        Text(label)
+                            .font(DesignToken.Typography.chip)
+                            .foregroundStyle(DesignToken.Color.ink2)
+                        Spacer()
+                        Text("\(Int(fraction * 100))%")
+                            .font(DesignToken.Typography.chip)
+                            .monospacedDigit()
+                            .foregroundStyle(DesignToken.Color.ink2)
+                    }
+                    ProgressView(value: fraction)
+                        .tint(DesignToken.Color.accent)
+                }
+            }
             HStack(spacing: 12) {
                 pauseResumeButton
                 endButton

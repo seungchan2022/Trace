@@ -133,4 +133,15 @@ final class RunPageViewModelTests: XCTestCase {
         let buggyPace = try XCTUnwrap(session.track.averagePaceSecondsPerKm)
         XCTAssertLessThan(actualPace, buggyPace)
     }
+
+    func test_목표모드와_값으로_RunGoal을_조립한다() {
+        viewModel.goalMode = .distance
+        viewModel.goalDistanceKm = 10
+        XCTAssertEqual(viewModel.composedGoal, .distance(meters: 10000))
+        viewModel.goalMode = .time
+        viewModel.goalTimeMinutes = 30
+        XCTAssertEqual(viewModel.composedGoal, .time(seconds: 1800))
+        viewModel.goalMode = .open
+        XCTAssertEqual(viewModel.composedGoal, .open)
+    }
 }

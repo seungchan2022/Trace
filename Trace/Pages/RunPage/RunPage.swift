@@ -61,7 +61,7 @@ struct RunPage: View {
     private var controls: some View {
         switch viewModel.session.state {
         case .idle:
-            startButton
+            startControls
         case .acquiring:
             acquiringPanel
         case .tracking, .paused:
@@ -69,6 +69,48 @@ struct RunPage: View {
         case .summary:
             RunSummaryPanel(viewModel: viewModel)
         }
+    }
+
+    private var startControls: some View {
+        VStack(spacing: 16) {
+            goalPicker
+            startButton
+        }
+    }
+
+    private var goalPicker: some View {
+        VStack(spacing: 10) {
+            Picker("목표", selection: $viewModel.goalMode) {
+                ForEach(RunGoalMode.allCases) { mode in
+                    Text(mode.label).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            switch viewModel.goalMode {
+            case .open:
+                EmptyView()
+            case .distance:
+                Picker("목표 거리", selection: $viewModel.goalDistanceKm) {
+                    ForEach(1...42, id: \.self) { km in
+                        Text("\(km) km").tag(km)
+                    }
+                }
+                .pickerStyle(.wheel)
+                .frame(height: 96)
+            case .time:
+                Picker("목표 시간", selection: $viewModel.goalTimeMinutes) {
+                    ForEach(Array(stride(from: 5, through: 180, by: 5)), id: \.self) { minutes in
+                        Text("\(minutes)분").tag(minutes)
+                    }
+                }
+                .pickerStyle(.wheel)
+                .frame(height: 96)
+            }
+        }
+        .padding(DesignToken.Size.sheetPadding)
+        .background(DesignToken.Color.surface, in: RoundedRectangle(cornerRadius: DesignToken.Corner.chrome))
+        .padding(.horizontal, DesignToken.Size.screenMargin)
+        .accessibilityIdentifier("run.goalPicker")
     }
 
     private var startButton: some View {
