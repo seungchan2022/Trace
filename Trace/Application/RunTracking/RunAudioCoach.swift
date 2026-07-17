@@ -93,7 +93,8 @@ final class RunAudioCoach {
             let elapsed = session.activeElapsedSeconds() ?? 0
             announcer.announce(RunAnnouncementBuilder.goalAchieved(
                 distanceMeters: session.track.totalDistanceMeters,
-                totalSeconds: elapsed
+                totalSeconds: elapsed,
+                averagePaceSecondsPerKm: averagePace(elapsed: elapsed)
             ))
         } else if session.goalHalfReached, goalHalfAnnounced == false {
             goalHalfAnnounced = true

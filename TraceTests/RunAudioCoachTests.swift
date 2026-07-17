@@ -51,7 +51,7 @@ final class RunAudioCoachTests: XCTestCase {
     func test_시작하면_러닝시작_발화() async {
         await session.start()
         coach.sync()
-        XCTAssertEqual(announcer.announced, ["러닝 시작"])
+        XCTAssertEqual(announcer.announced, ["러닝을 시작합니다"])
     }
 
     func test_일시정지와_재개_발화() async {
@@ -60,7 +60,7 @@ final class RunAudioCoachTests: XCTestCase {
         coach.sync()
         session.resume()
         coach.sync()
-        XCTAssertEqual(announcer.announced, ["일시정지", "재개합니다"])
+        XCTAssertEqual(announcer.announced, ["일시정지합니다", "재개합니다"])
     }
 
     func test_km경계를_넘으면_한번만_발화() async {
@@ -91,7 +91,7 @@ final class RunAudioCoachTests: XCTestCase {
         session.finish()
         coach.sync()
         XCTAssertEqual(announcer.announced.count, 1)
-        XCTAssertTrue(announcer.announced[0].hasPrefix("러닝 종료. 총 "))
+        XCTAssertTrue(announcer.announced[0].hasPrefix("러닝을 종료합니다. 총 "))
     }
 
     func test_새러닝을_시작하면_km카운터가_리셋된다() async {
@@ -150,7 +150,8 @@ final class RunAudioCoachTests: XCTestCase {
         coach.sync()
         XCTAssertEqual(announcer.announced.count, 2)
         XCTAssertTrue(announcer.announced[0].hasPrefix("1킬로미터"))
-        XCTAssertTrue(announcer.announced[1].hasPrefix("목표 달성!"))
+        XCTAssertTrue(announcer.announced[1].hasPrefix("목표를 달성했습니다."))
+        XCTAssertTrue(announcer.announced[1].contains("평균 페이스")) // 목표 달성 발화도 종료 발화와 동일하게 페이스 절 포함
 
         // 달성 후 추가 샘플 — 재발화 없음
         stream.yield(sample(at: start.addingTimeInterval(310), metersNorth: 1020))

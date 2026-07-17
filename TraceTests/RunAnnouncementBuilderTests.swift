@@ -2,9 +2,13 @@ import XCTest
 @testable import Trace
 
 final class RunAnnouncementBuilderTests: XCTestCase {
-    func test_상태전환_고정문구() {
-        XCTAssertEqual(RunAnnouncementBuilder.start, "러닝 시작")
-        XCTAssertEqual(RunAnnouncementBuilder.pause, "일시정지")
+    func test_카운트다운_문안() {
+        XCTAssertEqual(RunAnnouncementBuilder.countdown, ["삼", "이", "일"])
+    }
+
+    func test_시작_일시정지_문안() {
+        XCTAssertEqual(RunAnnouncementBuilder.start, "러닝을 시작합니다")
+        XCTAssertEqual(RunAnnouncementBuilder.pause, "일시정지합니다")
         XCTAssertEqual(RunAnnouncementBuilder.resume, "재개합니다")
     }
 
@@ -22,18 +26,18 @@ final class RunAnnouncementBuilderTests: XCTestCase {
         XCTAssertEqual(text, "1킬로미터. 총 시간 5분")
     }
 
-    func test_종료_문구는_총거리_시간_평균페이스() {
+    func test_종료_문안() {
         let text = RunAnnouncementBuilder.finish(
             distanceMeters: 5200, totalSeconds: 1900, averagePaceSecondsPerKm: 365
         )
-        XCTAssertEqual(text, "러닝 종료. 총 5.2킬로미터, 31분 40초, 평균 페이스 6분 5초")
+        XCTAssertEqual(text, "러닝을 종료합니다. 총 5.2킬로미터, 31분 40초, 평균 페이스 6분 5초")
     }
 
     func test_종료_정수km는_소수점없이_읽는다() {
         let text = RunAnnouncementBuilder.finish(
             distanceMeters: 5000, totalSeconds: 1800, averagePaceSecondsPerKm: 360
         )
-        XCTAssertEqual(text, "러닝 종료. 총 5킬로미터, 30분, 평균 페이스 6분")
+        XCTAssertEqual(text, "러닝을 종료합니다. 총 5킬로미터, 30분, 평균 페이스 6분")
     }
 
     func test_시간읽기_시간분초_조합() {
@@ -55,10 +59,17 @@ final class RunAnnouncementBuilderTests: XCTestCase {
         XCTAssertEqual(RunAnnouncementBuilder.goalHalf, "절반 왔습니다")
     }
 
-    func test_목표_달성_문구() {
-        XCTAssertEqual(
-            RunAnnouncementBuilder.goalAchieved(distanceMeters: 5000, totalSeconds: 1750),
-            "목표 달성! 5킬로미터, 29분 10초"
+    func test_목표달성_평균페이스_포함() {
+        let text = RunAnnouncementBuilder.goalAchieved(
+            distanceMeters: 5000, totalSeconds: 1750, averagePaceSecondsPerKm: 350
         )
+        XCTAssertEqual(text, "목표를 달성했습니다. 5킬로미터, 29분 10초, 평균 페이스 5분 50초")
+    }
+
+    func test_목표달성_페이스_산출불가시_절생략() {
+        let text = RunAnnouncementBuilder.goalAchieved(
+            distanceMeters: 5000, totalSeconds: 1750, averagePaceSecondsPerKm: nil
+        )
+        XCTAssertEqual(text, "목표를 달성했습니다. 5킬로미터, 29분 10초")
     }
 }
