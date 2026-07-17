@@ -39,8 +39,8 @@ final class RunAudioCoachTests: XCTestCase {
     }
 
     /// 시작 → 첫 샘플 수용(tracking 진입)까지 진행하고 발화 로그를 비운다
-    private func startTracking() async {
-        await session.start()
+    private func startTracking(goal: RunGoal = .open) async {
+        await session.start(goal: goal)
         coach.sync()
         stream.yield(sample(at: Date()))
         await waitUntil { session.state == .tracking }
@@ -124,6 +124,69 @@ final class RunAudioCoachTests: XCTestCase {
         XCTAssertNotNil(first)
         try? await Task.sleep(nanoseconds: 30_000_000)
         XCTAssertEqual(session.summaryActiveElapsedSeconds, first) // now가 지나도 안 자란다
+    }
+
+    func test_목표_절반은_한번만_발화() async {
+        await startTracking(goal: .distance(meters: 1000))
+        let start = Date()
+        stream.yield(sample(at: start.addingTimeInterval(150), metersNorth: 505))
+        await waitUntil { session.track.totalDistanceMeters > 500 }
+        coach.sync()
+        XCTAssertEqual(announcer.announced, ["절반 왔습니다"])
+
+        // 절반 이후 추가 샘플 — 중복 발화 없음
+        stream.yield(sample(at: start.addingTimeInterval(160), metersNorth: 520))
+        await waitUntil { session.track.totalDistanceMeters > 515 }
+        coach.sync()
+        XCTAssertEqual(announcer.announced, ["절반 왔습니다"])
+    }
+
+    func test_목표달성은_km발화_다음_한번만_절반을_덮는다() async {
+        // 한 샘플에 1km 경계와 절반·달성이 모두 걸림: km 먼저, 달성이 절반을 덮어 2건만
+        await startTracking(goal: .distance(meters: 1000))
+        let start = Date()
+        stream.yield(sample(at: start.addingTimeInterval(300), metersNorth: 1005))
+        await waitUntil { session.track.totalDistanceMeters > 1000 }
+        coach.sync()
+        XCTAssertEqual(announcer.announced.count, 2)
+        XCTAssertTrue(announcer.announced[0].hasPrefix("1킬로미터"))
+        XCTAssertTrue(announcer.announced[1].hasPrefix("목표 달성!"))
+
+        // 달성 후 추가 샘플 — 재발화 없음
+        stream.yield(sample(at: start.addingTimeInterval(310), metersNorth: 1020))
+        await waitUntil { session.track.totalDistanceMeters > 1015 }
+        coach.sync()
+        XCTAssertEqual(announcer.announced.count, 2)
+    }
+
+    func test_자유러닝은_목표발화가_없다() async {
+        await startTracking()
+        let start = Date()
+        stream.yield(sample(at: start.addingTimeInterval(300), metersNorth: 1005))
+        await waitUntil { session.track.totalDistanceMeters > 1000 }
+        coach.sync()
+        XCTAssertEqual(announcer.announced.count, 1) // km 발화뿐
+        XCTAssertTrue(announcer.announced[0].hasPrefix("1킬로미터"))
+    }
+
+    func test_새러닝을_시작하면_목표발화_카운터가_리셋된다() async {
+        await startTracking(goal: .distance(meters: 1000))
+        let start = Date()
+        stream.yield(sample(at: start.addingTimeInterval(150), metersNorth: 505))
+        await waitUntil { session.track.totalDistanceMeters > 500 }
+        coach.sync()
+        session.finish()
+        coach.sync()
+        session.dismissSummary()
+        coach.sync()
+
+        // 두 번째 러닝: 절반이 다시 나와야 한다
+        await startTracking(goal: .distance(meters: 1000))
+        let restart = Date()
+        stream.yield(sample(at: restart.addingTimeInterval(150), metersNorth: 505))
+        await waitUntil { session.track.totalDistanceMeters > 500 }
+        coach.sync()
+        XCTAssertEqual(announcer.announced, ["절반 왔습니다"])
     }
 }
 

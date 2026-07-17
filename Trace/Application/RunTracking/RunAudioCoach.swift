@@ -10,6 +10,8 @@ final class RunAudioCoach {
     private let announcer: VoiceAnnouncerProtocol
     private var lastState: RunSession.State = .idle
     private var lastAnnouncedKm = 0
+    private var goalHalfAnnounced = false
+    private var goalAchievedAnnounced = false
 
     init(session: RunSession, announcer: VoiceAnnouncerProtocol) {
         self.session = session
@@ -24,6 +26,8 @@ final class RunAudioCoach {
         withObservationTracking {
             _ = session.state
             _ = session.track.totalDistanceMeters
+            _ = session.goalHalfReached
+            _ = session.goalAchieved
         } onChange: { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
@@ -37,6 +41,7 @@ final class RunAudioCoach {
     func sync() {
         announceStateTransitionIfNeeded()
         announceKilometerIfNeeded()
+        announceGoalIfNeeded()
         lastState = session.state
     }
 
@@ -46,6 +51,8 @@ final class RunAudioCoach {
         switch (lastState, state) {
         case (.idle, .acquiring):
             lastAnnouncedKm = 0 // 새 러닝 — km 카운터 리셋
+            goalHalfAnnounced = false
+            goalAchievedAnnounced = false
             announcer.announce(RunAnnouncementBuilder.start)
         case (.tracking, .paused):
             announcer.announce(RunAnnouncementBuilder.pause)
@@ -75,6 +82,23 @@ final class RunAudioCoach {
             totalSeconds: elapsed,
             averagePaceSecondsPerKm: averagePace(elapsed: elapsed)
         ))
+    }
+
+    private func announceGoalIfNeeded() {
+        guard session.state == .tracking else { return }
+        if session.goalAchieved, goalAchievedAnnounced == false {
+            goalAchievedAnnounced = true
+            // 한 sync에 절반·달성이 같이 걸린 극단 케이스는 달성만 읽는다(밀린 발화 연쇄 방지)
+            goalHalfAnnounced = true
+            let elapsed = session.activeElapsedSeconds() ?? 0
+            announcer.announce(RunAnnouncementBuilder.goalAchieved(
+                distanceMeters: session.track.totalDistanceMeters,
+                totalSeconds: elapsed
+            ))
+        } else if session.goalHalfReached, goalHalfAnnounced == false {
+            goalHalfAnnounced = true
+            announcer.announce(RunAnnouncementBuilder.goalHalf)
+        }
     }
 
     /// 평균 페이스 = 활동 시간 / 거리 — 요약 화면(summaryAveragePaceSecondsPerKm)과 같은 기준(MVP14 §3.1)
