@@ -92,4 +92,36 @@ nonisolated final class SwiftDataRunRecordRepositoryTests: XCTestCase {
         XCTAssertEqual(decoded?.samples.count, 1)
         XCTAssertEqual(decoded?.pauses, [])
     }
+
+    func test_목표가_저장되고_복원된다() async throws {
+        let repository = SwiftDataRunRecordRepository(inMemory: true)
+        let base = Date(timeIntervalSince1970: 1_700_000_000)
+        let run = SavedRun(
+            summary: SavedRunSummary(
+                id: UUID(), startedAt: base, distanceMeters: 5000,
+                duration: 1750, elevationGainMeters: 12
+            ),
+            samples: [
+                SavedRunSample(timestamp: base, latitude: 37.5666, longitude: 126.9784,
+                               altitudeMeters: 10, speedMetersPerSecond: 3),
+                SavedRunSample(timestamp: base.addingTimeInterval(1750), latitude: 37.6115, longitude: 126.9784,
+                               altitudeMeters: 12, speedMetersPerSecond: 3)
+            ],
+            pauses: [],
+            goal: .distance(meters: 5000)
+        )
+        try await repository.save(run)
+        let loaded = await repository.fetchRun(id: run.summary.id)
+        XCTAssertEqual(loaded?.goal, .distance(meters: 5000))
+    }
+
+    func test_구버전_blob은_자유목표로_해독된다() {
+        // v2(사이클 2) 포맷 — goal 필드 자체가 없다
+        let json = """
+        {"version":2,"samples":[{"t":700000000,"lat":37.5,"lon":127.0,"alt":10,"spd":3}],"pauses":[]}
+        """
+        let decoded = SwiftDataRunRecordRepository.decodeRunPayload(Data(json.utf8))
+        XCTAssertNotNil(decoded)
+        XCTAssertEqual(decoded?.goal, .open)
+    }
 }

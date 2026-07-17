@@ -96,6 +96,12 @@ struct RunRecordDetailView: View {
             ScrollView {
                 statsGrid
                     .padding(DesignToken.Size.sheetPadding)
+                if let loadedRun, let goalLabel = RunGoalFormatter.label(loadedRun.goal) {
+                    Label(goalLabel, systemImage: "target")
+                        .font(DesignToken.Typography.chip)
+                        .foregroundStyle(DesignToken.Color.ink2)
+                        .padding(.bottom, 8)
+                }
                 if let loadedRun {
                     RunSplitsSection(result: RunSplitCalculator.splits(
                         samples: loadedRun.samples, pauses: loadedRun.pauses,

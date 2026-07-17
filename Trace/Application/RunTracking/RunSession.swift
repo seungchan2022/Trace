@@ -282,7 +282,8 @@ final class RunSession {
                 elevationGainMeters: track.elevationGainMeters
             ),
             samples: track.samples.map(SavedRunSample.init),
-            pauses: completedPauses
+            pauses: completedPauses,
+            goal: goal
         )
         pendingRun = run
         performSave(run)

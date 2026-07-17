@@ -53,7 +53,8 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
         let dto = RunPersistenceDTO.Run(
             version: RunPersistenceDTO.currentVersion,
             samples: run.samples.map(RunPersistenceDTO.Sample.init),
-            pauses: run.pauses.map(RunPersistenceDTO.Pause.init)
+            pauses: run.pauses.map(RunPersistenceDTO.Pause.init),
+            goal: RunPersistenceDTO.Goal(run.goal)
         )
         let payload = try JSONEncoder().encode(dto)
         context.insert(RunRecordModel(
@@ -100,7 +101,8 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
                 elevationGainMeters: record.elevationGainMeters
             ),
             samples: payload.samples,
-            pauses: payload.pauses
+            pauses: payload.pauses,
+            goal: payload.goal
         )
     }
 
@@ -118,9 +120,9 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
 
     static func decodeRunPayload(
         _ data: Data
-    ) -> (samples: [SavedRunSample], pauses: [RunPauseInterval])? {
+    ) -> (samples: [SavedRunSample], pauses: [RunPauseInterval], goal: RunGoal)? {
         guard let dto = try? JSONDecoder().decode(RunPersistenceDTO.Run.self, from: data),
               dto.version <= RunPersistenceDTO.currentVersion else { return nil }
-        return (dto.samples.map(\.domain), (dto.pauses ?? []).map(\.domain))
+        return (dto.samples.map(\.domain), (dto.pauses ?? []).map(\.domain), dto.goal?.domain ?? .open)
     }
 }

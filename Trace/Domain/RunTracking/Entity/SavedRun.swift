@@ -54,10 +54,16 @@ struct SavedRun: Equatable, Sendable {
     let samples: [SavedRunSample]
     /// 일시정지 구간(시각 쌍) — 샘플 간격에서 파생 불가(GPS 끊김과 구분 안 됨)라 명시 저장(MVP14 §4)
     let pauses: [RunPauseInterval]
+    /// 이번 러닝의 목표 — 상세 화면 "목표 5 km" 표시용(스펙 §4-3). 자유 러닝은 .open
+    let goal: RunGoal
 
-    init(summary: SavedRunSummary, samples: [SavedRunSample], pauses: [RunPauseInterval] = []) {
+    init(
+        summary: SavedRunSummary, samples: [SavedRunSample],
+        pauses: [RunPauseInterval] = [], goal: RunGoal = .open
+    ) {
         self.summary = summary
         self.samples = samples
         self.pauses = pauses
+        self.goal = goal
     }
 }
