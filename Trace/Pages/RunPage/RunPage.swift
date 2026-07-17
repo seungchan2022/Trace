@@ -6,8 +6,8 @@ struct RunPage: View {
     @State private var historyViewModel: RunHistoryViewModel
     @State private var showsHistory = false
 
-    init(session: RunSession, recordRepository: RunRecordRepositoryProtocol) {
-        _viewModel = State(initialValue: RunPageViewModel(session: session))
+    init(session: RunSession, recordRepository: RunRecordRepositoryProtocol, announcer: VoiceAnnouncerProtocol) {
+        _viewModel = State(initialValue: RunPageViewModel(session: session, announcer: announcer))
         _historyViewModel = State(initialValue: RunHistoryViewModel(repository: recordRepository))
     }
 
@@ -41,9 +41,32 @@ struct RunPage: View {
                 .accessibilityIdentifier("run.historyButton")
             }
         }
+        .overlay {
+            if let count = viewModel.countdown {
+                countdownOverlay(count: count)
+            }
+        }
+        .onChange(of: viewModel.countdown) { _, newValue in
+            guard newValue != nil else { return }
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred() // 숫자마다 햅틱(스펙 §1.1)
+        }
         .sheet(isPresented: $showsHistory) {
             RunHistorySheet(viewModel: historyViewModel)
         }
+    }
+
+    private func countdownOverlay(count: Int) -> some View {
+        ZStack {
+            Color.black.opacity(0.55).ignoresSafeArea()
+            Text("\(count)")
+                .font(.system(size: 160, weight: .heavy, design: .rounded))
+                .foregroundStyle(DesignToken.Color.accent)
+                .contentTransition(.numericText(countsDown: true))
+                .animation(.snappy, value: count)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { viewModel.cancelCountdown() } // 취소 = 화면 탭(스펙 §1.1)
+        .accessibilityIdentifier("run.countdownOverlay")
     }
 
     private var runMap: some View {

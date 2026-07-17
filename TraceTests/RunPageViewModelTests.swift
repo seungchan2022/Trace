@@ -2,12 +2,27 @@ import XCTest
 @testable import Trace
 
 @MainActor
+final class RecordingVoiceAnnouncer: VoiceAnnouncerProtocol {
+    var announced: [String] = []
+    var holds = 0, releases = 0, stops = 0
+    func announce(_ text: String) { announced.append(text) }
+    func holdAudioSession() { holds += 1 }
+    func releaseAudioSession() { releases += 1 }
+    func stopSpeaking() { stops += 1 }
+}
+
+@MainActor
 final class RunPageViewModelTests: XCTestCase {
     // XCTest는 테스트 메서드마다 새 인스턴스를 만드므로 필드 초기화만으로 setUp과 동일하게 매번 새로 생성된다.
     private let stream = MockRunLocationStream()
     private let recordRepository = MockRunRecordRepository()
     private lazy var session = RunSession(locationStream: stream, recordRepository: recordRepository)
-    private lazy var viewModel = RunPageViewModel(session: session)
+    private let announcer = RecordingVoiceAnnouncer()
+    private lazy var viewModel = RunPageViewModel(
+        session: session,
+        announcer: announcer,
+        sleeper: { _ in } // 즉시 리턴 — 카운트다운을 동기적으로 소진
+    )
 
     private func sample(at date: Date, latOffsetMeters: Double = 0) -> RunSample {
         RunSample(
@@ -143,5 +158,42 @@ final class RunPageViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.composedGoal, .time(seconds: 1800))
         viewModel.goalMode = .open
         XCTAssertEqual(viewModel.composedGoal, .open)
+    }
+
+    func test_시작탭_카운트다운_삼이일_발화후_세션시작() async {
+        await viewModel.startTapped()
+        XCTAssertEqual(announcer.announced, ["삼", "이", "일"])
+        XCTAssertEqual(announcer.holds, 1)
+        XCTAssertEqual(announcer.releases, 1)
+        XCTAssertNil(viewModel.countdown)
+        XCTAssertEqual(viewModel.session.state, .acquiring)
+    }
+
+    func test_카운트다운_취소시_발화중단_세션정리() async {
+        // 첫 sleep에서 무기한 대기하는 sleeper — cancelCountdown이 개입할 틈을 만든다
+        let (gate, gateContinuation) = AsyncStream.makeStream(of: Void.self)
+        let vm = RunPageViewModel(
+            session: session,
+            announcer: announcer,
+            sleeper: { _ in for await _ in gate {} }
+        )
+        let startTask = Task { await vm.startTapped() }
+        while vm.countdown == nil { await Task.yield() } // 카운트다운 진입 대기
+        vm.cancelCountdown()
+        XCTAssertEqual(announcer.stops, 1)
+        XCTAssertNil(vm.countdown)
+        XCTAssertEqual(session.state, .idle)
+        gateContinuation.finish() // sleeper 해제 — 깨어난 루프는 countdownActive 가드로 종료
+        await startTask.value
+        XCTAssertEqual(session.state, .idle) // beginTracking 미호출 확인
+    }
+
+    func test_정확도부족이면_카운트다운_시작안함() async {
+        stream.accuracy = .reduced
+        stream.accuracyAfterRequest = .reduced
+        await viewModel.startTapped()
+        XCTAssertTrue(announcer.announced.isEmpty)
+        XCTAssertNil(viewModel.countdown)
+        XCTAssertTrue(viewModel.showsAccuracyAlert)
     }
 }

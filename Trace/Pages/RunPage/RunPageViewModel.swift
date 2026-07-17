@@ -24,11 +24,18 @@ enum RunGoalMode: String, CaseIterable, Identifiable {
 @Observable
 final class RunPageViewModel {
     let session: RunSession
+    private let announcer: VoiceAnnouncerProtocol
+    private let defaults: UserDefaults
+    private let sleeper: (Duration) async throws -> Void
 
     var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
     private(set) var displayedCoordinates: [CLLocationCoordinate2D] = []
     var showsAccuracyAlert = false
     var showsPermissionAlert = false
+    /// 카운트다운 표시값(3→2→1). nil = 카운트다운 아님. 스펙 §1.1
+    private(set) var countdown: Int?
+    /// 취소 감지 플래그 — cancelCountdown()이 내리면 진행 중인 startTapped 루프가 중단된다
+    private var countdownActive = false
     /// 요약 화면에 보여줄 활동 시간(일시정지 제외) — 트래킹 화면·Live Activity가 보여준 시간과 같은 기준(MVP14 §3.1).
     /// `RunTrack.duration`(GPS 샘플 구간)과는 다른 측정치라 별도로 종료 시점에 캡처해 둔다.
     private(set) var summaryElapsedSeconds: TimeInterval?
@@ -66,20 +73,64 @@ final class RunPageViewModel {
         return elapsed / (distanceMeters / 1000)
     }
 
-    init(session: RunSession) {
+    init(
+        session: RunSession,
+        announcer: VoiceAnnouncerProtocol,
+        defaults: UserDefaults = .standard,
+        sleeper: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+    ) {
         self.session = session
+        self.announcer = announcer
+        self.defaults = defaults   // Task 6에서 사용(목표 프리필). Task 4 시점에는 저장만 미사용
+        self.sleeper = sleeper
     }
 
     func startTapped() async {
-        await session.start(goal: composedGoal)
+        guard countdown == nil else { return }
+        guard await session.prepareStart(goal: composedGoal) else {
+            presentStartFailure()
+            return
+        }
+        announcer.holdAudioSession() // 덕킹 1회: 카운트다운~시작 발화까지 유지(스펙 §1.1)
+        countdownActive = true
+        for (index, word) in RunAnnouncementBuilder.countdown.enumerated() {
+            guard countdownActive else { return } // 취소됨 — cancelCountdown()이 정리 완료
+            countdown = RunAnnouncementBuilder.countdown.count - index
+            announcer.announce(word)
+            do { try await sleeper(.seconds(1)) } catch { return }
+        }
+        guard countdownActive else { return }
+        countdownActive = false
+        countdown = nil
+        session.beginTracking()
+        // 시작 발화(RunAudioCoach, idle→acquiring)가 큐에 남아 있는 동안 release —
+        // 어댑터는 큐 소진 시점에 비활성화하므로 덕킹 플랩이 없다(스펙 §1.1)
+        announcer.releaseAudioSession()
+        guard session.lastStartFailure == nil else {
+            presentStartFailure()
+            return
+        }
+        displayedCoordinates = []
+        polylineThrottle = PolylineThrottle()
+        summaryElapsedSeconds = nil
+        recenter()
+    }
+
+    /// 카운트다운 중 화면 탭 → 취소(스펙 §1.1). 백그라운드 진입은 취소가 아니다 — 계속 진행.
+    func cancelCountdown() {
+        guard countdownActive else { return }
+        countdownActive = false
+        countdown = nil
+        announcer.stopSpeaking()
+        announcer.releaseAudioSession()
+        session.cancelPreparation()
+    }
+
+    private func presentStartFailure() {
         switch session.lastStartFailure {
         case .reducedAccuracy: showsAccuracyAlert = true
         case .permissionDenied: showsPermissionAlert = true
-        case nil:
-            displayedCoordinates = []
-            polylineThrottle = PolylineThrottle()
-            summaryElapsedSeconds = nil
-            recenter()
+        case nil: break
         }
     }
 

@@ -32,7 +32,11 @@ struct TraceApp: App {
                 )
                 .tabItem { Label("코스", systemImage: "map") }
 
-                RunPage(session: container.runSession, recordRepository: container.runRecordRepository)
+                RunPage(
+                    session: container.runSession,
+                    recordRepository: container.runRecordRepository,
+                    announcer: container.voiceAnnouncer
+                )
                     .tabItem { Label("러닝", systemImage: "figure.run") }
                     .badge(container.runSession.isActive ? "●" : nil)
             }

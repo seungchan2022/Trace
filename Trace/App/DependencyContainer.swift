@@ -9,12 +9,15 @@ struct DependencyContainer {
     let runSession: RunSession
     let runActivityController: RunActivityController
     let runAudioCoach: RunAudioCoach
+    /// coach와 RunPage(ViewModel)가 같은 인스턴스를 공유해야 덕킹 hold/release가 한 곳으로 모인다
+    let voiceAnnouncer: VoiceAnnouncerProtocol
 
     @MainActor
     static func live() -> DependencyContainer {
         let runRecordRepository = SwiftDataRunRecordRepository()
         let runSession = RunSession(locationStream: RunLocationTracker(), recordRepository: runRecordRepository)
-        let runAudioCoach = RunAudioCoach(session: runSession, announcer: SpeechVoiceAnnouncer())
+        let voiceAnnouncer = SpeechVoiceAnnouncer()
+        let runAudioCoach = RunAudioCoach(session: runSession, announcer: voiceAnnouncer)
         return DependencyContainer(
             coursePlanningService: MapKitCoursePlanningService(),
             locationService: CoreLocationService(),
@@ -23,7 +26,8 @@ struct DependencyContainer {
             runRecordRepository: runRecordRepository,
             runSession: runSession,
             runActivityController: RunActivityController(session: runSession),
-            runAudioCoach: runAudioCoach
+            runAudioCoach: runAudioCoach,
+            voiceAnnouncer: voiceAnnouncer
         )
     }
 
@@ -32,7 +36,8 @@ struct DependencyContainer {
         let uiTestingDefaults = UserDefaults(suiteName: "uiTesting") ?? .standard
         let runRecordRepository = SwiftDataRunRecordRepository(inMemory: true)
         let runSession = RunSession(locationStream: UITestingRunLocationStream(), recordRepository: runRecordRepository)
-        let runAudioCoach = RunAudioCoach(session: runSession, announcer: NoopVoiceAnnouncer())
+        let voiceAnnouncer = NoopVoiceAnnouncer()
+        let runAudioCoach = RunAudioCoach(session: runSession, announcer: voiceAnnouncer)
         return DependencyContainer(
             coursePlanningService: UITestingCoursePlanningService(),
             locationService: UITestingLocationService(),
@@ -42,7 +47,8 @@ struct DependencyContainer {
             runRecordRepository: runRecordRepository,
             runSession: runSession,
             runActivityController: RunActivityController(session: runSession),
-            runAudioCoach: runAudioCoach
+            runAudioCoach: runAudioCoach,
+            voiceAnnouncer: voiceAnnouncer
         )
     }
 }
