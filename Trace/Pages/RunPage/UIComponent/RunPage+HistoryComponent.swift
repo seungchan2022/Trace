@@ -98,7 +98,8 @@ struct RunRecordDetailView: View {
                     .padding(DesignToken.Size.sheetPadding)
                 if let loadedRun {
                     RunSplitsSection(result: RunSplitCalculator.splits(
-                        samples: loadedRun.samples, pauses: loadedRun.pauses
+                        samples: loadedRun.samples, pauses: loadedRun.pauses,
+                        sessionStart: loadedRun.summary.startedAt, totalActiveSeconds: loadedRun.summary.duration
                     ))
                 }
             }

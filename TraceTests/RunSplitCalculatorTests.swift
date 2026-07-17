@@ -20,9 +20,17 @@ final class RunSplitCalculatorTests: XCTestCase {
     }
 
     func test_빈샘플과_단일샘플은_빈결과() {
-        XCTAssertEqual(RunSplitCalculator.splits(samples: [], pauses: []), .empty)
         XCTAssertEqual(
-            RunSplitCalculator.splits(samples: [sample(t: 0, meters: 0)], pauses: []),
+            RunSplitCalculator.splits(
+                samples: [], pauses: [], sessionStart: base, totalActiveSeconds: 0
+            ),
+            .empty
+        )
+        XCTAssertEqual(
+            RunSplitCalculator.splits(
+                samples: [sample(t: 0, meters: 0)], pauses: [],
+                sessionStart: base, totalActiveSeconds: 0
+            ),
             .empty
         )
     }
@@ -32,7 +40,9 @@ final class RunSplitCalculatorTests: XCTestCase {
         let samples = stride(from: 0.0, through: 500, by: 100).map {
             sample(t: $0 * 0.3, meters: $0)
         }
-        let result = RunSplitCalculator.splits(samples: samples, pauses: [])
+        let result = RunSplitCalculator.splits(
+            samples: samples, pauses: [], sessionStart: base, totalActiveSeconds: 150
+        )
         XCTAssertTrue(result.completed.isEmpty)
         let partial = try XCTUnwrap(result.partial)
         XCTAssertEqual(partial.index, 1)
@@ -45,7 +55,9 @@ final class RunSplitCalculatorTests: XCTestCase {
         let samples = stride(from: 0.0, through: 2050, by: 50).map {
             sample(t: $0 * 0.3, meters: $0)
         }
-        let result = RunSplitCalculator.splits(samples: samples, pauses: [])
+        let result = RunSplitCalculator.splits(
+            samples: samples, pauses: [], sessionStart: base, totalActiveSeconds: 615
+        )
         XCTAssertEqual(result.completed.count, 2)
         XCTAssertEqual(result.completed[0].index, 1)
         XCTAssertEqual(result.completed[0].durationSeconds, 300, accuracy: 3)
@@ -63,7 +75,9 @@ final class RunSplitCalculatorTests: XCTestCase {
             sample(t: $0 * 0.3, meters: $0)
         }
         samples.append(sample(t: 900 * 0.3 + 60, meters: 1100))
-        let result = RunSplitCalculator.splits(samples: samples, pauses: [])
+        let result = RunSplitCalculator.splits(
+            samples: samples, pauses: [], sessionStart: base, totalActiveSeconds: 330
+        )
         XCTAssertEqual(result.completed.count, 1)
         // 270초(900m 도달) + 60초의 절반 = 300초 부근
         XCTAssertEqual(result.completed[0].durationSeconds, 300, accuracy: 5)
@@ -79,7 +93,9 @@ final class RunSplitCalculatorTests: XCTestCase {
             sample(t: 480 + ($0 - 600) * 0.3, meters: $0)
         })
         let pauses = [pause(from: 180, to: 480)]
-        let result = RunSplitCalculator.splits(samples: samples, pauses: pauses)
+        let result = RunSplitCalculator.splits(
+            samples: samples, pauses: pauses, sessionStart: base, totalActiveSeconds: 360
+        )
         XCTAssertEqual(result.completed.count, 1)
         // 1km 경계는 활동 시간 300초 지점 — 일시정지 300초가 끼어도 구간 시간은 300초
         XCTAssertEqual(result.completed[0].durationSeconds, 300, accuracy: 5)
@@ -91,7 +107,9 @@ final class RunSplitCalculatorTests: XCTestCase {
     func test_한쌍이_여러경계를_넘으면_전부_보간된다() throws {
         // GPS 공백: 0m → 2,500m 단일 쌍이 750초 (일정 속도 가정으로 보간)
         let samples = [sample(t: 0, meters: 0), sample(t: 750, meters: 2500)]
-        let result = RunSplitCalculator.splits(samples: samples, pauses: [])
+        let result = RunSplitCalculator.splits(
+            samples: samples, pauses: [], sessionStart: base, totalActiveSeconds: 750
+        )
         XCTAssertEqual(result.completed.count, 2)
         XCTAssertEqual(result.completed[0].durationSeconds, 300, accuracy: 5)
         XCTAssertEqual(result.completed[1].durationSeconds, 300, accuracy: 5)
@@ -103,7 +121,26 @@ final class RunSplitCalculatorTests: XCTestCase {
         let samples = stride(from: 0.0, through: 1100, by: 100).map {
             sample(t: $0 * 0.3, meters: $0)
         }
-        let result = RunSplitCalculator.splits(samples: samples, pauses: [])
+        let result = RunSplitCalculator.splits(
+            samples: samples, pauses: [], sessionStart: base, totalActiveSeconds: 330
+        )
         XCTAssertEqual(result.completed.count, 1)
+    }
+
+    func test_시작버튼과_첫GPS샘플_사이_공백도_첫구간에_포함된다() throws {
+        // 시작 버튼을 누르고 GPS를 잡는 데 15초 걸린 뒤에야 첫 샘플이 들어옴
+        let sessionStart = base.addingTimeInterval(-15)
+        // 500m를 150초에 이동 (첫 샘플 t=0, 5분/km 페이스)
+        let samples = stride(from: 0.0, through: 500, by: 100).map {
+            sample(t: $0 * 0.3, meters: $0)
+        }
+        // 전체 활동 시간 = GPS 공백(15초) + 이동 시간(150초) = 165초
+        let result = RunSplitCalculator.splits(
+            samples: samples, pauses: [], sessionStart: sessionStart, totalActiveSeconds: 165
+        )
+        XCTAssertTrue(result.completed.isEmpty)
+        let partial = try XCTUnwrap(result.partial)
+        // 미완성 구간 시간에 GPS 공백까지 포함돼 전체 활동 시간과 정확히 일치해야 한다
+        XCTAssertEqual(partial.durationSeconds, 165, accuracy: 2)
     }
 }

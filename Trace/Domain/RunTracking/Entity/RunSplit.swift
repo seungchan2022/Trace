@@ -27,11 +27,21 @@ struct RunSplitResult: Equatable, Sendable {
 /// km 스플릿 일괄 계산 — 저장 샘플 + 일시정지 구간에서 km별 활동 시간을 파생한다(스펙 §3.2).
 /// 저장된 과거 기록(일시정지 없음 = 빈 배열)에도 그대로 소급 적용된다.
 /// 거리 적산 규칙은 라이브(RunTrack)와 동일: 일시정지를 사이에 둔 샘플 쌍은 거리를 가산하지 않는다.
+///
+/// 시간 기준점은 첫/마지막 GPS 샘플이 아니라 세션의 실제 시작 시각(`sessionStart`)과
+/// 전체 활동 시간(`totalActiveSeconds`, "평균 페이스"가 쓰는 것과 동일한 값)이다.
+/// 시작 버튼~첫 GPS 수신 사이 공백을 첫 샘플 시각으로 기준을 잡으면 놓치게 되고,
+/// 그 결과 "평균 페이스"와 "킬로미터별 페이스"가 어긋난다. 미완성 구간의 시간은
+/// `totalActiveSeconds - lastBoundaryActiveSeconds`로 역산해, 완성 구간 + 미완성 구간의
+/// 합이 항상 `totalActiveSeconds`와 정확히 일치하도록 만든다(telescoping sum).
 enum RunSplitCalculator {
     static let splitDistanceMeters: Double = 1000
 
-    static func splits(samples: [SavedRunSample], pauses: [RunPauseInterval]) -> RunSplitResult {
-        guard samples.count >= 2, let first = samples.first else { return .empty }
+    static func splits(
+        samples: [SavedRunSample], pauses: [RunPauseInterval],
+        sessionStart: Date, totalActiveSeconds: TimeInterval
+    ) -> RunSplitResult {
+        guard samples.count >= 2 else { return .empty }
 
         var completed: [RunSplit] = []
         var cumulativeDistance: Double = 0
@@ -58,7 +68,7 @@ enum RunSplitCalculator {
                     sample.timestamp.timeIntervalSince(previous.timestamp) * fraction
                 )
                 let crossingActive = activeSeconds(
-                    at: crossingTimestamp, start: first.timestamp, pauses: pauses
+                    at: crossingTimestamp, start: sessionStart, pauses: pauses
                 )
                 completed.append(RunSplit(
                     index: completed.count + 1,
@@ -71,12 +81,13 @@ enum RunSplitCalculator {
 
         var partial: RunSplitPartial?
         let remainder = cumulativeDistance - Double(completed.count) * splitDistanceMeters
-        if remainder > 0, let last = samples.last {
+        if remainder > 0 {
+            // 마지막 GPS 샘플 시각이 아니라 전체 활동 시간에서 역산한다 — 시작 버튼~첫 샘플
+            // 공백, 마지막 샘플~종료 버튼 공백까지 전부 미완성 구간에 흡수시켜 합계를 맞춘다.
             partial = RunSplitPartial(
                 index: completed.count + 1,
                 distanceMeters: remainder,
-                durationSeconds: activeSeconds(at: last.timestamp, start: first.timestamp, pauses: pauses)
-                    - lastBoundaryActiveSeconds
+                durationSeconds: totalActiveSeconds - lastBoundaryActiveSeconds
             )
         }
         return RunSplitResult(completed: completed, partial: partial)
