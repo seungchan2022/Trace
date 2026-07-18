@@ -72,4 +72,20 @@ final class RunAnnouncementBuilderTests: XCTestCase {
         )
         XCTAssertEqual(text, "목표를 달성했습니다. 5킬로미터, 29분 10초")
     }
+
+    // MARK: - 포인트 발화 (스펙 §1.3 표 + §2.2)
+
+    func test_포인트_발화_문안() {
+        XCTAssertEqual(
+            RunAnnouncementBuilder.waypoint(index: 2, segmentMeters: 870),
+            "포인트 2, 0.87킬로미터"
+        )
+    }
+
+    func test_포인트_구간거리_낭독_형식() {
+        XCTAssertEqual(RunAnnouncementBuilder.spokenWaypointDistance(870), "0.87킬로미터")
+        XCTAssertEqual(RunAnnouncementBuilder.spokenWaypointDistance(1500), "1.5킬로미터")
+        XCTAssertEqual(RunAnnouncementBuilder.spokenWaypointDistance(2000), "2킬로미터")
+        XCTAssertEqual(RunAnnouncementBuilder.spokenWaypointDistance(0), "0킬로미터")
+    }
 }

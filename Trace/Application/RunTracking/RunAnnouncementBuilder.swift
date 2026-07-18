@@ -11,6 +11,20 @@ enum RunAnnouncementBuilder {
 
     static let goalHalf = "절반 왔습니다"
 
+    /// "포인트 2, 0.87킬로미터" (스펙 §1.3 표·§2.2) — 구간 거리는 직전 포인트 기준
+    static func waypoint(index: Int, segmentMeters: Double) -> String {
+        "포인트 \(index), \(spokenWaypointDistance(segmentMeters))"
+    }
+
+    /// 870 → "0.87킬로미터", 1500 → "1.5킬로미터", 2000 → "2킬로미터" — 구간 거리는 짧아
+    /// 0.1km 반올림(spokenDistance)이 뭉개므로 소수 둘째 자리까지, 후행 0은 떼고 읽는다
+    static func spokenWaypointDistance(_ meters: Double) -> String {
+        var text = String(format: "%.2f", meters / 1000)
+        while text.hasSuffix("0") { text.removeLast() }
+        if text.hasSuffix(".") { text.removeLast() }
+        return "\(text)킬로미터"
+    }
+
     /// "목표를 달성했습니다. 5킬로미터, 29분 10초, 평균 페이스 5분 50초" — 페이스 절은 finish와 동일 생략 규칙(스펙 §1.3)
     static func goalAchieved(
         distanceMeters: Double, totalSeconds: TimeInterval, averagePaceSecondsPerKm: Double?

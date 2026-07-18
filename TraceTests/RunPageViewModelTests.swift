@@ -6,7 +6,7 @@ final class RecordingVoiceAnnouncer: VoiceAnnouncerProtocol {
     var announced: [String] = []
     var announcedPaces: [AnnouncementPace] = []
     var holds = 0, releases = 0, stops = 0
-    func announce(_ text: String, pace: AnnouncementPace) {
+    func announce(_ text: String, pace: AnnouncementPace, kind: AnnouncementKind) {
         announced.append(text)
         announcedPaces.append(pace)
     }

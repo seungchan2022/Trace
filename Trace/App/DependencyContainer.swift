@@ -86,5 +86,5 @@ private final class UITestingLocationService: LocationServiceProtocol {
 
 @MainActor
 private final class NoopVoiceAnnouncer: VoiceAnnouncerProtocol {
-    func announce(_ text: String, pace: AnnouncementPace) {}
+    func announce(_ text: String, pace: AnnouncementPace, kind: AnnouncementKind) {}
 }

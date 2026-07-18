@@ -17,13 +17,22 @@ final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
     private var pendingCount = 0
     /// holdAudioSession으로 세션을 보유 중인지 — 보유 중엔 발화별 활성화/비활성화를 건너뛴다
     private var isHeld = false
+    /// 대기열에 있는 발화들의 종류(FIFO) — 첫 원소가 현재 재생 중인 발화의 종류다.
+    /// 포인트 발화 즉시성(스펙 §2.2) 판정에 쓴다.
+    private var queuedKinds: [AnnouncementKind] = []
 
     override init() {
         super.init()
         synthesizer.delegate = self
     }
 
-    func announce(_ text: String, pace: AnnouncementPace) {
+    func announce(_ text: String, pace: AnnouncementPace, kind: AnnouncementKind) {
+        // 포인트 발화 즉시성(스펙 §2.2): 데이터 낭독(km·목표)이 재생 중이면 중단하고 바로 말한다.
+        // 상태 전환 발화가 재생 중이면 그대로 큐에 붙는다(후순위). stopSpeaking은 큐 전체를
+        // 비우지만, 데이터 낭독은 단발 발화라 실질적으로 그 발화 하나만 끊긴다.
+        if kind == .waypoint, queuedKinds.first == .data {
+            synthesizer.stopSpeaking(at: .immediate) // didCancel 델리게이트가 카운트를 정리한다
+        }
         if pendingCount == 0 && isHeld == false {
             do {
                 let audioSession = AVAudioSession.sharedInstance()
@@ -34,6 +43,7 @@ final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
             }
         }
         pendingCount += 1
+        queuedKinds.append(kind)
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
         utterance.rate = pace == .measured ? Self.measuredSpeechRate : Self.speechRate
@@ -65,6 +75,7 @@ final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
 
     private func utteranceEnded() {
         pendingCount = max(0, pendingCount - 1)
+        if queuedKinds.isEmpty == false { queuedKinds.removeFirst() }
         guard pendingCount == 0, isHeld == false else { return }
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }

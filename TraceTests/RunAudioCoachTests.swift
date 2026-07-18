@@ -47,6 +47,7 @@ final class RunAudioCoachTests: XCTestCase {
         coach.sync()
         announcer.announced.removeAll()
         announcer.announcedPaces.removeAll()
+        announcer.announcedKinds.removeAll()
     }
 
     func test_시작하면_러닝시작_발화() async {
@@ -230,14 +231,51 @@ final class RunAudioCoachTests: XCTestCase {
         coach.sync()
         XCTAssertEqual(announcer.announced, ["절반 왔습니다"])
     }
+
+    func test_포인트를_찍으면_구간거리를_waypoint_종류로_즉시_발화() async {
+        await startTracking()
+        let start = Date()
+        stream.yield(sample(at: start.addingTimeInterval(60), metersNorth: 500))
+        await waitUntil { session.track.totalDistanceMeters > 499 }
+        coach.sync()
+        announcer.announced.removeAll()
+        announcer.announcedKinds.removeAll()
+
+        session.markWaypoint()
+        coach.sync()
+
+        XCTAssertEqual(announcer.announced.count, 1)
+        XCTAssertTrue(announcer.announced[0].hasPrefix("포인트 1, "))
+        XCTAssertEqual(announcer.announcedKinds, [.waypoint])
+
+        // 같은 상태로 다시 sync — 중복 발화 없음
+        coach.sync()
+        XCTAssertEqual(announcer.announced.count, 1)
+    }
+
+    func test_km와_목표_발화는_data_종류로_상태전환은_status로_분류된다() async {
+        await startTracking()
+        let start = Date()
+        stream.yield(sample(at: start.addingTimeInterval(300), metersNorth: 1005))
+        await waitUntil { session.track.totalDistanceMeters > 1000 }
+        coach.sync()
+        XCTAssertEqual(announcer.announcedKinds, [.data]) // km 안내
+
+        announcer.announcedKinds.removeAll()
+        session.pause()
+        coach.sync()
+        XCTAssertEqual(announcer.announcedKinds, [.status]) // 일시정지
+    }
 }
 
 @MainActor
 final class FakeVoiceAnnouncer: VoiceAnnouncerProtocol {
     var announced: [String] = []
     var announcedPaces: [AnnouncementPace] = []
-    func announce(_ text: String, pace: AnnouncementPace) {
+    var announcedKinds: [AnnouncementKind] = []
+    func announce(_ text: String, pace: AnnouncementPace, kind: AnnouncementKind) {
         announced.append(text)
         announcedPaces.append(pace)
+        announcedKinds.append(kind)
     }
 }

@@ -12,6 +12,7 @@ final class RunAudioCoach {
     private var lastAnnouncedKm = 0
     private var goalHalfAnnounced = false
     private var goalAchievedAnnounced = false
+    private var lastWaypointCount = 0
 
     init(session: RunSession, announcer: VoiceAnnouncerProtocol) {
         self.session = session
@@ -28,6 +29,7 @@ final class RunAudioCoach {
             _ = session.track.totalDistanceMeters
             _ = session.goalHalfReached
             _ = session.goalAchieved
+            _ = session.waypoints.count
         } onChange: { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
@@ -40,6 +42,7 @@ final class RunAudioCoach {
     /// 관찰 콜백의 유일한 진입점 — 테스트가 직접 호출해 발화 결정을 검증한다.
     func sync() {
         announceStateTransitionIfNeeded()
+        announceWaypointIfNeeded()
         announceKilometerIfNeeded()
         announceGoalIfNeeded()
         lastState = session.state
@@ -53,6 +56,7 @@ final class RunAudioCoach {
             lastAnnouncedKm = 0 // 새 러닝 — km 카운터 리셋
             goalHalfAnnounced = false
             goalAchievedAnnounced = false
+            lastWaypointCount = 0
             announcer.announce(RunAnnouncementBuilder.start)
         case (.tracking, .paused):
             announcer.announce(RunAnnouncementBuilder.pause, pace: .brisk) // 유일하게 기존 속도 유지(2026-07-18)
@@ -70,6 +74,21 @@ final class RunAudioCoach {
         }
     }
 
+    private func announceWaypointIfNeeded() {
+        let count = session.waypoints.count
+        guard count > lastWaypointCount else {
+            lastWaypointCount = count // 새 러닝 준비 등으로 줄어든 경우 동기화만
+            return
+        }
+        lastWaypointCount = count
+        guard let segmentMeters = session.waypoints.lastSegmentMeters else { return }
+        // 발화가 주(잠금화면에선 유일) 확인 채널 — 즉시성 우선 kind(스펙 §2.2)
+        announcer.announce(
+            RunAnnouncementBuilder.waypoint(index: count, segmentMeters: segmentMeters),
+            pace: .measured, kind: .waypoint
+        )
+    }
+
     private func announceKilometerIfNeeded() {
         guard session.state == .tracking else { return }
         let km = Int(session.track.totalDistanceMeters / RunSplitCalculator.splitDistanceMeters)
@@ -81,7 +100,7 @@ final class RunAudioCoach {
             km: km,
             totalSeconds: elapsed,
             averagePaceSecondsPerKm: averagePace(elapsed: elapsed)
-        ))
+        ), pace: .measured, kind: .data)
     }
 
     private func announceGoalIfNeeded() {
@@ -95,10 +114,10 @@ final class RunAudioCoach {
                 distanceMeters: session.track.totalDistanceMeters,
                 totalSeconds: elapsed,
                 averagePaceSecondsPerKm: averagePace(elapsed: elapsed)
-            ))
+            ), pace: .measured, kind: .data)
         } else if session.goalHalfReached, goalHalfAnnounced == false {
             goalHalfAnnounced = true
-            announcer.announce(RunAnnouncementBuilder.goalHalf)
+            announcer.announce(RunAnnouncementBuilder.goalHalf, pace: .measured, kind: .data)
         }
     }
 
