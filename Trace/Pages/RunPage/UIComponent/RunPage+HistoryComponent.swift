@@ -108,6 +108,15 @@ struct RunRecordDetailView: View {
                         sessionStart: loadedRun.summary.startedAt, totalActiveSeconds: loadedRun.summary.duration
                     ))
                 }
+                if let loadedRun, loadedRun.waypoints.isEmpty == false {
+                    RunWaypointsSection(
+                        run: loadedRun,
+                        segments: RunWaypointSegmentsCalculator.segments(
+                            waypoints: loadedRun.waypoints,
+                            totalDistanceMeters: loadedRun.summary.distanceMeters
+                        )
+                    )
+                }
             }
         }
         .navigationTitle(summary.startedAt.formatted(date: .abbreviated, time: .shortened))
@@ -127,6 +136,13 @@ struct RunRecordDetailView: View {
             Map(initialPosition: RunRecordDetailView.fittedPosition(for: coordinates)) {
                 MapPolyline(coordinates: coordinates)
                     .stroke(DesignToken.Color.accent, lineWidth: 5)
+                ForEach(Array(loadedRun.waypoints.enumerated()), id: \.offset) { index, waypoint in
+                    Annotation("", coordinate: CLLocationCoordinate2D(
+                        latitude: waypoint.latitude, longitude: waypoint.longitude
+                    )) {
+                        WaypointMarkerBadge(number: index + 1)
+                    }
+                }
             }
         } else if loadFinished {
             ContentUnavailableView(
@@ -226,5 +242,61 @@ private struct RunSplitsSection: View {
                 .monospacedDigit()
                 .foregroundStyle(DesignToken.Color.ink)
         }
+    }
+}
+
+/// 지도 궤적 위 포인트 번호 마커(스펙 §2.5)
+struct WaypointMarkerBadge: View {
+    let number: Int
+
+    var body: some View {
+        Text("\(number)")
+            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .foregroundStyle(.white)
+            .frame(width: 22, height: 22)
+            .background(DesignToken.Color.accent, in: Circle())
+            .overlay(Circle().stroke(.white, lineWidth: 2))
+    }
+}
+
+/// 포인트 구간 표(스펙 §2.5) — km 스플릿 표와 별도 섹션, 포인트 없는 기록은 섹션 자체가 숨는다
+private struct RunWaypointsSection: View {
+    let run: SavedRun
+    let segments: [RunWaypointSegment]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("포인트 구간")
+                .font(DesignToken.Typography.sectionLabel)
+                .foregroundStyle(DesignToken.Color.ink2)
+            ForEach(segments, id: \.index) { segment in
+                HStack {
+                    Text(Self.label(for: segment))
+                        .font(DesignToken.Typography.segmentRowTitle)
+                        .foregroundStyle(DesignToken.Color.ink)
+                    Spacer()
+                    Text(String(format: "%.2f km", segment.distanceMeters / 1000))
+                        .font(DesignToken.Typography.segmentRowDistance)
+                        .monospacedDigit()
+                        .foregroundStyle(DesignToken.Color.ink)
+                }
+            }
+        }
+        .padding(.horizontal, DesignToken.Size.sheetPadding)
+        .padding(.bottom, DesignToken.Size.sheetPadding)
+    }
+
+    /// "시작 → ①" / "① → ②" / "③ → 종료"
+    static func label(for segment: RunWaypointSegment) -> String {
+        let from = segment.index == 1 ? "시작" : circled(segment.index - 1)
+        let to = segment.endsAtFinish ? "종료" : circled(segment.index)
+        return "\(from) → \(to)"
+    }
+
+    /// 1 → "①" … 20 → "⑳" (유니코드 원문자 범위 밖이면 일반 숫자)
+    static func circled(_ number: Int) -> String {
+        guard (1...20).contains(number),
+              let scalar = Unicode.Scalar(0x2460 + number - 1) else { return "\(number)" }
+        return String(Character(scalar))
     }
 }
