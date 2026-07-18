@@ -168,6 +168,14 @@ Use a scenario card for any test that needs multiple physical steps or a specifi
 
 Write every scenario for a first-time user who has never seen the implementation: concrete physical actions ("두 손가락으로 지도를 축소하세요"), and a result the user can literally see ("어느 핀이 움직이는지 보세요"). Never use internal/implementation terms — threshold, gap, routing, hit-test, pixel/meter distinction, rule numbers, class/function names, spec/plan file paths, milestone names. This applies to the whole section the user reads, not just the numbered step lines: section headings, intro blockquotes, and closing/footer notes must be just as jargon-free as the steps — a plain-language step under a jargon-heavy heading still reads as confusing. If a scenario exists to probe an internal edge case, translate it into what the user would actually do and observe, not what the code checks.
 
+**세션 단위로 묶기:** 여러 확인 항목이 같은 준비 상태(같은 화면, 같은 러닝 세션 등)에서 이어서
+확인 가능하면, 각각 별도 시나리오 카드로 쪼개지 말고 하나의 세션 카드 안에 번호 붙은
+체크포인트로 묶는다 — 항목마다 처음부터 세팅을 반복시키면(예: 매번 러닝을 새로 시작·종료)
+실행 부담이 커지고 카드 수가 많아져 가독성이 떨어진다(2026-07-18, run-detail-polish QA에서
+8개 카드를 3개 세션으로 재구성한 뒤 확정). 체크포인트마다 개별 **결과:** ☐ 통과 ☐ 실패를
+남긴다. 뒤 체크포인트가 앞 체크포인트를 무효화하는 동작(예: 완전 종료 후 재실행)이 필요하면
+그 지점만 별도 세션으로 유지한다.
+
 ```markdown
 # <기능> 실기기 체크리스트 (YYYY-MM-DD)
 
