@@ -182,30 +182,33 @@ final class RunAudioCoachTests: XCTestCase {
         XCTAssertEqual(announcer.announcedPaces, [.measured, .measured])
     }
 
-    func test_상태전환과_절반_발화는_기본속도() async {
-        // 시작·일시정지·재개·절반·종료는 짧은 문구라 기본 속도를 유지한다(2026-07-18)
+    func test_일시정지_재개만_기본속도_나머지는_모두_measured() async {
+        // 일시정지/재개만 기존 속도 유지, 시작·절반·종료(+km·목표달성)는 전부 느리게(2026-07-18 후속 피드백)
         await session.start(goal: .distance(meters: 1000))
-        coach.sync() // 시작 발화
+        coach.sync() // idx0: 시작
         stream.yield(sample(at: Date()))
         await waitUntil { session.state == .tracking }
         coach.sync() // acquiring→tracking 전이 자체엔 발화 없음
 
         session.pause()
-        coach.sync() // 일시정지 발화
+        coach.sync() // idx1: 일시정지
         session.resume()
-        coach.sync() // 재개 발화
+        coach.sync() // idx2: 재개
 
         let start = Date()
         stream.yield(sample(at: start)) // 재개 직후 첫 샘플은 위치 앵커일 뿐 거리에는 반영되지 않는다
         stream.yield(sample(at: start.addingTimeInterval(150), metersNorth: 505))
         await waitUntil { session.track.totalDistanceMeters > 500 }
-        coach.sync() // 절반 발화
+        coach.sync() // idx3: 절반
 
         session.finish()
-        coach.sync() // 종료 발화
+        coach.sync() // idx4: 종료
 
         XCTAssertEqual(announcer.announced.count, 5)
-        XCTAssertEqual(announcer.announcedPaces, [.brisk, .brisk, .brisk, .brisk, .brisk])
+        XCTAssertEqual(
+            announcer.announcedPaces,
+            [.measured, .brisk, .brisk, .measured, .measured]
+        )
     }
 
     func test_새러닝을_시작하면_목표발화_카운터가_리셋된다() async {

@@ -4,8 +4,12 @@ import XCTest
 @MainActor
 final class RecordingVoiceAnnouncer: VoiceAnnouncerProtocol {
     var announced: [String] = []
+    var announcedPaces: [AnnouncementPace] = []
     var holds = 0, releases = 0, stops = 0
-    func announce(_ text: String, pace: AnnouncementPace) { announced.append(text) }
+    func announce(_ text: String, pace: AnnouncementPace) {
+        announced.append(text)
+        announcedPaces.append(pace)
+    }
     func holdAudioSession() { holds += 1 }
     func releaseAudioSession() { releases += 1 }
     func stopSpeaking() { stops += 1 }
@@ -243,6 +247,8 @@ final class RunPageViewModelTests: XCTestCase {
     func test_시작탭_카운트다운_삼이일_발화후_세션시작() async {
         await viewModel.startTapped()
         XCTAssertEqual(announcer.announced, ["삼", "이", "일"])
+        // 일시정지/재개를 제외한 모든 발화는 measured(느린 속도) — 2026-07-18 후속 피드백
+        XCTAssertEqual(announcer.announcedPaces, [.measured, .measured, .measured])
         XCTAssertEqual(announcer.holds, 1)
         XCTAssertEqual(announcer.releases, 1)
         XCTAssertNil(viewModel.countdown)

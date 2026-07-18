@@ -1,7 +1,8 @@
 import Foundation
 
-/// 발화 속도 카테고리 — 상태 전환 등 짧은 문구는 기본(brisk), 숫자 정보가 담긴 문구는
-/// 더 천천히(measured) 말해 알아듣기 쉽게 한다(실사용 QA 피드백 2026-07-18).
+/// 발화 속도 카테고리 — 일시정지/재개만 기존 속도(brisk)를 유지하고, 나머지 전부(시작·종료·
+/// km 안내·목표 절반/달성·카운트다운)는 느리게(measured) 말해 알아듣기 쉽게 한다
+/// (실사용 QA 피드백 2026-07-18 1차: km·목표달성만 느리게 / 2차: 일시정지·재개 제외 전부 느리게).
 enum AnnouncementPace {
     case brisk
     case measured
@@ -21,8 +22,8 @@ protocol VoiceAnnouncerProtocol {
 }
 
 extension VoiceAnnouncerProtocol {
-    /// pace 미지정 호출부 호환용 — 기본 속도로 말한다
-    func announce(_ text: String) { announce(text, pace: .brisk) }
+    /// pace 미지정 호출부 호환용 — 일시정지/재개를 제외한 기본값은 measured(느린 속도)
+    func announce(_ text: String) { announce(text, pace: .measured) }
     func holdAudioSession() {}
     func releaseAudioSession() {}
     func stopSpeaking() {}
