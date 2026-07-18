@@ -27,10 +27,11 @@ final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
     }
 
     func announce(_ text: String, pace: AnnouncementPace, kind: AnnouncementKind) {
-        // 포인트 발화 즉시성(스펙 §2.2): 데이터 낭독(km·목표)이 재생 중이면 중단하고 바로 말한다.
-        // 상태 전환 발화가 재생 중이면 그대로 큐에 붙는다(후순위). stopSpeaking은 큐 전체를
-        // 비우지만, 데이터 낭독은 단발 발화라 실질적으로 그 발화 하나만 끊긴다.
-        if kind == .waypoint, queuedKinds.first == .data {
+        // 포인트 발화 즉시성(스펙 §2.2): 데이터 낭독(km·목표)이 유일하게 대기 중이면 중단하고
+        // 바로 말한다. stopSpeaking은 큐 전체를 비우므로, 뒤에 다른 발화(km+목표 동시 등)가
+        // 이미 붙어 있으면 건너뛰고 정상 큐잉한다 — 그렇지 않으면 didCancel이 하나만 정리해
+        // pendingCount가 영영 0으로 안 돌아가는 세션 디싱크가 생긴다.
+        if kind == .waypoint, queuedKinds == [.data] {
             synthesizer.stopSpeaking(at: .immediate) // didCancel 델리게이트가 카운트를 정리한다
         }
         if pendingCount == 0 && isHeld == false {

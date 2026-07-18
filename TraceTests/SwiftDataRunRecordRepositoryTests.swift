@@ -205,4 +205,40 @@ nonisolated final class SwiftDataRunRecordRepositoryTests: XCTestCase {
             XCTFail("expected error")
         } catch {} // ok
     }
+
+    // MARK: - 저장→삭제→재조회→재계산 통합 (post-merge 리뷰 Finding 2)
+    // 여러 레이어(저장소 왕복, 계산기, 뷰모델)를 각각 목으로 검증해왔지만, 실제 스토어를 낀
+    // 전체 흐름(삭제 후 구간이 정말 올바르게 재계산되는지)을 한 번에 잠그는 테스트가 없었다.
+    func test_저장_후_중간포인트_삭제하면_재조회한_구간이_올바르게_재계산된다() async throws {
+        let repository = SwiftDataRunRecordRepository(inMemory: true)
+        let waypoints = [
+            RunWaypoint(timestamp: Date(timeIntervalSince1970: 1_700_000_100),
+                        latitude: 37.505, longitude: 127.0, totalDistanceMeters: 500),
+            RunWaypoint(timestamp: Date(timeIntervalSince1970: 1_700_000_200),
+                        latitude: 37.507, longitude: 127.0, totalDistanceMeters: 1200),
+            RunWaypoint(timestamp: Date(timeIntervalSince1970: 1_700_000_300),
+                        latitude: 37.509, longitude: 127.0, totalDistanceMeters: 1700)
+        ]
+        let run = waypointRun(waypoints: waypoints)
+        try await repository.save(run)
+
+        // 가운데(인덱스 1) 포인트를 삭제(RunHistoryViewModel.deleteWaypoint와 동일한 절차)
+        let remaining = [waypoints[0], waypoints[2]]
+        try await repository.updateWaypoints(runID: run.summary.id, waypoints: remaining)
+
+        let fetched = await repository.fetchRun(id: run.summary.id)
+        XCTAssertEqual(fetched?.waypoints, remaining)
+
+        let segments = RunWaypointSegmentsCalculator.segments(
+            waypoints: fetched?.waypoints ?? [],
+            totalDistanceMeters: fetched?.summary.distanceMeters ?? 0
+        )
+
+        XCTAssertEqual(segments.count, 3) // 남은 포인트 2개 + 최종 구간 1개
+        XCTAssertEqual(
+            segments.map(\.distanceMeters).reduce(0, +),
+            fetched?.summary.distanceMeters ?? -1, accuracy: 1e-9
+        )
+        XCTAssertEqual(segments.map(\.index), [1, 2, 3]) // 삭제된 가운데 인덱스를 건너뛰지 않고 재번호
+    }
 }

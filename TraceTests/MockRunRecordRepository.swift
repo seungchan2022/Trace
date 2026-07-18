@@ -12,9 +12,16 @@ actor MockRunRecordRepository: RunRecordRepositoryProtocol {
 
     private(set) var savedRuns: [SavedRun] = []
     private var failsNextSave = false
+    private var failsNextFetch = false
 
     func failNextSave() {
         failsNextSave = true
+    }
+
+    /// 다음 fetchRun 호출 1회만 nil을 돌려준다 — updateWaypoints 성공 직후의 재조회가
+    /// 일시적으로 nil인 경우(Finding 4)를 재현하기 위함.
+    func failNextFetch() {
+        failsNextFetch = true
     }
 
     func save(_ run: SavedRun) async throws {
@@ -30,7 +37,11 @@ actor MockRunRecordRepository: RunRecordRepositoryProtocol {
     }
 
     func fetchRun(id: UUID) async -> SavedRun? {
-        savedRuns.first { $0.summary.id == id }
+        if failsNextFetch {
+            failsNextFetch = false
+            return nil
+        }
+        return savedRuns.first { $0.summary.id == id }
     }
 
     func deleteRun(id: UUID) async throws {

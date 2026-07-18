@@ -100,4 +100,21 @@ final class RunHistoryViewModelTests: XCTestCase {
         XCTAssertNil(updated)
         XCTAssertTrue(viewModel.showsWaypointDeleteFailure)
     }
+
+    func test_쓰기는_성공했지만_재조회가_nil이면_실패_플래그가_켜진다() async {
+        // Finding 4: updateWaypoints는 성공했는데 바로 이어지는 fetchRun이 일시적으로 nil인 경우도
+        // 조용히 넘어가지 않고 기존 실패 알럿으로 사용자에게 알려야 한다.
+        let waypoints = [
+            RunWaypoint(timestamp: Date(timeIntervalSince1970: 1_700_000_100),
+                        latitude: 37.505, longitude: 127.0, totalDistanceMeters: 870)
+        ]
+        let run = runWithWaypoints(waypoints)
+        try? await repository.save(run)
+        await repository.failNextFetch()
+
+        let updated = await viewModel.deleteWaypoint(from: run, at: 0)
+
+        XCTAssertNil(updated)
+        XCTAssertTrue(viewModel.showsWaypointDeleteFailure)
+    }
 }

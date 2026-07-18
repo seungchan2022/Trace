@@ -45,7 +45,9 @@ final class RunHistoryViewModel {
     }
 
     /// 포인트 개별 삭제(스펙 §2.5) — 성공 시 스토어에서 다시 읽은 기록을 돌려준다(재계산은 뷰가
-    /// RunWaypointSegmentsCalculator로 수행). 실패 시 nil + 알럿 플래그
+    /// RunWaypointSegmentsCalculator로 수행). 실패 시 nil + 알럿 플래그.
+    /// 쓰기는 성공했는데 곧바로 이어지는 재조회가 nil을 돌려주는 드문 경우(일시적 스토어 문제 등)도
+    /// 같은 실패 알럿으로 사용자에게 알린다 — 조용히 아무 일도 안 하고 넘어가지 않는다.
     func deleteWaypoint(from run: SavedRun, at index: Int) async -> SavedRun? {
         var waypoints = run.waypoints
         guard waypoints.indices.contains(index) else { return nil }
@@ -56,6 +58,10 @@ final class RunHistoryViewModel {
             showsWaypointDeleteFailure = true
             return nil
         }
-        return await repository.fetchRun(id: run.summary.id)
+        guard let refetched = await repository.fetchRun(id: run.summary.id) else {
+            showsWaypointDeleteFailure = true
+            return nil
+        }
+        return refetched
     }
 }

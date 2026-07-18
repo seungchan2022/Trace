@@ -128,7 +128,7 @@ struct RunRecordDetailView: View {
             loadFinished = true
         }
         .alert(
-            "포인트 \((pendingWaypointDeleteIndex ?? 0) + 1)을(를) 삭제할까요?",
+            "포인트 \((pendingWaypointDeleteIndex ?? 0) + 1)번을 삭제할까요?",
             isPresented: Binding(
                 get: { pendingWaypointDeleteIndex != nil },
                 set: { if $0 == false { pendingWaypointDeleteIndex = nil } }
