@@ -10,6 +10,7 @@ final class RunHistoryViewModel {
     private(set) var summaries: [SavedRunSummary] = []
     private(set) var pendingDelete: SavedRunSummary?
     var showsDeleteFailure = false
+    var showsWaypointDeleteFailure = false
 
     init(repository: RunRecordRepositoryProtocol) {
         self.repository = repository
@@ -41,5 +42,20 @@ final class RunHistoryViewModel {
         }
         // 성공·실패 모두 실제 스토어와 재동기화(스펙 §6)
         await load()
+    }
+
+    /// 포인트 개별 삭제(스펙 §2.5) — 성공 시 스토어에서 다시 읽은 기록을 돌려준다(재계산은 뷰가
+    /// RunWaypointSegmentsCalculator로 수행). 실패 시 nil + 알럿 플래그
+    func deleteWaypoint(from run: SavedRun, at index: Int) async -> SavedRun? {
+        var waypoints = run.waypoints
+        guard waypoints.indices.contains(index) else { return nil }
+        waypoints.remove(at: index)
+        do {
+            try await repository.updateWaypoints(runID: run.summary.id, waypoints: waypoints)
+        } catch {
+            showsWaypointDeleteFailure = true
+            return nil
+        }
+        return await repository.fetchRun(id: run.summary.id)
     }
 }

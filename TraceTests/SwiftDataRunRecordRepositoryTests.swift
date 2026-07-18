@@ -176,4 +176,33 @@ nonisolated final class SwiftDataRunRecordRepositoryTests: XCTestCase {
         XCTAssertNotNil(decoded)
         XCTAssertEqual(decoded?.waypoints, [])
     }
+
+    func test_포인트를_교체하면_재조회에_반영된다() async throws {
+        let repository = SwiftDataRunRecordRepository(inMemory: true)
+        let original = [
+            RunWaypoint(timestamp: Date(timeIntervalSince1970: 1_700_000_100),
+                        latitude: 37.505, longitude: 127.0, totalDistanceMeters: 870),
+            RunWaypoint(timestamp: Date(timeIntervalSince1970: 1_700_000_400),
+                        latitude: 37.508, longitude: 127.0, totalDistanceMeters: 1500)
+        ]
+        let run = waypointRun(waypoints: original)
+        try await repository.save(run)
+
+        // 첫 포인트 삭제 반영
+        try await repository.updateWaypoints(runID: run.summary.id, waypoints: [original[1]])
+
+        let loaded = await repository.fetchRun(id: run.summary.id)
+        XCTAssertEqual(loaded?.waypoints, [original[1]])
+        // 샘플·요약 등 나머지는 불변
+        XCTAssertEqual(loaded?.samples, run.samples)
+        XCTAssertEqual(loaded?.summary.distanceMeters ?? 0, 2000, accuracy: 0.001)
+    }
+
+    func test_없는_기록의_포인트_교체는_에러다() async {
+        let repository = SwiftDataRunRecordRepository(inMemory: true)
+        do {
+            try await repository.updateWaypoints(runID: UUID(), waypoints: [])
+            XCTFail("expected error")
+        } catch {} // ok
+    }
 }

@@ -36,4 +36,15 @@ actor MockRunRecordRepository: RunRecordRepositoryProtocol {
     func deleteRun(id: UUID) async throws {
         savedRuns.removeAll { $0.summary.id == id }
     }
+
+    func updateWaypoints(runID: UUID, waypoints: [RunWaypoint]) async throws {
+        guard let index = savedRuns.firstIndex(where: { $0.summary.id == runID }) else {
+            throw MockError.saveFailed
+        }
+        let run = savedRuns[index]
+        savedRuns[index] = SavedRun(
+            summary: run.summary, samples: run.samples,
+            pauses: run.pauses, goal: run.goal, waypoints: waypoints
+        )
+    }
 }

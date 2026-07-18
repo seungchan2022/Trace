@@ -6,6 +6,7 @@ import SwiftData
 actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
     enum RepositoryError: Error {
         case storeUnavailable
+        case recordUnavailable
     }
 
     private let inMemory: Bool
@@ -115,6 +116,26 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
         )
         guard let record = try context.fetch(descriptor).first else { return }
         context.delete(record)
+        try context.save()
+    }
+
+    func updateWaypoints(runID: UUID, waypoints: [RunWaypoint]) async throws {
+        guard let context else { throw RepositoryError.storeUnavailable }
+        let descriptor = FetchDescriptor<RunRecordModel>(
+            predicate: #Predicate { $0.id == runID }
+        )
+        guard let record = try context.fetch(descriptor).first,
+              let payload = Self.decodeRunPayload(record.payload)
+        else { throw RepositoryError.recordUnavailable }
+        // 샘플·일시정지·목표는 그대로, 포인트만 교체해 재직렬화(버전은 현재로 승격)
+        let dto = RunPersistenceDTO.Run(
+            version: RunPersistenceDTO.currentVersion,
+            samples: payload.samples.map(RunPersistenceDTO.Sample.init),
+            pauses: payload.pauses.map(RunPersistenceDTO.Pause.init),
+            goal: RunPersistenceDTO.Goal(payload.goal),
+            waypoints: waypoints.map(RunPersistenceDTO.Waypoint.init)
+        )
+        record.payload = try JSONEncoder().encode(dto)
         try context.save()
     }
 

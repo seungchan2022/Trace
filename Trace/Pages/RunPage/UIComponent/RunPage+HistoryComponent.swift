@@ -89,6 +89,7 @@ struct RunRecordDetailView: View {
     let viewModel: RunHistoryViewModel
     @State private var loadedRun: SavedRun?
     @State private var loadFinished = false
+    @State private var pendingWaypointDeleteIndex: Int?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -114,7 +115,8 @@ struct RunRecordDetailView: View {
                         segments: RunWaypointSegmentsCalculator.segments(
                             waypoints: loadedRun.waypoints,
                             totalDistanceMeters: loadedRun.summary.distanceMeters
-                        )
+                        ),
+                        onDeleteWaypoint: { pendingWaypointDeleteIndex = $0 }
                     )
                 }
             }
@@ -124,6 +126,31 @@ struct RunRecordDetailView: View {
         .task {
             loadedRun = await viewModel.loadRun(id: summary.id)
             loadFinished = true
+        }
+        .alert(
+            "포인트 \((pendingWaypointDeleteIndex ?? 0) + 1)을(를) 삭제할까요?",
+            isPresented: Binding(
+                get: { pendingWaypointDeleteIndex != nil },
+                set: { if $0 == false { pendingWaypointDeleteIndex = nil } }
+            )
+        ) {
+            Button("삭제", role: .destructive) {
+                guard let index = pendingWaypointDeleteIndex, let run = loadedRun else { return }
+                pendingWaypointDeleteIndex = nil
+                Task {
+                    if let updated = await viewModel.deleteWaypoint(from: run, at: index) {
+                        loadedRun = updated // 구간 표·마커 재계산은 body가 파생(스펙 §2.5)
+                    }
+                }
+            }
+            Button("취소", role: .cancel) { pendingWaypointDeleteIndex = nil }
+        } message: {
+            Text("구간 거리는 앞뒤 구간에 합쳐집니다")
+        }
+        .alert("포인트를 삭제하지 못했어요", isPresented: Bindable(viewModel).showsWaypointDeleteFailure) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("잠시 후 다시 시도해 주세요")
         }
     }
 
@@ -259,10 +286,12 @@ struct WaypointMarkerBadge: View {
     }
 }
 
-/// 포인트 구간 표(스펙 §2.5) — km 스플릿 표와 별도 섹션, 포인트 없는 기록은 섹션 자체가 숨는다
+/// 포인트 구간 표(스펙 §2.5) — km 스플릿 표와 별도 섹션, 포인트 없는 기록은 섹션 자체가 숨는다.
+/// 비-final 행의 삭제 버튼 = 그 행의 끝 포인트 삭제(다음 구간과 병합) — 오탭 복구 경로
 private struct RunWaypointsSection: View {
     let run: SavedRun
     let segments: [RunWaypointSegment]
+    let onDeleteWaypoint: (Int) -> Void // 인자: 삭제할 포인트의 0-기반 인덱스
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -279,6 +308,19 @@ private struct RunWaypointsSection: View {
                         .font(DesignToken.Typography.segmentRowDistance)
                         .monospacedDigit()
                         .foregroundStyle(DesignToken.Color.ink)
+                    if segment.endsAtFinish == false {
+                        Button {
+                            onDeleteWaypoint(segment.index - 1) // 행의 끝 포인트(1-기반 → 0-기반)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(DesignToken.Color.ink2)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("run.deleteWaypoint.\(segment.index)")
+                    } else {
+                        // final 행은 버튼 없이 폭만 맞춘다(정렬 유지)
+                        Image(systemName: "xmark.circle.fill").opacity(0)
+                    }
                 }
             }
         }
