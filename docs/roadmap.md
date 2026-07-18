@@ -11,7 +11,7 @@
 
 ## 진행 중 / 예정
 
-### MVP15 — 러닝 경험 보강   (상태: 킥오프 완료 · 사이클 ① 플랜 작성 완료 → 구현 대기)
+### MVP15 — 러닝 경험 보강   (상태: 사이클 ① 완료(실기기 QA 통과) → 사이클 ② 플랜 예정)
 
 > 코스 연동(다음 MVP) 전에 러닝 기둥의 기능·디테일을 보강한다 — 실사용 피드백 5건이 재료.
 > 시작 카운트다운(3-2-1 발화, 백그라운드에도 계속), 종료 홀드 진행 링, 발화 문안 통일·속도
@@ -20,7 +20,7 @@
 > 러닝 탭 UI 구조 개편은 MVP16 후보로 백로그에 씨앗만. 스펙(ce-doc-review 5페르소나 리뷰
 > 15건 반영): `docs/superpowers/specs/2026-07-17-run-detail-waypoints-design.md`
 
-- [ ] **run-detail-polish** — 시작 카운트다운 + 종료 홀드 링 + 발화 문안·속도 정비 + 목표 직접 입력 (경량 사이클: 태스크별 리뷰만). 플랜(Task 6개, 구현 대기): `docs/superpowers/plans/2026-07-17-run-detail-polish.md`
+- [x] **run-detail-polish** — 시작 카운트다운 + 종료 홀드 링 + 발화 문안·속도 정비 + 목표 직접 입력 (경량 사이클: 태스크별 리뷰만, subagent-driven-development로 Task 6개 전부 구현·리뷰 완료). 플랜: `docs/superpowers/plans/2026-07-17-run-detail-polish.md` · 실기기 QA 통과(2026-07-18): `docs/qa/2026-07-18-run-detail-polish-device-checklist.md`, 후속 피드백 2건(카운트다운 예열, 발화 속도 분리) 반영 완료(커밋 50c5fd9)
 - [ ] **run-waypoints** — 포인트 찍기: 트래킹 버튼·즉시 발화, 잠금화면 버튼(무세션 가드), additive 스키마 확장, 기록 상세 표시·삭제 (표준 사이클: + 최종 브랜치 리뷰). 플랜 미작성 — 사이클 ① 완료 후 별도 세션에서 writing-plans
 
 ### MVP14 — 기본 러닝 경험 완성   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp14/`](history/mvp14/))
