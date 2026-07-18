@@ -124,4 +124,56 @@ nonisolated final class SwiftDataRunRecordRepositoryTests: XCTestCase {
         XCTAssertNotNil(decoded)
         XCTAssertEqual(decoded?.goal, .open)
     }
+
+    // MARK: - 포인트 스트림 (v4, 스펙 §2.4)
+
+    private func waypointRun(id: UUID = UUID(), waypoints: [RunWaypoint]) -> SavedRun {
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        return SavedRun(
+            summary: SavedRunSummary(
+                id: id, startedAt: start, distanceMeters: 2000,
+                duration: 600, elevationGainMeters: 5
+            ),
+            samples: [
+                SavedRunSample(timestamp: start, latitude: 37.5, longitude: 127.0,
+                               altitudeMeters: 10, speedMetersPerSecond: 3),
+                SavedRunSample(timestamp: start.addingTimeInterval(600), latitude: 37.51, longitude: 127.0,
+                               altitudeMeters: 10, speedMetersPerSecond: 3)
+            ],
+            waypoints: waypoints
+        )
+    }
+
+    func test_포인트가_있는_기록_저장_왕복() async throws {
+        let repository = SwiftDataRunRecordRepository(inMemory: true)
+        let waypoints = [
+            RunWaypoint(timestamp: Date(timeIntervalSince1970: 1_700_000_100),
+                        latitude: 37.505, longitude: 127.0, totalDistanceMeters: 870),
+            RunWaypoint(timestamp: Date(timeIntervalSince1970: 1_700_000_400),
+                        latitude: 37.508, longitude: 127.0, totalDistanceMeters: 1500)
+        ]
+        let run = waypointRun(waypoints: waypoints)
+        try await repository.save(run)
+
+        let loaded = await repository.fetchRun(id: run.summary.id)
+        XCTAssertEqual(loaded?.waypoints, waypoints)
+    }
+
+    func test_포인트가_없는_기록_저장_왕복() async throws {
+        let repository = SwiftDataRunRecordRepository(inMemory: true)
+        let run = waypointRun(waypoints: [])
+        try await repository.save(run)
+        let loaded = await repository.fetchRun(id: run.summary.id)
+        XCTAssertEqual(loaded?.waypoints, [])
+    }
+
+    func test_v3_blob은_포인트가_빈배열로_해독된다() throws {
+        // 과거 기록 호환(스펙 §2.4): v3 payload에는 waypoints 키 자체가 없다
+        let v3JSON = """
+        {"version":3,"samples":[{"t":700000000,"lat":37.5,"lon":127.0,"alt":10,"spd":3}]}
+        """
+        let decoded = SwiftDataRunRecordRepository.decodeRunPayload(Data(v3JSON.utf8))
+        XCTAssertNotNil(decoded)
+        XCTAssertEqual(decoded?.waypoints, [])
+    }
 }

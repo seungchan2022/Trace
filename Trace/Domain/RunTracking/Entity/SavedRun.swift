@@ -56,14 +56,18 @@ struct SavedRun: Equatable, Sendable {
     let pauses: [RunPauseInterval]
     /// 이번 러닝의 목표 — 상세 화면 "목표 5 km" 표시용(스펙 §4-3). 자유 러닝은 .open
     let goal: RunGoal
+    /// 달리며 찍은 포인트 스트림(MVP15 §2.4, additive) — 과거 기록은 빈 배열
+    let waypoints: [RunWaypoint]
 
     init(
         summary: SavedRunSummary, samples: [SavedRunSample],
-        pauses: [RunPauseInterval] = [], goal: RunGoal = .open
+        pauses: [RunPauseInterval] = [], goal: RunGoal = .open,
+        waypoints: [RunWaypoint] = []
     ) {
         self.summary = summary
         self.samples = samples
         self.pauses = pauses
         self.goal = goal
+        self.waypoints = waypoints
     }
 }

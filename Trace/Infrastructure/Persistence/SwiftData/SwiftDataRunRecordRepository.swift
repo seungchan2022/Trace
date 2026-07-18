@@ -54,7 +54,8 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
             version: RunPersistenceDTO.currentVersion,
             samples: run.samples.map(RunPersistenceDTO.Sample.init),
             pauses: run.pauses.map(RunPersistenceDTO.Pause.init),
-            goal: RunPersistenceDTO.Goal(run.goal)
+            goal: RunPersistenceDTO.Goal(run.goal),
+            waypoints: run.waypoints.map(RunPersistenceDTO.Waypoint.init)
         )
         let payload = try JSONEncoder().encode(dto)
         context.insert(RunRecordModel(
@@ -102,7 +103,8 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
             ),
             samples: payload.samples,
             pauses: payload.pauses,
-            goal: payload.goal
+            goal: payload.goal,
+            waypoints: payload.waypoints
         )
     }
 
@@ -120,9 +122,12 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
 
     static func decodeRunPayload(
         _ data: Data
-    ) -> (samples: [SavedRunSample], pauses: [RunPauseInterval], goal: RunGoal)? {
+    ) -> (samples: [SavedRunSample], pauses: [RunPauseInterval], goal: RunGoal, waypoints: [RunWaypoint])? {
         guard let dto = try? JSONDecoder().decode(RunPersistenceDTO.Run.self, from: data),
               dto.version <= RunPersistenceDTO.currentVersion else { return nil }
-        return (dto.samples.map(\.domain), (dto.pauses ?? []).map(\.domain), dto.goal?.domain ?? .open)
+        return (
+            dto.samples.map(\.domain), (dto.pauses ?? []).map(\.domain),
+            dto.goal?.domain ?? .open, (dto.waypoints ?? []).map(\.domain)
+        )
     }
 }

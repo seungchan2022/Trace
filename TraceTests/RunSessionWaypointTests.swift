@@ -165,4 +165,18 @@ final class RunSessionWaypointTests: XCTestCase {
         XCTAssertTrue(session.waypoints.isEmpty)
         session.cancelPreparation()
     }
+
+    func test_종료시_포인트가_기록에_저장된다() async {
+        let start = Date()
+        await startTracking(at: start)
+        stream.yield(sample(at: start.addingTimeInterval(60), latOffsetMeters: 300))
+        await waitUntil { self.session.track.totalDistanceMeters > 299 }
+        session.markWaypoint()
+        let expected = session.waypoints
+
+        session.finish()
+        await waitUntil { self.session.saveStatus == .saved }
+        let saved = await recordRepository.savedRuns.first
+        XCTAssertEqual(saved?.waypoints, expected)
+    }
 }

@@ -345,7 +345,8 @@ final class RunSession {
             ),
             samples: track.samples.map(SavedRunSample.init),
             pauses: completedPauses,
-            goal: goal
+            goal: goal,
+            waypoints: waypoints
         )
         pendingRun = run
         performSave(run)
