@@ -19,6 +19,15 @@ struct TraceApp: App {
         }
         container.runActivityController.startObserving()
         container.runAudioCoach.startObserving()
+
+        let session = container.runSession
+        let activityController = container.runActivityController
+        MarkRunWaypointIntentBridge.handler = {
+            RunWaypointIntentAction(
+                session: session,
+                endOrphanedActivities: { activityController.endOrphanedActivities() }
+            ).perform()
+        }
     }
 
     var body: some Scene {

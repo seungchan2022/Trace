@@ -1,4 +1,5 @@
 import ActivityKit
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -28,12 +29,32 @@ struct RunLiveActivityWidget: Widget {
     }
 
     private func lockScreenView(context: ActivityViewContext<RunActivityAttributes>) -> some View {
-        HStack(spacing: 20) {
-            Image(systemName: context.state.isPaused ? "pause.circle.fill" : "figure.run")
-                .font(.title2)
-            metric(distanceText(context), label: "거리")
-            timeView(context, fontSize: 20)
-            metric(paceText(context), label: "페이스")
+        VStack(spacing: 10) {
+            HStack(spacing: 20) {
+                Image(systemName: context.state.isPaused ? "pause.circle.fill" : "figure.run")
+                    .font(.title2)
+                metric(distanceText(context), label: "거리")
+                timeView(context, fontSize: 20)
+                metric(paceText(context), label: "페이스")
+            }
+            HStack {
+                if let waypoint = context.state.lastWaypoint {
+                    // 첫 포인트 전에는 줄 자체를 표시하지 않는다(스펙 §2.3)
+                    Text(String(format: "P%d · %.2f km", waypoint.index, waypoint.segmentMeters / 1000))
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button(intent: MarkRunWaypointIntent()) {
+                    Label("포인트", systemImage: "mappin.and.ellipse")
+                        .font(.system(size: 14, weight: .bold))
+                }
+                .buttonStyle(.borderedProminent)
+                // 일시정지 중엔 잠금화면 버튼도 비활성 — 앱 내 버튼과 동일 규칙(스펙 §2.3).
+                // Activity 존재 = tracking/paused = 샘플 확보 후이므로 isPaused만 보면 된다.
+                .disabled(context.state.isPaused)
+            }
         }
         .padding(16)
         .activityBackgroundTint(Color.black.opacity(0.6))

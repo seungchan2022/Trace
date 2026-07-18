@@ -70,6 +70,7 @@
 		EC23B82B30053246005A586D /* Exceptions for "Trace" folder in "TraceWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				App/MarkRunWaypointIntent.swift,
 				Domain/RunTracking/RunActivityAttributes.swift,
 			);
 			target = EC23B80F30053150005A586D /* TraceWidgetsExtension */;
