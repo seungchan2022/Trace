@@ -5,7 +5,7 @@ import XCTest
 final class RecordingVoiceAnnouncer: VoiceAnnouncerProtocol {
     var announced: [String] = []
     var holds = 0, releases = 0, stops = 0
-    func announce(_ text: String) { announced.append(text) }
+    func announce(_ text: String, pace: AnnouncementPace) { announced.append(text) }
     func holdAudioSession() { holds += 1 }
     func releaseAudioSession() { releases += 1 }
     func stopSpeaking() { stops += 1 }
@@ -275,5 +275,8 @@ final class RunPageViewModelTests: XCTestCase {
         XCTAssertTrue(announcer.announced.isEmpty)
         XCTAssertNil(viewModel.countdown)
         XCTAssertTrue(viewModel.showsAccuracyAlert)
+        // 정확도 게이트 대기 동안 예열용으로 미리 잡은 오디오 세션은 실패해도 반드시 해제해야 한다
+        XCTAssertEqual(announcer.holds, 1)
+        XCTAssertEqual(announcer.releases, 1)
     }
 }

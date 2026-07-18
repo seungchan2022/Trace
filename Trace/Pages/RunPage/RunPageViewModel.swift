@@ -129,12 +129,16 @@ final class RunPageViewModel {
     func startTapped() async {
         guard countdown == nil else { return }
         guard isGoalInputValid else { return }
+        // prepareStart의 정확도 게이트(await) 동안 오디오 세션을 미리 잡아둔다 — 정확도 확인
+        // 직후 첫 숫자를 바로 말하면 오디오 엔진이 덜 데워진 채로 시작해 "삼"이 뭉개져 들린다는
+        // 실사용 QA 피드백(2026-07-18). 실패 시에도 잡은 세션은 반드시 해제한다.
+        announcer.holdAudioSession() // 덕킹 1회: 카운트다운~시작 발화까지 유지(스펙 §1.1)
         guard await session.prepareStart(goal: composedGoal) else {
+            announcer.releaseAudioSession()
             presentStartFailure()
             return
         }
         persistGoalInputs()
-        announcer.holdAudioSession() // 덕킹 1회: 카운트다운~시작 발화까지 유지(스펙 §1.1)
         countdownActive = true
         for (index, word) in RunAnnouncementBuilder.countdown.enumerated() {
             guard countdownActive else { return } // 취소됨 — cancelCountdown()이 정리 완료

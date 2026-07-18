@@ -81,7 +81,7 @@ final class RunAudioCoach {
             km: km,
             totalSeconds: elapsed,
             averagePaceSecondsPerKm: averagePace(elapsed: elapsed)
-        ))
+        ), pace: .measured) // 숫자 정보가 많아 알아듣기 어렵다는 실사용 피드백(2026-07-18)
     }
 
     private func announceGoalIfNeeded() {
@@ -95,7 +95,7 @@ final class RunAudioCoach {
                 distanceMeters: session.track.totalDistanceMeters,
                 totalSeconds: elapsed,
                 averagePaceSecondsPerKm: averagePace(elapsed: elapsed)
-            ))
+            ), pace: .measured) // 숫자 정보가 많아 알아듣기 어렵다는 실사용 피드백(2026-07-18)
         } else if session.goalHalfReached, goalHalfAnnounced == false {
             goalHalfAnnounced = true
             announcer.announce(RunAnnouncementBuilder.goalHalf)

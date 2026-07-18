@@ -46,6 +46,7 @@ final class RunAudioCoachTests: XCTestCase {
         await waitUntil { session.state == .tracking }
         coach.sync()
         announcer.announced.removeAll()
+        announcer.announcedPaces.removeAll()
     }
 
     func test_시작하면_러닝시작_발화() async {
@@ -170,6 +171,43 @@ final class RunAudioCoachTests: XCTestCase {
         XCTAssertTrue(announcer.announced[0].hasPrefix("1킬로미터"))
     }
 
+    func test_km경계와_목표달성_발화는_measured_속도() async {
+        // 숫자 정보가 많은 문구는 알아듣기 어렵다는 실사용 QA 피드백(2026-07-18)으로 느린 속도 지정
+        await startTracking(goal: .distance(meters: 1000))
+        let start = Date()
+        stream.yield(sample(at: start.addingTimeInterval(300), metersNorth: 1005))
+        await waitUntil { session.track.totalDistanceMeters > 1000 }
+        coach.sync()
+        XCTAssertEqual(announcer.announced.count, 2) // km 발화 + 목표 달성 발화
+        XCTAssertEqual(announcer.announcedPaces, [.measured, .measured])
+    }
+
+    func test_상태전환과_절반_발화는_기본속도() async {
+        // 시작·일시정지·재개·절반·종료는 짧은 문구라 기본 속도를 유지한다(2026-07-18)
+        await session.start(goal: .distance(meters: 1000))
+        coach.sync() // 시작 발화
+        stream.yield(sample(at: Date()))
+        await waitUntil { session.state == .tracking }
+        coach.sync() // acquiring→tracking 전이 자체엔 발화 없음
+
+        session.pause()
+        coach.sync() // 일시정지 발화
+        session.resume()
+        coach.sync() // 재개 발화
+
+        let start = Date()
+        stream.yield(sample(at: start)) // 재개 직후 첫 샘플은 위치 앵커일 뿐 거리에는 반영되지 않는다
+        stream.yield(sample(at: start.addingTimeInterval(150), metersNorth: 505))
+        await waitUntil { session.track.totalDistanceMeters > 500 }
+        coach.sync() // 절반 발화
+
+        session.finish()
+        coach.sync() // 종료 발화
+
+        XCTAssertEqual(announcer.announced.count, 5)
+        XCTAssertEqual(announcer.announcedPaces, [.brisk, .brisk, .brisk, .brisk, .brisk])
+    }
+
     func test_새러닝을_시작하면_목표발화_카운터가_리셋된다() async {
         await startTracking(goal: .distance(meters: 1000))
         let start = Date()
@@ -194,5 +232,9 @@ final class RunAudioCoachTests: XCTestCase {
 @MainActor
 final class FakeVoiceAnnouncer: VoiceAnnouncerProtocol {
     var announced: [String] = []
-    func announce(_ text: String) { announced.append(text) }
+    var announcedPaces: [AnnouncementPace] = []
+    func announce(_ text: String, pace: AnnouncementPace) {
+        announced.append(text)
+        announcedPaces.append(pace)
+    }
 }

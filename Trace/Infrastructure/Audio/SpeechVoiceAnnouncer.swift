@@ -9,6 +9,8 @@
 final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
     /// 실기기 QA에서 튜닝해 확정한다(스펙 §1.3) — 시스템 기본 0.5가 빠르다는 실사용 피드백으로 하향
     private static let speechRate: Float = 0.45
+    /// 숫자 정보가 담긴 문구(km 안내·목표 달성) 전용 — 알아듣기 어렵다는 실사용 QA 피드백으로 추가 하향(2026-07-18)
+    private static let measuredSpeechRate: Float = 0.40
 
     private let synthesizer = AVSpeechSynthesizer()
     /// 큐에 남아 있는 발화 수 — 0이 되는 시점(큐 소진)에만 세션을 비활성화한다
@@ -21,7 +23,7 @@ final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
         synthesizer.delegate = self
     }
 
-    func announce(_ text: String) {
+    func announce(_ text: String, pace: AnnouncementPace) {
         if pendingCount == 0 && isHeld == false {
             do {
                 let audioSession = AVAudioSession.sharedInstance()
@@ -34,7 +36,7 @@ final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
         pendingCount += 1
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
-        utterance.rate = Self.speechRate
+        utterance.rate = pace == .measured ? Self.measuredSpeechRate : Self.speechRate
         synthesizer.speak(utterance)
     }
 
