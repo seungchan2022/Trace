@@ -57,9 +57,31 @@ final class RunSession {
     /// 절반/달성 플래그 — 한 번 true면 러닝 끝까지 유지(각 1회 발화는 소비자가 전이로 감지)
     private(set) var goalHalfReached = false
     private(set) var goalAchieved = false
+    /// 이번 러닝에서 찍은 포인트들(스펙 §2) — 저장 payload에 그대로 들어간다
+    private(set) var waypoints: [RunWaypoint] = []
 
     var isActive: Bool { state == .acquiring || state == .tracking || state == .paused }
     var isPaused: Bool { state == .paused }
+
+    /// 포인트 버튼 활성 조건(스펙 §2.2): 일시정지 아님 + 첫 유효 샘플 확보됨 = tracking 상태.
+    /// (acquiring은 유효 샘플 이전, paused는 거리가 안 쌓이는 상태 — 둘 다 비활성)
+    var canMarkWaypoint: Bool { state == .tracking }
+
+    /// 포인트 찍기 — 좌표는 마지막 유효 샘플, 거리는 총거리 적산 스냅샷(스펙 §2.2·§2.4).
+    /// tracking 상태는 유효 샘플 ≥ 1을 보장하므로 좌표는 항상 존재한다.
+    /// 연타 방지 임계값 없음 — 0m 구간도 허용(스펙 §2.2).
+    @discardableResult
+    func markWaypoint(now: Date = Date()) -> RunWaypoint? {
+        guard canMarkWaypoint, let lastSample = track.samples.last else { return nil }
+        let waypoint = RunWaypoint(
+            timestamp: now,
+            latitude: lastSample.latitude,
+            longitude: lastSample.longitude,
+            totalDistanceMeters: track.totalDistanceMeters
+        )
+        waypoints.append(waypoint)
+        return waypoint
+    }
 
     /// 닫힌 구간 합 + (일시정지 중이면) 열린 구간까지 — "지금까지 멈춘 총 시간"
     func totalPausedSeconds(now: Date = Date()) -> TimeInterval {
@@ -124,6 +146,7 @@ final class RunSession {
         self.goal = goal
         goalHalfReached = false
         goalAchieved = false
+        waypoints = []
 
         let stream = locationStream.startUpdates()
         streamTask = Task { [weak self] in
@@ -207,6 +230,7 @@ final class RunSession {
         goal = .open
         goalHalfReached = false
         goalAchieved = false
+        waypoints = []
         #if DEBUG
         dumpEntries = []
         #endif
@@ -225,6 +249,7 @@ final class RunSession {
         goal = .open
         goalHalfReached = false
         goalAchieved = false
+        waypoints = []
         #if DEBUG
         dumpEntries = []
         #endif
