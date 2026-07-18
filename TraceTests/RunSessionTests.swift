@@ -407,6 +407,25 @@ extension RunSessionTests {
         XCTAssertEqual(session.state, .idle)
     }
 
+    func test_prepareStart_정확도재요청_대기중_재진입은_거부된다() async {
+        stream.accuracy = .reduced
+        stream.accuracyAfterRequest = .full
+        let gate = stream.gateAccuracyRequest()
+
+        let firstTask = Task { await session.prepareStart() }
+        await drainNoOp() // 첫 호출이 정확도 재요청 await 지점까지 진행할 시간 확보
+
+        let secondTask = Task { await session.prepareStart() }
+        await drainNoOp() // 두 번째 호출도 (버그가 있다면) 같은 지점까지 도달할 시간 확보
+
+        gate.finish() // 두 대기자를 동시에 깨운다
+        let firstResult = await firstTask.value
+        let secondResult = await secondTask.value
+
+        XCTAssertTrue(firstResult)
+        XCTAssertFalse(secondResult, "정확도 재요청 대기 중 재진입은 거부되어야 한다")
+    }
+
     func test_저장되는_기록의_duration은_일시정지를_제외하고_pauses를_포함한다() async {
         await session.start()
         stream.yield(sample(at: Date()))
@@ -434,9 +453,24 @@ final class MockRunLocationStream: RunLocationStreamProtocol {
     var accuracyAfterRequest: RunLocationAccuracy = .full
     private(set) var stopped = false
     private var continuation: AsyncStream<RunSample>.Continuation?
+    private var accuracyRequestGate: AsyncStream<Void>?
 
     func currentAccuracy() -> RunLocationAccuracy { accuracy }
-    func requestSessionFullAccuracy() async -> RunLocationAccuracy { accuracyAfterRequest }
+
+    func requestSessionFullAccuracy() async -> RunLocationAccuracy {
+        if let gate = accuracyRequestGate {
+            for await _ in gate { break }
+        }
+        return accuracyAfterRequest
+    }
+
+    /// requestSessionFullAccuracy()가 게이트가 닫힐 때까지 대기하게 만든다 — 재진입 레이스 테스트용.
+    /// finish()는 대기 중인 모든 소비자(여러 for-await)를 동시에 깨운다.
+    func gateAccuracyRequest() -> AsyncStream<Void>.Continuation {
+        let (stream, continuation) = AsyncStream.makeStream(of: Void.self)
+        accuracyRequestGate = stream
+        return continuation
+    }
 
     func startUpdates() -> AsyncStream<RunSample> {
         let (stream, continuation) = AsyncStream.makeStream(of: RunSample.self)

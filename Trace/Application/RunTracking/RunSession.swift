@@ -103,6 +103,7 @@ final class RunSession {
     /// 상태는 idle 유지·startedAt 미설정 — 스트림 태스크의 startedAt 가드가 예열 샘플을 버린다.
     func prepareStart(goal: RunGoal = .open) async -> Bool {
         guard state == .idle, isPreparing == false else { return false }
+        isPreparing = true // 아래 정확도 재요청 await 지점 전에 닫아야 재진입 창이 안 생긴다
         lastStartFailure = nil
 
         var accuracy = locationStream.currentAccuracy()
@@ -111,6 +112,7 @@ final class RunSession {
         }
         guard accuracy == .full else {
             lastStartFailure = .reducedAccuracy
+            isPreparing = false // 재시도를 막지 않도록 원복
             return false
         }
 
@@ -122,7 +124,6 @@ final class RunSession {
         self.goal = goal
         goalHalfReached = false
         goalAchieved = false
-        isPreparing = true
 
         let stream = locationStream.startUpdates()
         streamTask = Task { [weak self] in
