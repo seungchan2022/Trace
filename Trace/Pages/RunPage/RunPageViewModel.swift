@@ -41,16 +41,52 @@ final class RunPageViewModel {
     private(set) var summaryElapsedSeconds: TimeInterval?
     private var polylineThrottle = PolylineThrottle()
 
+    static let lastDistanceKey = "run.goal.lastDistanceKm"
+    static let lastTimeKey = "run.goal.lastTimeMinutes"
+
     // 목표 선택 상태(대기 화면) — 러닝 시작 시 composedGoal로 조립해 세션에 넘긴다
     var goalMode: RunGoalMode = .open
-    var goalDistanceKm = 5
-    var goalTimeMinutes = 30
+    var goalDistanceInput: String
+    var goalTimeInput: String
+
+    /// "5.5" 같은 자유 입력 텍스트를 km 값으로 파싱(스펙 §1.4) — 쉼표 소수점도 허용
+    var parsedGoalDistanceKm: Double? {
+        let normalized = goalDistanceInput.replacingOccurrences(of: ",", with: ".")
+        guard let value = Double(normalized), value.isFinite, value > 0 else { return nil }
+        return value
+    }
+
+    /// 분 입력은 정수만 허용 — "30.5" 같은 소수는 무효
+    var parsedGoalTimeMinutes: Int? {
+        guard let value = Int(goalTimeInput), value > 0 else { return nil }
+        return value
+    }
+
+    /// 시작 버튼 활성 조건(스펙 §1.4) — 자유 모드는 입력이 없어도 항상 유효
+    var isGoalInputValid: Bool {
+        switch goalMode {
+        case .open: true
+        case .distance: parsedGoalDistanceKm != nil
+        case .time: parsedGoalTimeMinutes != nil
+        }
+    }
+
+    /// 비정상 입력 인라인 안내(스펙 §1.4) — 빈 입력은 플레이스홀더가 안내하므로 에러 아님
+    var goalInputErrorText: String? {
+        switch goalMode {
+        case .open: nil
+        case .distance:
+            goalDistanceInput.isEmpty || parsedGoalDistanceKm != nil ? nil : "0보다 큰 숫자를 입력하세요"
+        case .time:
+            goalTimeInput.isEmpty || parsedGoalTimeMinutes != nil ? nil : "0보다 큰 정수(분)를 입력하세요"
+        }
+    }
 
     var composedGoal: RunGoal {
         switch goalMode {
         case .open: .open
-        case .distance: .distance(meters: Double(goalDistanceKm) * 1000)
-        case .time: .time(seconds: TimeInterval(goalTimeMinutes * 60))
+        case .distance: parsedGoalDistanceKm.map { .distance(meters: $0 * 1000) } ?? .open
+        case .time: parsedGoalTimeMinutes.map { .time(seconds: TimeInterval($0 * 60)) } ?? .open
         }
     }
 
@@ -81,16 +117,23 @@ final class RunPageViewModel {
     ) {
         self.session = session
         self.announcer = announcer
-        self.defaults = defaults   // Task 6에서 사용(목표 프리필). Task 4 시점에는 저장만 미사용
+        self.defaults = defaults
         self.sleeper = sleeper
+        // 직전 사용 목표값 프리필(스펙 §1.4) — 저장값이 없으면 빈 문자열(플레이스홀더 노출)
+        goalDistanceInput = (defaults.object(forKey: Self.lastDistanceKey) as? Double)
+            .map(Self.formatKm) ?? ""
+        goalTimeInput = (defaults.object(forKey: Self.lastTimeKey) as? Int)
+            .map(String.init) ?? ""
     }
 
     func startTapped() async {
         guard countdown == nil else { return }
+        guard isGoalInputValid else { return }
         guard await session.prepareStart(goal: composedGoal) else {
             presentStartFailure()
             return
         }
+        persistGoalInputs()
         announcer.holdAudioSession() // 덕킹 1회: 카운트다운~시작 발화까지 유지(스펙 §1.1)
         countdownActive = true
         for (index, word) in RunAnnouncementBuilder.countdown.enumerated() {
@@ -170,6 +213,17 @@ final class RunPageViewModel {
 
     func cancelAcquiring() {
         session.finishAcquiringCancelled()
+    }
+
+    /// 이번에 사용한 목표값을 다음 시작 화면 프리필용으로 저장(스펙 §1.4)
+    private func persistGoalInputs() {
+        if let km = parsedGoalDistanceKm { defaults.set(km, forKey: Self.lastDistanceKey) }
+        if let minutes = parsedGoalTimeMinutes { defaults.set(minutes, forKey: Self.lastTimeKey) }
+    }
+
+    /// 7.0 → "7", 7.5 → "7.5" — 입력 필드 프리필 표기
+    private static func formatKm(_ value: Double) -> String {
+        value.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(value)) : String(format: "%.1f", value)
     }
 
     private static func fittingRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion? {

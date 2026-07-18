@@ -149,15 +149,95 @@ final class RunPageViewModelTests: XCTestCase {
         XCTAssertLessThan(actualPace, buggyPace)
     }
 
-    func test_목표모드와_값으로_RunGoal을_조립한다() {
-        viewModel.goalMode = .distance
-        viewModel.goalDistanceKm = 10
-        XCTAssertEqual(viewModel.composedGoal, .distance(meters: 10000))
-        viewModel.goalMode = .time
-        viewModel.goalTimeMinutes = 30
-        XCTAssertEqual(viewModel.composedGoal, .time(seconds: 1800))
-        viewModel.goalMode = .open
-        XCTAssertEqual(viewModel.composedGoal, .open)
+    /// 격리된 UserDefaults suite — 프리필/저장 테스트가 .standard나 서로를 오염시키지 않게 한다.
+    private func makeIsolatedDefaults(name: String) -> UserDefaults {
+        guard let defaults = UserDefaults(suiteName: name) else { return .standard }
+        defaults.removePersistentDomain(forName: name)
+        return defaults
+    }
+
+    func test_거리입력_파싱과_검증() {
+        let defaults = makeIsolatedDefaults(name: #function)
+        let vm = RunPageViewModel(session: session, announcer: announcer, defaults: defaults, sleeper: { _ in })
+        vm.goalMode = .distance
+
+        vm.goalDistanceInput = "5.5"
+        XCTAssertEqual(vm.parsedGoalDistanceKm, 5.5)
+        XCTAssertTrue(vm.isGoalInputValid)
+        XCTAssertNil(vm.goalInputErrorText)
+
+        for invalid in ["0", "-1", "abc"] {
+            vm.goalDistanceInput = invalid
+            XCTAssertNil(vm.parsedGoalDistanceKm, "invalid input \(invalid) should not parse")
+            XCTAssertFalse(vm.isGoalInputValid)
+            XCTAssertNotNil(vm.goalInputErrorText, "non-empty invalid input \(invalid) should show an error")
+        }
+
+        vm.goalDistanceInput = ""
+        XCTAssertNil(vm.parsedGoalDistanceKm)
+        XCTAssertFalse(vm.isGoalInputValid)
+        XCTAssertNil(vm.goalInputErrorText, "empty input relies on the placeholder, not an inline error")
+    }
+
+    func test_시간입력_정수만_허용() {
+        let defaults = makeIsolatedDefaults(name: #function)
+        let vm = RunPageViewModel(session: session, announcer: announcer, defaults: defaults, sleeper: { _ in })
+        vm.goalMode = .time
+
+        vm.goalTimeInput = "30"
+        XCTAssertEqual(vm.parsedGoalTimeMinutes, 30)
+        XCTAssertTrue(vm.isGoalInputValid)
+
+        vm.goalTimeInput = "30.5"
+        XCTAssertNil(vm.parsedGoalTimeMinutes)
+        XCTAssertFalse(vm.isGoalInputValid)
+
+        vm.goalTimeInput = "0"
+        XCTAssertNil(vm.parsedGoalTimeMinutes)
+        XCTAssertFalse(vm.isGoalInputValid)
+    }
+
+    func test_composedGoal_입력값_반영() {
+        let defaults = makeIsolatedDefaults(name: #function)
+        let vm = RunPageViewModel(session: session, announcer: announcer, defaults: defaults, sleeper: { _ in })
+
+        vm.goalMode = .distance
+        vm.goalDistanceInput = "5.5"
+        XCTAssertEqual(vm.composedGoal, .distance(meters: 5500))
+
+        vm.goalMode = .time
+        vm.goalTimeInput = "45"
+        XCTAssertEqual(vm.composedGoal, .time(seconds: 2700))
+
+        vm.goalMode = .open
+        XCTAssertEqual(vm.composedGoal, .open)
+    }
+
+    func test_직전목표_프리필() {
+        let name = #function
+        let seededDefaults = makeIsolatedDefaults(name: name + ".seeded")
+        seededDefaults.set(7.5, forKey: RunPageViewModel.lastDistanceKey)
+        let seededVM = RunPageViewModel(
+            session: session, announcer: announcer, defaults: seededDefaults, sleeper: { _ in }
+        )
+        XCTAssertEqual(seededVM.goalDistanceInput, "7.5")
+
+        let emptyDefaults = makeIsolatedDefaults(name: name + ".empty")
+        let emptyVM = RunPageViewModel(
+            session: session, announcer: announcer, defaults: emptyDefaults, sleeper: { _ in }
+        )
+        XCTAssertEqual(emptyVM.goalDistanceInput, "")
+    }
+
+    func test_시작성공시_목표값_저장() async {
+        let defaults = makeIsolatedDefaults(name: #function)
+        let vm = RunPageViewModel(session: session, announcer: announcer, defaults: defaults, sleeper: { _ in })
+        vm.goalMode = .distance
+        vm.goalDistanceInput = "3.0"
+
+        await vm.startTapped()
+
+        XCTAssertEqual(defaults.double(forKey: RunPageViewModel.lastDistanceKey), 3.0)
     }
 
     func test_시작탭_카운트다운_삼이일_발화후_세션시작() async {

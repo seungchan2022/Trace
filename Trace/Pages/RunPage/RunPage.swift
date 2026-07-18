@@ -5,6 +5,7 @@ struct RunPage: View {
     @State private var viewModel: RunPageViewModel
     @State private var historyViewModel: RunHistoryViewModel
     @State private var showsHistory = false
+    @FocusState private var goalFieldFocused: Bool
 
     init(session: RunSession, recordRepository: RunRecordRepositoryProtocol, announcer: VoiceAnnouncerProtocol) {
         _viewModel = State(initialValue: RunPageViewModel(session: session, announcer: announcer))
@@ -78,6 +79,7 @@ struct RunPage: View {
             }
         }
         .ignoresSafeArea(edges: .top)
+        .ignoresSafeArea(.keyboard) // 키보드 표시 중 지도가 눌려 시작 버튼에 비치는 것을 방지(스펙 §1.4)
     }
 
     @ViewBuilder
@@ -113,21 +115,18 @@ struct RunPage: View {
             case .open:
                 EmptyView()
             case .distance:
-                Picker("목표 거리", selection: $viewModel.goalDistanceKm) {
-                    ForEach(1...42, id: \.self) { km in
-                        Text("\(km) km").tag(km)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(height: 96)
+                goalInputField(
+                    text: $viewModel.goalDistanceInput, unit: "km", placeholder: "5.0", keyboard: .decimalPad
+                )
             case .time:
-                Picker("목표 시간", selection: $viewModel.goalTimeMinutes) {
-                    ForEach(Array(stride(from: 5, through: 180, by: 5)), id: \.self) { minutes in
-                        Text("\(minutes)분").tag(minutes)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(height: 96)
+                goalInputField(
+                    text: $viewModel.goalTimeInput, unit: "분", placeholder: "30", keyboard: .numberPad
+                )
+            }
+            if let error = viewModel.goalInputErrorText {
+                Text(error)
+                    .font(DesignToken.Typography.chipError)
+                    .foregroundStyle(DesignToken.Color.danger)
             }
         }
         .padding(DesignToken.Size.sheetPadding)
@@ -136,8 +135,32 @@ struct RunPage: View {
         .accessibilityIdentifier("run.goalPicker")
     }
 
+    private func goalInputField(
+        text: Binding<String>, unit: String, placeholder: String, keyboard: UIKeyboardType
+    ) -> some View {
+        HStack(spacing: 8) {
+            TextField(placeholder, text: text)
+                .keyboardType(keyboard)
+                .focused($goalFieldFocused)
+                .multilineTextAlignment(.trailing)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .frame(maxWidth: 140)
+            Text(unit) // 단위 상시 표시(스펙 §1.4, 사용자 요구)
+                .font(DesignToken.Typography.subtitle)
+                .foregroundStyle(DesignToken.Color.ink2)
+        }
+        .frame(maxWidth: .infinity)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("완료") { goalFieldFocused = false } // 명시적 dismiss(스펙 §1.4)
+            }
+        }
+    }
+
     private var startButton: some View {
         Button {
+            goalFieldFocused = false
             Task { await viewModel.startTapped() }
         } label: {
             Text("시작")
@@ -146,6 +169,8 @@ struct RunPage: View {
                 .frame(width: 96, height: 96)
                 .background(DesignToken.Color.accent, in: Circle())
         }
+        .disabled(viewModel.isGoalInputValid == false)
+        .opacity(viewModel.isGoalInputValid ? 1 : 0.5)
         .padding(.bottom, 40)
     }
 
