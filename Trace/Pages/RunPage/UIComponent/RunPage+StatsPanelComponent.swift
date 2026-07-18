@@ -12,6 +12,13 @@ struct RunStatsPanel: View {
                     .font(DesignToken.Typography.chip)
                     .foregroundStyle(DesignToken.Color.danger)
             }
+            if let card = viewModel.waypointCard {
+                Text("포인트 \(card.index) · \(String(format: "%.2f", card.segmentMeters / 1000)) km")
+                    .font(DesignToken.Typography.chip)
+                    .foregroundStyle(DesignToken.Color.accent)
+                    .transition(.opacity)
+                    .accessibilityIdentifier("run.waypointCard")
+            }
             HStack(spacing: 24) {
                 stat(
                     value: String(format: "%.2f", viewModel.session.track.totalDistanceMeters / 1000),
@@ -65,6 +72,7 @@ struct RunStatsPanel: View {
             }
             HStack(spacing: 12) {
                 pauseResumeButton
+                waypointButton
                 endButton
             }
         }
@@ -119,6 +127,20 @@ struct RunStatsPanel: View {
                 .background(DesignToken.Color.accent, in: Circle())
         }
         .accessibilityIdentifier("run.pauseResumeButton")
+    }
+
+    private var waypointButton: some View {
+        Button { viewModel.markWaypointTapped() } label: {
+            Image(systemName: "mappin.and.ellipse")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(DesignToken.Color.accentInk)
+                .frame(width: 52, height: 52)
+                .background(DesignToken.Color.accent, in: Circle())
+        }
+        // 일시정지 중(거리가 안 쌓임) 비활성 + dimmed로 상태를 보이게(스펙 §2.2)
+        .disabled(viewModel.session.canMarkWaypoint == false)
+        .opacity(viewModel.session.canMarkWaypoint ? 1 : 0.4)
+        .accessibilityIdentifier("run.waypointButton")
     }
 
     private var recenterButton: some View {

@@ -20,6 +20,12 @@ enum RunGoalMode: String, CaseIterable, Identifiable {
     }
 }
 
+/// 포인트 확인용 화면 카드(보조 채널 — 주 채널은 발화, 스펙 §2.2)
+struct WaypointCard: Equatable {
+    let index: Int
+    let segmentMeters: Double
+}
+
 @MainActor
 @Observable
 final class RunPageViewModel {
@@ -39,6 +45,9 @@ final class RunPageViewModel {
     /// 요약 화면에 보여줄 활동 시간(일시정지 제외) — 트래킹 화면·Live Activity가 보여준 시간과 같은 기준(MVP14 §3.1).
     /// `RunTrack.duration`(GPS 샘플 구간)과는 다른 측정치라 별도로 종료 시점에 캡처해 둔다.
     private(set) var summaryElapsedSeconds: TimeInterval?
+    /// 몇 초 표시 후 사라지는 포인트 확인 카드 — nil = 표시 안 함(스펙 §2.2)
+    private(set) var waypointCard: WaypointCard?
+    private var waypointCardDismissTask: Task<Void, Never>?
     private var polylineThrottle = PolylineThrottle()
 
     static let lastDistanceKey = "run.goal.lastDistanceKm"
@@ -173,6 +182,19 @@ final class RunPageViewModel {
         session.cancelPreparation()
     }
 
+    /// 포인트 버튼 탭 — 마킹은 세션, 발화는 RunAudioCoach(관찰), 여기는 화면 카드만 담당
+    func markWaypointTapped() {
+        guard session.markWaypoint() != nil else { return }
+        guard let segmentMeters = session.waypoints.lastSegmentMeters else { return }
+        waypointCard = WaypointCard(index: session.waypoints.count, segmentMeters: segmentMeters)
+        waypointCardDismissTask?.cancel()
+        waypointCardDismissTask = Task { [weak self] in
+            guard let self else { return }
+            do { try await sleeper(.seconds(3)) } catch { return } // 취소 = 새 카드가 대체
+            waypointCard = nil
+        }
+    }
+
     private func presentStartFailure() {
         switch session.lastStartFailure {
         case .reducedAccuracy: showsAccuracyAlert = true
@@ -182,6 +204,8 @@ final class RunPageViewModel {
     }
 
     func endRun() {
+        waypointCardDismissTask?.cancel()
+        waypointCard = nil
         summaryElapsedSeconds = session.activeElapsedSeconds()
         session.finish()
         // 요약: 경로 전체가 보이도록 카메라 핏

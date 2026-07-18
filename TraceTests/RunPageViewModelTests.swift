@@ -285,4 +285,58 @@ final class RunPageViewModelTests: XCTestCase {
         XCTAssertEqual(announcer.holds, 1)
         XCTAssertEqual(announcer.releases, 1)
     }
+
+    // MARK: - 포인트 카드 (스펙 §2.2)
+
+    private func startTrackingForWaypoint(_ vm: RunPageViewModel, at start: Date) async {
+        await vm.startTapped()
+        // startTapped()가 session.startedAt을 (카운트다운 종료 시점의) Date()로 세팅하므로,
+        // 호출 전에 캡처한 `start`는 그보다 앞설 수 있다 — ingest()의 "캐시된 옛 샘플 폐기" 가드
+        // (sample.timestamp >= sessionStart)에 걸려 샘플이 조용히 버려지고 .tracking 전이가
+        // 영영 일어나지 않는다. max(start, Date())로 항상 sessionStart 이후 시각을 보장한다.
+        stream.yield(RunSample(
+            timestamp: max(start, Date()), latitude: 37.5666, longitude: 126.9784,
+            altitudeMeters: 10, speedMetersPerSecond: 3,
+            horizontalAccuracyMeters: 5, verticalAccuracyMeters: 5
+        ))
+        await waitUntil { self.session.state == .tracking }
+    }
+
+    func test_포인트를_찍으면_카드가_표시된다() async {
+        let start = Date()
+        await startTrackingForWaypoint(viewModel, at: start)
+
+        viewModel.markWaypointTapped()
+
+        XCTAssertEqual(viewModel.waypointCard?.index, 1)
+        XCTAssertEqual(viewModel.waypointCard?.segmentMeters ?? -1,
+                       session.waypoints.lastSegmentMeters ?? -2, accuracy: 0.001)
+    }
+
+    func test_트래킹이_아니면_카드가_생기지_않는다() async {
+        viewModel.markWaypointTapped() // idle 상태
+        XCTAssertNil(viewModel.waypointCard)
+        XCTAssertTrue(session.waypoints.isEmpty)
+    }
+
+    func test_카드는_잠시후_자동으로_사라진다() async {
+        // 게이트 sleeper(MockRunLocationStream.gateAccuracyRequest와 동일 패턴 — 가변 캡처 없음):
+        // 카운트다운 sleep(1초)은 즉시 통과시키고, 카드 소멸 sleep(3초)만 잡아둔다
+        let (cardGate, releaseCard) = AsyncStream.makeStream(of: Void.self)
+        let vm = RunPageViewModel(
+            session: session, announcer: announcer,
+            sleeper: { duration in
+                guard duration == .seconds(3) else { return } // 카운트다운 "삼·이·일"은 통과
+                for await _ in cardGate { break } // releaseCard가 풀어줄 때까지 대기
+            }
+        )
+        let start = Date()
+        await startTrackingForWaypoint(vm, at: start)
+
+        vm.markWaypointTapped()
+        XCTAssertNotNil(vm.waypointCard)
+
+        releaseCard.yield()
+        await waitUntil { vm.waypointCard == nil }
+    }
 }
