@@ -225,31 +225,28 @@ struct CoursePlannerPage: View {
     }
 
     private var fabStack: some View {
-        // 원 스펙(§2 FAB 스택)은 현재 위치 버튼을 "항상 내 위치"(시트 확장 여부 무관 항상 노출)로
-        // 정의했으나, fabStack이 화면 하단 고정이라 시트가 커질수록(특히 full 디텐트) 이 버튼이
-        // 그 위에 뜬 시트에 가려져 실제로는 이미 "항상"이 아니었다(2026-07-13, 실기기 확인).
-        // 시트 상단 기준으로 동적으로 띄우는 방안도 검토했으나, full 디텐트에서 시트 상단이 topBar와
-        // 거의 같은 높이까지 올라와 topBar와 겹치는 문제가 있어 기각 — 대신 현재 위치 버튼도
-        // undo/redo/clear와 동일하게 시트 확장 시 같이 숨기는 쪽으로 스펙을 의도적으로 변경한다
-        // (결정 2026-07-13, 사용자 — `project-decisions.md` 기록). 펼친 상태에서 지도 가시 영역
-        // 자체가 작아 재가운데맞춤 가치도 낮으므로, 필요하면 시트를 collapsed로 접어 사용한다.
-        //
-        // 이 스택은 fabStack 전체가 이제 collapsed에서만 보이므로, 화면 하단이 아니라 collapsed
-        // 시트(그래버+헤더) 바로 위 16pt에 앵커해야 한다 — 이전엔 화면 하단 고정 16pt였는데, 그
-        // 자리가 이미 collapsed 시트 영역 안이라 되돌리기 한 개만 보이고 앞으로/초기화/현재위치
-        // 3개는 시트에 가려 애초에 안 보이고 있었다(2026-07-13, XCUITest 프레임 실측 + 스크린샷으로
-        // 확인). collapsed 높이는 콘텐츠 무관 고정값(그래버+헤더)이라 이 값에 앵커해도 안전하다.
+        // 시트 연동 정책은 FabLayoutPolicy 참조 — 방향 스펙 §2가 기존 "collapsed 외 숨김"
+        // (2026-07-13)을 대체: 시트 위로 이동 + 단계별 페이드 + 풀에서 소멸, 경로 없으면 현위치만.
         VStack(spacing: 12) {
-            editingFabGroup
+            if FabLayoutPolicy.showsEditingGroup(
+                hasCourse: viewModel.course != nil,
+                canUndo: viewModel.canUndo,
+                canRedo: viewModel.canRedo
+            ) {
+                editingFabGroup
+            }
             recenterButton
         }
         .frame(width: DesignToken.Size.fab)
         .padding(.trailing, DesignToken.Size.screenMargin)
-        .padding(.bottom, grabberTotalHeight + sheetHeaderHeight + 16)
-        .opacity(sheetDetent == .collapsed ? 1 : 0)
-        .offset(x: sheetDetent == .collapsed ? 0 : 24)
+        .padding(.bottom, FabLayoutPolicy.bottomPadding(
+            detent: sheetDetent,
+            collapsedSheetHeight: grabberTotalHeight + sheetHeaderHeight,
+            mediumListHeight: panelMaxListHeight
+        ))
+        .opacity(FabLayoutPolicy.opacity(for: sheetDetent))
         .animation(.easeInOut(duration: 0.2), value: sheetDetent)
-        .allowsHitTesting(sheetDetent == .collapsed)
+        .allowsHitTesting(sheetDetent != .full)
     }
 
     private var editingFabGroup: some View {
@@ -293,68 +290,6 @@ struct CoursePlannerPage: View {
         }
         .buttonStyle(.glassIcon)
         .accessibilityIdentifier("coursePlanner.recenter")
-    }
-
-    private var mapPins: [MapPin] {
-        let accentUIColor = UIColor(named: "AccentColor") ?? .systemGreen
-        let dangerUIColor = UIColor(named: "Danger") ?? .systemRed
-        var pins: [MapPin] = []
-        if let course = viewModel.course {
-            if viewModel.isClosedCourse, let first = course.coordinates.first {
-                // 닫힌 코스: 출발·도착이 같은 지점 — 병합 핀 하나만
-                pins.append(MapPin(
-                    coordinate: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
-                    title: "출발/도착",
-                    color: accentUIColor,
-                    systemImage: "figure.run",
-                    role: .merged
-                ))
-            } else {
-                if let first = course.coordinates.first {
-                    pins.append(MapPin(
-                        coordinate: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
-                        title: "출발",
-                        color: accentUIColor,
-                        systemImage: "figure.run",
-                        role: .start
-                    ))
-                }
-                if let last = course.coordinates.last, course.coordinates.count > 1 {
-                    pins.append(MapPin(
-                        coordinate: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude),
-                        title: "도착",
-                        color: dangerUIColor,
-                        systemImage: "flag.checkered",
-                        role: .end
-                    ))
-                }
-            }
-        }
-        // tap 모드에서 pendingTapStart는 코스가 비어 있을 때만 설정됨 (최초 2탭 대기)
-        if viewModel.interactionMode == .tap, let start = viewModel.pendingTapStart {
-            pins.append(MapPin(
-                coordinate: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude),
-                title: "출발",
-                color: accentUIColor,
-                systemImage: "figure.run",
-                role: .pendingStart
-            ))
-        }
-        // 판별 창(~0.35초) 보류 중 임시 마커 — 확정된 출발/도착 핀(초록 러너/빨강 깃발)과
-        // 혼동되지 않도록 중립 스타일을 쓴다. 예전엔 첫 탭/두번째 탭 여부로 출발·도착 스타일을
-        // 그대로 재사용했는데, 그 판정(pendingTapStart == nil)이 라우팅 완료 전에 이미 바뀌어버려
-        // 확정 직후 짧게 라벨이 뒤바뀌어 보이는 버그가 있었다 (2026-07-05 실기기 확인).
-        // 중립 스타일은 위치 구분이 필요 없어 그 버그 자체가 성립하지 않는다.
-        if viewModel.interactionMode == .tap, let pending = viewModel.pendingTapMarker {
-            pins.append(MapPin(
-                coordinate: CLLocationCoordinate2D(latitude: pending.latitude, longitude: pending.longitude),
-                title: "확인 중",
-                color: .systemGray,
-                systemImage: "circle.dashed",
-                role: .pendingStart
-            ))
-        }
-        return pins
     }
 
     private func saveCameraPosition() {
