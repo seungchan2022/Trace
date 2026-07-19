@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **완료(소급 확인):** Task 1~8 전부 구현·태스크별 리뷰 통과 + 최종 브랜치 리뷰(opus, 발견사항 4건 반영) 완료. 체크박스는 실행 당시 갱신되지 않았으나 커밋으로 확인됨 — Task 1 `a3111ee` · Task 2 `20eeffc` · Task 3 `4209d16` · Task 4 `9bbabe3` · Task 5 `9f60bea` · Task 6 `b05999a` · Task 7 `8fb120a` · Task 8 `e2fe153`, 최종 리뷰 수정 `d3f39c0`. 실기기 QA 통과(2026-07-19): `history/mvp15/2026-07-18-run-waypoints-device-checklist.md`.
+
 **Goal:** 달리는 중 버튼(앱 내 + 잠금화면 Live Activity)으로 포인트를 찍으면 직전 포인트부터의 구간 거리를 발화·표시하고, 포인트 스트림을 기록에 additive로 저장해 기록 상세에서 번호 마커·구간 표·개별 삭제를 제공한다.
 
 **Architecture:** 포인트는 `RunSession`(Application)의 상태로 쌓이고 — 좌표는 마지막 유효 샘플, 거리는 기존 총거리 적산의 스냅샷 차분(새 거리 계산 없음) — 발화는 기존 `RunAudioCoach` 관찰 경로가, 잠금화면 갱신은 기존 `RunActivityController` 관찰 경로가 맡는다. 입력 채널(앱 버튼·잠금화면 인텐트)은 전부 `session.markWaypoint()` 한 연산으로 수렴한다(미래 워치 버튼도 같은 지점에 연결 — 스펙 §2.1). 저장은 `RunPersistenceDTO` v4 additive 확장.
