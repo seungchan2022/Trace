@@ -32,24 +32,8 @@ struct TraceApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TabView {
-                CoursePlannerPage(
-                    coursePlanningService: container.coursePlanningService,
-                    locationService: container.locationService,
-                    cameraStateStore: container.cameraStateStore,
-                    courseRepository: container.courseRepository
-                )
-                .tabItem { Label("코스", systemImage: "map") }
-
-                RunPage(
-                    session: container.runSession,
-                    recordRepository: container.runRecordRepository,
-                    announcer: container.voiceAnnouncer
-                )
-                    .tabItem { Label("러닝", systemImage: "figure.run") }
-                    .badge(container.runSession.isActive ? "●" : nil)
-            }
-            .tint(DesignToken.Color.accent)
+            RootView(container: container)
+                .tint(DesignToken.Color.accent)
         }
     }
 }
