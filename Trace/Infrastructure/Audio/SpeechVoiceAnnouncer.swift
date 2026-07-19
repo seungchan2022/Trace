@@ -24,6 +24,26 @@ final class SpeechVoiceAnnouncer: NSObject, VoiceAnnouncerProtocol {
     override init() {
         super.init()
         synthesizer.delegate = self
+        primeEngine()
+    }
+
+    /// AVSpeechSynthesizer/음성 로딩은 프로세스 최초 발화에서만 지연이 커서(플랫폼 특성),
+    /// 첫 러닝 시작 시 카운트다운 "삼"이 늦게 나와 세 단어가 뭉쳐 들린다는 실사용 QA
+    /// 피드백(2026-07-19)으로 앱 시작 시 1회 미리 예열한다. .duckOthers가 아닌
+    /// .mixWithOthers로 진행해 사용자가 듣고 있던 음악을 건드리지 않는다(실제 카운트다운은
+    /// holdAudioSession이 별도로 .duckOthers 세션을 연다) — 볼륨도 거의 0으로 낮춘다.
+    private func primeEngine() {
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.ambient, options: [.mixWithOthers])
+            try audioSession.setActive(true)
+        } catch {
+            return // 세션 준비 실패 — 예열 없이 진행(첫 카운트다운에만 영향, 재시도 없음)
+        }
+        let utterance = AVSpeechUtterance(string: "예열")
+        utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
+        utterance.volume = 0.01
+        synthesizer.speak(utterance)
     }
 
     func announce(_ text: String, pace: AnnouncementPace, kind: AnnouncementKind) {
