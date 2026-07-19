@@ -21,7 +21,7 @@
 > (방향 스펙: `docs/superpowers/specs/2026-07-18-run-ui-restructure-direction.md`)
 
 - [x] **ui-direction** — 디자인 결정 선행 사이클(경량, 문서 전용) 완료(2026-07-19): 탭바(풀폭 불투명·코스 탭 상시 노출·badge 제거), 트래킹 "거리가 주인공" 레이아웃, 대기 화면 시작 중심 미니멀, 기록 상세 구간별 색상 폴리라인(SegmentPalette 재사용) 확정. 스펙: `docs/superpowers/specs/2026-07-19-mvp16-ui-direction-design.md` · 참고 캡처: `docs/refs/`(나의찾기 2장 + 네이버 시트-탭바 3장)
-- [ ] **tab-restructure** — 앱 루트 커스텀 탭바(+트래킹 중 숨김) + 코스 탭 시트 detent 검증·보완 + 플로팅 버튼 시트 연동
+- [ ] **tab-restructure** — 앱 루트 커스텀 탭바(+트래킹 중 숨김) + 코스 탭 시트 detent 검증·보완 + 플로팅 버튼 시트 연동. 구현 완료(Task 1-4 전부 구현·리뷰 통과) + 실기기 피드백 반영 5건(topBar 페이드 시도→되돌림, 시트 헤더 여백 축소, 풀시트 마진 40→11pt로 topBar 거의 완전히 덮기, 가로모드 탭바 크기 축소) + 실기기 QA 체크리스트 작성 완료(`docs/qa/2026-07-19-tab-restructure-device-checklist.md`). 시트 콘텐츠 영역 드래그-축소(지도 앱 스타일)는 별도 UX 설계 필요해 `docs/backlog.md`로 이월. 실기기 QA 대기 중.
 - [ ] **run-fullscreen** — 러닝 탭 나이키식 전체화면(러닝 탭 전체 지도 제거, 포인트 버튼 유지) + 기록 목록/상세 전체화면 페이지 정리 + 포인트 구간 폴리라인 표시
 - [ ] **draw-gesture** — 그리기 제스처 개편(한 손가락=이동, 롱프레스-드래그=그리기) + MVP10 탭 판정 충돌 검증
 
