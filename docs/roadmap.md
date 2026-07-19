@@ -11,17 +11,16 @@
 
 ## 진행 중 / 예정
 
-### MVP15 — 러닝 경험 보강   (상태: ✅ 사이클 ①·② 모두 완료(실기기 QA 통과) → 아카이빙 대기)
+### MVP15 — 러닝 경험 보강   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp15/`](history/mvp15/))
 
-> 코스 연동(다음 MVP) 전에 러닝 기둥의 기능·디테일을 보강한다 — 실사용 피드백 5건이 재료.
+> 코스 연동(다음 MVP) 전에 러닝 기둥의 기능·디테일을 보강했다 — 실사용 피드백 5건이 재료.
 > 시작 카운트다운(3-2-1 발화, 백그라운드에도 계속), 종료 홀드 진행 링, 발화 문안 통일·속도
 > 조정, 목표 거리·시간 직접 입력(단위 상시 표시·직전값 프리필), 달리면서 포인트 찍기(구간
 > 거리 발화, 잠금화면 Live Activity 버튼, 이벤트 스트림 저장, 기록 상세 구간 표·마커·삭제).
-> 러닝 탭 UI 구조 개편은 MVP16 후보로 백로그에 씨앗만. 스펙(ce-doc-review 5페르소나 리뷰
-> 15건 반영): `docs/superpowers/specs/2026-07-17-run-detail-waypoints-design.md`
+> 러닝 탭 UI 구조 개편은 MVP16 후보로 백로그에 씨앗만. 회고: [`260719_mvp15_completion_retro`](history/mvp15/260719_mvp15_completion_retro.md)
 
-- [x] **run-detail-polish** — 시작 카운트다운 + 종료 홀드 링 + 발화 문안·속도 정비 + 목표 직접 입력 (경량 사이클: 태스크별 리뷰만, subagent-driven-development로 Task 6개 전부 구현·리뷰 완료). 플랜: `docs/superpowers/plans/2026-07-17-run-detail-polish.md` · 실기기 QA 통과(2026-07-18): `docs/qa/2026-07-18-run-detail-polish-device-checklist.md`, 후속 피드백 2건(카운트다운 예열, 발화 속도 분리) 반영 완료(커밋 50c5fd9)
-- [x] **run-waypoints** — 포인트 찍기: 트래킹 버튼·즉시 발화, 잠금화면 버튼(무세션 가드), additive 스키마 확장, 기록 상세 표시·삭제 (표준 사이클: Task 8개 전부 구현·태스크별 리뷰 통과 + 최종 브랜치 리뷰(opus), 발견사항 4건 반영 후 Ready to merge: Yes, 커밋 d3f39c0). 플랜: `docs/superpowers/plans/2026-07-18-run-waypoints.md` · 실기기 QA 통과(2026-07-19): `docs/qa/2026-07-18-run-waypoints-device-checklist.md`(포인트 삭제 병합·재번호 재확인 포함). 후속 피드백(지도 위 경로 표시)은 별도 스코프 필요해 `docs/backlog.md`로 이월
+- [x] **run-detail-polish** — 시작 카운트다운 + 종료 홀드 링 + 발화 문안·속도 정비 + 목표 직접 입력 (경량 사이클: 태스크별 리뷰만, subagent-driven-development로 Task 6개 전부 구현·리뷰 완료). 플랜: `history/mvp15/2026-07-17-run-detail-polish.md` · 실기기 QA 통과(2026-07-18): `history/mvp15/2026-07-18-run-detail-polish-device-checklist.md`, 후속 피드백(카운트다운 예열, 발화 속도 분리, 콜드 스타트 TTS 엔진 예열) 전부 반영 완료(커밋 50c5fd9, adfbf64)
+- [x] **run-waypoints** — 포인트 찍기: 트래킹 버튼·즉시 발화, 잠금화면 버튼(무세션 가드), additive 스키마 확장, 기록 상세 표시·삭제 (표준 사이클: Task 8개 전부 구현·태스크별 리뷰 통과 + 최종 브랜치 리뷰(opus), 발견사항 4건 반영 후 Ready to merge: Yes, 커밋 d3f39c0). 플랜: `history/mvp15/2026-07-18-run-waypoints.md` · 실기기 QA 통과(2026-07-19): `history/mvp15/2026-07-18-run-waypoints-device-checklist.md`(포인트 삭제 병합·재번호 재확인 포함). 후속 피드백(지도 위 경로 표시)은 별도 스코프 필요해 `docs/backlog.md`로 이월
 
 ### MVP14 — 기본 러닝 경험 완성   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp14/`](history/mvp14/))
 
