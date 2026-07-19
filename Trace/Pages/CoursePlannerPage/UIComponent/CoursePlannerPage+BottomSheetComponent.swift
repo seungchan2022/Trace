@@ -246,7 +246,11 @@ extension CoursePlannerPage {
     // 자체를 조금씩 더 작게 보고하는 잔여 현상이 남아있다(2026-07-12, 피드백 루프를 끊은 뒤에도
     // XCUITest 실측: topBar가 여전히 11pt 밀림). 12pt로는 이 잔여분을 못 흡수해 상태바/다이내믹
     // 아일랜드와 살짝 겹쳤다 — 여유를 넉넉히 둬서 흡수한다.
-    private var sheetTopMargin: CGFloat { 40 }
+    // 2026-07-19: 사용자 피드백으로 풀 디텐트에서 topBar를 거의 완전히 덮도록 11pt로 낮춤 —
+    // 이 문서화된 버그(safe-area-top-inset-shrinks-with-sibling-size-feedback-loop.md)의
+    // 안전선이 정확히 11pt 잔여분이라 그 이하로는 절대 낮추지 않는다. 남는 ~3pt 틈은
+    // 육안상 거의 안 보이는 수준(실측: .git/sdd/investigation-fullsheet-landscape-report.md).
+    private var sheetTopMargin: CGFloat { 11 }
 
     // 풀 시트가 다이내믹 아일랜드/상태 바 바로 아래에서 멈추도록 하는 상한 — 시스템 시트의
     // large detent와 같은 발상. expandedListHeight(.full)의 리스트 높이 계산에만 쓴다.
