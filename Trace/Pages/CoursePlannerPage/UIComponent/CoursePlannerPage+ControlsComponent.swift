@@ -34,10 +34,6 @@ extension CoursePlannerPage {
         }
         .padding(.horizontal, DesignToken.Size.screenMargin)
         .padding(.top, 8)
-        // FAB와 같은 정책 재사용 — full 디텐트에서 시트가 이 자리를 덮으므로 topBar도 같이 사라진다.
-        .opacity(FabLayoutPolicy.opacity(for: sheetDetent))
-        .allowsHitTesting(sheetDetent != .full)
-        .animation(.easeInOut(duration: 0.2), value: sheetDetent)
     }
 
     private func segmentToggleButton(title: String, systemImage: String, isActive: Bool) -> some View {
