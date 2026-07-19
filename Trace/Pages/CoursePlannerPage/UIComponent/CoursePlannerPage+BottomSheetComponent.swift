@@ -184,7 +184,8 @@ extension CoursePlannerPage {
             }
         }
         .padding(.horizontal, DesignToken.Size.sheetPadding)
-        .padding(.vertical, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 16)
         .background {
             // 드래그 히트 영역 확장용 — 배경이라 foreground의 Button들과 히트테스트가 경쟁하지 않는다.
             Color.clear
