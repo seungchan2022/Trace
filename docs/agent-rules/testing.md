@@ -136,6 +136,7 @@ SwiftLint is configured by `.swiftlint.yml`.
 - User real-device sign-off is required before a release (TestFlight or App Store), not for every branch merge. Pure logic, refactors, docs, and non-UI changes are exempt.
 - The checklist must target what the simulator and tests cannot: real permission prompts and GPS, true touch/gesture feel, region-specific behavior (e.g., Korea map/routing quality), performance under real network, and intent-match (does the built feature match the intended UX).
 - Save the feature-specific checklist as `docs/qa/YYYY-MM-DD-<feature>-device-checklist.md` and hand it to the user. Use the template below.
+- "Hand it to the user" is a concrete action, not a passing mention: when a milestone finishes with a checklist ready, the closing message must point at it directly — read the file and show its content (or a clear pointer to open it) rather than only naming the path inside a longer summary. The user should not have to go find the file themselves.
 - Capture feedback from manual testing into `docs/backlog.md`: genuinely broken behavior is fixed in the current session, but intent-mismatches and improvements are recorded as backlog items (where/now/desired) and deferred to a later milestone — do not expand the current milestone to chase them. The backlog is consumed at milestone start; see `docs/agent-rules/skills.md`.
 
 ### 체크리스트 배치 처리 (2026-07-13)
