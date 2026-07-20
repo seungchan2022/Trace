@@ -1,4 +1,3 @@
-import MapKit
 import SwiftUI
 
 struct RunPage: View {
@@ -14,11 +13,8 @@ struct RunPage: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            runMap
+            DesignToken.Color.surface2.ignoresSafeArea() // 지도 제거 — 러닝 탭은 Surface 배경(킥오프 §2.3)
             controls
-        }
-        .onChange(of: viewModel.session.track.samples.count) {
-            viewModel.refreshPolylineIfDue()
         }
         .alert("정확한 위치가 꺼져 있어요", isPresented: $viewModel.showsAccuracyAlert) {
             Button("설정 열기") { openSettings() }
@@ -32,21 +28,6 @@ struct RunPage: View {
         } message: {
             Text("러닝을 기록하려면 위치 접근을 허용해 주세요.")
         }
-        .overlay(alignment: .topTrailing) {
-            if viewModel.session.state == .idle {
-                Button { showsHistory = true } label: {
-                    Image(systemName: "list.bullet.rectangle")
-                }
-                .buttonStyle(GlassIconButtonStyle())
-                .padding(.trailing, DesignToken.Size.screenMargin)
-                .accessibilityIdentifier("run.historyButton")
-            }
-        }
-        .overlay {
-            if let count = viewModel.countdown {
-                countdownOverlay(count: count)
-            }
-        }
         .onChange(of: viewModel.countdown) { _, newValue in
             guard newValue != nil else { return }
             UIImpactFeedbackGenerator(style: .medium).impactOccurred() // 숫자마다 햅틱(스펙 §1.1)
@@ -54,32 +35,6 @@ struct RunPage: View {
         .sheet(isPresented: $showsHistory) {
             RunHistorySheet(viewModel: historyViewModel)
         }
-    }
-
-    private func countdownOverlay(count: Int) -> some View {
-        ZStack {
-            Color.black.opacity(0.55).ignoresSafeArea()
-            Text("\(count)")
-                .font(.system(size: 160, weight: .heavy, design: .rounded))
-                .foregroundStyle(DesignToken.Color.accent)
-                .contentTransition(.numericText(countsDown: true))
-                .animation(.snappy, value: count)
-        }
-        .contentShape(Rectangle())
-        .onTapGesture { viewModel.cancelCountdown() } // 취소 = 화면 탭(스펙 §1.1)
-        .accessibilityIdentifier("run.countdownOverlay")
-    }
-
-    private var runMap: some View {
-        Map(position: $viewModel.cameraPosition) {
-            UserAnnotation()
-            if viewModel.displayedCoordinates.count >= 2 {
-                MapPolyline(coordinates: viewModel.displayedCoordinates)
-                    .stroke(DesignToken.Color.accent, lineWidth: 5)
-            }
-        }
-        .ignoresSafeArea(edges: .top)
-        .ignoresSafeArea(.keyboard) // 키보드 표시 중 지도가 눌려 시작 버튼에 비치는 것을 방지(스펙 §1.4)
     }
 
     @ViewBuilder
@@ -99,10 +54,26 @@ struct RunPage: View {
     }
 
     private var startControls: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                Button { showsHistory = true } label: {
+                    Image(systemName: "list.bullet.rectangle")
+                }
+                .buttonStyle(GlassIconButtonStyle())
+                .accessibilityLabel("러닝 기록")
+                .accessibilityIdentifier("run.historyButton")
+            }
+            .padding(.horizontal, DesignToken.Size.screenMargin)
+
+            Spacer()
             goalPicker
+            Spacer()
             startButton
+            Spacer()
+                .frame(height: 40)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var goalPicker: some View {
@@ -145,7 +116,7 @@ struct RunPage: View {
                 .keyboardType(keyboard)
                 .focused($goalFieldFocused)
                 .multilineTextAlignment(.trailing)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(DesignToken.Typography.runSecondaryStat)
                 .frame(maxWidth: 140)
             Text(unit) // 단위 상시 표시(스펙 §1.4, 사용자 요구)
                 .font(DesignToken.Typography.subtitle)
@@ -166,14 +137,14 @@ struct RunPage: View {
             Task { await viewModel.startTapped() }
         } label: {
             Text("시작")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(DesignToken.Typography.runStartButton)
                 .foregroundStyle(DesignToken.Color.accentInk)
-                .frame(width: 96, height: 96)
+                .frame(width: 132, height: 132) // 화면 주인공 — 지도가 사라진 만큼 키운다(ui-direction §4)
                 .background(DesignToken.Color.accent, in: Circle())
         }
         .disabled(viewModel.isGoalInputValid == false)
         .opacity(viewModel.isGoalInputValid ? 1 : 0.5)
-        .padding(.bottom, 40)
+        .accessibilityIdentifier("run.startButton")
     }
 
     private var acquiringPanel: some View {

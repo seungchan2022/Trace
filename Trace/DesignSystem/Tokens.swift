@@ -45,5 +45,14 @@ enum DesignToken {
         static let chip = Font.system(size: 13, weight: .semibold)
         static let chipError = Font.system(size: 13, weight: .bold)
         static let subtitle = Font.system(size: 13.5, weight: .medium)
+        /// 러닝 트래킹 화면의 주인공 숫자(ui-direction §3) — monospacedDigit()과 함께 써서 자릿수 흔들림을 막는다
+        static let runDistanceHero = Font.system(size: 84, weight: .bold, design: .rounded)
+        static let runDistanceUnit = Font.system(size: 20, weight: .semibold, design: .rounded)
+        /// 주인공 숫자 위 보조 행(시간·평균 페이스)
+        static let runSecondaryStat = Font.system(size: 28, weight: .semibold, design: .rounded)
+        /// 카운트다운 3-2-1
+        static let runCountdown = Font.system(size: 160, weight: .heavy, design: .rounded)
+        /// 대기 화면 대형 시작 버튼 라벨
+        static let runStartButton = Font.system(size: 22, weight: .bold, design: .rounded)
     }
 }

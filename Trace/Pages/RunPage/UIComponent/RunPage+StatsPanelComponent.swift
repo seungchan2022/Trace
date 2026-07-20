@@ -83,7 +83,6 @@ struct RunStatsPanel: View {
             in: UnevenRoundedRectangle(topLeadingRadius: DesignToken.Corner.sheetTop,
                                        topTrailingRadius: DesignToken.Corner.sheetTop)
         )
-        .overlay(alignment: .topTrailing) { recenterButton }
     }
 
     private var endButton: some View {
@@ -141,15 +140,6 @@ struct RunStatsPanel: View {
         .disabled(viewModel.session.canMarkWaypoint == false)
         .opacity(viewModel.session.canMarkWaypoint ? 1 : 0.4)
         .accessibilityIdentifier("run.waypointButton")
-    }
-
-    private var recenterButton: some View {
-        Button { viewModel.recenter() } label: {
-            Image(systemName: "location.fill")
-        }
-        .buttonStyle(GlassIconButtonStyle())
-        .offset(y: -(DesignToken.Size.fab + 12))
-        .padding(.trailing, DesignToken.Size.screenMargin)
     }
 
     private func stat(value: String, unit: String) -> some View {

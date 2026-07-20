@@ -1,7 +1,5 @@
 import Foundation
-import MapKit
 import Observation
-import SwiftUI
 
 /// 대기 화면 목표 선택 세그먼트의 3모드 — 조립 결과는 RunGoal(Domain)
 enum RunGoalMode: String, CaseIterable, Identifiable {
@@ -34,8 +32,6 @@ final class RunPageViewModel {
     private let defaults: UserDefaults
     private let sleeper: (Duration) async throws -> Void
 
-    var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
-    private(set) var displayedCoordinates: [CLLocationCoordinate2D] = []
     var showsAccuracyAlert = false
     var showsPermissionAlert = false
     /// 카운트다운 표시값(3→2→1). nil = 카운트다운 아님. 스펙 §1.1
@@ -48,7 +44,6 @@ final class RunPageViewModel {
     /// 몇 초 표시 후 사라지는 포인트 확인 카드 — nil = 표시 안 함(스펙 §2.2)
     private(set) var waypointCard: WaypointCard?
     private var waypointCardDismissTask: Task<Void, Never>?
-    private var polylineThrottle = PolylineThrottle()
 
     static let lastDistanceKey = "run.goal.lastDistanceKm"
     static let lastTimeKey = "run.goal.lastTimeMinutes"
@@ -166,10 +161,7 @@ final class RunPageViewModel {
             presentStartFailure()
             return
         }
-        displayedCoordinates = []
-        polylineThrottle = PolylineThrottle()
         summaryElapsedSeconds = nil
-        recenter()
     }
 
     /// 카운트다운 중 화면 탭 → 취소(스펙 §1.1). 백그라운드 진입은 취소가 아니다 — 계속 진행.
@@ -208,35 +200,10 @@ final class RunPageViewModel {
         waypointCard = nil
         summaryElapsedSeconds = session.activeElapsedSeconds()
         session.finish()
-        // 요약: 경로 전체가 보이도록 카메라 핏
-        let coordinates = session.track.samples.map(\.coordinate)
-        displayedCoordinates = coordinates.map {
-            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
-        }
-        if let region = Self.fittingRegion(for: displayedCoordinates) {
-            cameraPosition = .region(region)
-        }
     }
 
     func closeSummary() {
         session.dismissSummary()
-        displayedCoordinates = []
-        recenter()
-    }
-
-    /// 세션 샘플 수 변화 시 View의 onChange에서 호출 — 스로틀을 통과할 때만 폴리라인 재구성
-    func refreshPolylineIfDue(now: Date = Date()) {
-        guard session.state == .tracking else { return }
-        guard polylineThrottle.shouldRefresh(
-            now: now, totalDistanceMeters: session.track.totalDistanceMeters
-        ) else { return }
-        displayedCoordinates = session.track.samples.map {
-            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
-        }
-    }
-
-    func recenter() {
-        cameraPosition = .userLocation(fallback: .automatic)
     }
 
     func cancelAcquiring() {
@@ -252,24 +219,5 @@ final class RunPageViewModel {
     /// 7.0 → "7", 7.5 → "7.5" — 입력 필드 프리필 표기
     private static func formatKm(_ value: Double) -> String {
         value.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(value)) : String(format: "%.1f", value)
-    }
-
-    private static func fittingRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion? {
-        guard let first = coordinates.first else { return nil }
-        var minLat = first.latitude, maxLat = first.latitude
-        var minLon = first.longitude, maxLon = first.longitude
-        for coordinate in coordinates {
-            minLat = min(minLat, coordinate.latitude); maxLat = max(maxLat, coordinate.latitude)
-            minLon = min(minLon, coordinate.longitude); maxLon = max(maxLon, coordinate.longitude)
-        }
-        return MKCoordinateRegion(
-            center: CLLocationCoordinate2D(
-                latitude: (minLat + maxLat) / 2, longitude: (minLon + maxLon) / 2
-            ),
-            span: MKCoordinateSpan(
-                latitudeDelta: max((maxLat - minLat) * 1.4, 0.005),
-                longitudeDelta: max((maxLon - minLon) * 1.4, 0.005)
-            )
-        )
     }
 }
