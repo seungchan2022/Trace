@@ -212,7 +212,7 @@ struct RunRecordDetailView: View {
         }
     }
 
-    /// 경로 전체가 보이도록 카메라 핏 (RunPageViewModel.fittingRegion과 같은 계산)
+    /// 경로 전체가 보이도록 카메라 핏
     private static func fittedPosition(for coordinates: [CLLocationCoordinate2D]) -> MapCameraPosition {
         guard let first = coordinates.first else { return .automatic }
         var minLat = first.latitude, maxLat = first.latitude
