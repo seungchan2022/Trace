@@ -356,42 +356,6 @@ final class RunSessionTests: XCTestCase {
         XCTAssertEqual(session.totalPausedSeconds(), 0, accuracy: 0.001)
     }
 
-    func test_준비가_끝나면_countingDown_상태다() async {
-        // 카운트다운 구간부터 러닝 플로우 — 탭바 숨김이 여기서부터 걸려야 한다
-        let started = await session.prepareStart()
-        XCTAssertTrue(started)
-        XCTAssertEqual(session.state, .countingDown)
-    }
-
-    func test_정확도_거부로_시작에_실패하면_idle로_복귀한다() async {
-        stream.accuracy = .reduced
-        stream.accuracyAfterRequest = .reduced
-        let started = await session.prepareStart()
-        XCTAssertFalse(started)
-        XCTAssertEqual(session.state, .idle)
-    }
-
-    func test_카운트다운_취소하면_idle로_돌아온다() async {
-        _ = await session.prepareStart()
-        session.cancelPreparation()
-        XCTAssertEqual(session.state, .idle)
-    }
-
-    func test_카운트다운이_끝나면_acquiring으로_넘어간다() async {
-        _ = await session.prepareStart()
-        session.beginTracking()
-        XCTAssertEqual(session.state, .acquiring)
-    }
-
-    func test_예열_중_스트림이_죽으면_countingDown에_갇히지_않는다() async {
-        // streamEnded의 isPreparing 분기가 상태를 복원하지 않으면 탭바 없는 화면에 영구히 갇힌다
-        _ = await session.prepareStart()
-        stream.finish()
-        await waitUntil { session.state == .idle }
-        XCTAssertEqual(session.state, .idle)
-        XCTAssertEqual(session.lastStartFailure, .permissionDenied)
-    }
-
 }
 
 // 클래스 본문이 swiftlint type_body_length(300줄) 임계를 넘지 않도록 신규 테스트를 확장으로 분리한다.
@@ -480,6 +444,42 @@ extension RunSessionTests {
         // duration + 일시정지합 ≈ 벽시계 경과(오차 1초 이내 — finish까지의 실행 지연)
         let wallElapsed = Date().timeIntervalSince(startedAt)
         XCTAssertEqual(saved.summary.duration + 30, wallElapsed, accuracy: 1.0)
+    }
+
+    func test_준비가_끝나면_countingDown_상태다() async {
+        // 카운트다운 구간부터 러닝 플로우 — 탭바 숨김이 여기서부터 걸려야 한다
+        let started = await session.prepareStart()
+        XCTAssertTrue(started)
+        XCTAssertEqual(session.state, .countingDown)
+    }
+
+    func test_정확도_거부로_시작에_실패하면_idle로_복귀한다() async {
+        stream.accuracy = .reduced
+        stream.accuracyAfterRequest = .reduced
+        let started = await session.prepareStart()
+        XCTAssertFalse(started)
+        XCTAssertEqual(session.state, .idle)
+    }
+
+    func test_카운트다운_취소하면_idle로_돌아온다() async {
+        _ = await session.prepareStart()
+        session.cancelPreparation()
+        XCTAssertEqual(session.state, .idle)
+    }
+
+    func test_카운트다운이_끝나면_acquiring으로_넘어간다() async {
+        _ = await session.prepareStart()
+        session.beginTracking()
+        XCTAssertEqual(session.state, .acquiring)
+    }
+
+    func test_예열_중_스트림이_죽으면_countingDown에_갇히지_않는다() async {
+        // streamEnded의 isPreparing 분기가 상태를 복원하지 않으면 탭바 없는 화면에 영구히 갇힌다
+        _ = await session.prepareStart()
+        stream.finish()
+        await waitUntil { session.state == .idle }
+        XCTAssertEqual(session.state, .idle)
+        XCTAssertEqual(session.lastStartFailure, .permissionDenied)
     }
 }
 
