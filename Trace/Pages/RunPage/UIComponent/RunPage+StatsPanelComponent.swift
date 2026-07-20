@@ -1,16 +1,63 @@
 import SwiftUI
 
-/// 트래킹 중 하단 패널: 거리·경과 시간·현재 페이스 + 길게 눌러 종료 + 약신호 표시
+/// 트래킹 중 전체화면: 거리가 주인공, 보조 행(시간·평균 페이스) 위에 배치(ui-direction §3)
 struct RunStatsPanel: View {
     let viewModel: RunPageViewModel
     @State private var isPressingEnd = false
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 0) {
+            Spacer()
+
+            // 보조 행: 시간 · 평균 페이스 (ui-direction §3)
+            HStack(spacing: 36) {
+                secondaryStat(label: "시간") { elapsedText }
+                secondaryStat(label: "평균 페이스") {
+                    Text(RunPaceFormatter.string(secondsPerKm: viewModel.liveAveragePaceSecondsPerKm))
+                        .font(DesignToken.Typography.runSecondaryStat)
+                        .monospacedDigit()
+                        .foregroundStyle(DesignToken.Color.ink)
+                }
+            }
+
+            // 주인공: 누적 거리
+            VStack(spacing: 0) {
+                Text(String(format: "%.2f", viewModel.session.track.totalDistanceMeters / 1000))
+                    .font(DesignToken.Typography.runDistanceHero)
+                    .monospacedDigit()
+                    .foregroundStyle(DesignToken.Color.ink)
+                Text("km")
+                    .font(DesignToken.Typography.runDistanceUnit)
+                    .foregroundStyle(DesignToken.Color.ink2)
+            }
+            .padding(.vertical, 12)
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("run.distanceHero")
+
+            statusLine
+            goalProgress
+
+            Spacer()
+            controlRow
+                .padding(.horizontal, DesignToken.Size.screenMargin)
+                .padding(.bottom, 40)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// GPS 약신호·일시정지·포인트 카드 — 셋 다 없으면 자리만 유지해 숫자가 위아래로 안 튄다
+    @ViewBuilder
+    private var statusLine: some View {
+        VStack(spacing: 4) {
             if viewModel.session.isSignalWeak {
                 Text("GPS 신호 약함")
                     .font(DesignToken.Typography.chip)
                     .foregroundStyle(DesignToken.Color.danger)
+            }
+            if viewModel.session.isPaused {
+                Text("일시정지됨")
+                    .font(DesignToken.Typography.chip)
+                    .foregroundStyle(DesignToken.Color.ink2)
             }
             if let card = viewModel.waypointCard {
                 Text("포인트 \(card.index) · \(String(format: "%.2f", card.segmentMeters / 1000)) km")
@@ -19,70 +66,71 @@ struct RunStatsPanel: View {
                     .transition(.opacity)
                     .accessibilityIdentifier("run.waypointCard")
             }
-            HStack(spacing: 24) {
-                stat(
-                    value: String(format: "%.2f", viewModel.session.track.totalDistanceMeters / 1000),
-                    unit: "km"
-                )
-                VStack(spacing: 2) {
-                    if viewModel.session.isPaused {
-                        // 멈춘 시간 고정 표시 — activeElapsedSeconds는 일시정지 중 상수라 안전
-                        Text(RunDurationFormatter.string(
-                            seconds: viewModel.session.activeElapsedSeconds() ?? 0
-                        ))
-                        .font(DesignToken.Typography.segmentRowDistance)
+        }
+        .frame(minHeight: 22)
+    }
+
+    @ViewBuilder
+    private var goalProgress: some View {
+        if let label = RunGoalFormatter.label(viewModel.session.goal),
+           let fraction = viewModel.goalProgressFraction {
+            VStack(spacing: 4) {
+                HStack {
+                    Text(label)
+                        .font(DesignToken.Typography.chip)
+                        .foregroundStyle(DesignToken.Color.ink2)
+                    Spacer()
+                    Text("\(Int(fraction * 100))%")
+                        .font(DesignToken.Typography.chip)
                         .monospacedDigit()
                         .foregroundStyle(DesignToken.Color.ink2)
-                    } else if let timerStart = viewModel.session.displayTimerStart {
-                        Text(timerInterval: timerStart...Date.distantFuture, countsDown: false)
-                            .font(DesignToken.Typography.segmentRowDistance)
-                            .monospacedDigit()
-                    }
-                    Text("시간").font(DesignToken.Typography.sectionLabel)
-                        .foregroundStyle(DesignToken.Color.ink2)
                 }
-                stat(
-                    value: RunPaceFormatter.string(
-                        secondsPerKm: viewModel.session.track.currentPaceSecondsPerKm
-                    ),
-                    unit: "페이스"
-                )
+                ProgressView(value: fraction)
+                    .tint(DesignToken.Color.accent)
             }
+            .padding(.horizontal, 48)
+            .padding(.top, 12)
+        }
+    }
+
+    /// 컨트롤 영역 — 달리는 중엔 포인트+일시정지, 멈춘 뒤에만 종료가 더해진다(ui-direction §3).
+    /// 포인트 버튼은 일시정지 중에도 자리를 지킨다(비활성 dimmed) — 버튼이 사라지면
+    /// "왜 못 찍는지"가 안 보인다는 스펙 §2.2의 상태 가시화 의도가 깨진다.
+    private var controlRow: some View {
+        HStack(spacing: 12) {
+            waypointButton
+            pauseResumeButton
             if viewModel.session.isPaused {
-                Text("일시정지됨")
-                    .font(DesignToken.Typography.chip)
-                    .foregroundStyle(DesignToken.Color.ink2)
-            }
-            if let label = RunGoalFormatter.label(viewModel.session.goal),
-               let fraction = viewModel.goalProgressFraction {
-                VStack(spacing: 4) {
-                    HStack {
-                        Text(label)
-                            .font(DesignToken.Typography.chip)
-                            .foregroundStyle(DesignToken.Color.ink2)
-                        Spacer()
-                        Text("\(Int(fraction * 100))%")
-                            .font(DesignToken.Typography.chip)
-                            .monospacedDigit()
-                            .foregroundStyle(DesignToken.Color.ink2)
-                    }
-                    ProgressView(value: fraction)
-                        .tint(DesignToken.Color.accent)
-                }
-            }
-            HStack(spacing: 12) {
-                pauseResumeButton
-                waypointButton
                 endButton
             }
         }
-        .padding(DesignToken.Size.sheetPadding)
-        .frame(maxWidth: .infinity)
-        .background(
-            DesignToken.Color.surface,
-            in: UnevenRoundedRectangle(topLeadingRadius: DesignToken.Corner.sheetTop,
-                                       topTrailingRadius: DesignToken.Corner.sheetTop)
-        )
+    }
+
+    @ViewBuilder
+    private var elapsedText: some View {
+        if viewModel.session.isPaused {
+            // 멈춘 시간 고정 표시 — activeElapsedSeconds는 일시정지 중 상수라 안전
+            Text(RunDurationFormatter.string(seconds: viewModel.session.activeElapsedSeconds() ?? 0))
+                .font(DesignToken.Typography.runSecondaryStat)
+                .monospacedDigit()
+                .foregroundStyle(DesignToken.Color.ink2)
+        } else if let timerStart = viewModel.session.displayTimerStart {
+            Text(timerInterval: timerStart...Date.distantFuture, countsDown: false)
+                .font(DesignToken.Typography.runSecondaryStat)
+                .monospacedDigit()
+                .foregroundStyle(DesignToken.Color.ink)
+        }
+    }
+
+    private func secondaryStat<Content: View>(
+        label: String, @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(spacing: 2) {
+            content()
+            Text(label)
+                .font(DesignToken.Typography.sectionLabel)
+                .foregroundStyle(DesignToken.Color.ink2)
+        }
     }
 
     private var endButton: some View {
@@ -140,18 +188,6 @@ struct RunStatsPanel: View {
         .disabled(viewModel.session.canMarkWaypoint == false)
         .opacity(viewModel.session.canMarkWaypoint ? 1 : 0.4)
         .accessibilityIdentifier("run.waypointButton")
-    }
-
-    private func stat(value: String, unit: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(DesignToken.Typography.segmentRowDistance)
-                .monospacedDigit()
-                .foregroundStyle(DesignToken.Color.ink)
-            Text(unit)
-                .font(DesignToken.Typography.sectionLabel)
-                .foregroundStyle(DesignToken.Color.ink2)
-        }
     }
 }
 

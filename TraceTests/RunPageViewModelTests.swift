@@ -153,6 +153,28 @@ final class RunPageViewModelTests: XCTestCase {
         XCTAssertLessThan(actualPace, buggyPace)
     }
 
+    func test_라이브_평균_페이스는_활동_시간_기준이다() async throws {
+        // RunTrack.averagePaceSecondsPerKm(GPS 샘플 구간 = 일시정지 포함)을 쓰면
+        // 같은 러닝의 요약 화면·발화와 값이 어긋난다(MVP14 §3.1) — 활동 시간 기준이어야 한다
+        XCTAssertNil(viewModel.liveAveragePaceSecondsPerKm) // 거리 0이면 nil
+
+        await session.start()
+        let now = Date()
+        stream.yield(sample(at: now))
+        await waitUntil { session.state == .tracking }
+        stream.yield(sample(at: now.addingTimeInterval(60), latOffsetMeters: 200))
+        await waitUntil { session.track.totalDistanceMeters > 0 }
+
+        let distanceKm = session.track.totalDistanceMeters / 1000
+        let elapsed = try XCTUnwrap(session.activeElapsedSeconds())
+        XCTAssertGreaterThan(elapsed, 0)
+        XCTAssertEqual(
+            try XCTUnwrap(viewModel.liveAveragePaceSecondsPerKm),
+            elapsed / distanceKm,
+            accuracy: 1.0
+        )
+    }
+
     /// 격리된 UserDefaults suite — 프리필/저장 테스트가 .standard나 서로를 오염시키지 않게 한다.
     private func makeIsolatedDefaults(name: String) -> UserDefaults {
         guard let defaults = UserDefaults(suiteName: name) else { return .standard }

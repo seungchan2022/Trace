@@ -43,7 +43,7 @@ struct RunPage: View {
         case .idle:
             startControls
         case .countingDown:
-            acquiringPanel // 임시 — Task 3에서 RunCountdownScreen으로 교체
+            RunCountdownScreen(count: viewModel.countdown) { viewModel.cancelCountdown() }
         case .acquiring:
             acquiringPanel
         case .tracking, .paused:
