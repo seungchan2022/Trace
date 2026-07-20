@@ -53,6 +53,16 @@ related_components: [CoursePlannerPage]
 
 수정 후 실측: `topSafeAreaInset` 62pt로 고정(더 이상 40으로 안 줄어듦), topBar y좌표가 collapsed/medium/full 전 구간에서 70으로 고정, 스크린샷에서도 시트가 상태바를 덮지 않음.
 
+### 2026-07-20 갱신: "회전이 없다" 전제가 깨진 뒤의 형태
+
+가로모드 지원(MVP16 tab-restructure)으로 "이 화면은 기기 회전이 없다"는 전제가 깨졌다 —
+세로에서 latch된 62pt가 가로(진짜 top inset 0)에서도 유지되는 stale 문제가 실측됐다
+(`.git/sdd/task-landscape-layout-report.md`). 단, 이 stale 값은 가로에서 시트를 *짧게* 누르는
+보호막이기도 해서, **ratchet만 단독으로 고치면 가로 full에서 시트가 실제로 화면 위로 뚫린다**
+(실측: 시트 top y=-56). 수정은 반드시 ① RootView 구조 클램프(GeometryReader) ② 시트 예산
+min-클램프(pageHeight) ③ ratchet의 size class별 분리(`SafeAreaInsetLatch`) 순서로 진행해야
+한다. 상세: `docs/superpowers/plans/2026-07-20-landscape-sheet-overflow.md`.
+
 ## Why This Works
 
 `proxy.safeAreaInsets.top`은 이론상 시스템 UI(노치/다이내믹 아일랜드/상태바)가 차지하는 고정 영역이어야 하지만, 실제로는 같은 화면 트리 안의 다른 뷰가 화면을 거의 다 채우는 것처럼 보이는 순간 iOS/SwiftUI가 이 값을 동적으로 더 작게 보고하는 경우가 있다(이 세션에서는 `bottomSheet`가 `.ignoresSafeArea(edges: .bottom)`로 확장되며 top safe area 경계에 매우 가깝게 커질 때 관찰됨). 이 측정값을 **같은 뷰의 크기 계산에 그대로 되먹이면**, 값이 줄어들수록 계산된 크기가 커지고, 커진 크기가 다시 값을 더 줄이는 악순환이 생긴다. 측정값에 "이전 값보다 작아지면 무시" 규칙을 걸면, 최초의(신뢰할 수 있는) 측정값이 고정되어 루프가 원천적으로 성립하지 않는다.
