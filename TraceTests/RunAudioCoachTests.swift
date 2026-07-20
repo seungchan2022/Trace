@@ -38,10 +38,19 @@ final class RunAudioCoachTests: XCTestCase {
         }
     }
 
+    /// 카운트다운→트래킹 시작 — coach가 매 상태 전이를 관찰하도록 beginTracking 전에 한 번 sync한다.
+    /// (실제 앱은 RunPageViewModel의 3-2-1 카운트다운이 이 간격을 자연스럽게 만들지만, session.start()는
+    /// 두 전이를 suspension 없이 이어붙이므로 여기서 직접 sync 지점을 나눠 재현한다.)
+    private func beginRun(goal: RunGoal = .open) async {
+        _ = await session.prepareStart(goal: goal)
+        coach.sync()
+        session.beginTracking()
+        coach.sync()
+    }
+
     /// 시작 → 첫 샘플 수용(tracking 진입)까지 진행하고 발화 로그를 비운다
     private func startTracking(goal: RunGoal = .open) async {
-        await session.start(goal: goal)
-        coach.sync()
+        await beginRun(goal: goal)
         stream.yield(sample(at: Date()))
         await waitUntil { session.state == .tracking }
         coach.sync()
@@ -51,8 +60,7 @@ final class RunAudioCoachTests: XCTestCase {
     }
 
     func test_시작하면_러닝시작_발화() async {
-        await session.start()
-        coach.sync()
+        await beginRun()
         XCTAssertEqual(announcer.announced, ["러닝을 시작합니다"])
     }
 
@@ -185,8 +193,7 @@ final class RunAudioCoachTests: XCTestCase {
 
     func test_일시정지_재개만_기본속도_나머지는_모두_measured() async {
         // 일시정지/재개만 기존 속도 유지, 시작·절반·종료(+km·목표달성)는 전부 느리게(2026-07-18 후속 피드백)
-        await session.start(goal: .distance(meters: 1000))
-        coach.sync() // idx0: 시작
+        await beginRun(goal: .distance(meters: 1000)) // idx0: 시작
         stream.yield(sample(at: Date()))
         await waitUntil { session.state == .tracking }
         coach.sync() // acquiring→tracking 전이 자체엔 발화 없음

@@ -49,7 +49,7 @@ final class RunActivityController {
             } else {
                 updateActivity()
             }
-        case .idle, .acquiring, .summary:
+        case .idle, .countingDown, .acquiring, .summary:
             endActivityIfNeeded()
         }
     }

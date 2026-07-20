@@ -87,6 +87,8 @@ struct RunPage: View {
         switch viewModel.session.state {
         case .idle:
             startControls
+        case .countingDown:
+            acquiringPanel // 임시 — Task 3에서 RunCountdownScreen으로 교체
         case .acquiring:
             acquiringPanel
         case .tracking, .paused:

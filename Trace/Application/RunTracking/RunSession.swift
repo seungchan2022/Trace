@@ -16,6 +16,10 @@ struct RunSampleDumpEntry: Equatable, Sendable, Codable {
 final class RunSession {
     enum State: Equatable {
         case idle
+        /// 시작 탭 직후 카운트다운(3-2-1) 구간 — 아직 트래킹 전이지만 러닝 플로우에 속한다.
+        /// 탭바 숨김 판정(`AppTab.isTabBarHidden`)이 이 상태부터 걸려, 카운트다운 중 탭을
+        /// 옮겼다가 탭바 없이 갇히던 버그를 구조적으로 차단한다(MVP16 run-fullscreen).
+        case countingDown
         case acquiring
         case tracking
         case paused
@@ -122,11 +126,15 @@ final class RunSession {
     }
 
     /// 카운트다운 전 단계(스펙 §1.1): 정확도 게이트(시스템 프롬프트 포함)와 GPS 예열만 수행한다.
-    /// 상태는 idle 유지·startedAt 미설정 — 스트림 태스크의 startedAt 가드가 예열 샘플을 버린다.
+    /// 성공하면 상태는 countingDown으로 전환·startedAt은 미설정 — 스트림 태스크의 startedAt
+    /// 가드가 예열 샘플을 버린다.
     func prepareStart(goal: RunGoal = .open) async -> Bool {
         guard state == .idle, isPreparing == false else { return false }
         isPreparing = true // 아래 정확도 재요청 await 지점 전에 닫아야 재진입 창이 안 생긴다
         lastStartFailure = nil
+        // 첫 suspension point 이전(동기 구간)에 올린다 — 정확도 게이트를 await하는 동안에도
+        // 탭바가 이미 사라져 있어야 탭 전환 창이 열리지 않는다(run-fullscreen Task 1).
+        state = .countingDown
 
         var accuracy = locationStream.currentAccuracy()
         if accuracy == .reduced {
@@ -135,6 +143,7 @@ final class RunSession {
         guard accuracy == .full else {
             lastStartFailure = .reducedAccuracy
             isPreparing = false // 재시도를 막지 않도록 원복
+            state = .idle // 시작 실패 — 대기 화면으로 복귀
             return false
         }
 
@@ -165,9 +174,13 @@ final class RunSession {
 
     /// 카운트다운 종료 시점 — 여기부터가 세션 시작(활동 시간·거리 적산 기준, 스펙 §1.1)
     func beginTracking(now: Date = Date()) {
-        guard isPreparing, state == .idle else { return }
+        guard isPreparing, state == .countingDown else { return }
         isPreparing = false
-        guard lastStartFailure == nil else { stopStream(); return } // 예열 중 스트림 사망(권한 회수)
+        guard lastStartFailure == nil else { // 예열 중 스트림 사망(권한 회수)
+            stopStream()
+            state = .idle
+            return
+        }
         startedAt = now
         state = .acquiring
     }
@@ -181,6 +194,7 @@ final class RunSession {
         goal = .open
         goalHalfReached = false
         goalAchieved = false
+        state = .idle // 카운트다운 화면을 닫고 대기 화면으로(run-fullscreen Task 1)
     }
 
     func start(goal: RunGoal = .open) async {
@@ -306,6 +320,7 @@ final class RunSession {
             isPreparing = false
             locationStream.stopUpdates()
             lastStartFailure = .permissionDenied
+            state = .idle // 카운트다운 화면에 갇히지 않게 대기 화면으로 복귀(run-fullscreen Task 1)
             return
         }
         guard isActive else { return }

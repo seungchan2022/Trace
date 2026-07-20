@@ -52,7 +52,7 @@ final class RunAudioCoach {
         let state = session.state
         guard state != lastState else { return }
         switch (lastState, state) {
-        case (.idle, .acquiring):
+        case (.countingDown, .acquiring):
             lastAnnouncedKm = 0 // 새 러닝 — km 카운터 리셋
             goalHalfAnnounced = false
             goalAchievedAnnounced = false
