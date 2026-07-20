@@ -28,9 +28,11 @@ struct CoursePlannerPage: View {
     )
     @State private var currentStrokePoints: [CGPoint] = []
     @State var sheetDetent: SheetDetent = .collapsed
-    @State var panelMaxListHeight: CGFloat = 300
     @State var mapHeight: CGFloat = 750
     @State var pageHeight: CGFloat = 750
+    // pageHeight(GeometryReader 앵커, 항상 안정) 기준 40% — 예산 계산과 같은 앵커를 쓴다.
+    // mapHeight 기준으로 두면 되먹임 폭주(2026-07-20 실기기 진단)에 함께 오염된다.
+    var panelMaxListHeight: CGFloat { pageHeight * 0.4 }
     @State private var safeAreaLatch = SafeAreaInsetLatch()
     // BottomSheetComponent 확장(별도 파일)이 기존 이름 그대로 읽는다 — private 금지.
     var topSafeAreaInset: CGFloat {
@@ -69,48 +71,77 @@ struct CoursePlannerPage: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // 페이지가 실제로 배정받은 높이(제안 크기)의 안정 앵커 — mapView 측정값(mapHeight)은
-            // ignoresSafeArea 확장을 포함해 배정량보다 클 수 있고(세로 +62), 가로에서는 원인
-            // 미확정 팽창(335→396)이 실측됐다(2026-07-20). Color.clear는 형제 크기와 무관하게
-            // 항상 제안 크기를 그대로 보고하므로 시트 예산(maxSheetHeight)의 min-클램프 기준이 된다.
-            Color.clear
-                .allowsHitTesting(false)
-                .onGeometryChange(for: CGFloat.self) { proxy in
-                    proxy.size.height
-                } action: { height in
-                    pageHeight = height
-                }
+        // GeometryReader는 자식 크기와 무관하게 항상 제안받은 크기를 그대로 보고한다(RootView의
+        // 탭바 방어와 같은 원리, 2026-07-20). 이 ZStack 자신은 mapView/bottomSheet가 커지면 이상적
+        // 크기가 함께 부풀어(ZStack은 자식 중 가장 큰 이상적 크기로 스스로를 계산한다) 그 부푼 값이
+        // 다음 레이아웃 패스에서 자식들에게 "제안 크기"로 되먹임된다 — 경로가 있는 가로모드에서
+        // map/page 실측이 335→666까지 폭주하는 원인(2026-07-20 실기기 진단). .frame으로 ZStack의
+        // 제안/보고 크기를 proxy.size에 강제 고정해 이 되먹임 고리를 여기서 끊는다.
+        GeometryReader { proxy in
+            ZStack(alignment: .top) {
+                // mapView는 RunPage.runMap과 동일하게 프레임 캡 없이 자연 블리드시킨다 — 캡을 걸면
+                // 탭바 옆 지도가 그 프레임 경계에서 잘려 다크모드에서 검은 여백이 드러난다
+                // (2026-07-20 실기기 확인). ignoresSafeArea()는 크기 제안 체계를 거치지 않고 자기가
+                // 원하는 크기를 그대로 주장하므로, bottomSheet를 이 ZStack의 형제로 두면 그 주장이
+                // ZStack 내부 정렬 기준(native size)까지 오염시켰다 — 그래서 시트는 형제가 아니라
+                // 아래 .overlay로 분리한다(이 ZStack 자신의 .frame이 이미 안정된 기준이므로).
+                mapView
+                    .ignoresSafeArea(edges: .top)
+                    .accessibilityIdentifier("coursePlanner.map")
 
-            mapView
-                .ignoresSafeArea()
-                .accessibilityIdentifier("coursePlanner.map")
-
-            // 지도가 풀블리드 배경, 아래 VStack은 그 위에 뜨는 크롬(탑바/FAB) — safeAreaInset이
-            // 아니므로 시트가 펼쳐져도 지도 프레임(mapView의 onGeometryChange 측정값)이 바뀌지 않는다.
-            // .ignoresSafeArea()를 이 VStack에는 걸지 않아 상태바/노치·홈 인디케이터는 자동으로 피한다.
-            //
-            // 히트테스트: 이 VStack엔 .allowsHitTesting을 아예 걸지 않는다. 원래 계획은 VStack 전체에
-            // false를 걸고 topBar/fabStack 각각에 true를 다시 거는 것이었으나, 시뮬레이터 검증 중
-            // 그 조합이 자식의 true를 무시하고 크롬 전체를 히트테스트 불가 상태로 만드는 것을 확인했다
-            // (버튼이 전혀 반응하지 않고 모든 탭이 그 밑 지도로 흘러들어가 탭할 때마다 구간이 추가됨,
-            // 2026-07-11 재현). Spacer()는 원래 그려지는 콘텐츠가 없어 히트테스트 대상이 되지 않으므로,
-            // allowsHitTesting을 아무 데도 걸지 않아도 버튼은 정상 동작하고 Spacer 영역은 자동으로
-            // 지도로 탭을 흘려보낸다 — 이 방식으로 로직 없이 두 요구사항이 모두 충족된다.
-            VStack(spacing: 0) {
-                topBar
-                Spacer()
-                HStack {
+                // 지도가 풀블리드 배경, 아래 VStack은 그 위에 뜨는 크롬(탑바/FAB) — 프레임 캡을
+                // 걸지 않아 RunPage.runMap의 컨트롤 레이어와 동일하게 자연스러운 최소 크기로만
+                // 존재한다. bottomSheet가 형제가 아니라 오버레이이므로 이 VStack이 얼마나
+                // 커지든 ZStack 내부 정렬 기준을 더 이상 오염시키지 않는다(2026-07-20).
+                //
+                // 히트테스트: 이 VStack엔 .allowsHitTesting을 아예 걸지 않는다. 원래 계획은 VStack 전체에
+                // false를 걸고 topBar/fabStack 각각에 true를 다시 거는 것이었으나, 시뮬레이터 검증 중
+                // 그 조합이 자식의 true를 무시하고 크롬 전체를 히트테스트 불가 상태로 만드는 것을 확인했다
+                // (버튼이 전혀 반응하지 않고 모든 탭이 그 밑 지도로 흘러들어가 탭할 때마다 구간이 추가됨,
+                // 2026-07-11 재현). Spacer()는 원래 그려지는 콘텐츠가 없어 히트테스트 대상이 되지 않으므로,
+                // allowsHitTesting을 아무 데도 걸지 않아도 버튼은 정상 동작하고 Spacer 영역은 자동으로
+                // 지도로 탭을 흘려보낸다 — 이 방식으로 로직 없이 두 요구사항이 모두 충족된다.
+                VStack(spacing: 0) {
+                    topBar
                     Spacer()
-                    fabStack
+                    HStack {
+                        Spacer()
+                        fabStack
+                    }
                 }
+                .frame(height: pageHeight, alignment: .top)
             }
-
-            // bottomSheet는 위 VStack과 별개의 형제 레이어다 — 같은 VStack에 있으면 "거의 다" 단계처럼
-            // 시트가 아주 커질 때 Spacer가 0으로 눌리면서 topBar까지 화면 위로 밀려나 상태바를 뚫고
-            // 올라가는 버그가 있었다(2026-07-12 실기기 확인). 분리하면 시트가 아무리 커져도 topBar/FAB를
-            // 밀어내지 않고 시스템 시트처럼 그 위를 덮기만 한다.
-            bottomSheet
+            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
+            // bottomSheet는 ZStack의 형제가 아니라 이미 안정된 .frame(height: pageHeight) 위의
+            // overlay다 — overlay는 자신이 얹히는 뷰의 확정된 프레임 경계에만 정렬하고, mapView나
+            // 크롬 VStack이 내부적으로 얼마나 큰 크기를 주장하든 그 기준에 전혀 영향받지 않는다
+            // (ZStack 형제였을 때는 그 주장이 "native size"에 섞여 들어가 시트 하단 y좌표가
+            // mapHeight/FAB 여백을 따라 갈라졌다 — 2026-07-20 실기기 진단). 이 구조가 가로 밀림·
+            // 시트 오염 회귀를 해소한다 — 탭바 옆 지도 잘림은 별개 원인(가로 세이프에어리어)으로
+            // 추정해 아래 .ignoresSafeArea(edges: .horizontal)을 시도했으나, 시뮬레이터에서는
+            // 좌우 끝까지 닿는 것을 픽셀로 확인했음에도 실기기 재확인 결과 여전히 재현됨
+            // (2026-07-20) — 미해결, `docs/backlog.md` 참고.
+            .overlay(alignment: .bottom) {
+                bottomSheet
+            }
+        }
+        // RootView의 루트 콘텐츠는 기본적으로 세이프에어리어 안쪽으로 제안받는다(가로에서는
+        // 좌우 안전영역이 생긴다 — 다이내믹 아일랜드/홈 인디케이터가 옆으로 돌아간 자리). 이
+        // GeometryReader를 여기서 좌우로 ignoresSafeArea하지 않으면 proxy.size.width 자체가
+        // 이미 그만큼 좁게 보고되고, 안의 .frame(width: proxy.size.width...)이 그 좁은 값을
+        // 그대로 굳혀버려 mapView/bottomSheet가 아무리 안에서 애써도 진짜 화면 끝까지 못
+        // 번진다 — 가로에서 탭바/시트 옆이 검게 남는 원인이었다(2026-07-20 시뮬레이터 실측:
+        // 코스 탭만 좌우로 대칭 검은 여백, 같은 RootView 아래의 러닝 탭은 이 프레임 고정이
+        // 없어 정상적으로 끝까지 번짐). 세로는 좌우 안전영역이 0이라 이 modifier가 아무 효과가
+        // 없다 — 세로 동작은 그대로다.
+        .ignoresSafeArea(edges: .horizontal)
+        // GeometryReader 자신이 보고하는 크기는 오직 "부모가 나에게 제안한 크기"일 뿐, 안의
+        // ZStack이 무엇을 하든 절대 바뀌지 않는다 — 시트 예산(maxSheetHeight)이 참조하는
+        // 유일하게 안정된 앵커.
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: { height in
+            pageHeight = height
         }
         // 시트가 커질수록 이 값 자체가 시스템에 의해 더 작게 보고되는 피드백 루프가 있었다
         // (2026-07-12, XCUITest로 실측: medium 62pt → full 40pt). 한 번 잡은 값보다 작은 값은
@@ -237,8 +268,8 @@ struct CoursePlannerPage: View {
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { height in
+            // 예산 계산에는 더 이상 안 쓴다(pageHeight로 대체) — 진단 오버레이 비교용으로만 남긴다.
             mapHeight = height
-            panelMaxListHeight = height * 0.4
         }
     }
 

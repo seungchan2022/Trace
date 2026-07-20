@@ -263,12 +263,13 @@ extension CoursePlannerPage {
     // XCUITest 접근성 트리 덤프로 확인 후 되돌림). 오버슈트 방어는 다시 시도하더라도 bottomSheet
     // 전체가 아니라 expandedSheetBody의 리스트 높이 안쪽에서만 해야 한다.
     //
-    // pageHeight로 min-클램프: mapHeight는 ignoresSafeArea 확장/가로 팽창 때문에 배정량을
-    // 초과할 수 있어(2026-07-20 실측 335→396) 단독으로는 예산 앵커로 부적합하다. 세로에서는
-    // min(784-62, 722)=722로 기존 수식과 완전 동치(회귀 없음), 가로에서는 어떤 팽창에도
-    // 예산이 배정 높이를 못 넘는다.
+    // pageHeight만 기준으로 삼는다: mapHeight는 ignoresSafeArea 확장 때문에 배정량을 초과할
+    // 뿐 아니라(세로 +62), 경로가 있는 가로모드에서는 시트↔ZStack↔지도 사이의 크기 되먹임에
+    // 함께 휩쓸려 배정량(335)의 두 배 가까이(666) 폭주하는 것이 실기기로 확인됐다(2026-07-20).
+    // pageHeight는 이제 body의 ZStack을 감싸는 GeometryReader에서 측정하므로(내부 자식이
+    // 무엇을 하든 부모가 제안한 크기만 그대로 보고) 이 되먹임에서 완전히 벗어난 유일한 앵커다.
     private var maxSheetHeight: CGFloat {
-        min(mapHeight - topSafeAreaInset, pageHeight) - sheetTopMargin
+        pageHeight - topSafeAreaInset - sheetTopMargin
     }
 
     // 예산 안에서의 리스트 높이 상한 — full은 이 값을 그대로 쓰고, medium은 이 값을 넘지
