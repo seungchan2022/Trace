@@ -253,7 +253,7 @@ extension CoursePlannerPage {
     private var sheetTopMargin: CGFloat { 11 }
 
     // 풀 시트가 다이내믹 아일랜드/상태 바 바로 아래에서 멈추도록 하는 상한 — 시스템 시트의
-    // large detent와 같은 발상. expandedListHeight(.full)의 리스트 높이 계산에만 쓴다.
+    // large detent와 같은 발상. expandedListHeight의 리스트 높이 계산에만 쓴다.
     //
     // 한 번은 이 값을 bottomSheet 자체에도 .frame(maxHeight:, alignment: .top)으로 강제해
     // 오버슈트를 물리적으로 막으려 했으나, ZStack이 자식에게 화면 전체 높이를 제안하는 상황에서
@@ -262,8 +262,20 @@ extension CoursePlannerPage {
     // medium 단계에서 지도 탭이 그 영역에 흡수되어 경로 생성 자체가 안 되는 회귀였다(2026-07-12,
     // XCUITest 접근성 트리 덤프로 확인 후 되돌림). 오버슈트 방어는 다시 시도하더라도 bottomSheet
     // 전체가 아니라 expandedSheetBody의 리스트 높이 안쪽에서만 해야 한다.
+    //
+    // pageHeight로 min-클램프: mapHeight는 ignoresSafeArea 확장/가로 팽창 때문에 배정량을
+    // 초과할 수 있어(2026-07-20 실측 335→396) 단독으로는 예산 앵커로 부적합하다. 세로에서는
+    // min(784-62, 722)=722로 기존 수식과 완전 동치(회귀 없음), 가로에서는 어떤 팽창에도
+    // 예산이 배정 높이를 못 넘는다.
     private var maxSheetHeight: CGFloat {
-        mapHeight - topSafeAreaInset - sheetTopMargin
+        min(mapHeight - topSafeAreaInset, pageHeight) - sheetTopMargin
+    }
+
+    // 예산 안에서의 리스트 높이 상한 — full은 이 값을 그대로 쓰고, medium은 이 값을 넘지
+    // 않는 범위에서 지도 높이 40%를 쓴다. 어느 단계도 예산(maxSheetHeight)을 넘을 수 없다.
+    // max(0, ...)은 초기 측정 전 기본값 조합에서 음수 프레임 경고를 막는 가드.
+    private var budgetListHeight: CGFloat {
+        max(0, maxSheetHeight - grabberTotalHeight - sheetHeaderHeight)
     }
 
     // presentationDetents처럼 단계별 고정 높이 — 콘텐츠 양은 높이에 전혀 영향을 주지 않는다.
@@ -274,13 +286,8 @@ extension CoursePlannerPage {
     private var expandedListHeight: CGFloat {
         switch sheetDetent {
         case .collapsed: return 0
-        case .medium: return panelMaxListHeight
-        case .full:
-            // 시스템 시트의 large detent처럼 위쪽 안전영역(+여백)만 남기고 나머지를 채운다 —
-            // 이전엔 panelMaxListHeight의 고정 배수를 써서 기기에 따라 시트가 상태바까지
-            // 뚫고 올라가는 버그가 있었다(2026-07-12 실기기 확인, 사용자 스크린샷).
-            let maxListHeight = maxSheetHeight - grabberTotalHeight - sheetHeaderHeight
-            return max(panelMaxListHeight, maxListHeight)
+        case .medium: return min(panelMaxListHeight, budgetListHeight)
+        case .full: return budgetListHeight
         }
     }
 

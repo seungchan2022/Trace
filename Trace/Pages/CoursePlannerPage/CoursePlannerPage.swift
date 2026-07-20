@@ -30,6 +30,7 @@ struct CoursePlannerPage: View {
     @State var sheetDetent: SheetDetent = .collapsed
     @State var panelMaxListHeight: CGFloat = 300
     @State var mapHeight: CGFloat = 750
+    @State var pageHeight: CGFloat = 750
     @State var topSafeAreaInset: CGFloat = 0
     @State var sheetHeaderHeight: CGFloat = 140
     @State var panelAnchorColorKey: Int?
@@ -64,6 +65,18 @@ struct CoursePlannerPage: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            // 페이지가 실제로 배정받은 높이(제안 크기)의 안정 앵커 — mapView 측정값(mapHeight)은
+            // ignoresSafeArea 확장을 포함해 배정량보다 클 수 있고(세로 +62), 가로에서는 원인
+            // 미확정 팽창(335→396)이 실측됐다(2026-07-20). Color.clear는 형제 크기와 무관하게
+            // 항상 제안 크기를 그대로 보고하므로 시트 예산(maxSheetHeight)의 min-클램프 기준이 된다.
+            Color.clear
+                .allowsHitTesting(false)
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.size.height
+                } action: { height in
+                    pageHeight = height
+                }
+
             mapView
                 .ignoresSafeArea()
                 .accessibilityIdentifier("coursePlanner.map")
