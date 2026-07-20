@@ -3,7 +3,7 @@ import SwiftUI
 struct RunPage: View {
     @State private var viewModel: RunPageViewModel
     @State private var historyViewModel: RunHistoryViewModel
-    @State private var showsHistory = false
+    @State private var historyPath: [RunHistoryRoute] = []
     @FocusState private var goalFieldFocused: Bool
 
     init(session: RunSession, recordRepository: RunRecordRepositoryProtocol, announcer: VoiceAnnouncerProtocol) {
@@ -32,16 +32,24 @@ struct RunPage: View {
             guard newValue != nil else { return }
             UIImpactFeedbackGenerator(style: .medium).impactOccurred() // 숫자마다 햅틱(스펙 §1.1)
         }
-        .sheet(isPresented: $showsHistory) {
-            RunHistorySheet(viewModel: historyViewModel)
-        }
     }
 
     @ViewBuilder
     private var controls: some View {
         switch viewModel.session.state {
         case .idle:
-            startControls
+            NavigationStack(path: $historyPath) {
+                startControls
+                    .navigationBarHidden(true) // 대기 화면 자체는 네비바 없음(ui-direction §4)
+                    .navigationDestination(for: RunHistoryRoute.self) { route in
+                        switch route {
+                        case .list:
+                            RunHistoryPage(viewModel: historyViewModel)
+                        case .detail(let summary):
+                            RunRecordDetailView(summary: summary, viewModel: historyViewModel)
+                        }
+                    }
+            }
         case .countingDown:
             RunCountdownScreen(count: viewModel.countdown) { viewModel.cancelCountdown() }
         case .acquiring:
@@ -57,7 +65,7 @@ struct RunPage: View {
         VStack(spacing: 0) {
             HStack {
                 Spacer()
-                Button { showsHistory = true } label: {
+                Button { historyPath.append(.list) } label: {
                     Image(systemName: "list.bullet.rectangle")
                 }
                 .buttonStyle(GlassIconButtonStyle())
@@ -172,4 +180,10 @@ struct RunPage: View {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
     }
+}
+
+/// 러닝 탭 기록 스택의 경로 — 목록과 상세 두 단계뿐이다(ui-direction §5)
+enum RunHistoryRoute: Hashable {
+    case list
+    case detail(SavedRunSummary)
 }

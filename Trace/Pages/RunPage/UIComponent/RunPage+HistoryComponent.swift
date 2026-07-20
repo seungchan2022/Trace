@@ -1,37 +1,32 @@
 import MapKit
 import SwiftUI
 
-/// 기록 목록 시트 — 러닝 탭 대기 화면에서 진입(스펙 §4). 행은 요약 컬럼만 사용한다.
-struct RunHistorySheet: View {
+/// 기록 목록 페이지 — 러닝 탭 대기 화면에서 push 진입(ui-direction §5).
+/// 대기 화면과 같은 계층이라 탭바가 계속 보인다. 행은 요약 컬럼만 사용한다.
+struct RunHistoryPage: View {
     let viewModel: RunHistoryViewModel
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if viewModel.summaries.isEmpty {
-                    ContentUnavailableView(
-                        "아직 기록이 없어요",
-                        systemImage: "figure.run",
-                        description: Text("러닝을 마치면 기록이 자동으로 저장돼요")
-                    )
-                } else {
-                    historyList
-                }
-            }
-            .navigationTitle("러닝 기록")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(for: SavedRunSummary.self) { summary in
-                RunRecordDetailView(summary: summary, viewModel: viewModel)
+        Group {
+            if viewModel.summaries.isEmpty {
+                ContentUnavailableView(
+                    "아직 기록이 없어요",
+                    systemImage: "figure.run",
+                    description: Text("러닝을 마치면 기록이 자동으로 저장돼요")
+                )
+            } else {
+                historyList
             }
         }
-        .presentationDetents([.medium, .large])
+        .navigationTitle("러닝 기록")
+        .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.load() }
     }
 
     private var historyList: some View {
         List {
             ForEach(viewModel.summaries) { summary in
-                NavigationLink(value: summary) {
+                NavigationLink(value: RunHistoryRoute.detail(summary)) {
                     RunHistoryRow(summary: summary)
                 }
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))

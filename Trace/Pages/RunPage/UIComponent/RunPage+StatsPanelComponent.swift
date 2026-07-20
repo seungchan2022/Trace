@@ -197,6 +197,7 @@ struct RunSummaryPanel: View {
 
     var body: some View {
         VStack(spacing: 16) {
+            Spacer()
             Text("러닝 요약").font(DesignToken.Typography.segmentRowTitle)
             saveStatusLine
             Grid(horizontalSpacing: 28, verticalSpacing: 12) {
@@ -222,14 +223,10 @@ struct RunSummaryPanel: View {
             #endif
             Button("닫기") { viewModel.closeSummary() }
                 .font(.system(size: 16, weight: .semibold))
+            Spacer()
         }
         .padding(DesignToken.Size.sheetPadding)
-        .frame(maxWidth: .infinity)
-        .background(
-            DesignToken.Color.surface,
-            in: UnevenRoundedRectangle(topLeadingRadius: DesignToken.Corner.sheetTop,
-                                       topTrailingRadius: DesignToken.Corner.sheetTop)
-        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
