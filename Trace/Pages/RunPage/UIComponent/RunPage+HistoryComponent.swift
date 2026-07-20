@@ -155,9 +155,22 @@ struct RunRecordDetailView: View {
             let coordinates = loadedRun.samples.map {
                 CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
             }
+            let pathSegments = RunPathSegmentsCalculator.segments(
+                samples: loadedRun.samples, waypoints: loadedRun.waypoints
+            )
             Map(initialPosition: RunRecordDetailView.fittedPosition(for: coordinates)) {
-                MapPolyline(coordinates: coordinates)
-                    .stroke(DesignToken.Color.accent, lineWidth: 5)
+                if pathSegments.isEmpty {
+                    // 포인트 없는 기록은 현행 단일색 유지(ui-direction §6)
+                    MapPolyline(coordinates: coordinates)
+                        .stroke(DesignToken.Color.accent, lineWidth: 5)
+                } else {
+                    ForEach(pathSegments, id: \.index) { segment in
+                        MapPolyline(coordinates: segment.coordinates.map {
+                            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+                        })
+                        .stroke(SegmentPalette.swiftUIColor(at: segment.index), lineWidth: 5)
+                    }
+                }
                 ForEach(Array(loadedRun.waypoints.enumerated()), id: \.offset) { index, waypoint in
                     Annotation("", coordinate: CLLocationCoordinate2D(
                         latitude: waypoint.latitude, longitude: waypoint.longitude
@@ -295,6 +308,10 @@ private struct RunWaypointsSection: View {
                 .foregroundStyle(DesignToken.Color.ink2)
             ForEach(segments, id: \.index) { segment in
                 HStack {
+                    Circle()
+                        .fill(SegmentPalette.swiftUIColor(at: segment.index))
+                        .frame(width: 10, height: 10)
+                        .accessibilityHidden(true) // 색은 보조 채널 — 라벨이 이미 구간을 말한다
                     Text(Self.label(for: segment))
                         .font(DesignToken.Typography.segmentRowTitle)
                         .foregroundStyle(DesignToken.Color.ink)
