@@ -141,14 +141,21 @@ actor SwiftDataRunRecordRepository: RunRecordRepositoryProtocol {
 
     // MARK: - Decode (테스트 가능한 손상 처리 경로)
 
-    static func decodeRunPayload(
-        _ data: Data
-    ) -> (samples: [SavedRunSample], pauses: [RunPauseInterval], goal: RunGoal, waypoints: [RunWaypoint])? {
+    struct DecodedRunPayload {
+        let samples: [SavedRunSample]
+        let pauses: [RunPauseInterval]
+        let goal: RunGoal
+        let waypoints: [RunWaypoint]
+    }
+
+    static func decodeRunPayload(_ data: Data) -> DecodedRunPayload? {
         guard let dto = try? JSONDecoder().decode(RunPersistenceDTO.Run.self, from: data),
               dto.version <= RunPersistenceDTO.currentVersion else { return nil }
-        return (
-            dto.samples.map(\.domain), (dto.pauses ?? []).map(\.domain),
-            dto.goal?.domain ?? .open, (dto.waypoints ?? []).map(\.domain)
+        return DecodedRunPayload(
+            samples: dto.samples.map(\.domain),
+            pauses: (dto.pauses ?? []).map(\.domain),
+            goal: dto.goal?.domain ?? .open,
+            waypoints: (dto.waypoints ?? []).map(\.domain)
         )
     }
 }
