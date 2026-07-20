@@ -31,7 +31,11 @@ struct CoursePlannerPage: View {
     @State var panelMaxListHeight: CGFloat = 300
     @State var mapHeight: CGFloat = 750
     @State var pageHeight: CGFloat = 750
-    @State var topSafeAreaInset: CGFloat = 0
+    @State private var safeAreaLatch = SafeAreaInsetLatch()
+    // BottomSheetComponent 확장(별도 파일)이 기존 이름 그대로 읽는다 — private 금지.
+    var topSafeAreaInset: CGFloat {
+        safeAreaLatch.value(isVerticallyCompact: verticalSizeClass == .compact)
+    }
     @State var sheetHeaderHeight: CGFloat = 140
     @State var panelAnchorColorKey: Int?
     // 접기 직전 "최신 근처를 보고 있었는가" — 재펼침 시 이 값이 true면 옛 앵커 대신 최신을 따라간다.
@@ -39,6 +43,7 @@ struct CoursePlannerPage: View {
     @State var panelWasNearLatestAtCollapse = true
     @State private var isTopHintDismissed = false
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     private var topHintText: String? {
         if let errorMessage = viewModel.errorMessage { return errorMessage }
@@ -108,14 +113,14 @@ struct CoursePlannerPage: View {
             bottomSheet
         }
         // 시트가 커질수록 이 값 자체가 시스템에 의해 더 작게 보고되는 피드백 루프가 있었다
-        // (2026-07-12, XCUITest로 실측: medium 62pt → full 40pt, mapHeight/sheetHeaderHeight는
-        // 그대로인데 이 값만 줄어들며 maxSheetHeight를 더 키워 시트가 상태바를 덮는 원인이었다).
-        // 한 번 잡은 값보다 작은 값은 무시해 루프를 끊는다 — 기기 회전이 없는 이 화면에서 진짜
-        // 안전영역은 고정값이라 더 큰 값만 갱신을 허용해도 안전하다.
+        // (2026-07-12, XCUITest로 실측: medium 62pt → full 40pt). 한 번 잡은 값보다 작은 값은
+        // 무시(ratchet)해 루프를 끊되, 가로 지원(2026-07-19) 이후로는 세로/가로의 진짜 안전영역이
+        // 다르므로(세로 62 / 가로 0) size class별로 독립 latch한다 — 단일 ratchet은 가로에서
+        // 세로 값이 눌러앉아 가로 full 시트가 62pt 짧아지는 stale 문제가 있었다(2026-07-20 실측).
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.safeAreaInsets.top
         } action: { newValue in
-            if newValue > topSafeAreaInset { topSafeAreaInset = newValue }
+            safeAreaLatch.update(newValue, isVerticallyCompact: verticalSizeClass == .compact)
         }
         .overlay(alignment: .top) {
             if let hint = topHintText, !isTopHintDismissed {
