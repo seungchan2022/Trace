@@ -43,21 +43,24 @@ final class RunActivityController {
 
     private func sync() {
         switch session.state {
-        case .tracking, .paused:
+        // 카운트다운부터 카드를 요청한다 — ActivityKit은 앱이 포그라운드일 때만 새 Activity를
+        // 시작할 수 있고(백그라운드 요청은 조용히 실패), 시작 버튼을 누른 시점은 항상 포그라운드이므로
+        // 여기서 요청해야 "누르자마자 화면을 잠가도" 카드가 확실히 생긴다(run-fullscreen 실기기 QA
+        // 2026-07-21 발견). 트래킹 전(countingDown/acquiring)엔 같은 카드를 "준비 중" 내용으로 갱신한다.
+        case .countingDown, .acquiring, .tracking, .paused:
             if activity == nil {
                 startActivity()
             } else {
                 updateActivity()
             }
-        case .idle, .countingDown, .acquiring, .summary:
+        case .idle, .summary:
             endActivityIfNeeded()
         }
     }
 
     private func startActivity() {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return } // 꺼져 있으면 조용히 무시(스펙 §6)
-        guard let startedAt = session.startedAt else { return }
-        let attributes = RunActivityAttributes(startedAt: startedAt)
+        let attributes = RunActivityAttributes(startedAt: session.startedAt ?? Date())
         activity = try? Activity.request(
             attributes: attributes,
             content: .init(state: currentState(), staleDate: nil)
@@ -85,6 +88,7 @@ final class RunActivityController {
             distanceMeters: session.track.totalDistanceMeters,
             paceSecondsPerKm: session.track.currentPaceSecondsPerKm,
             isPaused: session.isPaused,
+            isPreparing: session.state == .countingDown || session.state == .acquiring,
             timerStart: session.displayTimerStart ?? session.startedAt ?? Date(),
             elapsedSecondsAtPause: session.isPaused ? session.activeElapsedSeconds() : nil,
             lastWaypoint: session.waypoints.lastSegmentMeters.map {
