@@ -1,0 +1,34 @@
+# 테스트 코드 전용 완화 — 루트 .swiftlint.yml 위에 덧씌워진다(SwiftLint 중첩 설정).
+#
+# 테스트 코드를 규칙에 맞추는 게 아니라, 규칙을 테스트 관행에 맞춘다(결정 2026-07-21).
+# 루트 설정의 `included`에 `Tests`라는 존재하지 않는 폴더가 적혀 있어 테스트 43개 파일이
+# 처음부터 린트 밖에 있었고, 경로를 바로잡으면서 함께 정리한 것이다.
+disabled_rules:
+  - trailing_whitespace # 루트와 동일
+
+  # 이 리포는 테스트 이름을 한글 서술문으로 짓는다(test_풀시트_예산은_..._뺀다).
+  # 읽기 좋으라고 의도적으로 택한 규약이라, "짧고 영문" 기본 규칙과는 싸우지 않는다.
+  - identifier_name
+
+  # 테스트 파일은 케이스가 쌓이면 자연히 길어진다. 길이를 이유로 쪼개면
+  # 관련된 케이스가 흩어져 오히려 읽기 나빠진다.
+  - line_length
+  - type_body_length
+  - file_length
+
+  # 앱 코드의 `!`는 사용자 앱을 죽이지만, 테스트의 `!`는 그 테스트가 실패할 뿐이다 —
+  # 실패는 테스트가 원래 하는 일이라 같은 무게로 막을 이유가 없다.
+  # (opt_in_rules는 부모 설정과 합쳐지므로 목록에서 빼는 것만으로는 안 꺼진다.
+  #  반드시 여기 disabled_rules에 명시해야 한다.)
+  - force_unwrapping
+
+# force_cast / force_try는 계속 켜둔다 — 그쪽은 테스트에서도 의도를 드러내는 편이 낫다.
+opt_in_rules:
+  - force_cast
+  - force_try
+  - implicitly_unwrapped_optional
+  - prohibited_interface_builder
+
+analyzer_rules:
+  - unused_declaration
+  - unused_import

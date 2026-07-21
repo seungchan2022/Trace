@@ -45,7 +45,7 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
         await sut.toggleDrawingMode()
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
-            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
 
@@ -297,14 +297,14 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
 
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.500, longitude: 127.00),
-            CourseCoordinate(latitude: 37.510, longitude: 127.00),
+            CourseCoordinate(latitude: 37.510, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
         XCTAssertEqual(sut.session.segments.count, 1)
 
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.511, longitude: 127.00),
-            CourseCoordinate(latitude: 37.520, longitude: 127.00),
+            CourseCoordinate(latitude: 37.520, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
         XCTAssertEqual(sut.session.segments.count, 2, "스트로크마다 세그먼트가 하나씩 붙어야 함")
@@ -406,12 +406,12 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
         await sut.toggleDrawingMode()
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.500, longitude: 127.00),
-            CourseCoordinate(latitude: 37.510, longitude: 127.00),
+            CourseCoordinate(latitude: 37.510, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.511, longitude: 127.00),
-            CourseCoordinate(latitude: 37.520, longitude: 127.00),
+            CourseCoordinate(latitude: 37.520, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
         XCTAssertEqual(sut.session.segments.count, 2)
@@ -427,7 +427,7 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
         await sut.toggleDrawingMode()
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
-            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
         XCTAssertEqual(sut.session.segments.count, 1)
@@ -450,7 +450,7 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
 
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.500, longitude: 127.00),
-            CourseCoordinate(latitude: 37.510, longitude: 127.00),
+            CourseCoordinate(latitude: 37.510, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
 
@@ -470,7 +470,7 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
 
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.500, longitude: 127.00),
-            CourseCoordinate(latitude: 37.510, longitude: 127.00),
+            CourseCoordinate(latitude: 37.510, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
         XCTAssertEqual(sut.session.segments.count, 1)
@@ -478,7 +478,7 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
         service.stubbedError = CoursePlanningError.requestFailed
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.511, longitude: 127.00),
-            CourseCoordinate(latitude: 37.520, longitude: 127.00),
+            CourseCoordinate(latitude: 37.520, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
 
@@ -516,7 +516,7 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
 
         await sut.appendStroke([
             CourseCoordinate(latitude: 37.500, longitude: 127.00),
-            CourseCoordinate(latitude: 37.510, longitude: 127.00),
+            CourseCoordinate(latitude: 37.510, longitude: 127.00)
         ])
         try? await Task.sleep(nanoseconds: 400_000_000)
 
@@ -567,7 +567,7 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
         let appendTask = Task {
             await sut.appendStroke([
                 CourseCoordinate(latitude: 37.50, longitude: 127.00),
-                CourseCoordinate(latitude: 37.51, longitude: 127.00),
+                CourseCoordinate(latitude: 37.51, longitude: 127.00)
             ])
         }
 

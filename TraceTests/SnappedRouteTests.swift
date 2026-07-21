@@ -8,7 +8,7 @@ nonisolated final class SnappedRouteTests: XCTestCase {
         let p = [
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
             CourseCoordinate(latitude: 37.51, longitude: 127.00),
-            CourseCoordinate(latitude: 37.52, longitude: 127.00),
+            CourseCoordinate(latitude: 37.52, longitude: 127.00)
         ]
         let course = try await service.snappedRoute(through: p)
         XCTAssertEqual(service.calls, 2)              // 점 3개 → 구간 2개
@@ -21,7 +21,7 @@ nonisolated final class SnappedRouteTests: XCTestCase {
         let service = StubLegService(failFirstCall: true)
         let p = [
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
-            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00)
         ]
         let course = try await service.snappedRoute(through: p)
         XCTAssertEqual(service.calls, 2)              // 첫 호출 실패 + 재시도 성공
@@ -33,7 +33,7 @@ nonisolated final class SnappedRouteTests: XCTestCase {
         let service = StubLegService(alwaysFail: true)
         let p = [
             CourseCoordinate(latitude: 37.50, longitude: 127.00),
-            CourseCoordinate(latitude: 37.51, longitude: 127.00),
+            CourseCoordinate(latitude: 37.51, longitude: 127.00)
         ]
         do {
             _ = try await service.snappedRoute(through: p)

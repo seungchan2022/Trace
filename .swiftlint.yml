@@ -14,7 +14,8 @@ analyzer_rules:
 
 included:
   - Trace
-  - Tests
+  - TraceTests
+  - TraceUITests
 
 excluded:
   - .build

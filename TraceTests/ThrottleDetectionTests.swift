@@ -16,7 +16,7 @@ nonisolated final class ThrottleDetectionTests: XCTestCase {
         do {
             _ = try await service.snappedRoute(through: [
                 CourseCoordinate(latitude: 37.50, longitude: 127.00),
-                CourseCoordinate(latitude: 37.51, longitude: 127.00),
+                CourseCoordinate(latitude: 37.51, longitude: 127.00)
             ])
             XCTFail("Should have thrown")
         } catch CoursePlanningError.throttled {

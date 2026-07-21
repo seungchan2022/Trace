@@ -9,6 +9,8 @@ import XCTest
 
 nonisolated final class TraceUITestsLaunchTests: XCTestCase {
 
+    // XCTestCase의 class var를 재정의하는 자리라 static으로 못 바꾼다(static은 재정의 불가) — 규칙 오탐.
+    // swiftlint:disable:next static_over_final_class
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
     }
