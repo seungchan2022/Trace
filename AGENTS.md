@@ -17,6 +17,7 @@ Full git rules — commit format, integration/merge flow, branch hygiene — liv
 
 - Product: `Trace`
 - Platform: iOS
+- Devices/orientation: iPhone only, portrait only (결정 2026-07-21) — 아이패드·비전 타겟과 가로모드는 지원하지 않는다. 가로 전용 레이아웃 분기(`verticalSizeClass == .compact` 등)를 새로 만들지 말 것. 근거와 되돌리는 조건은 `docs/agent-rules/project-decisions.md`
 - Language: Swift
 - UI stack: SwiftUI by default
 - Minimum iOS version: iOS 17+

@@ -20,6 +20,10 @@
 > 킥오프 확정: `history/mvp16/2026-07-19-mvp16-ui-restructure-kickoff-design.md`
 > (방향 스펙: `history/mvp16/2026-07-18-run-ui-restructure-direction.md`)
 > 가로모드 시트 파생 회귀 2건은 MVP16에서 분리해 일반 백로그로 이월(`docs/backlog.md`).
+> **후속 종결(2026-07-21):** 그 이월분은 아이폰 세로 전용 고정으로 정리됐다 — 가로 관련 2건은
+> 고칠 문제 자체가 소멸했고, 세로 풀시트 topBar 회귀는 원인(안전영역 이중 차감)까지 확정해
+> 수정했다. 상세는 `docs/agent-rules/project-decisions.md`와
+> `docs/solutions/ui-bugs/anchor-swap-leaves-orphaned-derived-term.md`.
 > 회고: [`260721_mvp16_completion_retro`](history/mvp16/260721_mvp16_completion_retro.md)
 
 - [x] **ui-direction** — 디자인 결정 선행 사이클(경량, 문서 전용) 완료(2026-07-19): 탭바(풀폭 불투명·코스 탭 상시 노출·badge 제거), 트래킹 "거리가 주인공" 레이아웃, 대기 화면 시작 중심 미니멀, 기록 상세 구간별 색상 폴리라인(SegmentPalette 재사용) 확정. 스펙: `history/mvp16/2026-07-19-mvp16-ui-direction-design.md` · 참고 캡처: `docs/refs/`(나의찾기 2장 + 네이버 시트-탭바 3장)
