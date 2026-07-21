@@ -86,7 +86,7 @@
 
 ---
 
-- [ ] **Step 1: 롱프레스 임계값을 이름 붙은 상수로 정의**
+- [x] **Step 1: 롱프레스 임계값을 이름 붙은 상수로 정의**
 
 `MapViewRepresentable` 타입 본문(프로퍼티 `var isDrawingMode: Bool`이 있는 176행 근처)에 추가한다. 이 두 값은 실기기 튜닝 대상(Task 4)이므로 리터럴로 흩어두지 않는다.
 
@@ -99,7 +99,7 @@
     private static let drawAllowableMovement: CGFloat = 10
 ```
 
-- [ ] **Step 2: `drawGR`을 롱프레스 인식기로 교체**
+- [x] **Step 2: `drawGR`을 롱프레스 인식기로 교체**
 
 `makeUIView` 안 194–201행을 아래로 교체한다.
 
@@ -118,7 +118,7 @@
         context.coordinator.drawGestureRecognizer = drawGR
 ```
 
-- [ ] **Step 3: 인식기 프로퍼티 타입 변경**
+- [x] **Step 3: 인식기 프로퍼티 타입 변경**
 
 513행:
 
@@ -126,7 +126,7 @@
         weak var drawGestureRecognizer: UILongPressGestureRecognizer?
 ```
 
-- [ ] **Step 4: `handleDraw` 시그니처를 롱프레스로 바꾸고 스크롤 잠금/해제를 넣는다**
+- [x] **Step 4: `handleDraw` 시그니처를 롱프레스로 바꾸고 스크롤 잠금/해제를 넣는다**
 
 524–565행의 `handleDraw` 전체를 아래로 교체한다. 변경점은 세 가지 — ① 파라미터 타입, ② `.began`에서 `isScrollEnabled = false`(지도 고정), ③ `.ended`/`.cancelled`와 다중 터치 취소 경로에서 `isScrollEnabled = true`(지도 이동 복원). 좌표 수집·핀 히트·최소 2점 게이트 로직은 그대로다.
 
@@ -181,7 +181,7 @@
         }
 ```
 
-- [ ] **Step 5: 모드 전환 블록에서 스크롤 잠금을 걷어낸다**
+- [x] **Step 5: 모드 전환 블록에서 스크롤 잠금을 걷어낸다**
 
 329–339행을 아래로 교체한다. `isScrollEnabled`는 이제 모드가 아니라 스트로크가 소유하므로 이 블록에서 빠지고, 그리기 모드 진입 시 항상 `true`로 초기화한다(직전 스트로크가 `.cancelled`로 끝나 복원이 누락되는 경우의 안전망). `isPitchEnabled`/`isRotateEnabled`는 두 손가락 제스처라 그리기와 경쟁하지 않지만, 그리는 중 의도치 않은 회전·기울기를 막기 위해 기존대로 그리기 모드에서 비활성을 유지한다.
 
@@ -201,7 +201,7 @@
         }
 ```
 
-- [ ] **Step 6: 빌드 + 기존 테스트 전체 통과 확인**
+- [x] **Step 6: 빌드 + 기존 테스트 전체 통과 확인**
 
 Run:
 ```bash
@@ -216,7 +216,7 @@ Expected: 빌드 성공, 테스트 전체 통과(기존 350개 기준 — 이번
 touch .git/trace-verify-build.ok .git/trace-verify-test.ok .git/trace-verify-lint.ok
 ```
 
-- [ ] **Step 7: 안내 문구가 새 제스처를 가르치도록 수정**
+- [x] **Step 7: 안내 문구가 새 제스처를 가르치도록 수정**
 
 지금 문구는 "손으로 경로를 그려보세요"라 **한 손가락으로 그으라는 뜻으로 읽힌다** — 개편 후엔 틀린 안내이고, 롱프레스의 유일한 실질 약점인 발견성(사용자가 꾹 눌러야 하는 걸 모름)을 방치하게 된다.
 
@@ -234,14 +234,14 @@ touch .git/trace-verify-build.ok .git/trace-verify-test.ok .git/trace-verify-lin
 
 같은 파일 208행 `"도보 기준 · 탭해서 이어 그리기"`는 **탭 모드** 문구이므로 건드리지 않는다.
 
-- [ ] **Step 8: 빌드 + 테스트 + 린트 재실행**
+- [x] **Step 8: 빌드 + 테스트 + 린트 재실행**
 
 Step 6과 동일한 명령 3개를 다시 돌린다(문구 변경 후 회귀 확인).
 Expected: 빌드 성공, 테스트 전체 통과, 린트 위반 0.
 
 통과하면 `touch .git/trace-verify-build.ok .git/trace-verify-test.ok .git/trace-verify-lint.ok`
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 scripts/trace-commit.sh -m "feat: 그리기를 롱프레스-드래그로 바꾸고 스크롤 잠금을 스트로크 단위로 이동" -- Trace/Pages/CoursePlannerPage/MapViewRepresentable.swift Trace/Pages/CoursePlannerPage/CoursePlannerPage.swift Trace/Pages/CoursePlannerPage/UIComponent/CoursePlannerPage+BottomSheetComponent.swift
