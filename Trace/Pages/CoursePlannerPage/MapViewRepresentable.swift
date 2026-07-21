@@ -174,6 +174,12 @@ struct MapViewRepresentable: UIViewRepresentable {
     var pins: [MapPin]
     var selectedSegmentIndex: Int?
     var isDrawingMode: Bool
+    // 그리기 롱프레스 임계값 — 실기기 튜닝 대상 (플랜 Task 4).
+    // 짧게 하면 지도를 옮기려던 손짓이 그리기로 오인되고, 길게 하면 매 스트로크 시작이 굼뜨다.
+    private static let drawPressDuration: TimeInterval = 0.25
+    // 인식 전 허용 이동량 — 이보다 많이 움직이면 롱프레스는 실패하고 네이티브 팬이 이긴다.
+    // 이 값이 "빠르게 훑기 = 이동 / 꾹 누르기 = 그리기"를 가르는 실제 분기점이다.
+    private static let drawAllowableMovement: CGFloat = 10
     var waypoints: [CLLocationCoordinate2D]
     var onStrokeUpdate: ([CGPoint]) -> Void
     var onStrokeEnded: ([CourseCoordinate], CoursePinRole?) -> Void
@@ -191,11 +197,15 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.showsUserLocation = true
         mapView.setRegion(region, animated: false)
 
-        let drawGR = UIPanGestureRecognizer(
+        let drawGR = UILongPressGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handleDraw(_:))
         )
-        drawGR.maximumNumberOfTouches = 1
+        // 롱프레스는 인식(.began) 이후에도 손가락 이동에 따라 .changed를 계속 보낸다 —
+        // 인식기 하나로 "꾹 누르기 + 드래그"를 모두 처리한다.
+        drawGR.numberOfTouchesRequired = 1
+        drawGR.minimumPressDuration = Self.drawPressDuration
+        drawGR.allowableMovement = Self.drawAllowableMovement
         drawGR.isEnabled = false
         mapView.addGestureRecognizer(drawGR)
         context.coordinator.drawGestureRecognizer = drawGR
@@ -328,7 +338,9 @@ struct MapViewRepresentable: UIViewRepresentable {
 
         let wasDrawing = context.coordinator.drawGestureRecognizer?.isEnabled ?? false
         if wasDrawing != isDrawingMode {
-            uiView.isScrollEnabled = !isDrawingMode
+            // 한 손가락 지도 이동은 두 모드 모두에서 살아 있다 — 그리기 중 잠금은
+            // handleDraw가 스트로크 단위로만 건다.
+            uiView.isScrollEnabled = true
             uiView.isPitchEnabled = !isDrawingMode
             uiView.isRotateEnabled = !isDrawingMode
             context.coordinator.drawGestureRecognizer?.isEnabled = isDrawingMode
@@ -510,7 +522,7 @@ extension MapViewRepresentable {
 
         // MARK: Gesture State
 
-        weak var drawGestureRecognizer: UIPanGestureRecognizer?
+        weak var drawGestureRecognizer: UILongPressGestureRecognizer?
         weak var twoFingerPanGestureRecognizer: UIPanGestureRecognizer?
         weak var tapGestureRecognizer: UITapGestureRecognizer?
         private var currentStrokePoints: [CGPoint] = []
@@ -521,7 +533,7 @@ extension MapViewRepresentable {
 
         // MARK: Draw
 
-        @objc func handleDraw(_ recognizer: UIPanGestureRecognizer) {
+        @objc func handleDraw(_ recognizer: UILongPressGestureRecognizer) {
             guard let mapView = recognizer.view as? MKMapView else { return }
 
             if recognizer.numberOfTouches > 1 {
@@ -529,6 +541,7 @@ extension MapViewRepresentable {
                 currentStrokeCoords = []
                 strokeStartPinRole = nil
                 parent.onStrokeUpdate([])
+                mapView.isScrollEnabled = true
                 recognizer.state = .cancelled
                 return
             }
@@ -538,6 +551,9 @@ extension MapViewRepresentable {
             let coord = CourseCoordinate(latitude: clCoord.latitude, longitude: clCoord.longitude)
 
             if recognizer.state == .began {
+                // 롱프레스가 인식된 이 순간부터만 지도를 고정한다. 그 전까지는 한 손가락이
+                // 네이티브 팬으로 지도를 움직인다 (그리기 모드의 '대기' 하위 상태).
+                mapView.isScrollEnabled = false
                 let hit = pinHit(at: point, in: mapView)
                 strokeStartPinRole = hit == .pendingStart ? nil : hit
             }
@@ -556,6 +572,8 @@ extension MapViewRepresentable {
                 let startHit = strokeStartPinRole
                 strokeStartPinRole = nil
                 parent.onStrokeUpdate([])
+                // 스트로크가 끝났으니 한 손가락 지도 이동을 되살린다.
+                mapView.isScrollEnabled = true
                 if stroke.count >= 2 {
                     parent.onStrokeEnded(stroke, startHit)
                 }

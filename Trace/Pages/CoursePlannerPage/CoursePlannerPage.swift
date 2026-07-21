@@ -49,7 +49,7 @@ struct CoursePlannerPage: View {
 
     private var topHintText: String? {
         if let errorMessage = viewModel.errorMessage { return errorMessage }
-        if viewModel.isDrawingMode && viewModel.course == nil { return "손으로 경로를 그려보세요" }
+        if viewModel.isDrawingMode && viewModel.course == nil { return "꾹 눌러서 경로를 그려보세요" }
         return nil
     }
 

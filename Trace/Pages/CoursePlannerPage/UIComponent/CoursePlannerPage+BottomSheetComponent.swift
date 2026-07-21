@@ -206,7 +206,7 @@ extension CoursePlannerPage {
         if viewModel.errorMessage != nil { return "도로에 더 가까운 지점을 눌러보세요" }
         if let infoMessage = viewModel.infoMessage { return infoMessage }
         if viewModel.distanceText != nil { return "도보 기준 · 탭해서 이어 그리기" }
-        if viewModel.isDrawingMode { return "지도에 손으로 경로를 그려보세요" }
+        if viewModel.isDrawingMode { return "지도를 꾹 눌러서 경로를 그려보세요" }
         return "지도를 탭해 출발지를 선택하세요"
     }
 
