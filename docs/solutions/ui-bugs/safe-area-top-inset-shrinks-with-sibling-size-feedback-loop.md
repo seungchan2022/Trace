@@ -21,6 +21,22 @@ related_components: [CoursePlannerPage]
 
 # GeometryProxy.safeAreaInsets.top이 형제 뷰가 커질수록 더 작은 값을 보고해, 그 값으로 형제 크기를 다시 계산하면 피드백 루프가 생긴다
 
+> **⚠️ 이 문서의 해결책은 2026-07-21에 폐기됐다 — 되살리지 말 것.**
+>
+> 아래에 적힌 대응(안전영역을 측정해 ratchet으로 붙들고, 남은 잔여분을 `sheetTopMargin`으로
+> 흡수)은 **시트 높이가 안전영역 측정값을 소비한다**는 전제 위에 있었다. 그 전제가 사라졌다:
+> 지금 `maxSheetHeight`는 `pageHeight - sheetTopMargin`이고 안전영역 측정값을 쓰지 않는다.
+> `pageHeight`는 body의 ZStack을 감싸는 GeometryReader가 보고하는 "부모가 제안한 크기"라
+> 정의상 안전영역이 이미 제외돼 있고, 자식이 무엇을 하든 바뀌지 않아 되먹임 고리 밖에 있다.
+>
+> 그 결과 `SafeAreaInsetLatch`와 `topSafeAreaInset`은 삭제됐고, `sheetTopMargin`은 0이다.
+> **아래 진단(왜 루프가 생기는가)은 여전히 유효하고 다른 화면에서 재현될 수 있다.**
+> 다만 처방은 "측정해서 붙들고 흡수한다"가 아니라 **"되먹임을 타지 않는 앵커를 쓰고,
+> 그 앵커에 이미 반영된 항을 다시 빼지 않는다"**로 바뀌었다.
+>
+> 이 교체 과정에서 파생된 별개의 회귀(앵커만 바꾸고 파생 항을 안 걷어내 62pt를 두 번 뺌)는
+> [`anchor-swap-leaves-orphaned-derived-term.md`](anchor-swap-leaves-orphaned-derived-term.md) 참고.
+
 ## Problem
 
 `CoursePlannerPage.swift`는 `.onGeometryChange(for: CGFloat.self) { proxy.safeAreaInsets.top }`로 상단 안전영역을 측정해 `topSafeAreaInset` state에 저장하고, 이 값을 `bottomSheet`의 `maxSheetHeight = mapHeight - topSafeAreaInset - sheetTopMargin` 계산에 사용해 "full" 디텐트가 상태바/다이내믹 아일랜드 바로 아래에서 멈추도록 했다. 그런데 시트가 "full"에 가까워질수록 이 `topSafeAreaInset` 측정값 자체가 더 작게 보고되는 현상이 있었고, 그 결과 `maxSheetHeight`가 더 커지고 → 시트가 더 커지고 → 안전영역이 더 줄고 … 하는 피드백 루프가 발생해 시트가 실제로 상태바를 덮었다.
