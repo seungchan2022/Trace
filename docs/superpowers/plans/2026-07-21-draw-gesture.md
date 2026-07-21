@@ -401,7 +401,7 @@ Expected: 세 시나리오 모두 기대대로 동작. b가 실패하면 delegat
 
 ---
 
-- [ ] **Step 1: 체크리스트 작성**
+- [x] **Step 1: 체크리스트 작성**
 
 `docs/qa/2026-07-20-run-fullscreen-device-checklist.md`의 형식을 그대로 따르되, 아래 시나리오를 반드시 포함한다:
 
@@ -417,7 +417,7 @@ Expected: 세 시나리오 모두 기대대로 동작. b가 실패하면 delegat
 
 각 시나리오에 "무엇을 한다 / 무엇이 보여야 한다 / 결과(☐ 통과 ☐ 실패 + 메모)" 3단 구성을 넣는다.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 scripts/trace-commit.sh -m "docs: draw-gesture 실기기 QA 체크리스트 추가" -- docs/qa/2026-07-21-draw-gesture-device-checklist.md
