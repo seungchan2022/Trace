@@ -4,12 +4,6 @@ import SwiftUI
 // 안 나오므로 직접 만든다 (킥오프 §2.4). 풀폭 불투명 + 아이콘·한글 라벨 (ui-direction §1).
 struct TraceTabBar: View {
     @Binding var selection: AppTab
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
-
-    // iPhone 가로모드에서 verticalSizeClass가 .compact — 고정 56pt 탭바가 낮은 화면
-    // 높이 대비 비중이 커 보이는 문제 완화(세로 6.4% vs 가로 13.9%, 실기기 QA 2026-07-19).
-    // iPad는 가로에서도 .regular라 영향 없음(의도된 동작).
-    private var isCompactHeight: Bool { verticalSizeClass == .compact }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -19,7 +13,7 @@ struct TraceTabBar: View {
                 } label: {
                     VStack(spacing: 4) {
                         Image(systemName: tab.systemImage)
-                            .font(.system(size: isCompactHeight ? 18 : 22, weight: .medium))
+                            .font(.system(size: 22, weight: .medium))
                         Text(tab.title)
                             .font(DesignToken.Typography.chip)
                     }
@@ -27,7 +21,7 @@ struct TraceTabBar: View {
                         selection == tab ? DesignToken.Color.accent : DesignToken.Color.ink2
                     )
                     .frame(maxWidth: .infinity)
-                    .padding(.top, isCompactHeight ? 4 : 8)
+                    .padding(.top, 8)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
