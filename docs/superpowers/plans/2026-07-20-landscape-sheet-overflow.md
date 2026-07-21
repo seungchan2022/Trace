@@ -1,5 +1,8 @@
 # 가로모드 시트 펼침 레이아웃 붕괴 수정 Implementation Plan
 
+> **구현 완료·병합됨(소급 확인, 2026-07-21)** — Task 1~4 전부 구현·태스크별 리뷰 통과했고, 커밋은 이미 `main`에 병합됐다(`631ed10`~`22c3b23`, 브랜치 `feature/mvp16-landscape-sheet-overflow`는 삭제됨). 개별 Step 체크박스는 실행 중 갱신되지 않았으나(SDD 세션이 Task 단위 리뷰로 추적함), `docs/agent-rules/workflow.md`의 소급 정리 절차에 따라 체크박스는 그대로 두고 이 노트로 완료를 대신한다.
+> **⚠️ 단, 이 플랜은 "완료"지 "해결"이 아니다** — 원버그(가로 시트 붕괴)는 고쳐졌지만 같은 수정에서 파생된 회귀 2건(다크모드 가로 좌우 검은 여백, 세로 풀시트 topBar 미커버)이 **미해결 상태로 `main`에 남아 있다.** 아래 "세션 마무리 메모"와 `docs/backlog.md`의 해당 항목을 반드시 함께 읽을 것. 재작업은 시트 구조 재설계 방향을 정한 뒤 `main`에서 새 브랜치로 시작한다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 가로모드에서 코스 탭 바텀시트를 medium/full로 펼치면 탭바가 화면 아래로, 시트가 화면 위로 뚫리는 레이아웃 붕괴를 3중 방어(구조 클램프 → 예산 클램프 → ratchet 분리)로 수정한다.
@@ -617,4 +620,4 @@ Task 1~3(구조 클램프·예산 클램프·ratchet 분리)은 실기기로 검
 
 **결론:** 여기서부터는 패치가 아니라 시트/탭바 구조 자체를 다시 설계할지 결정하는 문제 — 다음 세션(다른 모델과의 브레인스토밍 가능)에서 다시 다룬다. 상세는 `docs/backlog.md`("가로모드에서 코스 탭 시트를 펼치면..." 항목, `in-progress`)와 `docs/qa/2026-07-20-landscape-sheet-device-checklist.md`(시나리오 5·6)에 기록.
 
-**브랜치 상태:** `feature/mvp16-landscape-sheet-overflow`, 병합하지 않고 유지 — 위 "완료 후" 섹션의 병합/ce-compound 단계는 아직 진행하지 않는다.
+**브랜치 상태:** ~~`feature/mvp16-landscape-sheet-overflow`, 병합하지 않고 유지~~ → **정정(2026-07-21):** 실제로는 이후 `main`에 병합됐고 브랜치는 삭제됐다(문서 맨 위 소급 노트 참고). 이 문단이 오래 stale로 남아 다음 세션이 "미병합 브랜치가 어딘가 있다"고 오인할 뻔했다.
