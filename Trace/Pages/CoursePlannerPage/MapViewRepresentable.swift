@@ -210,17 +210,6 @@ struct MapViewRepresentable: UIViewRepresentable {
         mapView.addGestureRecognizer(drawGR)
         context.coordinator.drawGestureRecognizer = drawGR
 
-        let twoFingerPanGR = UIPanGestureRecognizer(
-            target: context.coordinator,
-            action: #selector(Coordinator.handleTwoFingerPan(_:))
-        )
-        twoFingerPanGR.minimumNumberOfTouches = 2
-        twoFingerPanGR.maximumNumberOfTouches = 2
-        twoFingerPanGR.isEnabled = false
-        twoFingerPanGR.delegate = context.coordinator
-        mapView.addGestureRecognizer(twoFingerPanGR)
-        context.coordinator.twoFingerPanGestureRecognizer = twoFingerPanGR
-
         let tapGR = UITapGestureRecognizer(
             target: context.coordinator,
             action: #selector(Coordinator.handleTap(_:))
@@ -344,7 +333,6 @@ struct MapViewRepresentable: UIViewRepresentable {
             uiView.isPitchEnabled = !isDrawingMode
             uiView.isRotateEnabled = !isDrawingMode
             context.coordinator.drawGestureRecognizer?.isEnabled = isDrawingMode
-            context.coordinator.twoFingerPanGestureRecognizer?.isEnabled = isDrawingMode
             context.coordinator.tapGestureRecognizer?.isEnabled = !isDrawingMode
             context.coordinator.touchObserverRecognizer?.isEnabled = !isDrawingMode
             context.coordinator.resetTapClassification(in: uiView)   // 판별 창 중 모드 전환 → 보류 취소
@@ -509,25 +497,17 @@ extension MapViewRepresentable {
             _ gestureRecognizer: UIGestureRecognizer,
             shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
         ) -> Bool {
-            // 네이티브 핀치 줌은 제외한다 — 핀치도 두 손가락이라 커스텀 팬과 동시 인식되면
-            // 팬 로직이 핀치 중에도 지도를 함께 움직이려 해서 서로 충돌해 줌이 뚝뚝 끊긴다
-            // (2026-07-05 실기기 확인, 회귀).
-            if otherGestureRecognizer is UIPinchGestureRecognizer { return false }
-            // 커스텀 두손가락 팬 ↔ 네이티브 두손가락 탭 줌아웃 경쟁 완화: 동시 인식 허용.
-            // 탭 줌아웃은 이동량이 없어 팬 로직에 영향이 없고, 실제 팬 중에는 탭 줌아웃이 스스로 실패한다.
-            // 터치 관찰자는 인식 전이가 없어 항상 무해 — 명시적으로 허용해 둔다.
-            return gestureRecognizer === twoFingerPanGestureRecognizer
-                || gestureRecognizer === touchObserverRecognizer
+            // 터치 관찰자는 인식 상태로 전이하지 않아 다른 인식기를 방해하지 않는다 —
+            // 네이티브 줌·팬과 동시 인식을 명시적으로 허용해 둔다.
+            gestureRecognizer === touchObserverRecognizer
         }
 
         // MARK: Gesture State
 
         weak var drawGestureRecognizer: UILongPressGestureRecognizer?
-        weak var twoFingerPanGestureRecognizer: UIPanGestureRecognizer?
         weak var tapGestureRecognizer: UITapGestureRecognizer?
         private var currentStrokePoints: [CGPoint] = []
         private var currentStrokeCoords: [CourseCoordinate] = []
-        private var panStartCenter: CLLocationCoordinate2D?
         // 그리기 시작 시점(.began)에 잡은 핀 히트 — 실거리와 무관한 화면 24pt 근접 판정용
         private var strokeStartPinRole: CoursePinRole?
 
@@ -674,32 +654,6 @@ extension MapViewRepresentable {
                 }
             }
             return best?.role
-        }
-
-        // MARK: Two-Finger Pan
-
-        @objc func handleTwoFingerPan(_ recognizer: UIPanGestureRecognizer) {
-            guard let mapView = recognizer.view as? MKMapView else { return }
-            switch recognizer.state {
-            case .began:
-                panStartCenter = mapView.region.center
-            case .changed:
-                guard let startCenter = panStartCenter else { return }
-                let translation = recognizer.translation(in: mapView)
-                let region = mapView.region
-                let latPerPoint = region.span.latitudeDelta / mapView.bounds.height
-                let lonPerPoint = region.span.longitudeDelta / mapView.bounds.width
-                let newCenter = CLLocationCoordinate2D(
-                    latitude: startCenter.latitude + translation.y * latPerPoint,
-                    longitude: startCenter.longitude - translation.x * lonPerPoint
-                )
-                let newRegion = MKCoordinateRegion(center: newCenter, span: region.span)
-                mapView.setRegion(newRegion, animated: false)
-            case .ended, .cancelled:
-                panStartCenter = nil
-            default:
-                break
-            }
         }
     }
 }
