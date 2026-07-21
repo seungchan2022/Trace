@@ -1,5 +1,7 @@
 # MVP16 run-fullscreen Implementation Plan
 
+> **완료(소급 확인, 2026-07-21)** — Task 1~6 전부 구현·태스크별 리뷰·최종 브랜치 리뷰(opus, Ready to merge: Yes) 통과 + 실기기 QA 통과. 개별 Step 체크박스는 실행 중 갱신되지 않았으나(SDD 세션이 Task 단위 리뷰로 진행 상황을 이미 추적함), 각 Task의 커밋·리뷰 기록은 main 병합 커밋들(`5266aee`~`fc215e8`)로 확인 가능 — `docs/agent-rules/workflow.md`의 소급 정리 절차에 따라 체크박스는 그대로 두고 이 노트로 완료를 대신한다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 러닝 탭을 지도 없는 나이키식 숫자 중심 전체화면으로 재구성하고, 기록 목록·상세를 전체화면 페이지 문법으로 정리하며, 기록 상세 지도에 포인트 구간별 색상 폴리라인을 표시한다.
