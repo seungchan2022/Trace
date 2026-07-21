@@ -242,15 +242,27 @@ extension CoursePlannerPage {
     // fabStack이 collapsed 시트 높이를 계산할 때도 참조하므로(CoursePlannerPage.swift) private가 아니다.
     var grabberTotalHeight: CGFloat { 25 }
 
-    // 시트가 top safe area 계산에 쓰는 여유값보다 더 커질수록, 시스템이 실제 top safe area
-    // 자체를 조금씩 더 작게 보고하는 잔여 현상이 남아있다(2026-07-12, 피드백 루프를 끊은 뒤에도
-    // XCUITest 실측: topBar가 여전히 11pt 밀림). 12pt로는 이 잔여분을 못 흡수해 상태바/다이내믹
-    // 아일랜드와 살짝 겹쳤다 — 여유를 넉넉히 둬서 흡수한다.
-    // 2026-07-19: 사용자 피드백으로 풀 디텐트에서 topBar를 거의 완전히 덮도록 11pt로 낮춤 —
-    // 이 문서화된 버그(safe-area-top-inset-shrinks-with-sibling-size-feedback-loop.md)의
-    // 안전선이 정확히 11pt 잔여분이라 그 이하로는 절대 낮추지 않는다. 남는 ~3pt 틈은
-    // 육안상 거의 안 보이는 수준(실측: .git/sdd/investigation-fullsheet-landscape-report.md).
-    private var sheetTopMargin: CGFloat { 11 }
+    // 풀 디텐트에서 시트 위에 남기는 여백. **0 = 안전영역 경계에 정확히 맞춘다.**
+    //
+    // 이 값은 오랫동안 11pt였고 "그 이하로는 절대 낮추지 않는다"는 주석이 붙어 있었다.
+    // 그 근거는 시트가 커질수록 시스템이 top safe area를 더 작게 보고하는 되먹임이었다
+    // (`docs/solutions/ui-bugs/safe-area-top-inset-shrinks-with-sibling-size-feedback-loop.md`)
+    // — 여백이 없으면 그 오차만큼 시트가 상태바/다이내믹 아일랜드를 침범했다.
+    //
+    // 2026-07-21에 그 근거가 사라졌다. 시트 높이가 더 이상 안전영역 측정값을 쓰지 않기
+    // 때문이다(maxSheetHeight에서 `- topSafeAreaInset` 제거) — 이제 높이는 pageHeight
+    // 하나에만 의존하고, pageHeight는 정의상 안전영역이 이미 제외된 값이라 여백이 0이어도
+    // 시트는 안전영역 경계, 즉 다이내믹 아일랜드 바로 아래에서 **구조적으로** 멈춘다.
+    // 되먹임이 시트 높이에 닿을 경로 자체가 없어서 흡수할 오차도 없다.
+    //
+    // 실측으로 확인(iPhone 17 Pro 시뮬레이터, 풀 디텐트 고정 빌드): pageHeight=722.0으로
+    // 접힘/풀 양쪽에서 동일하고, safeAreaInsets.top도 풀에서 62.0 그대로 — 예전의 "시트가
+    // 커지면 안전영역이 줄어드는" 현상이 재현되지 않는다.
+    //
+    // 되돌리는 조건: 어떤 기기에서든 풀 디텐트 시트가 상태바/다이내믹 아일랜드를 조금이라도
+    // 침범하면, 여백을 올리기 전에 **pageHeight가 그 기기에서도 안정적인지부터** 확인할 것.
+    // 침범이 일어난다면 원인은 여백 부족이 아니라 앵커가 흔들리는 것이다.
+    private var sheetTopMargin: CGFloat { 0 }
 
     // 풀 시트가 다이내믹 아일랜드/상태 바 바로 아래에서 멈추도록 하는 상한 — 시스템 시트의
     // large detent와 같은 발상. expandedListHeight의 리스트 높이 계산에만 쓴다.
@@ -268,15 +280,23 @@ extension CoursePlannerPage {
     // 함께 휩쓸려 배정량(335)의 두 배 가까이(666) 폭주하는 것이 실기기로 확인됐다(2026-07-20).
     // pageHeight는 이제 body의 ZStack을 감싸는 GeometryReader에서 측정하므로(내부 자식이
     // 무엇을 하든 부모가 제안한 크기만 그대로 보고) 이 되먹임에서 완전히 벗어난 유일한 앵커다.
+    //
+    // 2026-07-21: 그 앵커 교체 때 `- topSafeAreaInset` 항이 그대로 남아 있던 것을 제거했다.
+    // 그 항은 mapHeight(안전영역 포함) 시절에만 옳았고, pageHeight는 이미 안전영역이 빠진
+    // 값이라 62pt를 두 번 빼고 있었다 — 풀시트가 그만큼 짧아져 topBar를 못 덮던 회귀의 원인.
+    // 계산은 SheetHeightBudget으로 옮겨 테스트로 못박았다(조용히 틀리는 계산이라).
     private var maxSheetHeight: CGFloat {
-        pageHeight - topSafeAreaInset - sheetTopMargin
+        SheetHeightBudget.maxSheetHeight(pageHeight: pageHeight, topMargin: sheetTopMargin)
     }
 
     // 예산 안에서의 리스트 높이 상한 — full은 이 값을 그대로 쓰고, medium은 이 값을 넘지
     // 않는 범위에서 지도 높이 40%를 쓴다. 어느 단계도 예산(maxSheetHeight)을 넘을 수 없다.
-    // max(0, ...)은 초기 측정 전 기본값 조합에서 음수 프레임 경고를 막는 가드.
     private var budgetListHeight: CGFloat {
-        max(0, maxSheetHeight - grabberTotalHeight - sheetHeaderHeight)
+        SheetHeightBudget.listHeight(
+            maxSheetHeight: maxSheetHeight,
+            grabberHeight: grabberTotalHeight,
+            headerHeight: sheetHeaderHeight
+        )
     }
 
     // presentationDetents처럼 단계별 고정 높이 — 콘텐츠 양은 높이에 전혀 영향을 주지 않는다.
