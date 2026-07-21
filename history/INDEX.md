@@ -7,6 +7,36 @@
 
 ---
 
+## MVP16 — 러닝/코스 UI 개편 (2026-07-19 ~ 07-21)
+
+> 앱 화면 문법을 두 기둥 구조로 재편. 마일스톤 4개: ①`ui-direction`(경량·문서 전용)은
+> 탭바·트래킹·대기 화면·기록 상세 디자인 결정, ②`tab-restructure`(표준)는 루트 커스텀
+> 탭바+시트 detent, 실기기 QA 중 발견된 topBar/시트 버그 즉시 수정 + 가로모드 붕괴는
+> 서브 사이클 `landscape-sheet-overflow`로 분리해 원버그 해결(파생 회귀 2건은 설계
+> 재검토 필요로 일반 백로그 이월), ③`run-fullscreen`(표준 + 최종 브랜치 리뷰opus)은
+> 러닝 탭 지도 완전 제거 + 카운트다운을 세션 상태로 승격 + 포인트 구간 폴리라인,
+> ④`draw-gesture`(표준 + 최종 브랜치 리뷰opus)는 그리기 제스처를 즉시 팬에서
+> 롱프레스-드래그로 개편(스크롤 잠금 소유권을 스트로크 생명주기로 이전). draw-gesture
+> Task 1 구현 중 서브에이전트가 세션 API 한도로 중단됐으나 커밋 기반 복구 성공. 전
+> 마일스톤 실기기 QA 통과.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [킥오프 결정](mvp16/2026-07-19-mvp16-ui-restructure-kickoff-design.md) | 범위 확정(탭/시트/페이지 구조+그리기 제스처+포인트 폴리라인), 마일스톤 4개 순서, 탭바 숨김 판정 방식 |
+| 기획 | [ui-direction 설계](mvp16/2026-07-19-mvp16-ui-direction-design.md) | 탭바·트래킹·대기 화면·기록 상세 디자인 결정(경량 사이클) |
+| 기획 | [방향 스펙](mvp16/2026-07-18-run-ui-restructure-direction.md) | 러닝 탭 재구성 + 그리기 제스처 개편 방향(킥오프 재료) |
+| 플랜 | [tab-restructure 플랜](mvp16/2026-07-19-tab-restructure.md) | Task 1~4, 루트 커스텀 탭바 + 시트 detent + 플로팅 버튼 연동 |
+| 플랜 | [landscape-sheet-overflow 플랜](mvp16/2026-07-20-landscape-sheet-overflow.md) | Task 1~4, 가로 시트 붕괴 3중 방어 수정(원버그 해결, 파생 회귀 2건은 미해결) |
+| 플랜 | [run-fullscreen 플랜](mvp16/2026-07-20-run-fullscreen.md) | Task 1~6, 러닝 탭 지도 제거 + 카운트다운 세션 상태 승격 + 포인트 구간 폴리라인 |
+| 플랜 | [draw-gesture 플랜](mvp16/2026-07-21-draw-gesture.md) | Task 1~4, 롱프레스-드래그 그리기 + 스트로크 단위 스크롤 잠금 + 두손가락 팬 제거 |
+| QA | [tab-restructure 실기기 체크리스트](mvp16/2026-07-19-tab-restructure-device-checklist.md) | 탭바/시트 detent/플로팅 버튼 실기기 검증 |
+| QA | [landscape-sheet 실기기 체크리스트](mvp16/2026-07-20-landscape-sheet-device-checklist.md) | 가로 시트 3단계·회전 왕복 검증, 시나리오 5·6(파생 회귀) 미해결 기록 |
+| QA | [run-fullscreen 실기기 체크리스트](mvp16/2026-07-20-run-fullscreen-device-checklist.md) | GPX 시뮬레이션으로 대기~요약 세션 1~4 검증 |
+| QA | [draw-gesture 실기기 체크리스트](mvp16/2026-07-21-draw-gesture-device-checklist.md) | 롱프레스-드래그 결정 게이트 포함 4세션 11시나리오 검증 |
+| 회고 | [MVP16 완료 회고](mvp16/260721_mvp16_completion_retro.md) | 정직한 INCONCLUSIVE 보고, 서브에이전트 세션 한도 복구, 가로 시트 재설계 보류 결정 |
+
+---
+
 ## MVP1 — 러닝 코스 계획 (2026-06-17 ~ 06-20)
 
 > 지도에서 코스를 계획하고 거리를 재는 핵심 경험. iOS / SwiftUI / MapKit. 마일스톤 2개 + 구조 정리.
