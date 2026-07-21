@@ -25,6 +25,8 @@
 
 ## 기술부채
 
+- [ ] **앱 코드 린트 경고 44건 — 세 갈래로 갈라서 처리** — *what:* 2026-07-21 린트 범위를 바로잡으면서(테스트 43개 파일 편입, 커밋 `37154d8`) 앱 코드에 오래 쌓인 경고 44건이 드러났다. 전부 warning이라 커밋을 막지는 않는다. **44건이 모두 "고쳐야 할 결함"이 아니라는 게 핵심** — 착수 전에 아래 셋을 갈라야 한다. *①규칙 조정 후보(28건, identifier_name):* 대부분 한 줄 switch 패턴 바인딩의 `d`·`i`다(예: `case .tapped(_, let d), .drawn(_, let d): return d`). 스코프가 한 줄이라 긴 이름이 오히려 읽기 나쁠 수 있어, **코드를 고칠지 규칙 최소 길이를 낮출지가 먼저 정할 문제**다(테스트 폴더에서 한글 이름을 두고 내린 판단과 같은 종류). 많은 곳: `OverlapOffsetResolver`(6) · `RunPersistenceDTO`(5) · `CoursePersistenceDTO`(4). *②기계적 수정(9건, line_length):* 판단할 것 없이 줄만 나누면 된다. *③진짜 구조 신호(7건):* `MapViewRepresentable.swift`가 672줄(상한 500)에 특정 함수가 91줄·복잡도 12다. 이건 경고가 실제 설계 부담을 가리키는 경우라 **쪼개기 자체가 마일스톤 1개 규모** — 곁다리로 붙이면 안 된다. *why deferred:* 2026-07-21 세션의 작업(세로 고정·시트 예산 수정)과 무관한 기존 부채라, 같이 고치면 검증된 변경에 관계없는 수정이 섞인다(`git.md` "Do not mix unrelated changes"). 실제로 `swiftlint --fix`가 앱 파일 하나를 건드린 것을 그 자리에서 되돌렸다. *trigger:* ②는 아무 때나. ①은 "짧은 이름 때문에 실제로 코드를 못 읽겠다"는 판단이 서면 착수하되 규칙 조정 쪽을 먼저 검토. ③은 `MapViewRepresentable`을 어차피 크게 손볼 마일스톤이 생기면 그때 함께. `open`
+
 - [x] **MKDirections 스로틀 완화** — MVP3에서 해결: 증분 계산으로 기존 구간 재호출 제거. 근본책(맵매칭 제공자)은 여전히 미래 옵션. `done`
 - [x] **테스트 시뮬레이터 iOS 버전 전략** — MVP5에서 문서화 완료: iOS 18.x `@Observable` malloc 크래시는 Apple 런타임 버그로 확인, iOS 26.5로 우회 결정. 상세: `docs/solutions/workflow-issues/ios18-observable-malloc-crash.md`. `done`
 - [x] **SwiftUI Map → MKMapView 교체** — MVP4에서 해결: MKMapView(UIViewRepresentable) 마이그레이션 완료, MKOverlay/MKAnnotation delegate 방식으로 전환. `done`
