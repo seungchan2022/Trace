@@ -15,6 +15,9 @@
 
 **스펙:** `docs/superpowers/specs/2026-07-21-mvp17-run-history-kickoff-design.md`
 
+**상태(2026-07-23):** 구현 미착수. 다음 세션은 아래 착수 전 사용자 확인 게이트에서
+시작하고, 게이트 통과 뒤 Task 1로 간다.
+
 ## Global Constraints
 
 - Swift 언어 모드 6. 격리 기본값은 **기본 nonisolated + 명시 `@MainActor`** — UI/상태 타입에만 `@MainActor`를 붙인다(`project-decisions.md`). Domain 순수 계산기에는 붙이지 않는다.
@@ -217,7 +220,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
   -destination "platform=iOS Simulator,id=$SIM_UDID" -parallel-testing-enabled NO test
 swiftlint
 ```
-Expected: 빌드 성공 / 전체 테스트 통과(기존 350개 + 변경분) / 린트 에러 0
+Expected: 빌드 성공 / 전체 테스트 통과(착수 전 기준선 348개: 단위 344 + UI 4) / 린트 에러 0
 
 - [ ] **Step 8: 시뮬레이터로 3탭 렌더링을 눈으로 확인 (이 태스크의 핵심)**
 
@@ -1745,7 +1748,7 @@ scripts/trace-commit.sh -m "feat: 러닝 탭 대기 화면에 이번 주 요약 
 
 모든 태스크가 끝나면 확인한다:
 
-- [ ] 전체 테스트 통과 (기존 350개 + 신규 24개 계획값)
+- [ ] 전체 테스트 통과 (착수 전 기준선 348개 + 구현 중 추가된 테스트)
 - [ ] `swiftlint` 에러 0 (경고는 마일스톤 4에서 정리 — 단 **새로 추가한 코드에는 경고를 만들지 않는다**)
 - [ ] 러닝 탭에 기록 버튼이 없고, 요약 줄이 그 자리를 대신한다 (스펙 §5 화면 온전성)
 - [ ] 기록 탭에서 목록·상세·스와이프 삭제가 전부 동작한다
