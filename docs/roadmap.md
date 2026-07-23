@@ -22,7 +22,7 @@
 > 킥오프 확정: `docs/superpowers/specs/2026-07-21-mvp17-run-history-kickoff-design.md`
 
 - [~] **history-tab** — 3탭 렌더링 + 기존 테스트 확인(첫 태스크, 커스텀 탭바 회귀 이력 때문) → `RunStats` 계산기 → 기록 탭 신설(`AppTab.history`) → 집계 대시보드 + 최근 8주 막대그래프(Swift Charts 첫 도입) → **이사 전부 + 러닝 탭 이번 주 요약 줄**(쪼개면 병합 시점에 죽은 버튼이 남거나 러닝 탭이 오히려 더 비어진다). 구현·코드 리뷰·자동/시뮬레이터 검증 완료(2026-07-23), 실기기 QA 대기: [`2026-07-23-history-tab-device-checklist.md`](qa/2026-07-23-history-tab-device-checklist.md). 구현 플랜: [`2026-07-21-history-tab.md`](superpowers/plans/2026-07-21-history-tab.md)
-- [ ] **run-idle-polish** — 러닝 탭 대기 화면 시각 보강 + `요약 → 목표 → 시작` 위계 정리 (요약 줄 자체는 1에서 이미 들어와 있음). 종료 시 **완료 판정** — "아직도 초라한가"를 실기기로 되묻는다
+- [ ] **run-idle-polish** — 러닝 탭을 `오늘의 러닝 → 목표 설정 → 시작` 흐름으로 보강하고, 기록·집계 요약 줄은 제거한다. `history-tab` 실기기 QA에서 한 줄 요약 처방이 실패한 근거로 설계를 보정했다: [`2026-07-23-run-idle-polish-design.md`](superpowers/specs/2026-07-23-run-idle-polish-design.md). 종료 시 **완료 판정** — "무엇을 설정하고 어떻게 시작하는지"가 바로 이해되는지 실기기로 되묻는다
 - [ ] **sheet-drag** — 코스 탭 시트 콘텐츠 영역 드래그 축소. **착수 시 브레인스토밍 선행**(`ScrollView` 제스처 충돌로 설계 미확정 — 백로그 이월분)
 - [ ] **lint-cleanup** — 린트 ①(identifier_name 28건: 관례 10건은 규칙 예외, 축약 18건은 코드 수정) + ②(line_length 9건). ③(`MapViewRepresentable` 672줄 분해)은 범위 밖
 
