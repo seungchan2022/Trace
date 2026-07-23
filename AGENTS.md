@@ -10,6 +10,7 @@ These hard-stops apply even before you open `docs/agent-rules/git.md`:
 - Never commit directly on `main`; create a feature branch first.
 - No force push, history rewrite, or `git reset --hard` on shared branches without explicit, branch-named approval.
 - Stage files explicitly by path; never `git add -A` or `git add .`.
+- Never edit `.env` files or expose secret values unless the user explicitly requests that exact action.
 
 Full git rules — commit format, integration/merge flow, branch hygiene — live in `docs/agent-rules/git.md`. These hard-stops override all other workflow convenience.
 

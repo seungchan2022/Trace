@@ -1,0 +1,28 @@
+# Trace 프로젝트에서만 적용되는 Codex 설정.
+# 공통 작업 규칙은 AGENTS.md와 docs/agent-rules/에 두며, 이 파일에는 Codex가
+# 제공하는 세션 보존·권한 기본값만 둔다.
+
+# Trace에서는 일반 파일 작업·빌드·테스트를 사용자 승인 없이 수행한다.
+# 워크스페이스 밖 쓰기, 네트워크, 보호 경로 쓰기는 자동으로 넓히지 않는다.
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = false
+
+compact_prompt = """
+컴팩션 시 반드시 보존할 것:
+1. 현재 브랜치명과 작업 중인 기능 요약
+2. 활성 플랜(docs/superpowers/plans/)의 체크박스 진행률 — 완료된 Task와 다음 Task 명시
+3. 이번 세션에서 수정한 파일 경로 목록
+4. 사용자가 준 피드백·수정 지시·방향 전환 내용
+5. 시도했다가 실패한 접근법과 그 이유
+
+요약 가능한 것:
+- 도구 호출 출력 (결론만 유지)
+- 읽은 파일 내용 (발견사항만 유지)
+- 빌드/테스트 로그 (결과만 유지)
+"""
+
+[history]
+persistence = "save-all"

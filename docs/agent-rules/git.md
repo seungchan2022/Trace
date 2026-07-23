@@ -112,9 +112,12 @@ Enable hooks with:
 git config core.hooksPath .githooks
 ```
 
-### Claude Code Settings (에이전트 행동 차단)
+### Agent Runtime Guards (에이전트 실행 차단)
 
-`.claude/settings.json`의 `deny` 규칙으로 에이전트의 위험 명령을 차단한다. Claude Code 런타임이 실행 자체를 막으므로 에이전트가 우회할 수 없다:
+공통 안전 원칙의 단일 소유자는 이 문서다. 도구별 런타임 문법은 달라도 Claude Code와 Codex는 아래 위험 명령을 각각 실행 단계에서 차단한다:
+
+- Claude Code: `.claude/settings.json`의 `permissions.deny`
+- Codex: `.codex/rules/trace-safety.rules`의 `forbidden` prefix rules
 
 - `git push` — 모든 형태의 push 차단 (사용자가 터미널에서 직접 push)
 - `git add -A` / `git add .` — 전체 스테이징 차단
@@ -122,6 +125,8 @@ git config core.hooksPath .githooks
 - `rm -rf` — 위험 삭제 차단
 - `git reset --hard` — 작업물 손실 차단
 - `.env` 편집 — 시크릿 파일 보호
+
+Codex는 `.codex/config.toml`에서 `sandbox_mode = "workspace-write"`와 `approval_policy = "never"`를 사용한다. 따라서 일반 프로젝트 명령은 승인 없이 실행하고, 사용자 계정이 읽을 수 있는 외부 경로는 분석할 수 있다. 다만 워크스페이스 밖 쓰기·네트워크·보호 경로 쓰기는 자동 허용하지 않는다. `swiftlint`처럼 일반 작업 명령은 별도 allowlist 없이 이 범위에서 실행된다.
 
 ## Merge Strategy
 

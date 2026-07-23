@@ -1,0 +1,86 @@
+# Trace 프로젝트에서만 적용되는 Codex 명령 차단 규칙.
+# 공통 안전 원칙의 단일 소유자는 docs/agent-rules/git.md다.
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "forbidden",
+    justification = "Trace의 최종 push는 사용자가 직접 수행한다.",
+    match = ["git push origin main", "git push --force origin main"],
+)
+
+prefix_rule(
+    pattern = ["git", "add", "-A"],
+    decision = "forbidden",
+    justification = "전체 스테이징 대신 파일 경로를 명시해 stage한다.",
+    match = ["git add -A", "git add -A Trace/App.swift"],
+)
+
+prefix_rule(
+    pattern = ["git", "add", "--all"],
+    decision = "forbidden",
+    justification = "전체 스테이징 대신 파일 경로를 명시해 stage한다.",
+    match = ["git add --all"],
+)
+
+prefix_rule(
+    pattern = ["git", "add", "."],
+    decision = "forbidden",
+    justification = "전체 스테이징 대신 파일 경로를 명시해 stage한다.",
+    match = ["git add .", "git add . Trace/App.swift"],
+)
+
+prefix_rule(
+    pattern = ["git", "commit", "--no-verify"],
+    decision = "forbidden",
+    justification = "검증 훅을 우회하지 말고 실패 원인을 해결한다.",
+    match = ["git commit --no-verify -m test"],
+)
+
+prefix_rule(
+    pattern = ["git", "commit", "-n"],
+    decision = "forbidden",
+    justification = "검증 훅을 우회하지 말고 실패 원인을 해결한다.",
+    match = ["git commit -n -m test"],
+)
+
+prefix_rule(
+    pattern = ["git", "merge", "--no-verify"],
+    decision = "forbidden",
+    justification = "검증 훅을 우회하지 말고 실패 원인을 해결한다.",
+    match = ["git merge --no-verify feature/example"],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "작업물을 보존하고 명시적 사용자 승인 없이 hard reset을 하지 않는다.",
+    match = ["git reset --hard", "git reset --hard HEAD~1"],
+)
+
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "forbidden",
+    justification = "재귀 강제 삭제 대신 대상을 확인하고 사용자 승인을 받는다.",
+    match = ["rm -rf build", "rm -rf /tmp/example"],
+)
+
+prefix_rule(
+    pattern = ["rm", "-fr"],
+    decision = "forbidden",
+    justification = "재귀 강제 삭제 대신 대상을 확인하고 사용자 승인을 받는다.",
+    match = ["rm -fr build"],
+)
+
+prefix_rule(
+    pattern = ["rm", "--recursive", "--force"],
+    decision = "forbidden",
+    justification = "재귀 강제 삭제 대신 대상을 확인하고 사용자 승인을 받는다.",
+    match = ["rm --recursive --force build"],
+)
+
+prefix_rule(
+    pattern = ["rm", "--force", "--recursive"],
+    decision = "forbidden",
+    justification = "재귀 강제 삭제 대신 대상을 확인하고 사용자 승인을 받는다.",
+    match = ["rm --force --recursive build"],
+)
