@@ -59,7 +59,7 @@ persistence = "save-all"
 Trace 프로젝트의 `.codex/config.toml`은 다음 기본값을 제공한다.
 
 ```toml
-approval_policy = "never"
+approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 
 [sandbox_workspace_write]
@@ -68,9 +68,13 @@ network_access = false
 
 - 일반 프로젝트 파일 작업, 빌드, 테스트, `swiftlint`는 매번 사용자 승인 없이 실행한다.
 - 사용자 계정이 읽을 수 있는 프로젝트 밖 경로는 경로를 알려 주면 분석할 수 있다.
-- 네트워크, 워크스페이스 밖 쓰기, 그리고 `.agents`·`.codex`처럼 Codex가 보호하는 경로 쓰기는 이 설정으로 자동 허용되지 않는다.
+- 스테이징·커밋처럼 보호된 `.git` 쓰기가 필요하면 Codex가 사용자 승인을 요청한다.
+- `on-request`는 보호 경로를 자동 허용하지 않는다. 네트워크, 워크스페이스 밖 쓰기,
+  그리고 `.agents`·`.codex`처럼 Codex가 보호하는 경로 쓰기는 사용자가 승인하지 않으면
+  계속 차단된다.
 - `git push`, 전체 스테이징, `--no-verify`, `rm -rf`, `git reset --hard`는 `.codex/rules/trace-safety.rules`에서 별도로 차단한다.
-- 이 설정은 프로젝트를 신뢰한 **새 Codex 세션**부터 적용된다. 전체 시스템 접근이 필요한 일회성 작업은 이 프로젝트 기본값을 낮추지 말고, 사용자가 그때 권한을 명시적으로 바꾼다.
+- 이 설정은 프로젝트를 신뢰한 **새 Codex 세션**부터 적용된다. 샌드박스 밖 작업이 필요한
+  경우 프로젝트 기본값을 낮추지 말고, 사용자가 그 작업만 명시적으로 승인한다.
 
 ---
 

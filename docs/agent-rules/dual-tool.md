@@ -18,7 +18,7 @@ Tool-specific (thin adapters; each tool only reads its own):
 - Shared-skill discovery: Codex reads `.agents/skills/` directly; Claude Code reads `.claude/skills/`, whose entries are symbolic links to `.agents/skills/`. 호출 문법만 다르다: Codex `$<skill-name>`, Claude Code `/<skill-name>`.
 - Trace-specific skills do not use Codex `~/.codex/prompts/` or Claude Code `.claude/commands/`. Those paths are legacy adapters, not a source of truth.
 - Tool settings: Codex project settings live in `.codex/config.toml`; Claude Code project settings live in `.claude/settings*.json`. 공통 정책은 맞추되, 도구별 설정 문법과 기능은 복사하지 않는다.
-- Terminal permission model: Claude Code uses `permissions.allow` / `permissions.deny`; Codex uses `sandbox_mode`, `approval_policy`, and `.codex/rules/*.rules`. Trace의 Codex 기본값은 `workspace-write + never`라 일반 프로젝트 작업은 승인 없이 실행하고 외부 경로도 읽어 분석할 수 있지만, 이는 전체 시스템 쓰기·네트워크 bypass가 아니다. 위험 명령 차단 규칙의 원문은 `docs/agent-rules/git.md`.
+- Terminal permission model: Claude Code uses `permissions.allow` / `permissions.deny`; Codex uses `sandbox_mode`, `approval_policy`, and `.codex/rules/*.rules`. Trace의 Codex 기본값은 `workspace-write + on-request`다. 일반 프로젝트 작업은 승인 없이 실행하지만, 커밋처럼 보호된 `.git` 쓰기는 사용자 승인을 요청할 수 있다. 이는 전체 시스템 쓰기·네트워크 bypass가 아니며, 위험 명령 차단 규칙의 원문은 `docs/agent-rules/git.md`.
 - Memory and MCP config: per-tool, not shared. See `setup-codex.md` / `setup-claude.md` under `docs/prompts/`.
 
 ## Adding a Trace-specific skill

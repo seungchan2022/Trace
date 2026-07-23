@@ -126,7 +126,11 @@ git config core.hooksPath .githooks
 - `git reset --hard` — 작업물 손실 차단
 - `.env` 편집 — 시크릿 파일 보호
 
-Codex는 `.codex/config.toml`에서 `sandbox_mode = "workspace-write"`와 `approval_policy = "never"`를 사용한다. 따라서 일반 프로젝트 명령은 승인 없이 실행하고, 사용자 계정이 읽을 수 있는 외부 경로는 분석할 수 있다. 다만 워크스페이스 밖 쓰기·네트워크·보호 경로 쓰기는 자동 허용하지 않는다. `swiftlint`처럼 일반 작업 명령은 별도 allowlist 없이 이 범위에서 실행된다.
+Codex는 `.codex/config.toml`에서 `sandbox_mode = "workspace-write"`와
+`approval_policy = "on-request"`를 사용한다. 일반 프로젝트 명령과 `swiftlint`는 승인 없이
+실행하지만, 스테이징·커밋처럼 보호된 `.git` 쓰기가 필요하면 사용자에게 승인을 요청한다.
+`on-request`는 자동 허용이 아니라 승인 경로만 여는 설정이며, 워크스페이스 밖 쓰기·네트워크·
+그 밖의 보호 경로 쓰기는 사용자가 승인하지 않는 한 허용되지 않는다.
 
 ## Merge Strategy
 
