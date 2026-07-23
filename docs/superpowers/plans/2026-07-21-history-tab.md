@@ -643,7 +643,7 @@ scripts/trace-commit.sh -m "feat: 러닝 집계 순수 계산기 RunStats 추가
   - `func load() async`
   - Task 4가 `weeklyBars`를 차트에 꽂고, Task 5가 `summaries`를 목록에 쓴다.
 
-- [ ] **Step 1: 뷰모델 테스트를 먼저 쓴다**
+- [x] **Step 1: 뷰모델 테스트를 먼저 쓴다**
 
 Create `TraceTests/HistoryPageViewModelTests.swift`:
 
@@ -714,7 +714,7 @@ final class HistoryPageViewModelTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: 테스트가 실패하는 것을 확인**
+- [x] **Step 2: 테스트가 실패하는 것을 확인**
 
 Run:
 ```bash
@@ -724,7 +724,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: 컴파일 실패 — `cannot find 'HistoryPageViewModel' in scope`
 
-- [ ] **Step 3: 뷰모델 구현**
+- [x] **Step 3: 뷰모델 구현**
 
 Create `Trace/Pages/HistoryPage/HistoryPageViewModel.swift`:
 
@@ -770,7 +770,7 @@ final class HistoryPageViewModel {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run:
 ```bash
@@ -780,7 +780,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: PASS (5 tests)
 
-- [ ] **Step 5: 대시보드 컴포넌트 구현 (숫자까지, 그래프는 Task 4)**
+- [x] **Step 5: 대시보드 컴포넌트 구현 (숫자까지, 그래프는 Task 4)**
 
 Create `Trace/Pages/HistoryPage/UIComponent/HistoryPage+DashboardComponent.swift`:
 
@@ -843,7 +843,7 @@ private extension RunStatsPeriod {
 }
 ```
 
-- [ ] **Step 6: 페이지 골격 구현**
+- [x] **Step 6: 페이지 골격 구현**
 
 Create `Trace/Pages/HistoryPage/HistoryPage.swift`:
 
@@ -893,7 +893,7 @@ struct HistoryPage: View {
 
 > **구조 주의(스펙 §6.1):** 대시보드를 `ScrollView`로 감싸고 그 안에 `List`를 넣으면 **높이가 붕괴한다.** 전체를 하나의 `List`로 두고 대시보드를 섹션으로 넣는 이 방식이 기본이다. Task 5에서 목록 섹션을 더할 때 스와이프 삭제가 살아 있는지 반드시 확인한다.
 
-- [ ] **Step 7: `RootView` 플레이스홀더를 실제 페이지로 교체**
+- [x] **Step 7: `RootView` 플레이스홀더를 실제 페이지로 교체**
 
 `Trace/App/RootView.swift`에서 Task 1의 플레이스홀더 블록을 다음으로 교체:
 
@@ -904,7 +904,7 @@ struct HistoryPage: View {
                         .accessibilityHidden(selectedTab != .history)
 ```
 
-- [ ] **Step 8: 빌드 + 전체 테스트 + 린트, 시뮬레이터 확인 후 커밋**
+- [x] **Step 8: 빌드 + 전체 테스트 + 린트, 시뮬레이터 확인 후 커밋**
 
 시뮬레이터로 기록 탭을 열어 확인:
 1. 기간 세그먼트를 바꾸면 큰 숫자가 바뀐다
