@@ -55,10 +55,11 @@ swiftlint
 최근 8주 중 기록이 있는 주 수를 사용자에게 확인해 보고한다. 이 값은 저장소나 시뮬레이터
 데이터로 추정하지 않는다.
 
-- [ ] 실제 저장 기록 수와 최근 8주 활성 주 수를 사용자에게 확인해 실행 로그에 남긴다.
-- [ ] 값이 예상보다 훨씬 적어 집계 화면이 대부분 비어 보일 가능성이 있으면 구현을 시작하지
-  않고, 스펙 §2.2의 반증 신호로 볼지 사용자에게 확인한다.
-- [ ] 사용자가 현재 데이터량을 인지한 상태에서 진행을 확인하면 Task 1로 간다.
+- [x] 실제 저장 데이터는 실제 러닝 기록과 짧은 테스트·GPX 기록이 섞여 있으며, 정확한
+  기록 수·최근 8주 활성 주 수는 별도 집계하지 않았음을 사용자에게 확인했다(2026-07-23).
+- [x] 이 데이터는 실사용 빈도를 대표하지 않아 사전 반증 판정에는 쓰지 않는다. 실제 기록이
+  더 쌓인 뒤 대시보드·요약 줄이 대부분 비어 보이면 스펙 §2.2의 반증 신호로 재검토한다.
+- [x] 사용자가 이 한계를 인지한 상태에서 `history-tab` 전체 구현 진행을 확인했다(2026-07-23).
 
 이 게이트는 제품 방향을 다시 브레인스토밍하는 단계가 아니다. 이미 확정한 반증 조건을
 구현 전에 한 번 확인해, 되돌리기 비용이 가장 큰 3탭 이사를 무근거로 시작하지 않기 위한
@@ -105,7 +106,7 @@ swiftlint
 - Consumes: 없음(첫 태스크)
 - Produces: `AppTab.history` 케이스. Task 3·5가 `RootView`의 기록 탭 슬롯에 실제 페이지를 꽂는다.
 
-- [ ] **Step 1: 기존 2탭 테스트의 기준선 통과를 먼저 확인한다**
+- [x] **Step 1: 기존 2탭 테스트의 기준선 통과를 먼저 확인한다**
 
 `TraceTests/AppTabTests.swift:6`이 `AppTab.allCases == [.course, .run]`을 단언하므로, 케이스를 추가하면 **반드시 실패한다.** 이것이 이 태스크의 첫 신호다.
 
@@ -117,7 +118,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: PASS (아직 케이스를 안 넣었으므로 현재는 통과 — 기준선 확인)
 
-- [ ] **Step 2: 테스트를 3탭 기대값으로 먼저 고친다 (실패 유도)**
+- [x] **Step 2: 테스트를 3탭 기대값으로 먼저 고친다 (실패 유도)**
 
 `TraceTests/AppTabTests.swift`의 첫 테스트를 통째로 교체:
 
@@ -133,7 +134,7 @@ Expected: PASS (아직 케이스를 안 넣었으므로 현재는 통과 — 기
     }
 ```
 
-- [ ] **Step 3: 테스트가 실패하는 것을 확인**
+- [x] **Step 3: 테스트가 실패하는 것을 확인**
 
 Run:
 ```bash
@@ -143,7 +144,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: 컴파일 실패 — `type 'AppTab' has no member 'history'`
 
-- [ ] **Step 4: `AppTab`에 케이스 추가**
+- [x] **Step 4: `AppTab`에 케이스 추가**
 
 `Trace/App/AppTab.swift`를 다음으로 교체(기존 `isTabBarHidden`은 그대로 둔다 — `runState != .idle` 한 줄이라 탭 수와 무관하게 동작한다):
 
@@ -182,7 +183,7 @@ enum AppTab: String, CaseIterable, Identifiable {
 }
 ```
 
-- [ ] **Step 5: 테스트 통과 확인**
+- [x] **Step 5: 테스트 통과 확인**
 
 Run:
 ```bash
@@ -192,7 +193,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: PASS (2 tests)
 
-- [ ] **Step 6: `RootView`에 임시 플레이스홀더를 꽂는다**
+- [x] **Step 6: `RootView`에 임시 플레이스홀더를 꽂는다**
 
 `Trace/App/RootView.swift`의 `ZStack` 안, `RunPage` 블록 **뒤에** 추가:
 
@@ -210,7 +211,7 @@ Expected: PASS (2 tests)
                         .accessibilityHidden(selectedTab != .history)
 ```
 
-- [ ] **Step 7: 빌드 + 전체 테스트 + 린트**
+- [x] **Step 7: 빌드 + 전체 테스트 + 린트**
 
 Run:
 ```bash
@@ -222,7 +223,7 @@ swiftlint
 ```
 Expected: 빌드 성공 / 전체 테스트 통과(착수 전 기준선 348개: 단위 344 + UI 4) / 린트 에러 0
 
-- [ ] **Step 8: 시뮬레이터로 3탭 렌더링을 눈으로 확인 (이 태스크의 핵심)**
+- [x] **Step 8: 시뮬레이터로 3탭 렌더링을 눈으로 확인 (이 태스크의 핵심)**
 
 XcodeBuildMCP로 앱을 실행하고 스크린샷을 찍어 다음을 확인한다:
 
@@ -237,7 +238,7 @@ XcodeBuildMCP로 앱을 실행하고 스크린샷을 찍어 다음을 확인한�
 원인을 먼저 확정한다. 수정 후 위 4개 항목을 전부 다시 확인하며, **여기서 막히면 다음
 태스크로 넘어가지 않는다.**
 
-- [ ] **Step 9: 검증 스탬프 갱신 후 커밋**
+- [ ] **Step 9: 검증 스탬프 갱신 후 커밋** — 사용자 커밋 요청 대기
 
 ```bash
 touch .git/trace-verify-build.ok .git/trace-verify-test.ok .git/trace-verify-lint.ok

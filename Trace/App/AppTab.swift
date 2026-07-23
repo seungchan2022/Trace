@@ -3,6 +3,7 @@ import Foundation
 enum AppTab: String, CaseIterable, Identifiable {
     case course
     case run
+    case history
 
     var id: String { rawValue }
 
@@ -10,6 +11,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         switch self {
         case .course: return "코스"
         case .run: return "러닝"
+        case .history: return "기록"
         }
     }
 
@@ -17,6 +19,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         switch self {
         case .course: return "map"
         case .run: return "figure.run"
+        case .history: return "chart.bar.xaxis"
         }
     }
 

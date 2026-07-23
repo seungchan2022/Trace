@@ -45,6 +45,18 @@ struct RootView: View {
                     .opacity(selectedTab == .run ? 1 : 0)
                     .allowsHitTesting(selectedTab == .run)
                     .accessibilityHidden(selectedTab != .run)
+
+                    // Task 3에서 HistoryPage로 교체된다. 지금은 3탭 렌더링만 확인한다.
+                    DesignToken.Color.surface2
+                        .ignoresSafeArea()
+                        .overlay {
+                            Text("기록")
+                                .font(DesignToken.Typography.runSecondaryStat)
+                                .foregroundStyle(DesignToken.Color.ink)
+                        }
+                        .opacity(selectedTab == .history ? 1 : 0)
+                        .allowsHitTesting(selectedTab == .history)
+                        .accessibilityHidden(selectedTab != .history)
                 }
                 .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
             }
