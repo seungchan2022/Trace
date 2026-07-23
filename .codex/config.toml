@@ -4,7 +4,7 @@
 
 # Trace에서는 일반 파일 작업·빌드·테스트를 사용자 승인 없이 수행한다.
 # 워크스페이스 밖 쓰기, 네트워크, 보호 경로 쓰기는 자동으로 넓히지 않는다.
-approval_policy = "never"
+approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 
 [sandbox_workspace_write]
