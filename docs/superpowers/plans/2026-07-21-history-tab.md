@@ -272,7 +272,7 @@ scripts/trace-commit.sh -m "feat: 앱 루트에 기록 탭 추가
 
 **설계 주의 — `now`와 `calendar`를 주입받는다.** 내부에서 `Date()`나 `Calendar.current`를 직접 부르면 테스트가 "오늘이 무슨 요일인가"에 따라 붙었다 떨어졌다 한다. 호출부(뷰모델)가 `Calendar.current`와 `Date()`를 넘기고, 테스트는 고정값을 넘긴다.
 
-- [ ] **Step 1: 실패하는 테스트를 먼저 쓴다**
+- [x] **Step 1: 실패하는 테스트를 먼저 쓴다**
 
 Create `TraceTests/RunStatsCalculatorTests.swift`:
 
@@ -464,7 +464,7 @@ final class RunStatsCalculatorTests: XCTestCase {
 > 13시간 전은 07-21 23:00이므로 마지막 테스트의 정답은 **1일 전**이다. 기대값을 실행
 > 결과에 맞춰 바꾸지 말고, 실패하면 주입한 달력·타임존과 구현을 확인한다.
 
-- [ ] **Step 2: 테스트가 실패하는 것을 확인**
+- [x] **Step 2: 테스트가 실패하는 것을 확인**
 
 Run:
 ```bash
@@ -474,7 +474,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: 컴파일 실패 — `cannot find 'RunStatsCalculator' in scope`
 
-- [ ] **Step 3: 계산기 구현**
+- [x] **Step 3: 계산기 구현**
 
 Create `Trace/Domain/RunTracking/Entity/RunStats.swift`:
 
@@ -595,7 +595,7 @@ enum RunStatsCalculator {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run:
 ```bash
@@ -605,7 +605,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: PASS (12 tests)
 
-- [ ] **Step 5: 빌드 + 전체 테스트 + 린트 후 커밋**
+- [x] **Step 5: 빌드 + 전체 테스트 + 린트 후 커밋**
 
 ```bash
 xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
