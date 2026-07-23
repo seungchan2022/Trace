@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Trace QA"
+     xmlns="http://www.topografix.com/GPX/1/1"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <!-- 5 km total: 100 m every 6 seconds = 1 km per minute. The final 30 seconds stay still so QA can finish before Xcode loops the route. -->
+  <wpt lat="37.566500" lon="126.978000"><time>2026-01-01T00:00:00Z</time></wpt>
+  <wpt lat="37.567398" lon="126.978000"><time>2026-01-01T00:00:06Z</time></wpt>
+  <wpt lat="37.568297" lon="126.978000"><time>2026-01-01T00:00:12Z</time></wpt>
+  <wpt lat="37.569195" lon="126.978000"><time>2026-01-01T00:00:18Z</time></wpt>
+  <wpt lat="37.570093" lon="126.978000"><time>2026-01-01T00:00:24Z</time></wpt>
+  <wpt lat="37.570992" lon="126.978000"><time>2026-01-01T00:00:30Z</time></wpt>
+  <wpt lat="37.571890" lon="126.978000"><time>2026-01-01T00:00:36Z</time></wpt>
+  <wpt lat="37.572788" lon="126.978000"><time>2026-01-01T00:00:42Z</time></wpt>
+  <wpt lat="37.573686" lon="126.978000"><time>2026-01-01T00:00:48Z</time></wpt>
+  <wpt lat="37.574585" lon="126.978000"><time>2026-01-01T00:00:54Z</time></wpt>
+  <wpt lat="37.575483" lon="126.978000"><time>2026-01-01T00:01:00Z</time></wpt>
+  <wpt lat="37.576381" lon="126.978000"><time>2026-01-01T00:01:06Z</time></wpt>
+  <wpt lat="37.577280" lon="126.978000"><time>2026-01-01T00:01:12Z</time></wpt>
+  <wpt lat="37.578178" lon="126.978000"><time>2026-01-01T00:01:18Z</time></wpt>
+  <wpt lat="37.579076" lon="126.978000"><time>2026-01-01T00:01:24Z</time></wpt>
+  <wpt lat="37.579975" lon="126.978000"><time>2026-01-01T00:01:30Z</time></wpt>
+  <wpt lat="37.580873" lon="126.978000"><time>2026-01-01T00:01:36Z</time></wpt>
+  <wpt lat="37.581771" lon="126.978000"><time>2026-01-01T00:01:42Z</time></wpt>
+  <wpt lat="37.582669" lon="126.978000"><time>2026-01-01T00:01:48Z</time></wpt>
+  <wpt lat="37.583568" lon="126.978000"><time>2026-01-01T00:01:54Z</time></wpt>
+  <wpt lat="37.584466" lon="126.978000"><time>2026-01-01T00:02:00Z</time></wpt>
+  <wpt lat="37.585364" lon="126.978000"><time>2026-01-01T00:02:06Z</time></wpt>
+  <wpt lat="37.586263" lon="126.978000"><time>2026-01-01T00:02:12Z</time></wpt>
+  <wpt lat="37.587161" lon="126.978000"><time>2026-01-01T00:02:18Z</time></wpt>
+  <wpt lat="37.588059" lon="126.978000"><time>2026-01-01T00:02:24Z</time></wpt>
+  <wpt lat="37.588958" lon="126.978000"><time>2026-01-01T00:02:30Z</time></wpt>
+  <wpt lat="37.589856" lon="126.978000"><time>2026-01-01T00:02:36Z</time></wpt>
+  <wpt lat="37.590754" lon="126.978000"><time>2026-01-01T00:02:42Z</time></wpt>
+  <wpt lat="37.591652" lon="126.978000"><time>2026-01-01T00:02:48Z</time></wpt>
+  <wpt lat="37.592551" lon="126.978000"><time>2026-01-01T00:02:54Z</time></wpt>
+  <wpt lat="37.593449" lon="126.978000"><time>2026-01-01T00:03:00Z</time></wpt>
+  <wpt lat="37.594347" lon="126.978000"><time>2026-01-01T00:03:06Z</time></wpt>
+  <wpt lat="37.595246" lon="126.978000"><time>2026-01-01T00:03:12Z</time></wpt>
+  <wpt lat="37.596144" lon="126.978000"><time>2026-01-01T00:03:18Z</time></wpt>
+  <wpt lat="37.597042" lon="126.978000"><time>2026-01-01T00:03:24Z</time></wpt>
+  <wpt lat="37.597941" lon="126.978000"><time>2026-01-01T00:03:30Z</time></wpt>
+  <wpt lat="37.598839" lon="126.978000"><time>2026-01-01T00:03:36Z</time></wpt>
+  <wpt lat="37.599737" lon="126.978000"><time>2026-01-01T00:03:42Z</time></wpt>
+  <wpt lat="37.600635" lon="126.978000"><time>2026-01-01T00:03:48Z</time></wpt>
+  <wpt lat="37.601534" lon="126.978000"><time>2026-01-01T00:03:54Z</time></wpt>
+  <wpt lat="37.602432" lon="126.978000"><time>2026-01-01T00:04:00Z</time></wpt>
+  <wpt lat="37.603330" lon="126.978000"><time>2026-01-01T00:04:06Z</time></wpt>
+  <wpt lat="37.604229" lon="126.978000"><time>2026-01-01T00:04:12Z</time></wpt>
+  <wpt lat="37.605127" lon="126.978000"><time>2026-01-01T00:04:18Z</time></wpt>
+  <wpt lat="37.606025" lon="126.978000"><time>2026-01-01T00:04:24Z</time></wpt>
+  <wpt lat="37.606924" lon="126.978000"><time>2026-01-01T00:04:30Z</time></wpt>
+  <wpt lat="37.607822" lon="126.978000"><time>2026-01-01T00:04:36Z</time></wpt>
+  <wpt lat="37.608720" lon="126.978000"><time>2026-01-01T00:04:42Z</time></wpt>
+  <wpt lat="37.609618" lon="126.978000"><time>2026-01-01T00:04:48Z</time></wpt>
+  <wpt lat="37.610517" lon="126.978000"><time>2026-01-01T00:04:54Z</time></wpt>
+  <wpt lat="37.611415" lon="126.978000"><time>2026-01-01T00:05:00Z</time></wpt>
+  <wpt lat="37.611415" lon="126.978000"><time>2026-01-01T00:05:06Z</time></wpt>
+  <wpt lat="37.611415" lon="126.978000"><time>2026-01-01T00:05:12Z</time></wpt>
+  <wpt lat="37.611415" lon="126.978000"><time>2026-01-01T00:05:18Z</time></wpt>
+  <wpt lat="37.611415" lon="126.978000"><time>2026-01-01T00:05:24Z</time></wpt>
+  <wpt lat="37.611415" lon="126.978000"><time>2026-01-01T00:05:30Z</time></wpt>
+</gpx>
