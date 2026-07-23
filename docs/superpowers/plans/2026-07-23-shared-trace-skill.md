@@ -8,6 +8,8 @@
 
 **Tech Stack:** Agent Skills `SKILL.md`, Git 심볼릭 링크, Codex project `config.toml`, Claude Code project settings
 
+**상태(2026-07-23):** 완료. 새 Codex 세션에서 `$trace-init` 발견과 실행을 확인했다.
+
 ## Global Constraints
 
 - 기존 Superpowers 등 플러그인 스킬과 `~/.codex/` 전역 설정은 수정하지 않는다.

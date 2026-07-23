@@ -8,6 +8,9 @@
 
 **Tech Stack:** Agent Skills Markdown/YAML frontmatter, Git symbolic links, project documentation.
 
+**Status (2026-07-23):** Complete. Fresh sessions discovered all four shared skills, and the
+legacy global `daily-retro` prompt was removed only after that verification.
+
 ## Global Constraints
 
 - Do not change Superpowers or other plugin-provided skills.
@@ -140,12 +143,15 @@ Expected: no matches.
 
 Run the Task 1 and Task 2 verification loops, `git diff --check`, and `git status --short`.
 
-- [ ] **Step 2: Ask the user to verify the new runtime commands in fresh sessions**
+- [x] **Step 2: Ask the user to verify the new runtime commands in fresh sessions**
 
 Codex: `$daily-retro`, `$trace-archive`, `$trace-study`, `$trace-video-review`.
 
 Claude Code: `/daily-retro`, `/trace-archive`, `/trace-study`, `/trace-video-review`.
 
-- [x] **Step 3: Keep the old global Codex `daily-retro` copy until verification succeeds**
+- 사용자 확인 완료(2026-07-23): 새 세션에서 공용 스킬이 정상 발견된다.
 
-After the user confirms Codex runtime discovery, remove only `~/.codex/prompts/daily-retro.md` and verify that the file is absent.
+- [x] **Step 3: Remove the old global Codex `daily-retro` copy after verification succeeds**
+
+사용자 확인 뒤 `~/.codex/prompts/daily-retro.md`가 없는 상태를 확인했다. 공용 원본은
+`.agents/skills/daily-retro/SKILL.md`에 남아 있다.
