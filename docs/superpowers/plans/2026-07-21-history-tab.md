@@ -15,8 +15,10 @@
 
 **스펙:** `docs/superpowers/specs/2026-07-21-mvp17-run-history-kickoff-design.md`
 
-**상태(2026-07-23):** 구현 미착수. 다음 세션은 아래 착수 전 사용자 확인 게이트에서
-시작하고, 게이트 통과 뒤 Task 1로 간다.
+**상태(2026-07-23):** Task 1~6 구현·리뷰·자동/시뮬레이터 검증과 태스크별 커밋을 완료했다.
+실기기 QA는 [`2026-07-23-history-tab-device-checklist.md`](../../qa/2026-07-23-history-tab-device-checklist.md)로
+사용자 확인을 기다린다. GPX로 저장·집계·화면 전환은 확인할 수 있지만, 실제 GPS·배터리·달리는 중
+조작감은 별도 실제 러닝 기회에 확인한다.
 
 ## Global Constraints
 
