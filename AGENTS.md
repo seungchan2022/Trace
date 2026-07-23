@@ -61,5 +61,5 @@ Read the relevant rule file before making changes:
 4. Use Superpowers for brainstorming, planning, debugging, TDD, review, and verification when applicable.
 5. Use Build iOS Apps skills for SwiftUI, simulator, Xcode, performance, and memory workflows.
 6. Stage files explicitly by path.
-7. Commit only after the user asks for commits, with a message that follows `docs/agent-rules/git.md`.
+7. Follow the task-level commit policy in `docs/agent-rules/git.md`.
 8. Never push. The user performs the final push.

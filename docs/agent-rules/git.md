@@ -5,7 +5,9 @@
 - Do not push unless the user explicitly approves that exact push in the current conversation.
 - The final push must be performed by the user. Agents must not run `git push`, even after preparing a branch.
 - Do not commit on `main`.
-- Agents may run `git commit` after the user asks for commits to be created.
+- After a written-plan task passes its required verification and code review, commit that
+  task immediately as one explicit-path commit. The user may opt out for the current
+  session or task; otherwise, do not defer verified task commits until a milestone ends.
 - Agents may perform local fast-forward integration into `main` only when the user explicitly asks for it.
 - Do not force push unless the user explicitly approves force push and names the branch.
 - Do not use `git add -A` or `git add .`; stage files explicitly by path.
@@ -35,6 +37,16 @@ Allowed branch prefixes:
 | `test/` | Test-only changes | `test/auth-service` |
 
 ## Commits
+
+### Task-level commits
+
+- A written-plan task owns one coherent commit after its verification and task review pass.
+- Keep the commit limited to that task's source, tests, and the matching plan-progress
+  update. Do not include later-task work or unrelated user changes.
+- When a task is already verified but awaiting review, do not stage it early; commit only
+  after the review gate is clean.
+- A user may explicitly request a different grouping or no intermediate commits; that
+  request takes precedence for the stated scope.
 
 Use this format:
 
