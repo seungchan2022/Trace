@@ -1,63 +1,8 @@
 import MapKit
 import SwiftUI
 
-/// 기록 목록 페이지 — 러닝 탭 대기 화면에서 push 진입(ui-direction §5).
-/// 대기 화면과 같은 계층이라 탭바가 계속 보인다. 행은 요약 컬럼만 사용한다.
-struct RunHistoryPage: View {
-    let viewModel: RunHistoryViewModel
-
-    var body: some View {
-        Group {
-            if viewModel.summaries.isEmpty {
-                ContentUnavailableView(
-                    "아직 기록이 없어요",
-                    systemImage: "figure.run",
-                    description: Text("러닝을 마치면 기록이 자동으로 저장돼요")
-                )
-            } else {
-                historyList
-            }
-        }
-        .navigationTitle("러닝 기록")
-        .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.load() }
-    }
-
-    private var historyList: some View {
-        List {
-            ForEach(viewModel.summaries) { summary in
-                NavigationLink(value: RunHistoryRoute.detail(summary)) {
-                    RunHistoryRow(summary: summary)
-                }
-                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-            }
-            .onDelete { indexSet in
-                guard let first = indexSet.first else { return }
-                viewModel.requestDelete(viewModel.summaries[first])
-            }
-        }
-        .listStyle(.plain)
-        .alert(
-            "기록을 삭제할까요?",
-            isPresented: Binding(
-                get: { viewModel.pendingDelete != nil },
-                set: { _ in }
-            )
-        ) {
-            Button("삭제", role: .destructive) { Task { await viewModel.confirmPendingDelete() } }
-            Button("취소", role: .cancel) { viewModel.cancelPendingDelete() }
-        } message: {
-            Text("삭제한 기록은 되돌릴 수 없습니다")
-        }
-        .alert("삭제하지 못했어요", isPresented: Bindable(viewModel).showsDeleteFailure) {
-            Button("확인", role: .cancel) {}
-        } message: {
-            Text("잠시 후 다시 시도해 주세요")
-        }
-    }
-}
-
-private struct RunHistoryRow: View {
+/// 기록 탭 목록 행 — 요약 컬럼만 사용하고 무거운 blob은 열지 않는다.
+struct HistoryRecordRow: View {
     let summary: SavedRunSummary
 
     var body: some View {
@@ -79,7 +24,7 @@ private struct RunHistoryRow: View {
 
 /// 기록 상세 — 단건 blob을 읽어 경로를 그린다. 해독 실패 시 숫자는 컬럼 값으로 유지하고
 /// 지도 영역만 안내로 강등한다(스펙 §6).
-struct RunRecordDetailView: View {
+struct HistoryRecordDetailView: View {
     let summary: SavedRunSummary
     let viewModel: RunHistoryViewModel
     @State private var loadedRun: SavedRun?
@@ -158,7 +103,7 @@ struct RunRecordDetailView: View {
             let pathSegments = RunPathSegmentsCalculator.segments(
                 samples: loadedRun.samples, waypoints: loadedRun.waypoints
             )
-            Map(initialPosition: RunRecordDetailView.fittedPosition(for: coordinates)) {
+            Map(initialPosition: HistoryRecordDetailView.fittedPosition(for: coordinates)) {
                 if pathSegments.isEmpty {
                     // 포인트 없는 기록은 현행 단일색 유지(ui-direction §6)
                     MapPolyline(coordinates: coordinates)

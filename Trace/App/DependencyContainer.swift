@@ -6,6 +6,9 @@ struct DependencyContainer {
     let cameraStateStore: CameraStateStore
     let courseRepository: CourseRepositoryProtocol
     let runRecordRepository: RunRecordRepositoryProtocol
+    /// 기록 탭과 러닝 탭 요약 줄이 같은 배열을 봐야 한다 — 각자 인스턴스를 들면
+    /// 한쪽의 삭제·저장이 다른 쪽에 반영되지 않은 채 공존한다(스펙 §7.2)
+    let runHistoryViewModel: RunHistoryViewModel
     let runSession: RunSession
     let runActivityController: RunActivityController
     let runAudioCoach: RunAudioCoach
@@ -24,6 +27,7 @@ struct DependencyContainer {
             cameraStateStore: CameraStateStore(),
             courseRepository: SwiftDataCourseRepository(),
             runRecordRepository: runRecordRepository,
+            runHistoryViewModel: RunHistoryViewModel(repository: runRecordRepository),
             runSession: runSession,
             runActivityController: RunActivityController(session: runSession),
             runAudioCoach: runAudioCoach,
@@ -45,6 +49,7 @@ struct DependencyContainer {
             // in-memory: UI 테스트가 실기기/다른 테스트의 저장 코스 데이터와 격리되도록
             courseRepository: SwiftDataCourseRepository(inMemory: true),
             runRecordRepository: runRecordRepository,
+            runHistoryViewModel: RunHistoryViewModel(repository: runRecordRepository),
             runSession: runSession,
             runActivityController: RunActivityController(session: runSession),
             runAudioCoach: runAudioCoach,

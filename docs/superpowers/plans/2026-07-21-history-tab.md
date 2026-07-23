@@ -1064,7 +1064,7 @@ scripts/trace-commit.sh -m "feat: 기록 탭에 최근 8주 거리 막대그래�
 
 **데이터 소유권 결정(스펙 §7.2 플랜 요구 ②):** `RunHistoryViewModel`은 지금 `RunPage.init` 안의 `@State`다. 기록 탭과 러닝 탭이 각자 인스턴스를 들면 `[SavedRunSummary]` 캐시가 **두 벌**이 되고, 두 탭이 동시에 살아 있는 구조라 한쪽의 삭제가 다른 쪽에 반영되지 않는다. **`DependencyContainer`로 올려 한 벌을 공유한다** — `runSession`이 이미 쓰는 패턴이다.
 
-- [ ] **Step 1: `DependencyContainer`에 공유 뷰모델 추가**
+- [x] **Step 1: `DependencyContainer`에 공유 뷰모델 추가**
 
 `Trace/App/DependencyContainer.swift`의 `struct` 프로퍼티에 추가:
 
@@ -1087,7 +1087,7 @@ scripts/trace-commit.sh -m "feat: 기록 탭에 최근 8주 거리 막대그래�
             runHistoryViewModel: RunHistoryViewModel(repository: runRecordRepository),
 ```
 
-- [ ] **Step 2: `HistoryPageViewModel`이 공유 뷰모델을 쓰도록 변경**
+- [x] **Step 2: `HistoryPageViewModel`이 공유 뷰모델을 쓰도록 변경**
 
 `HistoryPageViewModel`이 자체 `summaries`를 들지 않고 공유 인스턴스를 참조하게 바꾼다. `Trace/Pages/HistoryPage/HistoryPageViewModel.swift`를 교체:
 
@@ -1150,7 +1150,7 @@ final class HistoryPageViewModel {
         let viewModel = HistoryPageViewModel(history: RunHistoryViewModel(repository: repository))
 ```
 
-- [ ] **Step 3: 기록 컴포넌트 파일을 HistoryPage 소유로 이동한다**
+- [x] **Step 3: 기록 컴포넌트 파일을 HistoryPage 소유로 이동한다**
 
 목록·상세가 더 이상 러닝 탭 전용이 아니므로 페이지 소유권 규칙에 맞춰 파일을 먼저
 옮긴다. 상세 화면과 러닝 화면이 함께 쓰는 포맷터 3개도 특정 페이지 아래에 두지 않고
@@ -1175,7 +1175,7 @@ git mv \
 파일 시스템 동기화 그룹을 쓰므로 `.pbxproj` 수정은 필요 없다. 타입 이름과 테스트 파일
 위치는 바꾸지 않는다.
 
-- [ ] **Step 4: 목록·상세를 기록 탭 안으로 옮긴다**
+- [x] **Step 4: 목록·상세를 기록 탭 안으로 옮긴다**
 
 `Trace/Pages/HistoryPage/HistoryPage.swift`를 교체:
 
@@ -1256,7 +1256,7 @@ struct HistoryPage: View {
 }
 ```
 
-- [ ] **Step 5: 이동한 기록 컴포넌트에서 이전 목록 페이지를 걷어낸다**
+- [x] **Step 5: 이동한 기록 컴포넌트에서 이전 목록 페이지를 걷어낸다**
 
 `Trace/Pages/HistoryPage/UIComponent/HistoryPage+RecordComponent.swift`의
 `RunHistoryPage` 타입과 그 설명을 삭제한 뒤, `private struct RunHistoryRow`를 다음으로 바꾼다:
@@ -1283,7 +1283,7 @@ rg -n "RunHistoryPage|RunHistoryRoute|RunHistoryRow|RunRecordDetailView" \
 
 Expected: no matches.
 
-- [ ] **Step 6: 러닝 탭에서 기록 진입점을 전부 걷어낸다**
+- [x] **Step 6: 러닝 탭에서 기록 진입점을 전부 걷어낸다**
 
 `Trace/Pages/RunPage/RunPage.swift`에서:
 
@@ -1324,7 +1324,7 @@ Expected: no matches.
     }
 ```
 
-- [ ] **Step 7: `RootView` 호출부 갱신**
+- [x] **Step 7: `RootView` 호출부 갱신**
 
 ```swift
                     RunPage(
@@ -1341,7 +1341,7 @@ Expected: no matches.
                         .accessibilityHidden(selectedTab != .history)
 ```
 
-- [ ] **Step 8: 빌드 + 전체 테스트**
+- [x] **Step 8: 빌드 + 전체 테스트**
 
 Run:
 ```bash
@@ -1360,14 +1360,14 @@ rg -n "RunHistoryRoute|RunHistoryPage|RunHistoryRow|RunRecordDetailView|run\\.hi
 
 Expected: no matches.
 
-- [ ] **Step 9: 시뮬레이터로 이관 확인**
+- [x] **Step 9: 시뮬레이터로 이관 확인**
 
 1. 러닝 탭 대기 화면에 **기록 버튼이 없다**
 2. 기록 탭에서 목록이 보이고, 행을 탭하면 상세로 push된다
 3. 목록에서 **스와이프 삭제가 동작한다**(`List` 섹션 구성이 제스처를 살렸는지 — 스펙 §6.1 확인 항목)
 4. 삭제 후 집계 숫자와 그래프가 함께 갱신된다(공유 뷰모델이 한 벌인지 확인)
 
-- [ ] **Step 10: 린트 후 커밋**
+- [x] **Step 10: 린트 후 커밋**
 
 ```bash
 swiftlint

@@ -2,13 +2,10 @@ import SwiftUI
 
 struct RunPage: View {
     @State private var viewModel: RunPageViewModel
-    @State private var historyViewModel: RunHistoryViewModel
-    @State private var historyPath: [RunHistoryRoute] = []
     @FocusState private var goalFieldFocused: Bool
 
-    init(session: RunSession, recordRepository: RunRecordRepositoryProtocol, announcer: VoiceAnnouncerProtocol) {
+    init(session: RunSession, announcer: VoiceAnnouncerProtocol) {
         _viewModel = State(initialValue: RunPageViewModel(session: session, announcer: announcer))
-        _historyViewModel = State(initialValue: RunHistoryViewModel(repository: recordRepository))
     }
 
     var body: some View {
@@ -38,18 +35,7 @@ struct RunPage: View {
     private var controls: some View {
         switch viewModel.session.state {
         case .idle:
-            NavigationStack(path: $historyPath) {
-                startControls
-                    .navigationBarHidden(true) // 대기 화면 자체는 네비바 없음(ui-direction §4)
-                    .navigationDestination(for: RunHistoryRoute.self) { route in
-                        switch route {
-                        case .list:
-                            RunHistoryPage(viewModel: historyViewModel)
-                        case .detail(let summary):
-                            RunRecordDetailView(summary: summary, viewModel: historyViewModel)
-                        }
-                    }
-            }
+            startControls
         case .countingDown:
             RunCountdownScreen(count: viewModel.countdown) { viewModel.cancelCountdown() }
         case .acquiring:
@@ -63,17 +49,6 @@ struct RunPage: View {
 
     private var startControls: some View {
         VStack(spacing: 0) {
-            HStack {
-                Spacer()
-                Button { historyPath.append(.list) } label: {
-                    Image(systemName: "list.bullet.rectangle")
-                }
-                .buttonStyle(GlassIconButtonStyle())
-                .accessibilityLabel("러닝 기록")
-                .accessibilityIdentifier("run.historyButton")
-            }
-            .padding(.horizontal, DesignToken.Size.screenMargin)
-
             Spacer()
             goalPicker
             Spacer()
@@ -180,10 +155,4 @@ struct RunPage: View {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
     }
-}
-
-/// 러닝 탭 기록 스택의 경로 — 목록과 상세 두 단계뿐이다(ui-direction §5)
-enum RunHistoryRoute: Hashable {
-    case list
-    case detail(SavedRunSummary)
 }

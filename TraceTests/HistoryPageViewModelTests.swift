@@ -31,7 +31,7 @@ final class HistoryPageViewModelTests: XCTestCase {
     ) -> HistoryPageViewModel {
         let now = now
         return HistoryPageViewModel(
-            repository: repository,
+            history: RunHistoryViewModel(repository: repository),
             now: { now },
             calendar: calendar
         )
@@ -95,5 +95,39 @@ final class HistoryPageViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isEmpty)
         XCTAssertEqual(viewModel.stats.runCount, 1)
         XCTAssertEqual(viewModel.stats.totalDistanceMeters, 5000)
+    }
+
+    func test_기록_탭을_재활성화하면_새_기록으로_공유_요약을_새로고침한다() async throws {
+        let repository = MockRunRecordRepository()
+        try await repository.save(makeRun(makeSummary(daysAgo: 1, distanceMeters: 3000)))
+        let viewModel = makeViewModel(repository: repository)
+
+        await viewModel.loadWhenActivated(true)
+        XCTAssertEqual(viewModel.summaries.count, 1)
+
+        try await repository.save(makeRun(makeSummary(daysAgo: 0, distanceMeters: 5000)))
+        await viewModel.loadWhenActivated(false)
+        XCTAssertEqual(viewModel.summaries.count, 1)
+
+        await viewModel.loadWhenActivated(true)
+        XCTAssertEqual(viewModel.summaries.count, 2)
+        XCTAssertEqual(viewModel.stats.totalDistanceMeters, 8000)
+    }
+
+    func test_공유_기록_뷰모델을_로드하면_같은_요약_배열을_읽는다() async throws {
+        let repository = MockRunRecordRepository()
+        let history = RunHistoryViewModel(repository: repository)
+        let now = now
+        let viewModel = HistoryPageViewModel(
+            history: history,
+            now: { now },
+            calendar: calendar
+        )
+        try await repository.save(makeRun(makeSummary(daysAgo: 0, distanceMeters: 5000)))
+
+        await viewModel.load()
+
+        XCTAssertEqual(viewModel.summaries, history.summaries)
+        XCTAssertEqual(history.summaries.count, 1)
     }
 }

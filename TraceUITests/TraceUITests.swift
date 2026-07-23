@@ -37,6 +37,20 @@ nonisolated final class TraceUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["도보 경로를 찾을 수 없습니다."].waitForExistence(timeout: 5))
     }
+
+    @MainActor
+    func testRunTabHasNoHistoryEntryPointAndHistoryTabShowsEmptyState() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-traceUITesting"]
+        app.launch()
+
+        app.buttons["러닝"].tap()
+        XCTAssertFalse(app.buttons["러닝 기록"].exists)
+
+        app.buttons["기록"].tap()
+        XCTAssertTrue(app.navigationBars["기록"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["아직 기록이 없어요"].waitForExistence(timeout: 5))
+    }
 }
 
 private extension XCUIElement {

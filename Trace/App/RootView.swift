@@ -39,7 +39,6 @@ struct RootView: View {
 
                     RunPage(
                         session: container.runSession,
-                        recordRepository: container.runRecordRepository,
                         announcer: container.voiceAnnouncer
                     )
                     .opacity(selectedTab == .run ? 1 : 0)
@@ -47,7 +46,7 @@ struct RootView: View {
                     .accessibilityHidden(selectedTab != .run)
 
                     HistoryPage(
-                        repository: container.runRecordRepository,
+                        history: container.runHistoryViewModel,
                         isActive: selectedTab == .history
                     )
                         .opacity(selectedTab == .history ? 1 : 0)
