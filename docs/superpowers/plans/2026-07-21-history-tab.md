@@ -943,7 +943,7 @@ scripts/trace-commit.sh -m "feat: 기록 탭 집계 대시보드 추가
 
 **이 저장소 최초의 `import Charts`다.** 차트는 자체 색·폰트 기본값을 갖고 있어 디자인 토큰과 어긋나기 쉽고, **기본적으로 VoiceOver에 데이터를 노출하지 않는다.**
 
-- [ ] **Step 1: 차트 뷰 추가**
+- [x] **Step 1: 차트 뷰 추가**
 
 `HistoryPage+DashboardComponent.swift` 최상단 import에 `import Charts`를 추가하고, `HistoryDashboard.body`의 `statBlock` 아래에 `weeklyChart`를 넣는다:
 
@@ -1002,7 +1002,7 @@ scripts/trace-commit.sh -m "feat: 기록 탭 집계 대시보드 추가
     }
 ```
 
-- [ ] **Step 2: 빌드**
+- [x] **Step 2: 빌드**
 
 Run:
 ```bash
@@ -1011,7 +1011,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: 빌드 성공. `import Charts` 실패가 나면 iOS 배포 타깃이 16 미만인지 확인한다(현재 17.0이라 문제없어야 한다).
 
-- [ ] **Step 3: 검증 3종 — 시뮬레이터로 직접 확인 (스펙 §6.3 플랜 요구)**
+- [ ] **Step 3: 검증 3종 — 시뮬레이터로 직접 확인 (스펙 §6.3 플랜 요구)** — 다크모드·최대 Dynamic Type·기간 전환은 확인했으며, VoiceOver 막대별 실제 발화는 자동화 접근성 트리 한계로 수동 확인 대기
 
 XcodeBuildMCP로 기록 탭을 열어 확인한다:
 
@@ -1021,7 +1021,7 @@ XcodeBuildMCP로 기록 탭을 열어 확인한다:
 
 세 항목의 결과를 태스크 완료 보고에 그대로 적는다. "확인함"이 아니라 무엇이 어떻게 보였는지 쓴다.
 
-- [ ] **Step 4: 전체 테스트 + 린트 후 커밋**
+- [x] **Step 4: 전체 테스트 + 린트 후 커밋**
 
 ```bash
 xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
