@@ -1,10 +1,13 @@
-# 외부 영상/콘텐츠 리뷰 (공용 프롬프트)
+---
+name: trace-video-review
+description: 외부 영상·프롬프트·워크플로 팁을 현재 Trace 작업 방식에 도입할지 평가해야 할 때 사용한다.
+---
 
-> 이 절차는 Codex와 Claude Code **양쪽에서 `/trace-video-review`로 호출**된다.
-> - Codex: 이 파일을 `~/.codex/prompts/trace-video-review.md`에 복사해 등록 (`docs/prompts/setup-codex.md` 참고).
-> - Claude Code: `.claude/commands/trace-video-review.md`가 이 파일을 가리키므로 별도 복사 없이 인식된다.
+# 외부 영상/콘텐츠 리뷰
+
+> Codex에서는 `$trace-video-review`, Claude Code에서는 `/trace-video-review`로 호출한다.
 > 목적: 유튜브 등에서 발견한 AI/개발 워크플로우 팁이 Trace 작업 방식에 적용할 만한지 판단한다.
-> `trace-init`과 달리 로드맵·마일스톤·플랜 진행 상태는 다루지 않는다 — 필요하면 `/trace-init`을 따로 부른다.
+> 이 스킬은 로드맵·마일스톤·플랜 진행 상태를 다루지 않는다. 필요하면 Codex `$trace-init` 또는 Claude Code `/trace-init`을 별도로 호출한다.
 
 ## 전제
 

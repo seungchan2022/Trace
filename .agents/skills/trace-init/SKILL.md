@@ -1,10 +1,16 @@
-# 세션 초기화 / 재개 (공용 프롬프트)
+---
+name: trace-init
+description: 새 Trace 세션을 시작하거나 재개할 때 현재 브랜치, 활성 플랜, 미결 결정, MVP 상태, 다음 작업을 복원해야 하는 경우 사용한다.
+---
 
-> 이 절차는 Codex와 Claude Code **양쪽에서 `/trace-init`으로 호출**된다.
-> - Codex: 이 파일을 `~/.codex/prompts/trace-init.md`에 복사해 등록 (`docs/prompts/setup-codex.md` 참고).
-> - Claude Code: `.claude/commands/trace-init.md`가 이 파일을 가리키므로 별도 복사 없이 인식된다.
+# Trace 세션 초기화 / 재개
+
+> 이 스킬은 Claude Code와 Codex 양쪽에서 같은 본문을 사용한다.
+> - Claude Code: `/trace-init`
+> - Codex: `$trace-init`
+>
 > 목적: 세션을 차갑게 시작하지 않도록 **현재 상태를 복원**한다. 도구를 바꿔 이어받는 경우에도 동일하게 동작한다.
-> 이 프롬프트는 **읽기 전용** — 파일을 수정하거나 커밋하지 않는다. 수집·보고·다음 액션 제안만 한다.
+> 이 스킬은 **읽기 전용** — 파일을 수정하거나 커밋하지 않는다. 수집·보고·다음 액션 제안만 한다.
 
 ## 전제
 
@@ -30,12 +36,13 @@ git diff --stat
 git log --oneline -5
 ```
 
-- 현재 브랜치가 `main`이면 **경고**: 커밋 전 feature 브랜치를 파야 한다 (git.md 규칙).
+- 현재 브랜치가 `main`이면 **경고**: 커밋 전 feature 브랜치를 파야 한다 (`git.md` 규칙).
 - 미커밋 변경이 있으면 파일 목록과 규모를 요약한다.
 
 ### 3. 미결 결정 스캔
 
 `docs/agent-rules/project-decisions.md`를 읽고:
+
 - `Current Defaults`에서 **`undecided`**로 남은 항목 (예: Persistence, 그 외)
 - `Decisions the User May Need to Make Later` 중 지금 작업과 관련돼 곧 정해야 할 것
 
@@ -44,14 +51,10 @@ git log --oneline -5
 ### 4. 진행 중 작업 감지 (resume) — 핸드오프의 핵심
 
 - 브랜치명에서 작업 키워드 추출 (예: `feature/login-view` → 로그인 화면).
-- **진행 중 플랜의 체크박스를 읽는다**: `docs/superpowers/plans/*.md`에서 `- [x]`(완료)와 `- [ ]`(미완료)를 세어
-  "Task N까지 완료, 다음은 Task N+1" 형태로 복원한다. 이게 도구를 바꿔 이어받을 때의 **1차 인수인계 채널**이다.
+- **진행 중 플랜의 체크박스를 읽는다**: `docs/superpowers/plans/*.md`에서 `- [x]`(완료)와 `- [ ]`(미완료)를 세어 "Task N까지 완료, 다음은 Task N+1" 형태로 복원한다. 이게 도구를 바꿔 이어받을 때의 **1차 인수인계 채널**이다.
 - ⚠️ 코드는 작성됐는데 체크박스가 안 켜져 있는 등 **플랜과 워킹 트리가 어긋나면 경고**한다 (상대 도구가 장님 상태로 재시작하는 원인).
-- 미커밋 파일 + 최근 변경된 `docs/superpowers/specs/*`, `history/*`를 연결해
-  "직전에 뭘 하고 있었는지" 한 문장으로 재구성한다.
-- **MVP/마일스톤 위치 복원**: `docs/roadmap.md`를 읽어 현재 어느 MVP의 어느 마일스톤 단계인지
-  (진행 중/완료/아카이빙 대기) 파악한다. 마일스톤이 전부 `[x]`인데 아카이빙 안 된 MVP가 있으면
-  "**`/trace-archive` 대기**"로 보고한다. 단위·흐름 규칙은 `docs/agent-rules/workflow.md`.
+- 미커밋 파일 + 최근 변경된 `docs/superpowers/specs/*`, `history/*`를 연결해 "직전에 뭘 하고 있었는지" 한 문장으로 재구성한다.
+- **MVP/마일스톤 위치 복원**: `docs/roadmap.md`를 읽어 현재 어느 MVP의 어느 마일스톤 단계인지 (진행 중/완료/아카이빙 대기) 파악한다. 마일스톤이 전부 `[x]`인데 아카이빙 안 된 MVP가 있으면 "**trace-archive 대기**"로 보고한다. 단위·흐름 규칙은 `docs/agent-rules/workflow.md`.
 
 ### 5. 훅 배선 점검
 
@@ -60,10 +63,12 @@ git config core.hooksPath
 ```
 
 - 값이 `.githooks`가 아니면 **경고** + 활성화 명령 안내:
+
   ```bash
   git config core.hooksPath .githooks
   ```
-  (이게 pre-commit/commit-msg 가드를 켠다 — git.md 참고. push 차단은 `.claude/settings.json` deny로 처리.)
+
+  (이게 pre-commit/commit-msg 가드를 켠다 — `git.md` 참고. push 차단은 `.claude/settings.json` deny로 처리.)
 
 ### 6. 백로그 확인 + 사용 가능한 도구 + 다음 단계 제안
 
@@ -91,7 +96,7 @@ git config core.hooksPath
 # 재개 지점
 - 진행 중: {브랜치+변경+플랜 체크박스로 재구성한 한 문장}
 - 플랜 진행률: {Task N/M 완료, 다음 단계 / 플랜 없으면 "없음", 플랜↔코드 불일치 시 ⚠️}
-- MVP/마일스톤: {roadmap.md 기준 현재 MVP·마일스톤 단계, 아카이빙 대기면 ⚠️ /trace-archive, 없으면 "없음"}
+- MVP/마일스톤: {roadmap.md 기준 현재 MVP·마일스톤 단계, 아카이빙 대기면 ⚠️ trace-archive, 없으면 "없음"}
 - 미결 결정: {project-decisions.md에서 곧 정할 것, 없으면 "없음"}
 - 백로그: {docs/backlog.md open 항목 수 + 핵심 1~2개, 없으면 "없음"}
 - 다음 액션 추천: {스킬/명령}

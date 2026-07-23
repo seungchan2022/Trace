@@ -9,14 +9,30 @@ token budget runs out and work continues in the other.
 Shared (lives in the repo, both tools see it — never duplicate per tool):
 
 - Rule manuals: `docs/agent-rules/*.md`
-- Shared prompts: `docs/prompts/trace-init.md`, `docs/prompts/daily-retro.md`
+- Shared skills: `.agents/skills/*/SKILL.md` (`trace-init`, `daily-retro`, `trace-archive`, `trace-study`, `trace-video-review`)
 - Git history, `.githooks`, plans (`docs/superpowers/plans/`), specs, `project-decisions.md`
 
 Tool-specific (thin adapters; each tool only reads its own):
 
 - Entry file: Codex reads `AGENTS.md`; Claude Code reads `CLAUDE.md` (a symlink to `AGENTS.md`).
-- Slash-command location: Codex `~/.codex/prompts/` (copied in); Claude Code `.claude/commands/` (symlinked to `docs/prompts/`, committed).
+- Shared-skill discovery: Codex reads `.agents/skills/` directly; Claude Code reads `.claude/skills/`, whose entries are symbolic links to `.agents/skills/`. 호출 문법만 다르다: Codex `$<skill-name>`, Claude Code `/<skill-name>`.
+- Trace-specific skills do not use Codex `~/.codex/prompts/` or Claude Code `.claude/commands/`. Those paths are legacy adapters, not a source of truth.
+- Tool settings: Codex project settings live in `.codex/config.toml`; Claude Code project settings live in `.claude/settings*.json`. 공통 정책은 맞추되, 도구별 설정 문법과 기능은 복사하지 않는다.
+- Terminal permission model: Claude Code uses `permissions.allow` / `permissions.deny`; Codex uses `sandbox_mode`, `approval_policy`, and `.codex/rules/*.rules`. Trace의 Codex 기본값은 `workspace-write + never`라 일반 프로젝트 작업은 승인 없이 실행하고 외부 경로도 읽어 분석할 수 있지만, 이는 전체 시스템 쓰기·네트워크 bypass가 아니다. 위험 명령 차단 규칙의 원문은 `docs/agent-rules/git.md`.
 - Memory and MCP config: per-tool, not shared. See `setup-codex.md` / `setup-claude.md` under `docs/prompts/`.
+
+## Adding a Trace-specific skill
+
+새 Trace 전용 스킬은 항상 아래 구조로 만든다. 스킬 본문을 도구별 폴더에 복사하지 않는다.
+
+```text
+.agents/skills/<skill-name>/SKILL.md       # 공통 원본
+.claude/skills/<skill-name>                # ../../.agents/skills/<skill-name> 링크
+```
+
+- Codex에서는 `$<skill-name>`, Claude Code에서는 `/<skill-name>`으로 명시 호출한다.
+- 스킬이 두 도구에서 같은 정책을 요구하면 본문은 `SKILL.md`에 한 번만 쓴다.
+- 도구 고유 설정은 `.codex/config.toml` 또는 `.claude/settings*.json`에만 추가하고, 공통 규칙은 `AGENTS.md`와 `docs/agent-rules/`에 둔다.
 
 ## Claude Code 오토컴팩트 복구 설정
 
@@ -36,6 +52,14 @@ adapter only to wire a tool up.
 - Claude memory (`~/.claude/.../memory/`) and Codex memory (`~/.codex/memories`) are
   invisible to the other tool. Do not put anything the other tool needs to resume there.
 - Record a decision the moment it is made (in `project-decisions.md`), not at session end.
+
+## Subagent and review model policy
+
+- The user chooses the main session's model and reasoning level when starting that session. Do not pin a single main model for Trace: planning normally uses the highest-capability model, while implementation normally uses the balanced model at high reasoning.
+- Do not use a low-tier/high-volume model for Trace implementation subagents or reviews (`Luna` in Codex; the equivalent lowest-tier model in another tool).
+- Do not set a fixed default subagent model in Trace. A spawned agent normally inherits the parent session's model and reasoning level, so a Sol planning session stays Sol and a Terra implementation session stays Terra.
+- A hard design decision, security/architecture review, or repeated failure that requires reconsidering the approach may explicitly use `gpt-5.6-sol` with `high` reasoning instead.
+- Claude Code has no matching Trace project setting for a default subagent model. Keep the user's session-level model and advisor choices there; apply the same low-tier prohibition and use its higher-capability advisor/model only for the escalation cases above.
 
 ## Keep progress markers live
 

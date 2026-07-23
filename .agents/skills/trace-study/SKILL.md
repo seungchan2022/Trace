@@ -1,10 +1,12 @@
-# MVP 학습 정리 (공용 프롬프트)
+---
+name: trace-study
+description: 완료된 Trace MVP를 근거 기반 학습 흐름과 셀프 퀴즈로 정리해야 할 때 사용한다.
+---
 
-> 이 절차는 Codex와 Claude Code **양쪽에서 `/trace-study`로 호출**된다.
-> - Codex: 이 파일을 `~/.codex/prompts/trace-study.md`에 복사해 등록 (`docs/prompts/setup-codex.md` 참고).
-> - Claude Code: `.claude/commands/trace-study.md`가 이 파일을 가리키므로 별도 복사 없이 인식된다.
+# MVP 학습 정리
+
+> Codex에서는 `$trace-study MVP1` 또는 `$trace-study`, Claude Code에서는 `/trace-study MVP1` 또는 `/trace-study`로 호출한다. 인자가 없으면 `docs/roadmap.md`의 최근 완료 MVP를 쓴다.
 > 목적: 완료된 MVP를 **"흐름 + 개념"**으로 정리해, 만든 방식을 자기 언어로 설명할 수 있게 한다.
-> `/trace-study MVP1` 또는 `/trace-study` (인자 없으면 `docs/roadmap.md`의 최근 완료 MVP).
 
 ## 목적
 

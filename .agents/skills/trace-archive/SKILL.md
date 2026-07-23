@@ -1,14 +1,16 @@
-# MVP 아카이빙 (공용 프롬프트)
+---
+name: trace-archive
+description: 완료된 Trace MVP의 명세·플랜·회고·로드맵 상태를 아카이빙해야 할 때 사용한다.
+---
 
-> 이 절차는 Codex와 Claude Code **양쪽에서 `/trace-archive`로 호출**된다.
-> - Codex: 이 파일을 `~/.codex/prompts/trace-archive.md`에 복사해 등록 (`docs/prompts/setup-codex.md` 참고).
-> - Claude Code: `.claude/commands/trace-archive.md`가 이 파일을 가리키므로 별도 복사 없이 인식된다.
+# MVP 아카이빙
+
+> Codex에서는 `$trace-archive` 또는 `$trace-archive MVP1`, Claude Code에서는 `/trace-archive` 또는 `/trace-archive MVP1`로 호출한다.
 > 목적: 완료된 MVP의 마일스톤 산출물(spec+plan)을 `history/`로 옮기고 회고·인덱스를 갱신한다.
-> `/trace-archive` 또는 `/trace-archive MVP1`.
 
 ## 전제
 
-- 단위·트리거 규칙은 `docs/agent-rules/workflow.md`. 이 프롬프트는 그 **아카이빙 절차의 실행본**이다.
+- 단위·트리거 규칙은 `docs/agent-rules/workflow.md`. 이 스킬은 그 **아카이빙 절차의 실행본**이다.
 - 파일 이동은 **`git mv`로 이력 보존**. 커밋·푸시는 하지 않는다 — 사용자가 명시적으로 요청할 때만,
   경로를 지정해 stage/commit (`docs/agent-rules/git.md`).
 - `main`이면 먼저 feature 브랜치를 판다.

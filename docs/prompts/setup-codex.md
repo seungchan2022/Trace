@@ -1,54 +1,26 @@
 # Codex 설정 복사용 스니펫
 
 > **Codex 전용 셋업.** Claude Code 셋업은 같은 폴더의 `setup-claude.md`를 본다.
-> 공용 프롬프트(`trace-init.md`, `daily-retro.md`)는 도구 중립이며, Codex는 `~/.codex/prompts/`로 **복사**해야 호출된다
-> (Claude Code는 `.claude/commands/` 심볼릭으로 자동 인식 — 복사 불필요).
+> Trace 공용 **스킬**은 `.agents/skills/`에 두고 Codex가 프로젝트에서 직접 읽는다. 별도 복사나 전역 등록은 하지 않는다.
 > 아래 config 스니펫은 `~/.codex/config.toml`(전역) 또는 프로젝트 `.codex/config.toml`에 복사한다.
 > ⚠️ `~/.codex/config.toml`은 **모든 Codex 프로젝트에 적용**된다. Trace에만 적용하려면 프로젝트 단위 config를 쓴다.
 
 ---
 
-## 1. daily-retro 프롬프트 등록
+## 1. Trace 공용 스킬
 
-이 폴더의 `daily-retro.md`를 복사:
+각 스킬은 `.agents/skills/<name>/SKILL.md` 한 곳에서 관리한다. Codex는 프로젝트를 신뢰한 새 대화에서 자동 발견한다.
 
-```bash
-cp docs/prompts/daily-retro.md ~/.codex/prompts/daily-retro.md
-```
+| 용도 | Codex 호출 |
+|---|---|
+| 새 세션 상태 복원 | `$trace-init` |
+| 하루 회고 | `$daily-retro` 또는 `$daily-retro 260615` |
+| 완료 MVP 아카이빙 | `$trace-archive` 또는 `$trace-archive MVP1` |
+| 완료 MVP 학습 정리 | `$trace-study` 또는 `$trace-study MVP1` |
+| 외부 영상/콘텐츠 팁 검토 | `$trace-video-review` |
 
-→ 이후 Codex에서 `/daily-retro` 또는 `/daily-retro 260615`로 호출.
-
-## 1-1. trace-init 프롬프트 등록
-
-내장 `/init`과 이름 충돌을 피하기 위해 `trace-init.md`로 복사:
-
-```bash
-cp docs/prompts/trace-init.md ~/.codex/prompts/trace-init.md
-```
-
-→ 이후 Codex에서 `/trace-init`으로 호출.
-
-## 1-2. trace-archive · trace-study 프롬프트 등록
-
-MVP 완료 후 아카이빙·학습 정리 커맨드:
-
-```bash
-cp docs/prompts/trace-archive.md ~/.codex/prompts/trace-archive.md
-cp docs/prompts/trace-study.md   ~/.codex/prompts/trace-study.md
-```
-
-→ 이후 Codex에서 `/trace-archive`, `/trace-study`로 호출.
+`~/.codex/prompts/`로 이 스킬들을 복사하지 않는다. 이전 전역 복사본이 있다면 새 호출을 검증한 뒤에만 삭제한다.
 단위·흐름 규칙은 `docs/agent-rules/workflow.md` 참고.
-
-## 1-3. trace-video-review 프롬프트 등록
-
-외부 영상/콘텐츠 팁을 현재 Trace 규칙과 대조해 적용 여부를 판단하는 커맨드:
-
-```bash
-cp docs/prompts/trace-video-review.md ~/.codex/prompts/trace-video-review.md
-```
-
-→ 이후 Codex에서 `/trace-video-review`로 호출.
 
 ---
 
@@ -82,12 +54,32 @@ persistence = "save-all"
 
 ---
 
-## 3. MCP 서버 추가 (daily-retro 품질 강화 — 선택)
+## 3. 터미널 승인과 안전 경계
+
+Trace 프로젝트의 `.codex/config.toml`은 다음 기본값을 제공한다.
+
+```toml
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = false
+```
+
+- 일반 프로젝트 파일 작업, 빌드, 테스트, `swiftlint`는 매번 사용자 승인 없이 실행한다.
+- 사용자 계정이 읽을 수 있는 프로젝트 밖 경로는 경로를 알려 주면 분석할 수 있다.
+- 네트워크, 워크스페이스 밖 쓰기, 그리고 `.agents`·`.codex`처럼 Codex가 보호하는 경로 쓰기는 이 설정으로 자동 허용되지 않는다.
+- `git push`, 전체 스테이징, `--no-verify`, `rm -rf`, `git reset --hard`는 `.codex/rules/trace-safety.rules`에서 별도로 차단한다.
+- 이 설정은 프로젝트를 신뢰한 **새 Codex 세션**부터 적용된다. 전체 시스템 접근이 필요한 일회성 작업은 이 프로젝트 기본값을 낮추지 말고, 사용자가 그때 권한을 명시적으로 바꾼다.
+
+---
+
+## 4. MCP 서버 추가 (daily-retro 품질 강화 — 선택)
 
 Codex는 전용 `codex mcp add` 명령이 없고 **config.toml 직접 편집**으로 추가한다.
 형식: `[mcp_servers.<id>]` + `command` / `args` / `env` / `enabled`.
 
-### 3-1. playwright — HTML 회고 시각 검증 (스크린샷)
+### 4-1. playwright — HTML 회고 시각 검증 (스크린샷)
 
 ```toml
 [mcp_servers.playwright]
@@ -97,7 +89,7 @@ enabled = true
 # startup_timeout_sec = 20   # 첫 실행 시 브라우저 설치로 느리면 상향
 ```
 
-### 3-2. sequential-thinking — 의사결정 추출 추론 보조
+### 4-2. sequential-thinking — 의사결정 추출 추론 보조
 
 ```toml
 [mcp_servers.sequential_thinking]
@@ -106,7 +98,7 @@ args = ["-y", "@modelcontextprotocol/server-sequential-thinking"]
 enabled = true
 ```
 
-### 3-3. mermaid (선택)
+### 4-3. mermaid (선택)
 
 회고의 다이어그램은 **MCP 없이 CDN 임베드로 이미 렌더**되므로 필수 아님.
 서버사이드 검증/PNG 변환을 원하면 mermaid MCP 패키지를 찾아 같은 형식으로 추가

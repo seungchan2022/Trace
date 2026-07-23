@@ -10,16 +10,16 @@
 - Playwright MCP: configured globally for browser-backed checks when needed
 - Sequential Thinking MCP: configured globally for structured reasoning support when needed
 
-## Custom Prompts
+## Trace-Specific Shared Skills
 
-- `/trace-init`: restore Trace session state at the start of a new chat.
-- `/daily-retro`: summarize the day and capture lessons or follow-up work.
-- `/trace-video-review`: review an external video/content tip (e.g. YouTube) against current Trace rules and memories, and judge whether it's worth adopting.
+- `trace-init`: restore Trace session state at the start of a new chat.
+- `daily-retro`: summarize the day and capture lessons or follow-up work.
+- `trace-archive`: archive a completed MVP's artifacts and update its index/roadmap state.
+- `trace-study`: build a learning walkthrough for a completed MVP.
+- `trace-video-review`: review an external video/content tip (e.g. YouTube) against current Trace rules and memories, and judge whether it's worth adopting.
 
-These are custom prompts, not skills. The canonical sources live in `docs/prompts/`.
-Codex registers them by copying into `~/.codex/prompts/` (may need a restart/new session after edits);
-Claude Code reads them via `.claude/commands/` symlinks (no copy). See `docs/prompts/setup-codex.md` and `setup-claude.md`,
-and `docs/agent-rules/dual-tool.md` for the shared-vs-tool-specific split.
+Each canonical source lives at `.agents/skills/<name>/SKILL.md`. Codex calls it with `$<name>`;
+Claude Code calls the same source with `/<name>` through a `.claude/skills/<name>` symlink. No Trace skill body is copied into a tool-specific prompt directory. See `docs/prompts/setup-codex.md`, `setup-claude.md`, and `docs/agent-rules/dual-tool.md`.
 
 ## Required Skill Use
 

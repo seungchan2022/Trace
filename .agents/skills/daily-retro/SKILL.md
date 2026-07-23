@@ -1,9 +1,11 @@
-# 하루 회고 생성 (공용 프롬프트)
+---
+name: daily-retro
+description: 하루 동안의 Trace 작업을 근거 기반 회고로 정리하고, 의사결정·교훈·후속 작업을 기록해야 할 때 사용한다.
+---
 
-> 이 절차는 Codex와 Claude Code **양쪽에서 `/daily-retro`로 호출**된다.
-> - Codex: 이 파일을 `~/.codex/prompts/daily-retro.md`에 복사해 등록 (`docs/prompts/setup-codex.md` 참고).
-> - Claude Code: `.claude/commands/daily-retro.md`가 이 파일을 가리키므로 별도 복사 없이 인식된다.
-> `/daily-retro` 또는 `/daily-retro YYMMDD` (인자 없으면 오늘 날짜).
+# 하루 회고 생성
+
+> Codex에서는 `$daily-retro` 또는 `$daily-retro YYMMDD`, Claude Code에서는 `/daily-retro` 또는 `/daily-retro YYMMDD`로 호출한다. 인자가 없으면 오늘 날짜를 쓴다.
 > 독자: 개인 기록 + 멘토/면접관에게 보여줄 수준.
 
 ## 스타일
@@ -14,7 +16,7 @@
 
 ## 사용할 도구 (MCP가 있으면 쓰고, 없으면 자동 대체)
 
-이 프롬프트는 **MCP 0개로도 완전 동작**한다. 아래 MCP가 설정돼 있으면 품질이 올라간다:
+이 스킬은 **MCP 0개로도 완전 동작**한다. 아래 MCP가 설정돼 있으면 품질이 올라간다:
 
 - **sequential-thinking** (있으면): Phase 1의 의사결정 추출·분류를 이 도구로 단계적으로 추론.
   없으면 그냥 직접 추론한다.

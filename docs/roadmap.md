@@ -4,7 +4,7 @@
 진행 상태를 한 장으로 본다. frank의 `active_*.txt` 상태파일 묶음을 이 파일이 대체한다.
 
 - 단위 정의·흐름 규칙: `docs/agent-rules/workflow.md`
-- 아카이빙: `/trace-archive` (`docs/prompts/trace-archive.md`)
+- 아카이빙: `trace-archive` 공용 스킬 (`.agents/skills/trace-archive/SKILL.md`; Codex `$trace-archive`, Claude Code `/trace-archive`)
 - 마일스톤 후보 풀: `docs/backlog.md`
 
 상태 표기: `[ ]` 미착수 · `[~]` 진행 중 · `[x]` 완료

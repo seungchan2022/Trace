@@ -1,8 +1,8 @@
 # Claude Code 설정
 
 > **Claude Code 전용 셋업.** Codex 셋업은 같은 폴더의 `setup-codex.md`를 본다.
-> 핵심: 룰 매뉴얼(`docs/agent-rules/*.md`)과 공용 프롬프트(`docs/prompts/*.md`)는 **도구 중립**이라 손대지 않는다.
-> Claude Code용으로 필요한 건 "진입 파일"과 "슬래시 커맨드 서랍" 두 개의 얇은 어댑터뿐이며, 둘 다 **리포에 심볼릭으로 포함**돼 있어 클론만 하면 자동 적용된다.
+> 핵심: 룰 매뉴얼(`docs/agent-rules/*.md`)과 공용 스킬(`.agents/skills/*/SKILL.md`)은 **도구 중립**이라 손대지 않는다.
+> Claude Code용으로 필요한 건 "진입 파일"과 공용 스킬을 가리키는 얇은 어댑터뿐이며, 둘 다 **리포에 심볼릭으로 포함**돼 있어 클론만 하면 자동 적용된다.
 
 ---
 
@@ -11,11 +11,11 @@
 | 항목 | 실체 | 효과 |
 |---|---|---|
 | 진입 파일 | `CLAUDE.md` → `AGENTS.md` 심볼릭 | Claude Code가 세션 시작 시 `CLAUDE.md`를 자동 로드 → Codex와 **완전히 동일한 룰**을 본다. AGENTS.md만 고치면 양쪽 반영. |
-| `/trace-init` | `.claude/commands/trace-init.md` → `../../docs/prompts/trace-init.md` 심볼릭 | 세션 상태 복원 프롬프트. 복사 불필요. |
-| `/daily-retro` | `.claude/commands/daily-retro.md` → `../../docs/prompts/daily-retro.md` 심볼릭 | 하루 회고 프롬프트. 복사 불필요. |
-| `/trace-archive` | `.claude/commands/trace-archive.md` → `../../docs/prompts/trace-archive.md` 심볼릭 | MVP 아카이빙 프롬프트. 복사 불필요. |
-| `/trace-study` | `.claude/commands/trace-study.md` → `../../docs/prompts/trace-study.md` 심볼릭 | MVP 학습 정리 프롬프트. 복사 불필요. |
-| `/trace-video-review` | `.claude/commands/trace-video-review.md` → `../../docs/prompts/trace-video-review.md` 심볼릭 | 외부 영상/콘텐츠 팁 리뷰 프롬프트. 복사 불필요. |
+| `/trace-init` | `.claude/skills/trace-init` → `../../.agents/skills/trace-init` 심볼릭 | Codex와 공통 `SKILL.md`를 쓰는 세션 상태 복원 스킬. 복사 불필요. |
+| `/daily-retro` | `.claude/skills/daily-retro` → `../../.agents/skills/daily-retro` 심볼릭 | 하루 회고 공용 스킬. 복사 불필요. |
+| `/trace-archive` | `.claude/skills/trace-archive` → `../../.agents/skills/trace-archive` 심볼릭 | MVP 아카이빙 공용 스킬. 복사 불필요. |
+| `/trace-study` | `.claude/skills/trace-study` → `../../.agents/skills/trace-study` 심볼릭 | MVP 학습 정리 공용 스킬. 복사 불필요. |
+| `/trace-video-review` | `.claude/skills/trace-video-review` → `../../.agents/skills/trace-video-review` 심볼릭 | 외부 영상/콘텐츠 팁 리뷰 공용 스킬. 복사 불필요. |
 
 → 즉 **추가 설치 단계가 없다.** 새 머신에서 클론하면 그대로 동작한다.
 
@@ -26,14 +26,15 @@
 1. 새 세션을 열고 — Claude가 `AGENTS.md`의 git 안전 규칙을 인지하는지(예: "main에서 커밋 금지") 물어 본다.
    진입 파일이 literal `CLAUDE.md` 텍스트가 아니라 **AGENTS.md 내용**으로 로드됐는지 확인하는 것.
 2. `/trace-init` 입력 → 세션 상태 요약이 나오는지 확인.
-3. 안 되면: 심볼릭이 깨졌는지 `ls -la CLAUDE.md .claude/commands/` 로 점검하고 재생성:
+3. 안 되면: 심볼릭이 깨졌는지 `ls -la CLAUDE.md .claude/skills/` 로 점검하고 재생성:
    ```bash
    ln -sf AGENTS.md CLAUDE.md
-   ln -sf ../../docs/prompts/trace-init.md .claude/commands/trace-init.md
-   ln -sf ../../docs/prompts/daily-retro.md .claude/commands/daily-retro.md
-   ln -sf ../../docs/prompts/trace-archive.md .claude/commands/trace-archive.md
-   ln -sf ../../docs/prompts/trace-study.md .claude/commands/trace-study.md
-   ln -sf ../../docs/prompts/trace-video-review.md .claude/commands/trace-video-review.md
+   mkdir -p .claude/skills
+   ln -sfn ../../.agents/skills/trace-init .claude/skills/trace-init
+   ln -sfn ../../.agents/skills/daily-retro .claude/skills/daily-retro
+   ln -sfn ../../.agents/skills/trace-archive .claude/skills/trace-archive
+   ln -sfn ../../.agents/skills/trace-study .claude/skills/trace-study
+   ln -sfn ../../.agents/skills/trace-video-review .claude/skills/trace-video-review
    ```
 
 ## 설치된 워크플로 플러그인 / MCP (2026-06-17 기준)
