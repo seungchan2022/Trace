@@ -45,6 +45,9 @@ Allowed branch prefixes:
   update. Do not include later-task work or unrelated user changes.
 - When a task is already verified but awaiting review, do not stage it early; commit only
   after the review gate is clean.
+- Before committing, remove that task's temporary brief, report, and other ignored
+  implementation scratch files once their review gate no longer needs them. Never stage
+  `.superpowers/` artifacts; the plan checkbox and commit are the durable handoff.
 - A user may explicitly request a different grouping or no intermediate commits; that
   request takes precedence for the stated scope.
 
