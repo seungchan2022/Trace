@@ -3,9 +3,11 @@ import SwiftUI
 struct RunPage: View {
     @State private var viewModel: RunPageViewModel
     @FocusState private var goalFieldFocused: Bool
+    private let history: RunHistoryViewModel
 
-    init(session: RunSession, announcer: VoiceAnnouncerProtocol) {
+    init(session: RunSession, announcer: VoiceAnnouncerProtocol, history: RunHistoryViewModel) {
         _viewModel = State(initialValue: RunPageViewModel(session: session, announcer: announcer))
+        self.history = history
     }
 
     var body: some View {
@@ -49,6 +51,7 @@ struct RunPage: View {
 
     private var startControls: some View {
         VStack(spacing: 0) {
+            summaryLine
             Spacer()
             goalPicker
             Spacer()
@@ -57,6 +60,23 @@ struct RunPage: View {
                 .frame(height: 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// 대기 화면 최상단 요약 줄.
+    /// 자리는 항상 유지하고 내용만 3단으로 바뀐다(스펙 §7.1).
+    /// 집계는 기록 탭과 같은 계산기를 소비한다 — 자체 계산을 만들지 않는다(스펙 §4).
+    private var summaryLine: some View {
+        Text(RunIdleSummaryFormatter.string(
+            for: RunStatsCalculator.idleSummary(
+                summaries: history.summaries,
+                now: Date(),
+                calendar: .current
+            )
+        ))
+        .font(DesignToken.Typography.subtitle)
+        .foregroundStyle(DesignToken.Color.ink2)
+        .padding(.top, 8)
+        .accessibilityIdentifier("run.summaryLine")
     }
 
     private var goalPicker: some View {

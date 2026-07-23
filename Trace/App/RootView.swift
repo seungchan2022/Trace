@@ -39,7 +39,8 @@ struct RootView: View {
 
                     RunPage(
                         session: container.runSession,
-                        announcer: container.voiceAnnouncer
+                        announcer: container.voiceAnnouncer,
+                        history: container.runHistoryViewModel
                     )
                     .opacity(selectedTab == .run ? 1 : 0)
                     .allowsHitTesting(selectedTab == .run)
@@ -61,6 +62,11 @@ struct RootView: View {
             if !AppTab.isTabBarHidden(runState: container.runSession.state) {
                 TraceTabBar(selection: $selectedTab)
             }
+        }
+        .onChange(of: container.runSession.saveStatus) { _, newStatus in
+            // repository.save가 반환된 뒤에만 재조회한다. 저장 중 idle 전이는 Step 7에서 막는다.
+            guard newStatus == .saved else { return }
+            Task { await container.runHistoryViewModel.load() }
         }
     }
 }

@@ -178,4 +178,39 @@ final class RunStatsCalculatorTests: XCTestCase {
         let last = RunStatsCalculator.lastRun(summaries: summaries, now: now, calendar: calendar)
         XCTAssertEqual(last?.daysAgo, 1)
     }
+
+    // MARK: - 대기 화면 3단 폴백 정책 (스펙 §7.1)
+
+    func test_이번_주에_뛰었으면_이번_주_집계를_준다() {
+        let summaries = [summary(daysAgo: 3, distanceMeters: 12400, duration: 3600)]
+        let result = RunStatsCalculator.idleSummary(
+            summaries: summaries, now: now, calendar: calendar
+        )
+        XCTAssertEqual(
+            result,
+            .thisWeek(RunStats(
+                totalDistanceMeters: 12400,
+                runCount: 1,
+                totalDuration: 3600
+            ))
+        )
+    }
+
+    func test_이번_주_0회면_마지막_러닝으로_폴백한다() {
+        let summaries = [summary(daysAgo: 10, distanceMeters: 5200, duration: 1800)]
+        let result = RunStatsCalculator.idleSummary(
+            summaries: summaries, now: now, calendar: calendar
+        )
+        XCTAssertEqual(
+            result,
+            .lastRun(LastRunSummary(distanceMeters: 5200, daysAgo: 10))
+        )
+    }
+
+    func test_기록이_아예_없으면_noRuns를_준다() {
+        let result = RunStatsCalculator.idleSummary(
+            summaries: [], now: now, calendar: calendar
+        )
+        XCTAssertEqual(result, .noRuns)
+    }
 }

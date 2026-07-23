@@ -1414,7 +1414,7 @@ scripts/trace-commit.sh -m "refactor: 기록 목록·상세를 기록 탭으로 
 - Produces: `RunIdleSummary` Domain 결과와 `RunIdleSummaryFormatter.string(for:)` 화면 문구.
   `RunPage`가 둘을 조합한다.
 
-- [ ] **Step 1: 3단 폴백 정책과 화면 문구 테스트를 먼저 쓴다**
+- [x] **Step 1: 3단 폴백 정책과 화면 문구 테스트를 먼저 쓴다**
 
 Domain 테스트는 한국어 문구가 아니라 3단 폴백 결과를 검증한다.
 `TraceTests/RunStatsCalculatorTests.swift` 끝에 추가:
@@ -1507,7 +1507,7 @@ final class RunIdleSummaryFormatterTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run:
 ```bash
@@ -1518,7 +1518,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: 컴파일 실패 — `RunIdleSummary`와 `RunIdleSummaryFormatter`가 아직 없다.
 
-- [ ] **Step 3: Domain의 3단 폴백 결과와 계산을 구현한다**
+- [x] **Step 3: Domain의 3단 폴백 결과와 계산을 구현한다**
 
 `Trace/Domain/RunTracking/Entity/RunStats.swift`에서 `LastRunSummary` 다음에 결과 enum을 추가:
 
@@ -1556,7 +1556,7 @@ enum RunIdleSummary: Equatable, Sendable {
     }
 ```
 
-- [ ] **Step 4: RunPage의 한국어 문구 포맷터를 구현한다**
+- [x] **Step 4: RunPage의 한국어 문구 포맷터를 구현한다**
 
 Create `Trace/Pages/RunPage/RunIdleSummaryFormatter.swift`:
 
@@ -1592,7 +1592,7 @@ enum RunIdleSummaryFormatter {
 }
 ```
 
-- [ ] **Step 5: 테스트 통과 확인**
+- [x] **Step 5: 테스트 통과 확인**
 
 Run:
 ```bash
@@ -1603,7 +1603,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: PASS (RunStatsCalculator 15 tests + RunIdleSummaryFormatter 4 tests)
 
-- [ ] **Step 6: 러닝 탭에 요약 줄을 붙인다**
+- [x] **Step 6: 러닝 탭에 요약 줄을 붙인다**
 
 `Trace/Pages/RunPage/RunPage.swift`:
 
@@ -1653,7 +1653,7 @@ Expected: PASS (RunStatsCalculator 15 tests + RunIdleSummaryFormatter 4 tests)
     }
 ```
 
-- [ ] **Step 7: 저장 완료 전에 요약을 닫는 경합을 차단한다**
+- [x] **Step 7: 저장 완료 전에 요약을 닫는 경합을 차단한다**
 
 현재 저장은 비동기다. `저장 중…`일 때 요약을 먼저 닫으면 `dismissSummary()`가
 `saveStatus`와 `pendingRun`을 초기화하고, 저장 완료 이벤트를 관찰하기 전에 놓칠 수 있다.
@@ -1674,7 +1674,7 @@ Expected: PASS (RunStatsCalculator 15 tests + RunIdleSummaryFormatter 4 tests)
 저장 성공·실패가 결정되면 버튼은 다시 활성화된다. 실패 상태에서는 기존 `다시 시도`
 동작을 그대로 쓰며, 기록이 저장되지 않았으므로 요약 줄도 이전 값에 머무는 것이 맞다.
 
-- [ ] **Step 8: 저장 성공 이벤트에 갱신 경로를 연결한다 (스펙 §7.2 플랜 요구 ①)**
+- [x] **Step 8: 저장 성공 이벤트에 갱신 경로를 연결한다 (스펙 §7.2 플랜 요구 ①)**
 
 **`.task`/`.onAppear`는 쓸 수 없다.** `RootView`가 모든 탭을 `ZStack`에 상시 마운트한 채 `.opacity`만 토글하므로 뷰가 언마운트되지 않고, `.task`는 앱 최초 1회만 발화한다.
 
@@ -1690,7 +1690,7 @@ Expected: PASS (RunStatsCalculator 15 tests + RunIdleSummaryFormatter 4 tests)
         }
 ```
 
-- [ ] **Step 9: `RootView`의 `RunPage` 호출부에 `history` 전달**
+- [x] **Step 9: `RootView`의 `RunPage` 호출부에 `history` 전달**
 
 ```swift
                     RunPage(
@@ -1700,7 +1700,7 @@ Expected: PASS (RunStatsCalculator 15 tests + RunIdleSummaryFormatter 4 tests)
                     )
 ```
 
-- [ ] **Step 10: 빌드 + 전체 테스트 + 린트**
+- [x] **Step 10: 빌드 + 전체 테스트 + 린트**
 
 ```bash
 xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
@@ -1710,7 +1710,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 swiftlint
 ```
 
-- [ ] **Step 11: 시뮬레이터로 갱신 경로 확인 (이 태스크의 핵심)**
+- [ ] **Step 11: 시뮬레이터로 갱신 경로 확인 (이 태스크의 핵심)** — 저장 직후 닫기·공유 기록 갱신의 실제 제스처 경로는 접근성 자동화 한계로 수동 확인 대기
 
 1. 러닝 탭 대기 화면 최상단에 요약 줄이 보인다
 2. 기록이 없으면 "첫 러닝을 시작해보세요"
@@ -1724,7 +1724,7 @@ swiftlint
 3~4번이 실패하면 `saveStatus` 전이와 `RunHistoryViewModel.load()` 호출 시점을 계측한다.
 **여기서 막히면 마일스톤을 닫지 않는다.**
 
-- [ ] **Step 12: 커밋**
+- [x] **Step 12: 커밋**
 
 ```bash
 touch .git/trace-verify-build.ok .git/trace-verify-test.ok .git/trace-verify-lint.ok
@@ -1749,14 +1749,14 @@ scripts/trace-commit.sh -m "feat: 러닝 탭 대기 화면에 이번 주 요약 
 
 모든 태스크가 끝나면 확인한다:
 
-- [ ] 전체 테스트 통과 (착수 전 기준선 348개 + 구현 중 추가된 테스트)
-- [ ] `swiftlint` 에러 0 (경고는 마일스톤 4에서 정리 — 단 **새로 추가한 코드에는 경고를 만들지 않는다**)
-- [ ] 러닝 탭에 기록 버튼이 없고, 요약 줄이 그 자리를 대신한다 (스펙 §5 화면 온전성)
-- [ ] 기록 탭에서 목록·상세·스와이프 삭제가 전부 동작한다
+- [x] 전체 테스트 통과 (착수 전 기준선 348개 + 구현 중 추가된 테스트)
+- [x] `swiftlint` 에러 0 (경고는 마일스톤 4에서 정리 — 단 **새로 추가한 코드에는 경고를 만들지 않는다**)
+- [x] 러닝 탭에 기록 버튼이 없고, 요약 줄이 그 자리를 대신한다 (스펙 §5 화면 온전성)
+- [x] 기록 탭에서 목록·상세·스와이프 삭제가 전부 동작한다
 - [ ] 러닝 종료 → 대기 화면 복귀 시 요약 줄이 갱신된다
 - [ ] 저장 중에는 요약 닫기가 비활성화되고, 저장 성공 뒤 공유 기록이 갱신된다
 - [ ] 차트가 다크모드·Dynamic Type·VoiceOver 세 조건에서 동작한다
-- [ ] `rg -n "RunHistoryRoute|RunHistoryPage|RunHistoryRow|RunRecordDetailView|RunPage\\+HistoryComponent" Trace/`
+- [x] `rg -n "RunHistoryRoute|RunHistoryPage|RunHistoryRow|RunRecordDetailView|RunPage\\+HistoryComponent" Trace/`
   결과 0건 (이관 잔재·이전 타입명·이전 파일명 없음)
 
 **실기기 QA는 별도로 진행한다** — 시뮬레이터에서 확인할 수 없는 것(실제 러닝 데이터로 집계가 맞는지, VoiceOver 실사용감)이 남아 있다. QA 체크리스트는 마일스톤 종료 후 `docs/qa/`에 작성한다(`testing.md` 시나리오 카드 형식).

@@ -23,6 +23,14 @@ struct LastRunSummary: Equatable, Sendable {
     let daysAgo: Int
 }
 
+/// 러닝 탭 대기 화면의 3단 폴백 결과.
+/// Domain은 어떤 데이터를 보여줄지만 정하고, 한국어 화면 문구는 RunPage가 소유한다.
+enum RunIdleSummary: Equatable, Sendable {
+    case thisWeek(RunStats)
+    case lastRun(LastRunSummary)
+    case noRuns
+}
+
 enum RunStatsPeriod: CaseIterable, Hashable, Identifiable, Sendable {
     case thisWeek
     case thisMonth
@@ -88,6 +96,26 @@ enum RunStatsCalculator {
             to: calendar.startOfDay(for: now)
         ).day ?? 0
         return LastRunSummary(distanceMeters: latest.distanceMeters, daysAgo: max(0, days))
+    }
+
+    static func idleSummary(
+        summaries: [SavedRunSummary],
+        now: Date,
+        calendar: Calendar
+    ) -> RunIdleSummary {
+        let weekly = stats(
+            summaries: summaries,
+            period: .thisWeek,
+            now: now,
+            calendar: calendar
+        )
+        if weekly.runCount > 0 {
+            return .thisWeek(weekly)
+        }
+        if let last = lastRun(summaries: summaries, now: now, calendar: calendar) {
+            return .lastRun(last)
+        }
+        return .noRuns
     }
 
     // MARK: - Private

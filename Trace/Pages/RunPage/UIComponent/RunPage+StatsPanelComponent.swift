@@ -223,6 +223,12 @@ struct RunSummaryPanel: View {
             #endif
             Button("닫기") { viewModel.closeSummary() }
                 .font(.system(size: 16, weight: .semibold))
+                .disabled(viewModel.session.saveStatus == .saving)
+                .accessibilityHint(
+                    viewModel.session.saveStatus == .saving
+                        ? "기록 저장이 끝나면 닫을 수 있습니다"
+                        : ""
+                )
             Spacer()
         }
         .padding(DesignToken.Size.sheetPadding)
