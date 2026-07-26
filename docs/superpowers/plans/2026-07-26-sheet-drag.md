@@ -63,8 +63,10 @@ swiftlint
 - Produces:
   - `struct ScrollEdgeState: Equatable { let isAtTop: Bool; let isAtBottom: Bool }`
   - `static let ScrollEdgeState.defaultTolerance: CGFloat` (값 8)
-  - `static func ScrollEdgeState.make(scrollOffset: CGFloat, contentHeight: CGFloat, viewportHeight: CGFloat, tolerance: CGFloat = defaultTolerance) -> ScrollEdgeState`
+  - `static func ScrollEdgeState.make(scrollOffset: CGFloat, contentHeight: CGFloat, viewportHeight: CGFloat, bottomInset: CGFloat, tolerance: CGFloat = defaultTolerance) -> ScrollEdgeState`
   - `func ScrollEdgeState.intersected(with other: ScrollEdgeState) -> ScrollEdgeState`
+
+**`bottomInset`이 왜 인자인가.** 리스트에는 `.contentMargins(.bottom, 12, for: .scrollContent)`가 걸려 있어 **실제로 스크롤되는 범위가 콘텐츠 높이보다 12pt 길다.** 그런데 우리가 재는 `contentHeight`는 `LazyVStack`의 프레임 높이라 그 여백이 안 들어 있다. 이 값을 안 받으면 아래쪽 끝 판정이 12pt 어긋나 — 오차 8pt가 실질 20pt처럼 동작하고, 테스트에 못박은 경계값이 실기기에서 재현되지 않는다. 위쪽은 여백이 없어 영향이 없다.
 
 **배경 — 왜 순수 타입으로 빼는가**
 
@@ -81,63 +83,72 @@ import XCTest
 @testable import Trace
 
 final class ScrollEdgeStateTests: XCTestCase {
-    // 기준 상황: 뷰포트 289pt(중간 단계 리스트 높이 ≈ pageHeight 722 × 0.4),
-    // 콘텐츠 500pt → 아래로 211pt까지 스크롤 가능.
+    // 기준 상황: 뷰포트 289pt(중간 단계 리스트 높이 ≈ pageHeight 722 × 0.4), 콘텐츠 500pt,
+    // 아래 콘텐츠 여백 12pt(뷰의 .contentMargins(.bottom, 12, for: .scrollContent)와 같은 값).
+    // → 실제로 스크롤 가능한 거리는 500 + 12 - 289 = 223pt.
     private let viewport: CGFloat = 289
     private let content: CGFloat = 500
+    private let bottomInset: CGFloat = 12
+
+    private func edge(offset: CGFloat, content: CGFloat? = nil) -> ScrollEdgeState {
+        ScrollEdgeState.make(
+            scrollOffset: offset,
+            contentHeight: content ?? self.content,
+            viewportHeight: viewport,
+            bottomInset: bottomInset
+        )
+    }
 
     func test_맨_위에_있으면_위쪽_끝으로만_판정한다() {
-        let edge = ScrollEdgeState.make(scrollOffset: 0, contentHeight: content, viewportHeight: viewport)
-        XCTAssertTrue(edge.isAtTop)
-        XCTAssertFalse(edge.isAtBottom)
+        XCTAssertTrue(edge(offset: 0).isAtTop)
+        XCTAssertFalse(edge(offset: 0).isAtBottom)
     }
 
     func test_맨_아래에_있으면_아래쪽_끝으로만_판정한다() {
-        let edge = ScrollEdgeState.make(scrollOffset: 211, contentHeight: content, viewportHeight: viewport)
-        XCTAssertFalse(edge.isAtTop)
-        XCTAssertTrue(edge.isAtBottom)
+        XCTAssertFalse(edge(offset: 223).isAtTop)
+        XCTAssertTrue(edge(offset: 223).isAtBottom)
     }
 
     func test_중간에서는_어느_끝도_아니다() {
-        let edge = ScrollEdgeState.make(scrollOffset: 100, contentHeight: content, viewportHeight: viewport)
-        XCTAssertFalse(edge.isAtTop)
-        XCTAssertFalse(edge.isAtBottom)
+        XCTAssertFalse(edge(offset: 100).isAtTop)
+        XCTAssertFalse(edge(offset: 100).isAtBottom)
     }
 
     // 허용 오차 경계. 오차가 없으면 구간 5개 안팎(스크롤 여유 20pt 남짓)에서
     // 화면상 정지해 보이는 구간을 먼저 스크롤해야만 인계가 걸린다 — "아무 반응 없음"으로 읽힌다.
     func test_남은_여유가_오차_이내면_끝으로_인정한다() {
-        XCTAssertTrue(
-            ScrollEdgeState.make(scrollOffset: 7, contentHeight: content, viewportHeight: viewport).isAtTop
-        )
-        XCTAssertTrue(
-            ScrollEdgeState.make(scrollOffset: 204, contentHeight: content, viewportHeight: viewport).isAtBottom
-        )
+        XCTAssertTrue(edge(offset: 7).isAtTop)          // 위로 남은 여유 7pt
+        XCTAssertTrue(edge(offset: 216).isAtBottom)     // 아래로 남은 여유 7pt
     }
 
     func test_남은_여유가_오차를_넘으면_끝이_아니다() {
-        XCTAssertFalse(
-            ScrollEdgeState.make(scrollOffset: 9, contentHeight: content, viewportHeight: viewport).isAtTop
-        )
-        XCTAssertFalse(
-            ScrollEdgeState.make(scrollOffset: 202, contentHeight: content, viewportHeight: viewport).isAtBottom
+        XCTAssertFalse(edge(offset: 9).isAtTop)         // 위로 남은 여유 9pt
+        XCTAssertFalse(edge(offset: 214).isAtBottom)    // 아래로 남은 여유 9pt
+    }
+
+    // 아래 여백을 빼먹으면 판정이 12pt 어긋나 오차 8pt가 실질 20pt처럼 동작한다.
+    // 그러면 이 테스트가 못박은 경계값이 실기기에서 재현되지 않는다.
+    func test_아래_콘텐츠_여백만큼_스크롤_범위가_길어진다() {
+        // 여백을 0으로 보면 offset 211이 이미 바닥이지만, 실제로는 12pt가 더 남아 있다.
+        XCTAssertFalse(edge(offset: 211).isAtBottom)
+        XCTAssertTrue(
+            ScrollEdgeState.make(
+                scrollOffset: 211, contentHeight: content, viewportHeight: viewport, bottomInset: 0
+            ).isAtBottom
         )
     }
 
     // 바운스로 오프셋이 경계 바깥(음수)으로 나가도 끝이다.
     // 바운스는 인계를 시도하는 동작 그 자체라, 여기서 벗어난 것으로 처리하면 규칙이 자기를 부정한다.
     func test_맨_위_바운스_중_음수_오프셋도_위쪽_끝이다() {
-        XCTAssertTrue(
-            ScrollEdgeState.make(scrollOffset: -40, contentHeight: content, viewportHeight: viewport).isAtTop
-        )
+        XCTAssertTrue(edge(offset: -40).isAtTop)
     }
 
     // 구간이 1~2개면 스크롤할 것이 없다 → 리스트 전체가 그래버처럼 동작한다.
     // 예외 처리가 아니라 같은 식에서 그대로 나온다.
     func test_콘텐츠가_뷰포트보다_짧으면_양끝이_동시에_참이다() {
-        let edge = ScrollEdgeState.make(scrollOffset: 0, contentHeight: 120, viewportHeight: viewport)
-        XCTAssertTrue(edge.isAtTop)
-        XCTAssertTrue(edge.isAtBottom)
+        XCTAssertTrue(edge(offset: 0, content: 120).isAtTop)
+        XCTAssertTrue(edge(offset: 0, content: 120).isAtBottom)
     }
 
     // 드래그 도중 한 번이라도 끝에서 벗어나면 그 끝은 죽는다 — 방향 반전 손동작을 거르는 장치.
@@ -192,13 +203,18 @@ struct ScrollEdgeState: Equatable {
     ///   - scrollOffset: 맨 위에서 아래로 스크롤한 거리. 맨 위 바운스 중에는 음수가 된다.
     ///   - contentHeight: 리스트 콘텐츠 전체 높이.
     ///   - viewportHeight: 리스트가 보이는 높이(`expandedListHeight`).
+    ///   - bottomInset: 콘텐츠 아래에 붙은 스크롤 여백. 뷰의
+    ///     `.contentMargins(.bottom, _, for: .scrollContent)`와 같은 값이어야 한다 —
+    ///     그만큼 실제 스크롤 범위가 콘텐츠 높이보다 길다. 빠뜨리면 아래쪽 끝 판정만
+    ///     그 크기만큼 일찍 참이 되어, 오차 8pt가 실질 20pt처럼 동작한다.
     static func make(
         scrollOffset: CGFloat,
         contentHeight: CGFloat,
         viewportHeight: CGFloat,
+        bottomInset: CGFloat,
         tolerance: CGFloat = defaultTolerance
     ) -> ScrollEdgeState {
-        let remainingBelow = contentHeight - viewportHeight - scrollOffset
+        let remainingBelow = contentHeight + bottomInset - viewportHeight - scrollOffset
         return ScrollEdgeState(
             isAtTop: scrollOffset <= tolerance,
             isAtBottom: remainingBelow <= tolerance
@@ -228,7 +244,9 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
   -destination "platform=iOS Simulator,id=FAE97799-97D7-4B5F-8960-5B796686C702" \
   -parallel-testing-enabled NO test 2>&1 | tail -30
 ```
-Expected: `** TEST SUCCEEDED **` — `ScrollEdgeStateTests` 9개 포함 전체 통과
+Expected: `** TEST SUCCEEDED **` — `ScrollEdgeStateTests` 10개 포함 전체 통과
+
+`Trace`·`TraceTests`·`TraceUITests`는 모두 동기화 폴더(`PBXFileSystemSynchronizedRootGroup`)라 파일을 새로 만들어도 `project.pbxproj`가 바뀌지 않는다(2026-07-26 확인). `git status --short`에 `project.pbxproj`가 새로 뜨면 그 자리에서 멈추고 보고한다 — Global Constraint상 사용자의 GPX 설정 변경과 섞이면 안 되고, 이 하니스에서는 한 파일의 변경을 나눠 담을 수 없다.
 
 - [ ] **Step 5: SwiftLint를 통과시킨다**
 
@@ -397,6 +415,11 @@ Expected: `testDraggingSegmentListDownCollapsesSheet` 실패 — 리스트 드�
     // 쓴 "배경 레이어에 걸기" 우회는 여기서 못 쓴다 — 배경은 스크롤 콘텐츠 뒤에 있어 터치가
     // 닿지 않는다. 최소 이동 거리 8pt라 탭에는 발동하지 않으므로, 제스처로 뷰를 감쌌다가
     // 안쪽 버튼이 전부 먹통이 됐던 2026-07-12 회귀의 경로는 타지 않는다.
+    // 래치가 남는 경우(제스처 취소, 백그라운드 전환, 인계로 리스트 자체가 사라짐)에 대비해
+    // Step 6에서 .onDisappear와 sheetDetent 변화에도 비운다. 남더라도 **더 허용적이 되지는
+    // 않는다** — 다음 드래그의 첫 콜백에서 곧바로 현재 상태와 교집합을 취하므로, 최악이
+    // "인계가 한 번 씹힘"이지 "안 해야 할 인계를 함"이 아니다. 그래도 씹힘은 감각 문제로
+    // 오인되기 쉬워 명시적으로 비운다.
     private var listHandoffGesture: some Gesture {
         DragGesture(minimumDistance: 8)
             .onChanged { _ in
@@ -429,6 +452,10 @@ Expected: `testDraggingSegmentListDownCollapsesSheet` 실패 — 리스트 드�
     // (배포 타깃 17.0). 이름 붙인 좌표계 + onGeometryChange는 이 저장소가 이미 쓰는 조합이다.
     private static let listCoordinateSpace = "coursePlanner.segmentPanel.scroll"
 
+    // 콘텐츠 아래 여백. 뷰의 .contentMargins와 끝 판정이 같은 값을 봐야 하므로 상수를 공유한다 —
+    // 두 곳에 12를 따로 적으면 한쪽만 바뀌었을 때 아래쪽 끝 판정이 조용히 어긋난다.
+    private static let listBottomContentMargin: CGFloat = 12
+
     private var expandedSheetBody: some View {
         VStack(alignment: .leading, spacing: 8) {
             ScrollViewReader { proxy in
@@ -446,7 +473,8 @@ Expected: `testDraggingSegmentListDownCollapsesSheet` 실패 — 리스트 드�
                         return ScrollEdgeState.make(
                             scrollOffset: -contentFrame.minY,
                             contentHeight: contentFrame.height,
-                            viewportHeight: expandedListHeight
+                            viewportHeight: expandedListHeight,
+                            bottomInset: Self.listBottomContentMargin
                         )
                     } action: { edge in
                         listScrollEdge = edge
@@ -456,15 +484,28 @@ Expected: `testDraggingSegmentListDownCollapsesSheet` 실패 — 리스트 드�
                 // 없다. 이 순환이 구간 선택처럼 콘텐츠가 미세하게 바뀔 때마다 레이아웃이 잠깐
                 // 움찔거리는 원인 중 하나였다(2026-07-12, 사용자 확인).
                 .frame(height: expandedListHeight)
-                .coordinateSpace(.named(Self.listCoordinateSpace))
-                .simultaneousGesture(listHandoffGesture)
                 // 콘텐츠 여백만 12pt로 주고 스크롤 인디케이터는 기본 여백(에지에 붙게) 유지 —
                 // .padding()으로 ScrollView 전체를 감싸면 인디케이터까지 같이 밀려 보인다 (실기기 QA 발견).
-                .contentMargins(.horizontal, 12, for: .scrollContent)
-                .contentMargins(.bottom, 12, for: .scrollContent)
+                .contentMargins(.horizontal, Self.listBottomContentMargin, for: .scrollContent)
+                .contentMargins(.bottom, Self.listBottomContentMargin, for: .scrollContent)
                 .scrollPosition(id: $panelAnchorColorKey, anchor: .center)
+                // 새로 붙이는 두 modifier는 **기존 ScrollView 전용 modifier들보다 바깥**에 둔다.
+                // contentMargins(for: .scrollContent)와 scrollPosition(id:)은 감싸인 ScrollView를
+                // 간접적으로 찾아가는데, 사이에 다른 modifier가 끼어 못 찾게 되어도 컴파일 오류가
+                // 나지 않고 **조용히 무효화**된다. 그러면 스크롤 위치 복원과 인디케이터 여백이
+                // 소리 없이 사라진다(둘 다 과거 QA에서 고쳤던 동작이다).
+                .coordinateSpace(.named(Self.listCoordinateSpace))
+                .simultaneousGesture(listHandoffGesture)
                 .onAppear {
                     restoreScrollPosition(proxy)
+                }
+                .onDisappear {
+                    // 인계로 리스트가 사라지는 순간 진행 중이던 드래그의 래치를 비운다.
+                    listDragEdge = nil
+                }
+                .onChange(of: sheetDetent) { _, _ in
+                    // 단계가 바뀌면 뷰포트가 달라져 직전 래치의 전제가 무너진다.
+                    listDragEdge = nil
                 }
                 .onChange(of: viewModel.segmentColorKeys.max()) { oldMax, newMax in
                     // 증가(새 구간)일 때만 — undo/clear로 줄어들 때는 보던 위치 유지 (스펙)
@@ -501,6 +542,11 @@ Expected: `** BUILD SUCCEEDED **`, 이어서 `** TEST SUCCEEDED **` — Task 1�
 
 구간을 6개 이상 만들어 리스트가 실제로 스크롤되는 상태에서도 확인한다: 리스트 중간에서 끌면 시트가 움직이지 않고, 맨 위까지 스크롤한 뒤 손을 떼고 다시 끌어야 접힌다.
 
+**기존 동작이 조용히 죽지 않았는지 반드시 함께 본다.** `contentMargins(for: .scrollContent)`와 `scrollPosition(id:)`은 감싸인 `ScrollView`를 간접적으로 찾아가므로, 못 찾게 되어도 컴파일 오류 없이 무효화된다. 둘 다 과거 QA에서 고쳤던 동작이다.
+
+4. **스크롤 위치 복원** — 구간 8개 이상에서 리스트를 중간쯤 스크롤한 뒤 시트를 접고 다시 펼친다. 보던 행이 그대로 가운데에 있어야 한다(`panelAnchorColorKey` 경로).
+5. **스크롤 인디케이터 여백** — 리스트를 스크롤할 때 오른쪽 인디케이터가 화면 가장자리에 붙어 있어야 한다. 콘텐츠와 함께 안쪽으로 밀려 보이면 2026-07-03에 고친 버그가 되살아난 것이다.
+
 **시뮬레이터로 확인 불가능한 것을 스모크 통과로 뭉뚱그리지 않는다.** 바운스 감각과 인계가 손에 자연스럽게 잡히는지는 합성 제스처로 판정할 수 없다 — `draw-gesture`가 롱프레스-드래그 합성 한계를 INCONCLUSIVE로 명시한 선례를 따르고, Task 3의 실기기 QA로 넘긴다. XcodeBuildMCP의 `drag`는 이 환경에서 즉시 실패하므로(`docs/solutions/workflow-issues/xcodebuildmcp-cannot-synthesize-long-press-drag.md`) 합성이 필요하면 `swipe`만 쓴다.
 
 - [ ] **Step 9: SwiftLint를 통과시킨다**
@@ -512,9 +558,11 @@ Expected: 이번 변경으로 늘어난 경고 0건.
 
 리뷰 초점(이 파일의 실제 회귀 이력에 맞춘다):
 - `simultaneousGesture`가 구간 행 버튼의 탭을 가로채지 않는가
-- `listDragEdge` 래치가 드래그마다 정확히 한 번 시작되고 끝날 때 비워지는가
+- `listDragEdge` 래치가 드래그마다 정확히 한 번 시작되고, 취소·리스트 소멸·단계 변경 어느 경로로도 남지 않는가
 - `onGeometryChange`의 파생값이 Bool 쌍이라 스크롤 중 상태 쓰기가 억제되는가
 - `detentAfterDrag` 추출로 그래버·헤더 드래그의 동작이 바뀌지 않았는가
+- 새 modifier가 `contentMargins`·`scrollPosition`보다 **바깥**에 있어 두 기존 동작이 계속 `ScrollView`에 닿는가
+- `bottomInset`으로 넘기는 값이 `.contentMargins(.bottom, …)`와 같은 상수인가
 
 ```bash
 git add Trace/Pages/CoursePlannerPage/CoursePlannerPage.swift \
@@ -648,13 +696,18 @@ git commit -m "docs: 시트 콘텐츠 드래그 실기기 QA 체크리스트 추
 
 - [ ] **Step 2: 체크포인트 5·7의 감각 판정을 이연 항목에 반영한다**
 
-- 5번에서 "한 칸씩이라 답답하다"가 나오면 → `docs/backlog.md`에 **거리 비례 이동**을 트리거 충족으로 기록한다.
-- 7번에서 "떼고 다시 끌기가 거슬린다"가 나오면 → **한 손동작 내 인계**(`UIScrollView` 래핑)를 트리거 충족으로 기록한다.
-- 둘 다 아니면 두 항목을 트리거 미충족으로 남긴다. 새 런을 한 것처럼 추정하지 말고 **사용자가 실제로 답한 내용만** 적는다.
+**트리거 충족 여부와 무관하게 `docs/backlog.md`에 항목 두 개를 만든다.** 지금 이 두 이연은 스펙의 `제외` 절 안에만 있어서, 다음 마일스톤 착수 시 백로그를 훑는 기존 워크플로에 걸리지 않는다.
 
-- [ ] **Step 3: 수용된 경우에만 마일스톤을 완료로 바꾼다**
+- **거리 비례 이동** — 한 번의 드래그로 두 단계. 5번 답이 "답답하다"면 `open`(트리거 충족)으로, 아니면 `open`(트리거 미충족, 대기)으로 적는다.
+- **한 손동작 내 인계** — 스크롤 끝에 닿는 즉시 시트로. `UIScrollView` 래핑 필요. 7번 답으로 같게 처리한다.
 
-`docs/roadmap.md`의 `sheet-drag`를 `[~]`에서 `[x]`로 바꾸고, 통과 사실과 제외 범위를 한 줄로 남긴다. MVP17의 나머지 마일스톤(`lint-cleanup`) 상태는 건드리지 않는다. 이 플랜 파일의 체크박스도 같은 턴에 갱신한다.
+새 런을 한 것처럼 추정하지 말고 **사용자가 실제로 답한 내용만** 적는다.
+
+- [ ] **Step 3: 수용된 경우에만 마일스톤을 완료로 바꾸고 원 백로그 항목을 닫는다**
+
+- `docs/roadmap.md`의 `sheet-drag`를 `[~]`에서 `[x]`로 바꾸고, 통과 사실과 제외 범위를 한 줄로 남긴다. MVP17의 나머지 마일스톤(`lint-cleanup`) 상태는 건드리지 않는다.
+- `docs/backlog.md`의 **"시트 콘텐츠 영역에서도 드래그로 축소(지도 앱 스타일)"** 항목을 `planned` → `done`으로 바꾸고, 어떻게 해결됐는지 한 줄(인계 규칙 + 이연한 두 항목)을 붙인다. 완료된 마일스톤은 모두 자기 출처 항목을 이렇게 닫아왔다.
+- 이 플랜 파일의 체크박스도 같은 턴에 갱신한다.
 
 - [ ] **Step 4: 문서 변경을 검토하고 커밋한다**
 
@@ -677,4 +730,13 @@ MVP17의 나머지 마일스톤(lint-cleanup) 상태는 건드리지 않았다."
 - [x] 스펙의 QA 7항목이 체크리스트 체크포인트 7개와 번호까지 일치한다.
 - [x] 시뮬레이터로 확인 불가능한 것(바운스 감각)을 Task 2 Step 8에서 명시적으로 실기기로 이관했다.
 - [x] Task 1이 만든 타입 이름·시그니처가 Task 2에서 쓰는 것과 일치한다(`ScrollEdgeState.make`, `intersected(with:)`, `listScrollEdge`, `listDragEdge`).
-- [x] 이연 항목 두 개(거리 비례, 한 손동작 내 인계)의 트리거가 QA 체크포인트 5·7 → Task 4 Step 2로 이어져 판정될 경로가 있다.
+- [x] 이연 항목 두 개(거리 비례, 한 손동작 내 인계)의 트리거가 QA 체크포인트 5·7 → Task 4 Step 2로 이어져 판정될 경로가 있고, 트리거와 무관하게 백로그 항목이 생긴다.
+- [x] 출처 백로그 항목("시트 콘텐츠 영역에서도 드래그로 축소")을 Task 4 Step 3에서 닫는다.
+
+### advisor 리뷰 반영 (2026-07-26)
+
+- **modifier 순서를 고정했다.** `contentMargins(for: .scrollContent)`와 `scrollPosition(id:)`은 감싸인 `ScrollView`를 간접적으로 찾아가므로, 사이에 새 modifier가 끼면 **컴파일 오류 없이 조용히 무효화**된다. 새 두 개를 바깥에 두고, 스크롤 위치 복원과 인디케이터 여백을 Task 2 Step 8 확인 항목에 넣었다. 둘 다 과거 QA에서 고쳤던 동작이다.
+- **`bottomInset`을 판정 입력에 추가했다.** `.contentMargins(.bottom, 12, …)`가 스크롤 범위를 콘텐츠 높이보다 12pt 길게 만드는데 측정값에는 그게 없어서, 빠뜨리면 아래쪽 오차 8pt가 실질 20pt가 되고 테스트 경계값이 실기기에서 재현되지 않는다. 뷰와 판정이 같은 상수를 공유하게 했다.
+- **`listDragEdge` 래치의 취소 경로를 막았다.** `onEnded`만으로는 제스처 취소·리스트 소멸·단계 변경에서 래치가 남는다. 남아도 더 허용적이 되지는 않지만(다음 드래그 첫 콜백에서 교집합) "인계가 가끔 씹힘"으로 나타나 감각 문제로 오인되기 쉬워, `onDisappear`와 `sheetDetent` 변화에서 비운다.
+- **새 파일이 `project.pbxproj`를 건드리지 않음을 확인했다** — 세 타깃 폴더가 모두 동기화 폴더다. 사용자의 GPX 설정 변경과 섞일 위험이 없다.
+- **Task 4가 출처 백로그 항목을 닫고, 이연 두 건의 백로그 항목을 트리거와 무관하게 만들도록 했다.**
