@@ -7,7 +7,7 @@ problem_type: workflow_issue
 component: testing_framework
 severity: medium
 applies_when:
-  - "XCUITest에서 CoursePlannerPage의 bottomSheet 내부 자식(그래버, 접힌 헤더, 저장/전체왕복 버튼, 구간 리스트 행 등)을 accessibilityIdentifier로 조회할 때"
+  - "XCUITest에서 CoursePlannerPage의 bottomSheet 루트 VStack 직계 자식(그래버, 접힌 헤더, 저장/전체왕복 버튼)을 accessibilityIdentifier로 조회할 때"
 tags: [swiftui, accessibility, xcuitest, identifier, bottom-sheet]
 related_components: [CoursePlannerPage, TraceUITests]
 ---
@@ -16,7 +16,9 @@ related_components: [CoursePlannerPage, TraceUITests]
 
 ## Context
 
-`CoursePlannerPage+BottomSheetComponent.swift`의 `bottomSheet` 하위 자식들(그래버 `coursePlanner.segmentPanel.grabber`, 접힌 헤더 `coursePlanner.segmentPanel.collapsed`, 저장 `coursePlanner.saveCourse`, 전체 왕복 `coursePlanner.wholeCourseRoundTrip`, 구간 행 `coursePlanner.segmentPanel.item.N` 등)은 각각 고유한 `accessibilityIdentifier`가 코드에 명시돼 있다. 그런데 XCUITest에서 `app.debugDescription`으로 접근성 트리를 덤프해보면, 이 자식들이 **전부** `identifier: 'coursePlanner.segmentPanel'`(bottomSheet 루트 VStack에 걸린 식별자)로 나타난다 — 자기 자신의 식별자가 아니라 부모 것으로 뭉개져 있다. `label`(예: "저장", "1.20, km, 도보 기준 · 탭해서 이어 그리기")은 각자 올바르게 유지된다.
+`CoursePlannerPage+BottomSheetComponent.swift`의 `bottomSheet` 루트 VStack **직계 자식들**(그래버 `coursePlanner.segmentPanel.grabber`, 접힌 헤더 `coursePlanner.segmentPanel.collapsed`, 저장 `coursePlanner.saveCourse`, 전체 왕복 `coursePlanner.wholeCourseRoundTrip`)은 각각 고유한 `accessibilityIdentifier`가 코드에 명시돼 있다. 그런데 XCUITest에서 `app.debugDescription`으로 접근성 트리를 덤프해보면, 이 자식들이 **전부** `identifier: 'coursePlanner.segmentPanel'`(bottomSheet 루트 VStack에 걸린 식별자)로 나타난다 — 자기 자신의 식별자가 아니라 부모 것으로 뭉개져 있다. `label`(예: "저장", "1.20, km, 도보 기준 · 탭해서 이어 그리기")은 각자 올바르게 유지된다.
+
+**범위 주의**: 이 뭉개짐은 `bottomSheet` 루트 VStack의 직계 자식에서만 확인됐다. `ScrollView`/`LazyVStack`에 중첩된 구간 리스트 행(`coursePlanner.segmentPanel.item.N`, `coursePlanner.segmentPanel.roundTrip.N`)은 영향을 받지 않는다 — MVP17 Task 2의 `testDraggingSegmentListDownCollapsesSheet` / `testSegmentRowButtonsStayTappableWithListDragGesture` 테스트(RED/GREEN 양쪽 실행)에서 이 행들을 identifier로 직접 조회해도 정확히 해당 행이 반환됨을 확인했다. 리스트 행은 이 문서의 우회 기법 없이 `app.buttons["coursePlanner.segmentPanel.item.0"]`처럼 그대로 조회해도 안전하다.
 
 정확한 메커니즘(어떤 모디파이어 조합이 이걸 일으키는지)은 이번 세션에서 특정하지 못했다 — `bottomSheet`가 `.background { ... .contentShape(Rectangle()).onTapGesture {} }` 히트테스트 백스톱을 가진 채로 루트에 `.accessibilityIdentifier("coursePlanner.segmentPanel")`를 걸고 있는 구조와 관련 있을 가능성이 있지만 확인되지 않았다.
 
@@ -34,7 +36,7 @@ related_components: [CoursePlannerPage, TraceUITests]
 
 ## When to Apply
 
-- `CoursePlannerPage`의 `bottomSheet` 서브트리 내부 엘리먼트를 대상으로 새 XCUITest를 작성할 때
+- `CoursePlannerPage`의 `bottomSheet` 루트 VStack 직계 자식(그래버/헤더/저장/전체왕복)을 대상으로 새 XCUITest를 작성할 때 — `ScrollView`/`LazyVStack`에 중첩된 리스트 행은 이 문제의 대상이 아니므로 해당 없음
 - 기존 UI 테스트가 "No matches found for Elements matching predicate ... IN identifiers"로 실패하는데 코드상 identifier는 분명히 걸려 있을 때 — 먼저 `app.debugDescription`을 덤프해 실제 identifier가 뭉개졌는지부터 확인한다
 
 ## Examples

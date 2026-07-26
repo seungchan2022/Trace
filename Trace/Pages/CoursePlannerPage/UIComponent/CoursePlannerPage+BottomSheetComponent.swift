@@ -38,7 +38,7 @@ extension CoursePlannerPage {
         .accessibilityIdentifier("coursePlanner.segmentPanel")
     }
 
-    // sheetDragGesture/listHandoffGesture/detentAfterDrag는 CoursePlannerPage+SheetDragGesture.swift로
+    // sheetDragGesture/listHandoffGesture/detentAfterDrag는 CoursePlannerPage+SheetDragGestureComponent.swift로
     // 옮겼다(2026-07-26, SwiftLint file_length 500줄 상한 회피) — 이 파일에서 계속 참조만 한다.
     private var grabberHandle: some View {
         Capsule()
@@ -67,7 +67,7 @@ extension CoursePlannerPage {
     // 하나의 Button label 안에 넣지 않고, 바깥 HStack의 형제(sibling)로 둔다.
     // 탭 토글과 드래그 제스처가 공유하는 단일 진입점 — 앵커 스크롤 위치 계산이
     // 두 입력 방식 모두에서 똑같이 일어나도록 한다(2026-07-12, 드래그 리사이즈 추가하며 분리).
-    // sheetDragGesture/listHandoffGesture(CoursePlannerPage+SheetDragGesture.swift)에서도 호출하므로
+    // sheetDragGesture/listHandoffGesture(CoursePlannerPage+SheetDragGestureComponent.swift)에서도 호출하므로
     // private을 유지할 수 없다(2026-07-26, 파일 분리로 인한 접근 수준 변경).
     func setSheetDetent(_ newDetent: SheetDetent) {
         // 스펙 §1.4 시트 높이 전환(0.32s) — 모든 단계 전환에 이 spring을 쓴다.
