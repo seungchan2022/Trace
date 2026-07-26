@@ -653,10 +653,10 @@ git commit -m "feat: 구간 리스트에서도 시트를 접고 펼 수 있게 �
 
 - [ ] **Step 2: 5번과 7번이 이연 항목의 트리거임을 로드맵에 연결한다**
 
-`docs/roadmap.md`의 MVP17 `sheet-drag` 항목을 아래로 교체한다.
+`docs/roadmap.md`의 MVP17 `sheet-drag` 항목은 이미 `[~]`이고 설계·플랜 링크를 갖고 있다(2026-07-26 기획 마무리 시 갱신). 여기서는 **QA 링크와 트리거 연결만** 문장 끝에 덧붙인다.
 
 ```markdown
-- [~] **sheet-drag** — 코스 탭 구간 리스트가 스크롤 끝에 붙어 있는 동안의 드래그를 시트로 넘긴다. 위·아래 같은 규칙이며 한 번의 드래그는 한 단계만 움직인다. 설계: [`2026-07-26-sheet-drag-design.md`](superpowers/specs/2026-07-26-sheet-drag-design.md) · 구현 플랜: [`2026-07-26-sheet-drag.md`](superpowers/plans/2026-07-26-sheet-drag.md) · 실기기 QA: [`2026-07-26-sheet-drag-device-checklist.md`](qa/2026-07-26-sheet-drag-device-checklist.md) — 체크포인트 5·7은 각각 "거리 비례 이동"·"한 손동작 내 인계" 이연 항목의 트리거 판정을 겸한다
+ · 실기기 QA: [`2026-07-26-sheet-drag-device-checklist.md`](qa/2026-07-26-sheet-drag-device-checklist.md) — 체크포인트 5·7은 각각 "거리 비례 이동"·"한 손동작 내 인계" 이연 항목의 트리거 판정을 겸한다
 ```
 
 - [ ] **Step 3: 사용자에게 체크리스트를 제시한다**
