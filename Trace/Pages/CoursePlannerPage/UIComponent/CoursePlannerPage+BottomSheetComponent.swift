@@ -38,32 +38,8 @@ extension CoursePlannerPage {
         .accessibilityIdentifier("coursePlanner.segmentPanel")
     }
 
-    // 그래버(38x5, 상하 10pt 패딩)만으로는 손가락으로 잡기엔 너무 좁다는 실기기 피드백(2026-07-12)
-    // — sheetHeader 영역 전체에서도 드래그가 되도록 이 제스처를 sheetHeader의 배경(뒷면 레이어)에도
-    // 건다. 배경은 foreground(버튼들)와 별개 형제 레이어라 히트테스트가 경쟁하지 않는다 — sheetHeader나
-    // 시트 전체에 *직접* 걸면(래핑) 그 안의 Button들이 전부 먹통이 되는 회귀가 실제로 있었다
-    // (2026-07-12, bottomSheet 배경 히트테스트 백스톱 작업 중 확인). 그래버 자체에도 남겨 시각적
-    // 어포던스가 있는 곳에서도 그대로 동작하게 한다.
-    private var sheetDragGesture: some Gesture {
-        DragGesture(minimumDistance: 8)
-            .onEnded { value in
-                let threshold: CGFloat = 40
-                guard abs(value.translation.height) > threshold else { return }
-                // 탭 토글도 경로 유무와 무관하게 기본↔중간을 오가므로, 드래그도 똑같이 경로
-                // 유무와 무관하게 단계를 이동한다 — 둘의 동작이 다르면 안 된다는 사용자 확인
-                // (2026-07-12: "빈 경로일 때 버튼을 누르면 시트가 올라가는데 드래그로는 안돼").
-                let goingUp = value.translation.height < 0
-                let nextDetent: SheetDetent = goingUp ? sheetDetent.steppedUp : sheetDetent.steppedDown
-                // Gesture의 onEnded는 Button 액션과 달리 SwiftUI가 안전하게 지연 디스패치하지
-                // 않는다 — 여기서 곧바로 @State를 쓰면 "Modifying state during view update"
-                // 경고가 발생한다(2026-07-12 실기기 콘솔 로그로 재현·확정, 탭 토글에서는 없음).
-                // 다음 런루프로 한 틱 미뤄 현재 진행 중인 뷰 업데이트 트랜잭션 밖에서 쓰게 한다.
-                DispatchQueue.main.async {
-                    setSheetDetent(nextDetent)
-                }
-            }
-    }
-
+    // sheetDragGesture/listHandoffGesture/detentAfterDrag는 CoursePlannerPage+SheetDragGesture.swift로
+    // 옮겼다(2026-07-26, SwiftLint file_length 500줄 상한 회피) — 이 파일에서 계속 참조만 한다.
     private var grabberHandle: some View {
         Capsule()
             .fill(DesignToken.Color.grabber)
@@ -91,7 +67,9 @@ extension CoursePlannerPage {
     // 하나의 Button label 안에 넣지 않고, 바깥 HStack의 형제(sibling)로 둔다.
     // 탭 토글과 드래그 제스처가 공유하는 단일 진입점 — 앵커 스크롤 위치 계산이
     // 두 입력 방식 모두에서 똑같이 일어나도록 한다(2026-07-12, 드래그 리사이즈 추가하며 분리).
-    private func setSheetDetent(_ newDetent: SheetDetent) {
+    // sheetDragGesture/listHandoffGesture(CoursePlannerPage+SheetDragGesture.swift)에서도 호출하므로
+    // private을 유지할 수 없다(2026-07-26, 파일 분리로 인한 접근 수준 변경).
+    func setSheetDetent(_ newDetent: SheetDetent) {
         // 스펙 §1.4 시트 높이 전환(0.32s) — 모든 단계 전환에 이 spring을 쓴다.
         withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
             sheetDetent = newDetent
@@ -312,6 +290,14 @@ extension CoursePlannerPage {
         }
     }
 
+    // 스크롤 오프셋을 읽기 위한 좌표계 이름. onScrollGeometryChange는 iOS 18+라 쓸 수 없다
+    // (배포 타깃 17.0). 이름 붙인 좌표계 + onGeometryChange는 이 저장소가 이미 쓰는 조합이다.
+    private static let listCoordinateSpace = "coursePlanner.segmentPanel.scroll"
+
+    // 콘텐츠 아래 여백. 뷰의 .contentMargins와 끝 판정이 같은 값을 봐야 하므로 상수를 공유한다 —
+    // 두 곳에 12를 따로 적으면 한쪽만 바뀌었을 때 아래쪽 끝 판정이 조용히 어긋난다.
+    private static let listBottomContentMargin: CGFloat = 12
+
     private var expandedSheetBody: some View {
         VStack(alignment: .leading, spacing: 8) {
             ScrollViewReader { proxy in
@@ -322,6 +308,19 @@ extension CoursePlannerPage {
                         }
                     }
                     .scrollTargetLayout()
+                    // 콘텐츠의 스크롤 좌표계 프레임 하나에서 오프셋(-minY)과 콘텐츠 높이를 같이 읽는다.
+                    // 파생값이 Bool 두 개라, 스크롤하는 동안에도 그 쌍이 실제로 바뀔 때만 action이 돈다.
+                    .onGeometryChange(for: ScrollEdgeState.self) { geometry in
+                        let contentFrame = geometry.frame(in: .named(Self.listCoordinateSpace))
+                        return ScrollEdgeState.make(
+                            scrollOffset: -contentFrame.minY,
+                            contentHeight: contentFrame.height,
+                            viewportHeight: expandedListHeight,
+                            bottomInset: Self.listBottomContentMargin
+                        )
+                    } action: { edge in
+                        listScrollEdge = edge
+                    }
                 }
                 // 고정 높이 — 자기 콘텐츠를 측정해서 자기 프레임에 다시 먹이는 순환(측정→적용→재측정)이
                 // 없다. 이 순환이 구간 선택처럼 콘텐츠가 미세하게 바뀔 때마다 레이아웃이 잠깐
@@ -329,11 +328,26 @@ extension CoursePlannerPage {
                 .frame(height: expandedListHeight)
                 // 콘텐츠 여백만 12pt로 주고 스크롤 인디케이터는 기본 여백(에지에 붙게) 유지 —
                 // .padding()으로 ScrollView 전체를 감싸면 인디케이터까지 같이 밀려 보인다 (실기기 QA 발견).
-                .contentMargins(.horizontal, 12, for: .scrollContent)
-                .contentMargins(.bottom, 12, for: .scrollContent)
+                .contentMargins(.horizontal, Self.listBottomContentMargin, for: .scrollContent)
+                .contentMargins(.bottom, Self.listBottomContentMargin, for: .scrollContent)
                 .scrollPosition(id: $panelAnchorColorKey, anchor: .center)
+                // 새로 붙이는 두 modifier는 **기존 ScrollView 전용 modifier들보다 바깥**에 둔다.
+                // contentMargins(for: .scrollContent)와 scrollPosition(id:)은 감싸인 ScrollView를
+                // 간접적으로 찾아가는데, 사이에 다른 modifier가 끼어 못 찾게 되어도 컴파일 오류가
+                // 나지 않고 **조용히 무효화**된다. 그러면 스크롤 위치 복원과 인디케이터 여백이
+                // 소리 없이 사라진다(둘 다 과거 QA에서 고쳤던 동작이다).
+                .coordinateSpace(.named(Self.listCoordinateSpace))
+                .simultaneousGesture(listHandoffGesture)
                 .onAppear {
                     restoreScrollPosition(proxy)
+                }
+                .onDisappear {
+                    // 인계로 리스트가 사라지는 순간 진행 중이던 드래그의 래치를 비운다.
+                    listDragEdge = nil
+                }
+                .onChange(of: sheetDetent) { _, _ in
+                    // 단계가 바뀌면 뷰포트가 달라져 직전 래치의 전제가 무너진다.
+                    listDragEdge = nil
                 }
                 .onChange(of: viewModel.segmentColorKeys.max()) { oldMax, newMax in
                     // 증가(새 구간)일 때만 — undo/clear로 줄어들 때는 보던 위치 유지 (스펙)

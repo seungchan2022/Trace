@@ -38,6 +38,13 @@ struct CoursePlannerPage: View {
     // 접기 직전 "최신 근처를 보고 있었는가" — 재펼침 시 이 값이 true면 옛 앵커 대신 최신을 따라간다.
     // 기본값 true: 첫 펼침(앵커 없음)에서는 restoreScrollPosition의 fallback 분기가 이미 최신으로 보내므로 무해하다.
     @State var panelWasNearLatestAtCollapse = true
+    // 리스트가 스크롤 끝에 붙어 있는가 — 시트 인계 판정의 입력.
+    // 오프셋 같은 연속 값을 그대로 상태에 흘리면 스크롤하는 매 프레임 이 페이지의 body가
+    // 재평가되고, 그때마다 MapViewRepresentable.updateUIView가 전 구간을 도는 스냅샷을
+    // 다시 만든다. Bool 두 개만 올려 값이 실제로 뒤집힐 때만 무효화되게 한다.
+    @State var listScrollEdge = ScrollEdgeState(isAtTop: true, isAtBottom: true)
+    // 드래그가 시작된 뒤 지금까지 유지된 끝 접촉. 드래그당 한 번 래치하고 콜백마다 교집합을 취한다.
+    @State var listDragEdge: ScrollEdgeState?
     @State private var isTopHintDismissed = false
     @Environment(\.scenePhase) private var scenePhase
 
