@@ -49,6 +49,19 @@ struct RunPage: View {
 
     private var startControls: some View {
         VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("오늘의 러닝")
+                    .font(DesignToken.Typography.runSecondaryStat)
+                    .foregroundStyle(DesignToken.Color.ink)
+                    .accessibilityIdentifier("run.idle.title")
+                Text("목표를 정하고 바로 시작해 보세요.")
+                    .font(DesignToken.Typography.subtitle)
+                    .foregroundStyle(DesignToken.Color.ink2)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, DesignToken.Size.screenMargin)
+            .padding(.top, 36)
+            .padding(.bottom, 20)
             goalPicker
             Spacer()
             startButton

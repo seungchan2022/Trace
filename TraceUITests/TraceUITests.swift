@@ -51,6 +51,25 @@ nonisolated final class TraceUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["기록"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["아직 기록이 없어요"].waitForExistence(timeout: 5))
     }
+
+    @MainActor
+    func testRunTabShowsGoalSetupAndDistanceInput() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-traceUITesting"]
+        app.launch()
+
+        app.buttons["러닝"].tap()
+
+        XCTAssertTrue(app.staticTexts["run.idle.title"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["자유"].exists)
+        XCTAssertTrue(app.buttons["거리"].exists)
+        XCTAssertTrue(app.buttons["시간"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["run.goalPicker"].exists)
+        XCTAssertTrue(app.buttons["run.startButton"].exists)
+
+        app.buttons["거리"].tap()
+        XCTAssertTrue(app.staticTexts["km"].waitForExistence(timeout: 5))
+    }
 }
 
 private extension XCUIElement {
