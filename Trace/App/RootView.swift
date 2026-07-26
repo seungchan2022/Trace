@@ -39,8 +39,7 @@ struct RootView: View {
 
                     RunPage(
                         session: container.runSession,
-                        announcer: container.voiceAnnouncer,
-                        history: container.runHistoryViewModel
+                        announcer: container.voiceAnnouncer
                     )
                     .opacity(selectedTab == .run ? 1 : 0)
                     .allowsHitTesting(selectedTab == .run)

@@ -154,63 +154,17 @@ final class RunStatsCalculatorTests: XCTestCase {
     // MARK: - 마지막 러닝
 
     func test_기록이_없으면_마지막_러닝은_nil이다() {
-        XCTAssertNil(RunStatsCalculator.lastRun(summaries: [], now: now, calendar: calendar))
+        XCTAssertNil(RunStatsCalculator.lastRun(summaries: []))
     }
 
-    func test_마지막_러닝은_가장_최근_기록이고_경과일을_함께_준다() {
+    func test_마지막_러닝은_가장_최근_기록이다() {
         let summaries = [
             summary(daysAgo: 10, distanceMeters: 9000, duration: 3600),
             summary(daysAgo: 3, distanceMeters: 5200, duration: 1800)
         ]
-        let last = RunStatsCalculator.lastRun(summaries: summaries, now: now, calendar: calendar)
+        let last = RunStatsCalculator.lastRun(summaries: summaries)
         XCTAssertEqual(last?.distanceMeters, 5200)
-        XCTAssertEqual(last?.daysAgo, 3)
+        XCTAssertEqual(last?.startedAt, summaries[1].startedAt)
     }
 
-    func test_경과일은_달력_날짜_차이지_24시간_단위가_아니다() {
-        // 어제 23:00에 뛰고 오늘 00:30에 보면 경과 시간은 1.5시간이지만
-        // "어제"(1일 전)여야 한다.
-        let yesterdayLate = calendar.date(byAdding: .hour, value: -13, to: now) ?? now
-        let summaries = [SavedRunSummary(
-            id: UUID(), startedAt: yesterdayLate,
-            distanceMeters: 5000, duration: 1800, elevationGainMeters: 0
-        )]
-        let last = RunStatsCalculator.lastRun(summaries: summaries, now: now, calendar: calendar)
-        XCTAssertEqual(last?.daysAgo, 1)
-    }
-
-    // MARK: - 대기 화면 3단 폴백 정책 (스펙 §7.1)
-
-    func test_이번_주에_뛰었으면_이번_주_집계를_준다() {
-        let summaries = [summary(daysAgo: 3, distanceMeters: 12400, duration: 3600)]
-        let result = RunStatsCalculator.idleSummary(
-            summaries: summaries, now: now, calendar: calendar
-        )
-        XCTAssertEqual(
-            result,
-            .thisWeek(RunStats(
-                totalDistanceMeters: 12400,
-                runCount: 1,
-                totalDuration: 3600
-            ))
-        )
-    }
-
-    func test_이번_주_0회면_마지막_러닝으로_폴백한다() {
-        let summaries = [summary(daysAgo: 10, distanceMeters: 5200, duration: 1800)]
-        let result = RunStatsCalculator.idleSummary(
-            summaries: summaries, now: now, calendar: calendar
-        )
-        XCTAssertEqual(
-            result,
-            .lastRun(LastRunSummary(distanceMeters: 5200, daysAgo: 10))
-        )
-    }
-
-    func test_기록이_아예_없으면_noRuns를_준다() {
-        let result = RunStatsCalculator.idleSummary(
-            summaries: [], now: now, calendar: calendar
-        )
-        XCTAssertEqual(result, .noRuns)
-    }
 }

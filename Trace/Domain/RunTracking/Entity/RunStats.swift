@@ -16,21 +16,6 @@ struct RunWeeklyBar: Equatable, Sendable {
     let distanceMeters: Double
 }
 
-/// 가장 최근 러닝 — 이번 주 0회일 때 러닝 탭 요약 줄이 폴백으로 쓴다(스펙 §7.1).
-struct LastRunSummary: Equatable, Sendable {
-    let distanceMeters: Double
-    /// 달력 날짜 차이. 오늘이면 0, 어제면 1.
-    let daysAgo: Int
-}
-
-/// 러닝 탭 대기 화면의 3단 폴백 결과.
-/// Domain은 어떤 데이터를 보여줄지만 정하고, 한국어 화면 문구는 RunPage가 소유한다.
-enum RunIdleSummary: Equatable, Sendable {
-    case thisWeek(RunStats)
-    case lastRun(LastRunSummary)
-    case noRuns
-}
-
 enum RunStatsPeriod: CaseIterable, Hashable, Identifiable, Sendable {
     case thisWeek
     case thisMonth
@@ -84,38 +69,8 @@ enum RunStatsCalculator {
 
     static func lastRun(
         summaries: [SavedRunSummary],
-        now: Date,
-        calendar: Calendar
-    ) -> LastRunSummary? {
-        guard let latest = summaries.max(by: { $0.startedAt < $1.startedAt }) else { return nil }
-        // 달력 날짜 차이 — 24시간 단위가 아니다.
-        // 어제 23시에 뛰고 오늘 0시 반에 보면 "1일 전"이어야 한다.
-        let days = calendar.dateComponents(
-            [.day],
-            from: calendar.startOfDay(for: latest.startedAt),
-            to: calendar.startOfDay(for: now)
-        ).day ?? 0
-        return LastRunSummary(distanceMeters: latest.distanceMeters, daysAgo: max(0, days))
-    }
-
-    static func idleSummary(
-        summaries: [SavedRunSummary],
-        now: Date,
-        calendar: Calendar
-    ) -> RunIdleSummary {
-        let weekly = stats(
-            summaries: summaries,
-            period: .thisWeek,
-            now: now,
-            calendar: calendar
-        )
-        if weekly.runCount > 0 {
-            return .thisWeek(weekly)
-        }
-        if let last = lastRun(summaries: summaries, now: now, calendar: calendar) {
-            return .lastRun(last)
-        }
-        return .noRuns
+    ) -> SavedRunSummary? {
+        summaries.max(by: { $0.startedAt < $1.startedAt })
     }
 
     // MARK: - Private

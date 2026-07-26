@@ -64,12 +64,12 @@ swiftlint
 - Delete: `Trace/Pages/RunPage/RunIdleSummaryFormatter.swift`
 - Delete: `TraceTests/RunIdleSummaryFormatterTests.swift`
 
-- [ ] **Step 1: 제거 대상의 테스트를 먼저 실패시킨다.** `RunStatsCalculatorTests`에서 대기 화면 3단 폴백(`idleSummary`) 기대를 삭제하고, `RunIdleSummaryFormatterTests`를 제거한다. 이어서 `RunPage` 생성자가 기록 뷰모델을 받지 않는 형태가 되도록 호출부 테스트/컴파일 기준을 바꾼다.
-- [ ] **Step 2: 최소 구현으로 의존성을 제거한다.** `RunPage`의 `history` 저장 프로퍼티·생성자 인자·`summaryLine`을 삭제하고, `RootView`의 RunPage 주입에서만 기록 뷰모델 인자를 제거한다. 저장 성공 뒤 `runHistoryViewModel.load()`와 `HistoryPage` 주입은 그대로 둔다.
-- [ ] **Step 3: 죽은 Domain/UI 코드를 정리한다.** `LastRunSummary`, `RunIdleSummary`, `RunStatsCalculator.idleSummary`, 포맷터 파일과 그 테스트를 제거한다. `RunStatsCalculator.stats`, `weeklyBars`, `lastRun`은 기록 탭이 계속 쓰므로 보존한다.
-- [ ] **Step 4: 회귀를 확인한다.** `rg`로 production 소스에 `RunIdleSummary`, `idleSummary`, `RunIdleSummaryFormatter`, `history: RunHistoryViewModel` 참조가 남지 않았는지 확인한다. `RootView`의 저장 성공 뒤 기록 최신화는 남아 있어야 한다.
-- [ ] **Step 5: 빌드·전체 테스트·SwiftLint를 통과시키고, 대기 화면을 시뮬레이터에서 연다.** 이 시점에는 목표 선택과 시작 버튼이 계속 보이고, 러닝·기록 탭을 왕복해도 요약 문구가 다시 나타나지 않는지 확인한다.
-- [ ] **Step 6: 커밋 전 코드리뷰를 받고, 검증 스탬프를 갱신한 뒤 커밋한다.**
+- [x] **Step 1: 제거 대상의 테스트를 먼저 실패시킨다.** `RunStatsCalculatorTests`에서 대기 화면 3단 폴백(`idleSummary`) 기대를 삭제하고, `RunIdleSummaryFormatterTests`를 제거한다. 이어서 `RunPage` 생성자가 기록 뷰모델을 받지 않는 형태가 되도록 호출부 테스트/컴파일 기준을 바꾼다.
+- [x] **Step 2: 최소 구현으로 의존성을 제거한다.** `RunPage`의 `history` 저장 프로퍼티·생성자 인자·`summaryLine`을 삭제하고, `RootView`의 RunPage 주입에서만 기록 뷰모델 인자를 제거한다. 저장 성공 뒤 `runHistoryViewModel.load()`와 `HistoryPage` 주입은 그대로 둔다.
+- [x] **Step 3: 죽은 Domain/UI 코드를 정리한다.** `LastRunSummary`, `RunIdleSummary`, `RunStatsCalculator.idleSummary`, 포맷터 파일과 그 테스트를 제거한다. `RunStatsCalculator.stats`, `weeklyBars`, `lastRun`은 기록 탭이 계속 쓰므로 보존한다.
+- [x] **Step 4: 회귀를 확인한다.** `rg`로 production 소스에 `RunIdleSummary`, `idleSummary`, `RunIdleSummaryFormatter`, `history: RunHistoryViewModel` 참조가 남지 않았는지 확인한다. `RootView`의 저장 성공 뒤 기록 최신화는 남아 있어야 한다.
+- [x] **Step 5: 빌드·전체 테스트·SwiftLint를 통과시키고, 대기 화면을 시뮬레이터에서 연다.** 이 시점에는 목표 선택과 시작 버튼이 계속 보이고, 러닝·기록 탭을 왕복해도 요약 문구가 다시 나타나지 않는지 확인한다.
+- [x] **Step 6: 커밋 전 코드리뷰를 받고, 검증 스탬프를 갱신한 뒤 커밋한다.**
 
 ```text
 refactor: 러닝 대기 화면의 기록 요약 의존성 제거
