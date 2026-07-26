@@ -74,7 +74,7 @@ swiftlint
 
 `intersected(with:)`가 필요한 이유는 판정이 **순간이 아니라 구간**이기 때문이다. `DragGesture(minimumDistance:)`에는 터치다운 콜백이 없어 "드래그 시작 순간"을 읽을 수 없고, 종료 순간만 보면 리스트 중간에서 쓸어 끝에 도달한 손동작이 시트를 움직인다. 시작 근처만 보면 "맨 위에서 위로 쓸었다가 아래로 되돌리는" 손동작에서 똑같이 틀린다. 드래그 내내의 교집합을 취하면 세 경우가 모두 걸러진다.
 
-- [ ] **Step 1: 실패하는 테스트를 먼저 쓴다**
+- [x] **Step 1: 실패하는 테스트를 먼저 쓴다**
 
 `TraceTests/ScrollEdgeStateTests.swift`를 만든다.
 
@@ -168,7 +168,7 @@ final class ScrollEdgeStateTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: 테스트가 실패하는지 확인한다**
+- [x] **Step 2: 테스트가 실패하는지 확인한다**
 
 Run:
 ```bash
@@ -178,7 +178,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: 컴파일 실패 — `cannot find 'ScrollEdgeState' in scope`
 
-- [ ] **Step 3: 최소 구현을 작성한다**
+- [x] **Step 3: 최소 구현을 작성한다**
 
 `Trace/Pages/CoursePlannerPage/ScrollEdgeState.swift`를 만든다.
 
@@ -236,7 +236,7 @@ struct ScrollEdgeState: Equatable {
 }
 ```
 
-- [ ] **Step 4: 테스트가 통과하는지 확인한다**
+- [x] **Step 4: 테스트가 통과하는지 확인한다**
 
 Run:
 ```bash
@@ -248,12 +248,12 @@ Expected: `** TEST SUCCEEDED **` — `ScrollEdgeStateTests` 10개 포함 전체 
 
 `Trace`·`TraceTests`·`TraceUITests`는 모두 동기화 폴더(`PBXFileSystemSynchronizedRootGroup`)라 파일을 새로 만들어도 `project.pbxproj`가 바뀌지 않는다(2026-07-26 확인). `git status --short`에 `project.pbxproj`가 새로 뜨면 그 자리에서 멈추고 보고한다 — Global Constraint상 사용자의 GPX 설정 변경과 섞이면 안 되고, 이 하니스에서는 한 파일의 변경을 나눠 담을 수 없다.
 
-- [ ] **Step 5: SwiftLint를 통과시킨다**
+- [x] **Step 5: SwiftLint를 통과시킨다**
 
 Run: `swiftlint`
 Expected: 새 파일에서 발생한 경고 0건. (앱 코드에 남아 있는 기존 경고 44건은 `lint-cleanup` 마일스톤 소유이므로 이번에 건드리지 않는다.)
 
-- [ ] **Step 6: 커밋 전 코드리뷰를 받고 커밋한다**
+- [x] **Step 6: 커밋 전 코드리뷰를 받고 커밋한다**
 
 리뷰 초점: 경계 부등호(`<=` vs `<`)가 테스트와 일치하는가, 음수 오프셋 처리가 의도대로인가, `intersected`가 교집합이 맞는가.
 
@@ -287,7 +287,7 @@ git commit -m "feat: 구간 리스트 스크롤 끝 판정 순수 타입 추가
 
 리스트에는 그래버·헤더가 쓰는 배경 레이어 우회를 쓸 수 없다 — 배경은 스크롤 콘텐츠 뒤에 있어 터치가 닿지 않는다. 그래서 이 태스크만 다른 메커니즘을 쓴다.
 
-- [ ] **Step 1: 실패하는 UI 테스트를 먼저 쓴다**
+- [x] **Step 1: 실패하는 UI 테스트를 먼저 쓴다**
 
 `TraceUITests/TraceUITests.swift`의 `testRunTabShowsGoalSetupAndDistanceInput` 뒤, `private extension XCUIElement` 앞에 두 테스트를 추가한다.
 
@@ -346,7 +346,7 @@ git commit -m "feat: 구간 리스트 스크롤 끝 판정 순수 타입 추가
     }
 ```
 
-- [ ] **Step 2: 테스트가 실패하는지 확인한다**
+- [x] **Step 2: 테스트가 실패하는지 확인한다**
 
 Run:
 ```bash
@@ -356,7 +356,7 @@ xcodebuild -project Trace.xcodeproj -scheme Trace -configuration Debug \
 ```
 Expected: `testDraggingSegmentListDownCollapsesSheet` 실패 — 리스트 드래그가 시트를 움직이지 않아 행이 계속 존재한다. `testSegmentRowButtonsStayTappableWithListDragGesture`는 이 시점에 이미 통과한다(회귀 감시용이므로 정상이다).
 
-- [ ] **Step 3: 페이지에 리스트 끝 접촉 상태를 추가한다**
+- [x] **Step 3: 페이지에 리스트 끝 접촉 상태를 추가한다**
 
 `Trace/Pages/CoursePlannerPage/CoursePlannerPage.swift`에서 `@State var panelWasNearLatestAtCollapse = true` 바로 아래에 추가한다.
 
@@ -370,7 +370,7 @@ Expected: `testDraggingSegmentListDownCollapsesSheet` 실패 — 리스트 드�
     @State var listDragEdge: ScrollEdgeState?
 ```
 
-- [ ] **Step 4: 문턱 판정을 공용 헬퍼로 뽑는다 (동작 변경 없음)**
+- [x] **Step 4: 문턱 판정을 공용 헬퍼로 뽑는다 (동작 변경 없음)**
 
 `CoursePlannerPage+BottomSheetComponent.swift`의 `sheetDragGesture`를 아래로 교체한다. 문턱(40pt)과 한 단계 이동은 그대로이고, 판정만 리스트와 공유할 수 있게 함수로 나온다.
 
@@ -404,7 +404,7 @@ Expected: `testDraggingSegmentListDownCollapsesSheet` 실패 — 리스트 드�
 
 기존 `sheetDragGesture` 위에 붙어 있던 "그래버만으로는 좁다"는 주석 블록(41~46행)은 그대로 둔다.
 
-- [ ] **Step 5: 리스트 인계 제스처를 추가한다**
+- [x] **Step 5: 리스트 인계 제스처를 추가한다**
 
 같은 파일의 `sheetDragGesture` 아래에 추가한다.
 
@@ -443,7 +443,7 @@ Expected: `testDraggingSegmentListDownCollapsesSheet` 실패 — 리스트 드�
     }
 ```
 
-- [ ] **Step 6: 스크롤 좌표계와 끝 측정을 배선한다**
+- [x] **Step 6: 스크롤 좌표계와 끝 측정을 배선한다**
 
 같은 파일의 `expandedSheetBody`를 아래로 교체한다. `LazyVStack`에 측정을, `ScrollView`에 좌표계와 제스처를 건다.
 
@@ -518,7 +518,7 @@ Expected: `testDraggingSegmentListDownCollapsesSheet` 실패 — 리스트 드�
     }
 ```
 
-- [ ] **Step 7: 빌드하고 전체 테스트를 통과시킨다**
+- [x] **Step 7: 빌드하고 전체 테스트를 통과시킨다**
 
 Run:
 ```bash
@@ -532,7 +532,7 @@ Expected: `** BUILD SUCCEEDED **`, 이어서 `** TEST SUCCEEDED **` — Task 1�
 
 `.coordinateSpace(.named(_:))`나 `geometry.frame(in: .named(_:))`에서 가용성 오류가 나면, 그 자리에서 다른 API로 갈아타지 말고 **먼저 오류 메시지를 그대로 보고**한다. 이 조합은 iOS 17.0 기준으로 선택한 것이며, 대체 경로(`GeometryReader` 배경 + `PreferenceKey`)는 상태 갱신 빈도가 달라져 Global Constraint(연속 값을 상태에 흘리지 않는다)를 다시 검토해야 한다.
 
-- [ ] **Step 8: 시뮬레이터에서 눈으로 확인한다**
+- [x] **Step 8: 시뮬레이터에서 눈으로 확인한다**
 
 앱을 실행해 코스 탭에서 지도를 두 번 탭해 구간을 만들고, 헤더를 눌러 시트를 중간으로 올린 뒤 확인한다.
 
@@ -549,12 +549,12 @@ Expected: `** BUILD SUCCEEDED **`, 이어서 `** TEST SUCCEEDED **` — Task 1�
 
 **시뮬레이터로 확인 불가능한 것을 스모크 통과로 뭉뚱그리지 않는다.** 바운스 감각과 인계가 손에 자연스럽게 잡히는지는 합성 제스처로 판정할 수 없다 — `draw-gesture`가 롱프레스-드래그 합성 한계를 INCONCLUSIVE로 명시한 선례를 따르고, Task 3의 실기기 QA로 넘긴다. XcodeBuildMCP의 `drag`는 이 환경에서 즉시 실패하므로(`docs/solutions/workflow-issues/xcodebuildmcp-cannot-synthesize-long-press-drag.md`) 합성이 필요하면 `swipe`만 쓴다.
 
-- [ ] **Step 9: SwiftLint를 통과시킨다**
+- [x] **Step 9: SwiftLint를 통과시킨다**
 
 Run: `swiftlint`
 Expected: 이번 변경으로 늘어난 경고 0건.
 
-- [ ] **Step 10: 커밋 전 코드리뷰를 받고 커밋한다**
+- [x] **Step 10: 커밋 전 코드리뷰를 받고 커밋한다**
 
 리뷰 초점(이 파일의 실제 회귀 이력에 맞춘다):
 - `simultaneousGesture`가 구간 행 버튼의 탭을 가로채지 않는가
@@ -659,7 +659,7 @@ git commit -m "feat: 구간 리스트에서도 시트를 접고 펼 수 있게 �
  · 실기기 QA: [`2026-07-26-sheet-drag-device-checklist.md`](qa/2026-07-26-sheet-drag-device-checklist.md) — 체크포인트 5·7은 각각 "거리 비례 이동"·"한 손동작 내 인계" 이연 항목의 트리거 판정을 겸한다
 ```
 
-- [x] **Step 3: 사용자에게 체크리스트를 제시한다**
+- [ ] **Step 3: 사용자에게 체크리스트를 제시한다**
 
 대화에서 파일 경로와 함께 수행 순서를 안내한다. **이 단계에서 마일스톤을 완료로 표시하지 않는다.** 체크포인트 5·7은 통과/실패와 별개로 "답답한가 / 거슬리는가"라는 감각 판정을 함께 요청한다 — 그 답이 이연 항목의 트리거다.
 
