@@ -11,7 +11,7 @@
 
 ## 진행 중 / 예정
 
-### MVP17 — 러닝 기록 관리 + 대기 화면 보강   (상태: `history-tab` 구현·자동 검증 완료 · 실기기 QA 대기)
+### MVP17 — 러닝 기록 관리 + 대기 화면 보강   (상태: `history-tab` QA 2-1 보정 완료 · 실기기 재확인 대기)
 
 > 실사용 관찰 "러닝 탭이 초라하다"가 재료. 원인을 갈라 **정보 부족 + 시각적 완성도**로 확정했고
 > (지도 복원 트리거는 미발동 — MVP16 §2.3 유지), 없는 것이 **집계**임을 확인했다: 개별 기록
@@ -21,7 +21,7 @@
 > 미룬 백로그 2건(시트 콘텐츠 드래그, 린트 44건)도 이번 우산에 편입.
 > 킥오프 확정: `docs/superpowers/specs/2026-07-21-mvp17-run-history-kickoff-design.md`
 
-- [~] **history-tab** — 3탭 렌더링 + 기존 테스트 확인(첫 태스크, 커스텀 탭바 회귀 이력 때문) → `RunStats` 계산기 → 기록 탭 신설(`AppTab.history`) → 집계 대시보드 + 최근 8주 막대그래프(Swift Charts 첫 도입) → **이사 전부 + 러닝 탭 이번 주 요약 줄**(쪼개면 병합 시점에 죽은 버튼이 남거나 러닝 탭이 오히려 더 비어진다). 구현·코드 리뷰·자동/시뮬레이터 검증 완료(2026-07-23), 실기기 QA 대기: [`2026-07-23-history-tab-device-checklist.md`](qa/2026-07-23-history-tab-device-checklist.md). 구현 플랜: [`2026-07-21-history-tab.md`](superpowers/plans/2026-07-21-history-tab.md)
+- [~] **history-tab** — 3탭 렌더링 + 기존 테스트 확인(첫 태스크, 커스텀 탭바 회귀 이력 때문) → `RunStats` 계산기 → 기록 탭 신설(`AppTab.history`) → 집계 대시보드 + 최근 8주 막대그래프(Swift Charts 첫 도입) → **이사 전부 + 러닝 탭 이번 주 요약 줄**(쪼개면 병합 시점에 죽은 버튼이 남거나 러닝 탭이 오히려 더 비어진다). 세션 1(GPX 저장·집계·화면 전환)은 실기기 통과. 세션 2-1의 다크 모드 배경·차트 기준선 문제는 `Surface2`·`Ink2` 전용 정책으로 보정하고 자동·시뮬레이터 검증을 마쳤으며, 실제 기록이 있는 기기에서 재확인 대기: [`2026-07-23-history-tab-device-checklist.md`](qa/2026-07-23-history-tab-device-checklist.md). 구현 플랜: [`2026-07-21-history-tab.md`](superpowers/plans/2026-07-21-history-tab.md)
 - [ ] **run-idle-polish** — 러닝 탭을 `오늘의 러닝 → 목표 설정 → 시작` 흐름으로 보강하고, 기록·집계 요약 줄은 제거한다. `history-tab` 실기기 QA에서 한 줄 요약 처방이 실패한 근거로 설계를 보정했다: [`2026-07-23-run-idle-polish-design.md`](superpowers/specs/2026-07-23-run-idle-polish-design.md). 종료 시 **완료 판정** — "무엇을 설정하고 어떻게 시작하는지"가 바로 이해되는지 실기기로 되묻는다
 - [ ] **sheet-drag** — 코스 탭 시트 콘텐츠 영역 드래그 축소. **착수 시 브레인스토밍 선행**(`ScrollView` 제스처 충돌로 설계 미확정 — 백로그 이월분)
 - [ ] **lint-cleanup** — 린트 ①(identifier_name 28건: 관례 10건은 규칙 예외, 축약 18건은 코드 수정) + ②(line_length 9건). ③(`MapViewRepresentable` 672줄 분해)은 범위 밖

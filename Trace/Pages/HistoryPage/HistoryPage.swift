@@ -50,6 +50,8 @@ struct HistoryPage: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(HistoryPageAppearance.standard.backgroundColor)
             .navigationTitle("기록")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: SavedRunSummary.self) { summary in

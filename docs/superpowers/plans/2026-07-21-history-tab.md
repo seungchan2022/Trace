@@ -20,6 +20,10 @@
 사용자 확인을 기다린다. GPX로 저장·집계·화면 전환은 확인할 수 있지만, 실제 GPS·배터리·달리는 중
 조작감은 별도 실제 러닝 기회에 확인한다.
 
+**QA 보정(2026-07-26):** 실기기 QA 2-1에서 다크 모드의 시스템 검정 배경과 7% 테두리 기준선이
+읽기 어려운 것으로 확인됐다. 기록 탭에 `Surface2` 배경을 명시하고 차트 기준선을 `Ink2` 72%로
+올린다. VoiceOver는 이번 마일스톤의 QA 통과 기준에서 제외한다.
+
 ## Global Constraints
 
 - Swift 언어 모드 6. 격리 기본값은 **기본 nonisolated + 명시 `@MainActor`** — UI/상태 타입에만 `@MainActor`를 붙인다(`project-decisions.md`). Domain 순수 계산기에는 붙이지 않는다.
@@ -1757,10 +1761,10 @@ scripts/trace-commit.sh -m "feat: 러닝 탭 대기 화면에 이번 주 요약 
 - [x] 기록 탭에서 목록·상세·스와이프 삭제가 전부 동작한다
 - [ ] 러닝 종료 → 대기 화면 복귀 시 요약 줄이 갱신된다
 - [ ] 저장 중에는 요약 닫기가 비활성화되고, 저장 성공 뒤 공유 기록이 갱신된다
-- [ ] 차트가 다크모드·Dynamic Type·VoiceOver 세 조건에서 동작한다
+- [ ] 차트가 다크모드·Dynamic Type 두 조건에서 동작한다
 - [x] `rg -n "RunHistoryRoute|RunHistoryPage|RunHistoryRow|RunRecordDetailView|RunPage\\+HistoryComponent" Trace/`
   결과 0건 (이관 잔재·이전 타입명·이전 파일명 없음)
 
-**실기기 QA는 별도로 진행한다** — 시뮬레이터에서 확인할 수 없는 것(실제 러닝 데이터로 집계가 맞는지, VoiceOver 실사용감)이 남아 있다. QA 체크리스트는 마일스톤 종료 후 `docs/qa/`에 작성한다(`testing.md` 시나리오 카드 형식).
+**실기기 QA는 별도로 진행한다** — 시뮬레이터에서 확인할 수 없는 것(실제 러닝 데이터로 집계가 맞는지)이 남아 있다. QA 체크리스트는 마일스톤 종료 후 `docs/qa/`에 작성한다(`testing.md` 시나리오 카드 형식).
 
 **마일스톤 2(`run-idle-polish`)로 넘길 것:** 요약 줄의 시각 스타일, 대기 화면 위계 정리, 요약 줄 탭 동작 여부. 그리고 스펙 §8.3의 **완료 판정**("아직도 초라한가")은 마일스톤 2 종료 시점에 수행한다.

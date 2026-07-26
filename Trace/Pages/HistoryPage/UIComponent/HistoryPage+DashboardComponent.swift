@@ -67,7 +67,7 @@ struct HistoryDashboard: View {
         }
         .chartYAxis {
             AxisMarks { _ in
-                AxisGridLine().foregroundStyle(DesignToken.Color.border)
+                AxisGridLine().foregroundStyle(HistoryPageAppearance.standard.chartGridColor)
                 AxisValueLabel()
             }
         }
