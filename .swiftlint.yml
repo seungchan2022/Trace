@@ -47,9 +47,23 @@ identifier_name:
   min_length:
     warning: 2
   excluded:
+    # 짧아도 이름만 보고 뭔지 아는 것들만 예외로 둔다. 의미 축약(m, s, e, d 등)은
+    # 예외가 아니라 이름을 제대로 붙이는 쪽으로 처리했다 (MVP17 lint-cleanup, 킥오프 스펙 §8.2).
     - id
     - x
     - y
+    - i   # 루프 인덱스 — 보편 관례
+    - j   # 중첩 루프 인덱스
+    - a   # 기하 파라미터(선분 a-b) — doc comment와 이름이 일치
+    - b
+
+# 기본값 1레벨은 이 프로젝트의 표준 패턴과 안 맞는다:
+# ① 네임스페이스 enum > DTO struct > CodingKeys (직렬화 키 고정에 필수)
+# ② ActivityKit은 ContentState를 ActivityAttributes 안에 중첩하도록 문법적으로 강제한다
+# 2레벨까지만 허용하므로 그 이상의 진짜 과중첩은 여전히 잡힌다.
+nesting:
+  type_level:
+    warning: 2
 
 force_unwrapping:
   severity: error
