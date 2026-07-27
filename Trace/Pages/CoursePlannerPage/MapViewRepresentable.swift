@@ -247,8 +247,10 @@ struct MapViewRepresentable: UIViewRepresentable {
         let currentSnapshots = segments.map {
             SegmentSnapshot(
                 coordinateCount: $0.coordinates.count,
-                first: $0.coordinates.first.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) },
-                last: $0.coordinates.last.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+                first: $0.coordinates.first
+                    .map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) },
+                last: $0.coordinates.last
+                    .map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
             )
         }
         if context.coordinator.lastSegmentSnapshots != currentSnapshots {
@@ -295,7 +297,8 @@ struct MapViewRepresentable: UIViewRepresentable {
             for overlay in uiView.overlays {
                 if let polyline = overlay as? SegmentPolyline,
                    let renderer = uiView.renderer(for: polyline) as? MKPolylineRenderer {
-                    configureRenderer(renderer, segmentIndex: polyline.segmentIndex, colorKey: polyline.colorKey, selected: selectedSegmentIndex)
+                    configureRenderer(renderer, segmentIndex: polyline.segmentIndex,
+                                      colorKey: polyline.colorKey, selected: selectedSegmentIndex)
                     renderer.setNeedsDisplay()
                 } else if let casing = overlay as? SegmentCasingPolyline,
                           let renderer = uiView.renderer(for: casing) as? MKPolylineRenderer {
@@ -308,7 +311,8 @@ struct MapViewRepresentable: UIViewRepresentable {
 
         let existing = uiView.annotations.compactMap { $0 as? ColoredPinAnnotation }
         let existingAsPins = existing.map {
-            MapPin(coordinate: $0.coordinate, title: $0.title ?? "", color: $0.color, systemImage: $0.systemImage, role: $0.role)
+            MapPin(coordinate: $0.coordinate, title: $0.title ?? "", color: $0.color,
+                   systemImage: $0.systemImage, role: $0.role)
         }
         let pinsChanged = existingAsPins.count != pins.count ||
             zip(existingAsPins, pins).contains { $0 != $1 }
@@ -352,7 +356,9 @@ struct MapViewRepresentable: UIViewRepresentable {
             coordinator.currentHaloOverlay = nil
         }
         guard let selectedSegmentIndex,
-              let casing = uiView.overlays.first(where: { ($0 as? SegmentCasingPolyline)?.segmentIndex == selectedSegmentIndex }) as? SegmentCasingPolyline
+              let casing = uiView.overlays.first(where: {
+                  ($0 as? SegmentCasingPolyline)?.segmentIndex == selectedSegmentIndex
+              }) as? SegmentCasingPolyline
         else { return }
         var coords = [CLLocationCoordinate2D](repeating: kCLLocationCoordinate2DInvalid, count: casing.pointCount)
         casing.getCoordinates(&coords, range: NSRange(location: 0, length: casing.pointCount))
@@ -430,7 +436,12 @@ extension MapViewRepresentable {
                 return MKOverlayRenderer(overlay: overlay)
             }
             let renderer = MKPolylineRenderer(polyline: polyline)
-            parent.configureRenderer(renderer, segmentIndex: polyline.segmentIndex, colorKey: polyline.colorKey, selected: parent.selectedSegmentIndex)
+            parent.configureRenderer(
+                renderer,
+                segmentIndex: polyline.segmentIndex,
+                colorKey: polyline.colorKey,
+                selected: parent.selectedSegmentIndex
+            )
             return renderer
         }
 
@@ -442,7 +453,8 @@ extension MapViewRepresentable {
             }
             if let distanceAnnotation = annotation as? SegmentDistanceAnnotation {
                 let identifier = "segmentDistance"
-                let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? SegmentDistanceAnnotationView
+                let view = mapView
+                    .dequeueReusableAnnotationView(withIdentifier: identifier) as? SegmentDistanceAnnotationView
                     ?? SegmentDistanceAnnotationView(annotation: distanceAnnotation, reuseIdentifier: identifier)
                 view.annotation = distanceAnnotation
                 view.configure(text: distanceAnnotation.distanceText, color: distanceAnnotation.color)
@@ -626,7 +638,11 @@ extension MapViewRepresentable {
             guard let coordinate = pendingCoordinate else { return }
             let role = pendingPinRole
             markerShowTask = Task { [weak self] in
-                try? await Task.sleep(until: .now + .seconds(Self.markerShowDelay), tolerance: .zero, clock: .continuous)
+                try? await Task.sleep(
+                    until: .now + .seconds(Self.markerShowDelay),
+                    tolerance: .zero,
+                    clock: .continuous
+                )
                 guard !Task.isCancelled else { return }
                 self?.parent.onPendingTap?(coordinate, role)
             }

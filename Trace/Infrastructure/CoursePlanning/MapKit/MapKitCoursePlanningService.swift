@@ -53,7 +53,8 @@ final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
                 throw CoursePlanningError.throttled
             }
             #if DEBUG
-            print("[MapKitCoursePlanning] Unhandled error: domain=\(nsError.domain) code=\(nsError.code) \(nsError.localizedDescription)")
+            print("[MapKitCoursePlanning] Unhandled error: "
+                  + "domain=\(nsError.domain) code=\(nsError.code) \(nsError.localizedDescription)")
             #endif
             throw CoursePlanningError.requestFailed
         }

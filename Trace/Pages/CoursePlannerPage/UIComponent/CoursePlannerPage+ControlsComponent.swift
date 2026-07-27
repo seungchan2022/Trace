@@ -12,7 +12,11 @@ extension CoursePlannerPage {
             Spacer()
 
             HStack(spacing: 4) {
-                segmentToggleButton(title: "경로 찍기", systemImage: "mappin.and.ellipse", isActive: !viewModel.isDrawingMode)
+                segmentToggleButton(
+                    title: "경로 찍기",
+                    systemImage: "mappin.and.ellipse",
+                    isActive: !viewModel.isDrawingMode
+                )
                 segmentToggleButton(title: "그리기", systemImage: "pencil.tip", isActive: viewModel.isDrawingMode)
             }
             .padding(4)
