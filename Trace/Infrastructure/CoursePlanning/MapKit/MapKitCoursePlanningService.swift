@@ -60,14 +60,14 @@ final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
     }
 
     private func cacheKey(from start: CourseCoordinate, to end: CourseCoordinate) -> String {
-        let s = "\(round(start.latitude, 5)),\(round(start.longitude, 5))"
-        let e = "\(round(end.latitude, 5)),\(round(end.longitude, 5))"
-        return "\(s)->\(e)"
+        let startKey = "\(round(start.latitude, 5)),\(round(start.longitude, 5))"
+        let endKey = "\(round(end.latitude, 5)),\(round(end.longitude, 5))"
+        return "\(startKey)->\(endKey)"
     }
 
     private func round(_ value: Double, _ places: Int) -> Double {
-        let m = pow(10.0, Double(places))
-        return (value * m).rounded() / m
+        let multiplier = pow(10.0, Double(places))
+        return (value * multiplier).rounded() / multiplier
     }
 }
 

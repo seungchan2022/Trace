@@ -159,9 +159,9 @@ final class CourseEditSession {
     func canInsertRoundTrip(afterOrder order: Int) -> Bool {
         guard let index = entries.firstIndex(where: { $0.order == order }),
               index == 0 || index == entries.count - 1 else { return false }
-        let n = entries[index].segment.coordinates.count
-        guard n >= 2 else { return false }
-        return totalCoordinateCount + n <= Self.maxTotalCoordinates
+        let coordinateCount = entries[index].segment.coordinates.count
+        guard coordinateCount >= 2 else { return false }
+        return totalCoordinateCount + coordinateCount <= Self.maxTotalCoordinates
     }
 
     // 대상 구간(A→B)의 역방향(B→A)만 만들어 자유 끝에 붙인다 — 거리는 대상 구간과 동일(1×),

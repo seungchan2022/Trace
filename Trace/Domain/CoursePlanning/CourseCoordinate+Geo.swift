@@ -27,9 +27,9 @@ extension CourseCoordinate {
         let aby = by - ay
         let lengthSquared = abx * abx + aby * aby
         guard lengthSquared > 0 else { return sqrt(ax * ax + ay * ay) }
-        let t = max(0, min(1, -(ax * abx + ay * aby) / lengthSquared))
-        let closestX = ax + t * abx
-        let closestY = ay + t * aby
+        let projection = max(0, min(1, -(ax * abx + ay * aby) / lengthSquared))
+        let closestX = ax + projection * abx
+        let closestY = ay + projection * aby
         return sqrt(closestX * closestX + closestY * closestY)
     }
 

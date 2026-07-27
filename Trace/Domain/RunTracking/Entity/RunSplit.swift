@@ -93,15 +93,15 @@ enum RunSplitCalculator {
         return RunSplitResult(completed: completed, partial: partial)
     }
 
-    /// t 시점까지의 활동 시간 = 벽시계 경과 − [start, t]와 겹치는 일시정지 합
+    /// time 시점까지의 활동 시간 = 벽시계 경과 − [start, time]와 겹치는 일시정지 합
     private static func activeSeconds(
-        at t: Date, start: Date, pauses: [RunPauseInterval]
+        at time: Date, start: Date, pauses: [RunPauseInterval]
     ) -> TimeInterval {
         let pausedOverlap = pauses.reduce(0.0) { total, pause in
             let overlapStart = max(pause.start, start)
-            let overlapEnd = min(pause.end, t)
+            let overlapEnd = min(pause.end, time)
             return total + max(0, overlapEnd.timeIntervalSince(overlapStart))
         }
-        return t.timeIntervalSince(start) - pausedOverlap
+        return time.timeIntervalSince(start) - pausedOverlap
     }
 }

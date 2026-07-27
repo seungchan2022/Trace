@@ -14,7 +14,7 @@ enum CourseSegment: Equatable, Sendable {
 
     var distanceMeters: Double {
         switch self {
-        case .tapped(_, let d), .drawn(_, let d), .roundTrip(_, let d): return d
+        case .tapped(_, let distance), .drawn(_, let distance), .roundTrip(_, let distance): return distance
         }
     }
 

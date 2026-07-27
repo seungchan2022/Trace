@@ -28,8 +28,8 @@ enum CoursePersistenceDTO: Sendable {
 // MARK: - 도메인 ↔ DTO 매핑
 
 extension CoursePersistenceDTO.Coordinate {
-    init(_ c: CourseCoordinate) {
-        self.init(lat: c.latitude, lon: c.longitude)
+    init(_ coordinate: CourseCoordinate) {
+        self.init(lat: coordinate.latitude, lon: coordinate.longitude)
     }
     var domain: CourseCoordinate {
         CourseCoordinate(latitude: lat, longitude: lon)
@@ -40,9 +40,9 @@ extension CoursePersistenceDTO.Segment {
     init(_ segment: CourseSegment) {
         let coords = segment.coordinates.map(CoursePersistenceDTO.Coordinate.init)
         switch segment {
-        case .tapped(_, let d):    self.init(kind: .tapped, coordinates: coords, distanceMeters: d)
-        case .drawn(_, let d):     self.init(kind: .drawn, coordinates: coords, distanceMeters: d)
-        case .roundTrip(_, let d): self.init(kind: .roundTrip, coordinates: coords, distanceMeters: d)
+        case .tapped(_, let distance):    self.init(kind: .tapped, coordinates: coords, distanceMeters: distance)
+        case .drawn(_, let distance):     self.init(kind: .drawn, coordinates: coords, distanceMeters: distance)
+        case .roundTrip(_, let distance): self.init(kind: .roundTrip, coordinates: coords, distanceMeters: distance)
         }
     }
 
