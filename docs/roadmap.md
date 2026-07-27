@@ -11,7 +11,7 @@
 
 ## 진행 중 / 예정
 
-### MVP17 — 러닝 기록 관리 + 대기 화면 보강   (상태: `history-tab` · `run-idle-polish` · `sheet-drag` 완료 · `lint-cleanup` 플랜 완료·구현 대기)
+### MVP17 — 러닝 기록 관리 + 대기 화면 보강   (상태: 마일스톤 4개 전부 완료 · 아카이빙 대기)
 
 > 실사용 관찰 "러닝 탭이 초라하다"가 재료. 원인을 갈라 **정보 부족 + 시각적 완성도**로 확정했고
 > (지도 복원 트리거는 미발동 — MVP16 §2.3 유지), 없는 것이 **집계**임을 확인했다: 개별 기록
@@ -25,7 +25,7 @@
 - [x] **run-idle-polish** — 러닝 탭을 `오늘의 러닝 → 목표 설정 → 시작` 흐름으로 보강하고, 기록·집계 요약 줄은 제거했다. `history-tab` 실기기 QA에서 한 줄 요약 처방이 실패한 근거로 설계를 보정했다: [`2026-07-23-run-idle-polish-design.md`](superpowers/specs/2026-07-23-run-idle-polish-design.md). 구현 플랜: [`2026-07-26-run-idle-polish.md`](superpowers/plans/2026-07-26-run-idle-polish.md). 2026-07-26 사용자 실기기 QA에서 세션 1·2 전 항목 통과: [`2026-07-26-run-idle-polish-device-checklist.md`](qa/2026-07-26-run-idle-polish-device-checklist.md)
 - [x] **sheet-drag** — 코스 탭 구간 리스트가 스크롤 끝에 붙어 있는 동안의 드래그를 시트로 넘긴다. 위·아래 같은 규칙이고, 한 번의 드래그는 한 단계만 움직인다(거리 비례 이동은 트리거를 걸어 이연). 브레인스토밍·설계·`ce-doc-review`(6인)·플랜·구현까지 완료. 설계: [`2026-07-26-sheet-drag-design.md`](superpowers/specs/2026-07-26-sheet-drag-design.md) · 구현 플랜: [`2026-07-26-sheet-drag.md`](superpowers/plans/2026-07-26-sheet-drag.md) · 작업 브랜치 `feature/mvp17-sheet-drag`
  · 실기기 QA 2026-07-27 통과(체크포인트 7개 전부): [`2026-07-26-sheet-drag-device-checklist.md`](qa/2026-07-26-sheet-drag-device-checklist.md) — 범위에서 제외했던 거리 비례 이동·한 손동작 내 인계는 둘 다 사용자가 원하는 현재 동작으로 확인되어 트리거 미충족, 대기 상태로 백로그에 남는다. QA 중 이 마일스톤과 무관한 이슈 2건(바운스-시트 애니메이션 겹침, 구간 탭 카메라 프레이밍이 medium 시트를 반영하지 않음)이 발견되어 각각 별도 백로그 항목으로 분리했다.
-- [ ] **lint-cleanup** — 린트 ①(identifier_name 28건: 관례 10건은 규칙 예외, 축약 18건은 코드 수정) + ②(line_length 9건). ③(`MapViewRepresentable` 672줄 분해)은 범위 밖. **경량 사이클** — 킥오프 §8.2가 처분을 확정해뒀으므로 별도 설계 스펙 없이 플랜부터 간다(`ce-doc-review`는 표준 무게 전용, `workflow.md` 73행). 2026-07-27 플랜 작성 완료, **구현 대기**: [`2026-07-27-lint-cleanup.md`](superpowers/plans/2026-07-27-lint-cleanup.md) · 작업 브랜치 `feature/mvp17-lint-cleanup`. 실측 44건이 §8.2 예측(28/9/7)과 일치하나 **§8.2가 "의미 축약"으로 분류한 5건은 실제로 `RunPersistenceDTO`의 저장 JSON 키**여서 `CodingKeys`로 wire를 고정하는 별도 태스크로 갈랐다. 완료 기준은 경고 0이 아니라 **5건**(전부 ③)
+- [x] **lint-cleanup** — 린트 ①(identifier_name 28건)·②(line_length 9건) 정리 완료. ①은 킥오프 §8.2 처분대로 갈랐다 — 보편 관례 10건(`i`·`j`·`a`·`b`)은 `.swiftlint.yml` 규칙 예외로 소멸, 의미 축약 18건은 이름을 제대로 붙였다. **그중 5건(`RunPersistenceDTO`)은 §8.2가 지역 변수로 오분류한 것이었고 실제로는 저장된 JSON 키였다** — 그냥 바꾸면 사용자 기기의 기존 러닝 기록이 해독 불가가 되는 경로라, `CodingKeys`로 wire 문자열을 고정한 뒤 이름을 바꾸고 포맷 고정 테스트(`RunPersistenceDTOWireFormatTests`)로 못박았다. `CodingKeys` 중첩 때문에 `nesting.type_level`을 2로 올렸고(ActivityKit `ContentState` 강제 중첩도 같은 이유), 그 부수 효과로 ③ 7건 중 nesting 2건이 함께 소멸했다. **잔여 경고 5건은 전부 ③(구조)이며 의도된 상태다** — `MapViewRepresentable` 분해는 여전히 별도 마일스톤 규모. 경고 44 → 5건, 테스트 384개(유닛 376 + UI 8) 전체 통과. 구현 플랜: [`2026-07-27-lint-cleanup.md`](superpowers/plans/2026-07-27-lint-cleanup.md)
 
 ### MVP16 — 러닝/코스 UI 개편   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp16/`](history/mvp16/))
 
