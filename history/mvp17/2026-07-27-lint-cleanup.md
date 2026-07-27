@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **완료(소급 확인, 2026-07-27):** Task 1~5 전부 구현·태스크별 리뷰(Approved, Critical/Important 0건) 통과, 컨트롤러 독립 재검증(빌드·경고 건수) 완료. 아래 Step 체크박스는 subagent-driven-development 실행 중 실시간으로 갱신되지 않았을 뿐 전부 완료됐다 — 근거: 커밋 `9eb8f99`(Task1)·`a56ea80`(Task2)·`954af3f`(Task3)·`bca1c63`(Task4)·`f284e35`(Task5), SDD 진행 원장(`.git/sdd/progress.md`). 경고 44→5건, 테스트 384개 전체 통과.
+
 **Goal:** 앱 코드에 쌓인 SwiftLint 경고 44건 중 ①(identifier_name 28건)·②(line_length 9건)를 정리하고, 남는 구조 경고를 의도된 잔여로 확정한다.
 
 **Architecture:** 세 갈래로 나눠 처리한다 — (1) 보편 관례라 이름을 바꾸는 게 오히려 나쁜 것은 `.swiftlint.yml` 규칙 예외로 소멸시키고(코드 무변경), (2) 진짜 의미 축약은 이름을 제대로 붙이고, (3) 온디스크 직렬화 키인 것은 `CodingKeys`로 wire 문자열을 보존한 채 이름만 바꾼다. 동작 변경은 0이며, 기존 테스트 전체 그린이 그 증거다.

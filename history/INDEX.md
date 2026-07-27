@@ -7,6 +7,33 @@
 
 ---
 
+## MVP17 — 러닝 기록 관리 + 대기 화면 보강 (2026-07-21 ~ 07-27)
+
+> 실사용 관찰 "러닝 탭이 초라하다"가 재료. 마일스톤 4개: ①`history-tab`(표준)은 기록 탭
+> 신설 + `RunStats` 순수 계산기 공유 + 집계 대시보드, ②`run-idle-polish`(경량)는
+> history-tab 실기기 QA에서 요약 줄 처방 실패를 근거로 러닝 탭을 목표→시작 흐름으로
+> 재설계, ③`sheet-drag`(경량, 브레인스토밍·설계·`ce-doc-review` 6인 선행)는 코스 탭
+> 시트 리스트 드래그-인계, ④`lint-cleanup`(경량)은 앱 코드 린트 44건 정리 — 실행 중
+> 킥오프 §8.2의 분류 실수를 스스로 발견해(5건이 로컬 변수가 아니라 저장 JSON 키) 데이터
+> 손실을 막았다. §8.3 완료 판정(2026-07-27)은 **조건부 통과** — "초라하다"가 완전히
+> 해소된 것은 아니고 이전보다 나아져서 일단 넘기는 상태, 추후 보완 예정.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [킥오프 결정](mvp17/2026-07-21-mvp17-run-history-kickoff-design.md) | 원인 B+C 확정(A 지도 복원 미발동), 기록 탭 신설, RunStats 공유 계산기, 마일스톤 4개 순서·경계 규칙, §8.3 완료 판정 절차 |
+| 기획 | [run-idle-polish 설계](mvp17/2026-07-23-run-idle-polish-design.md) | history-tab QA 실패 근거로 대기 화면 재설계(요약 줄 제거 → 목표→시작 흐름) |
+| 기획 | [sheet-drag 설계](mvp17/2026-07-26-sheet-drag-design.md) | 리스트 끝 접촉 판정 규칙(교집합 Bool), `simultaneousGesture` 동시 인식, `ce-doc-review` 6인 반영 |
+| 플랜 | [history-tab 플랜](mvp17/2026-07-21-history-tab.md) | RunStats 계산기 + 기록 탭 신설 + 이사 + 집계 대시보드 + 이번 주 요약 줄 |
+| 플랜 | [run-idle-polish 플랜](mvp17/2026-07-26-run-idle-polish.md) | 대기 화면을 오늘의 러닝→목표→시작 흐름으로 재구성 |
+| 플랜 | [sheet-drag 플랜](mvp17/2026-07-26-sheet-drag.md) | 시트 리스트 드래그-인계 구현(그래버 40pt 문턱 재사용) |
+| 플랜 | [lint-cleanup 플랜](mvp17/2026-07-27-lint-cleanup.md) | Task 1~5, 규칙 예외·이름 정리·`RunPersistenceDTO` CodingKeys 고정·줄나눔·문서 종결(경고 44→5) |
+| QA | [history-tab 실기기 체크리스트](mvp17/2026-07-23-history-tab-device-checklist.md) | GPX 세션 1·2, 다크모드 배경·큰 글자 검증(VoiceOver는 범위 제외) |
+| QA | [run-idle-polish 실기기 체크리스트](mvp17/2026-07-26-run-idle-polish-device-checklist.md) | 목표 설정→시작→저장 흐름 세션 1·2 검증 |
+| QA | [sheet-drag 실기기 체크리스트](mvp17/2026-07-26-sheet-drag-device-checklist.md) | 체크포인트 7개, 인계 규칙·위아래 대칭성 검증 |
+| 회고 | [MVP17 완료 회고](mvp17/260727_mvp17_completion_retro.md) | §8.2 저장 키 오분류 발견, function_body_length severity 승격 사전 차단, §8.3 조건부 통과 판정, 플랜 체크박스 습관 미정착 3회 반복 |
+
+---
+
 ## MVP16 — 러닝/코스 UI 개편 (2026-07-19 ~ 07-21)
 
 > 앱 화면 문법을 두 기둥 구조로 재편. 마일스톤 4개: ①`ui-direction`(경량·문서 전용)은

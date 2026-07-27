@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **완료(소급 확인, 2026-07-27, MVP17 아카이빙 시점):** 남은 미체크 1건("기기 연결, 자동 서명 팀 확인, Xcode Run 성공")은 실기기 QA 진행 자체가 그 증거다 — 2026-07-27 QA에서 체크포인트 7개 전부 통과: [`2026-07-26-sheet-drag-device-checklist.md`](2026-07-26-sheet-drag-device-checklist.md)(아카이빙으로 같은 폴더로 이동).
+
 **사이클 무게:** 경량 — 설계와 리뷰가 이미 끝났고(`2026-07-26-sheet-drag-design.md`, `ce-doc-review` 6인 반영 완료), 범위는 순수 타입 하나 추가와 기존 시트 뷰 한 곳 배선이다. 새 레이어·외부 의존성·열린 제품 결정이 없다. 최종 브랜치 리뷰는 생략하되 **태스크별 코드리뷰는 유지**한다 — Task 2 리뷰는 제스처 소유권과 히트테스트에 초점을 맞춘다(이 파일에서 실제로 났던 회귀 유형).
 
 **Goal:** 코스 탭 바텀시트의 구간 리스트가 스크롤 끝에 붙어 있는 동안의 드래그를 시트로 넘겨, 리스트 위에서도 시트를 한 단계씩 접고 펼 수 있게 한다.
@@ -10,7 +12,7 @@
 
 **Tech Stack:** Swift 6, SwiftUI, XCTest, XCUITest
 
-**설계:** [`2026-07-26-sheet-drag-design.md`](../specs/2026-07-26-sheet-drag-design.md)
+**설계:** [`2026-07-26-sheet-drag-design.md`](2026-07-26-sheet-drag-design.md)
 
 ## Global Constraints
 

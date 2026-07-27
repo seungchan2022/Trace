@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **완료(소급 확인, 2026-07-27, MVP17 아카이빙 시점):** 남은 미체크 3건은 미구현이 아니라 실기기 QA로 이관된 항목이다 — Step 9(검증 스탬프 갱신 후 커밋)는 커밋 완료, Step 3(VoiceOver 막대별 발화)은 이번 마일스톤 통과 기준에서 명시적으로 제외(로드맵 기록), Step 11(저장 직후 갱신 경로)은 실기기 QA 세션 1·2 통과로 커버됨: [`2026-07-23-history-tab-device-checklist.md`](2026-07-23-history-tab-device-checklist.md)(아카이빙으로 같은 폴더로 이동).
+
 **Goal:** 기록 탭을 신설해 러닝 집계(기간 합계·8주 추이·마지막 러닝)를 제공하고, 기존 기록 목록·상세를 그리로 옮기면서 러닝 탭에 이번 주 요약 줄을 심는다.
 
 **Architecture:** 집계는 `Domain/RunTracking/Entity/RunStats.swift`의 순수 계산기 한 벌이
@@ -16,7 +18,7 @@
 **스펙:** `docs/superpowers/specs/2026-07-21-mvp17-run-history-kickoff-design.md`
 
 **상태(2026-07-23):** Task 1~6 구현·리뷰·자동/시뮬레이터 검증과 태스크별 커밋을 완료했다.
-실기기 QA는 [`2026-07-23-history-tab-device-checklist.md`](../../qa/2026-07-23-history-tab-device-checklist.md)로
+실기기 QA는 [`2026-07-23-history-tab-device-checklist.md`](2026-07-23-history-tab-device-checklist.md)로
 사용자 확인을 기다린다. GPX로 저장·집계·화면 전환은 확인할 수 있지만, 실제 GPS·배터리·달리는 중
 조작감은 별도 실제 러닝 기회에 확인한다.
 

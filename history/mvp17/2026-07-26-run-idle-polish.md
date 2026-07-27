@@ -10,7 +10,7 @@
 
 **Tech Stack:** Swift 6, SwiftUI, Observation, XCTest, XCUITest
 
-**설계:** [`2026-07-23-run-idle-polish-design.md`](../specs/2026-07-23-run-idle-polish-design.md)
+**설계:** [`2026-07-23-run-idle-polish-design.md`](2026-07-23-run-idle-polish-design.md)
 
 ## Global Constraints
 

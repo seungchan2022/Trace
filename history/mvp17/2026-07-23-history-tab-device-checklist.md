@@ -2,7 +2,7 @@
 
 > 이번 변경은 하단에 `기록` 탭을 추가하고, 러닝을 마친 뒤 그 기록을 바로 목록·집계·러닝 탭 요약에 반영합니다. 자동 테스트와 시뮬레이터 확인은 통과했지만, 실제 기기에서 화면 크기·글자 크기·저장 직후 화면 전환을 확인해야 합니다.
 
-> **실제로 뛰지 않아도 됩니다.** 기기를 케이블로 연결한 채 Xcode에서 앱을 실행하고, `Debug` → `Simulate Location`으로 [5km·1분 페이스 GPX 파일](trace-history-tab-5km-1min-pace.gpx)을 선택하면 실제 기기에서 위치가 이동하는 것처럼 확인할 수 있습니다. 이 파일은 5분 동안 정확히 5km를 이동한 뒤 30초 동안 그 자리에 머무르므로, 그 사이에 러닝을 종료하세요. 자세한 방법은 [GPX 실기기 QA 안내](../solutions/workflow-issues/gpx-simulated-location-real-device-qa.md)에 있습니다.
+> **실제로 뛰지 않아도 됩니다.** 기기를 케이블로 연결한 채 Xcode에서 앱을 실행하고, `Debug` → `Simulate Location`으로 [5km·1분 페이스 GPX 파일](trace-history-tab-5km-1min-pace.gpx)을 선택하면 실제 기기에서 위치가 이동하는 것처럼 확인할 수 있습니다. 이 파일은 5분 동안 정확히 5km를 이동한 뒤 30초 동안 그 자리에 머무르므로, 그 사이에 러닝을 종료하세요. 자세한 방법은 [GPX 실기기 QA 안내](../../docs/solutions/workflow-issues/gpx-simulated-location-real-device-qa.md)에 있습니다.
 
 > **QA 결과 (2026-07-26):** 세션 1은 사용자 확인으로 통과했다. 세션 2-1은 큰 글자에서 정상 동작했고, 다크 모드 배경·차트 기준선은 보정 후 사용자 수용으로 닫았다. VoiceOver 항목은 이번 마일스톤의 통과 기준에서 제외했다. 러닝 탭 대기 화면의 제품 적합성 평가는 `run-idle-polish` 마일스톤에서 다룬다.
 

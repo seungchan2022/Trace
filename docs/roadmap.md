@@ -11,21 +11,36 @@
 
 ## 진행 중 / 예정
 
-### MVP17 — 러닝 기록 관리 + 대기 화면 보강   (상태: 마일스톤 4개 전부 완료 · 아카이빙 대기)
+(현재 진행 중인 MVP 없음 — 다음 MVP는 `docs/backlog.md`에서 스코핑 예정)
 
-> 실사용 관찰 "러닝 탭이 초라하다"가 재료. 원인을 갈라 **정보 부족 + 시각적 완성도**로 확정했고
-> (지도 복원 트리거는 미발동 — MVP16 §2.3 유지), 없는 것이 **집계**임을 확인했다: 개별 기록
-> 조회는 이미 충실한데 "이번 주 몇 km"를 답할 곳이 없다. 집계를 새로 만들면서 기록 탭을 신설해
-> 러닝 탭="지금 뛴다" / 기록 탭="돌아본다"로 역할을 가른다. 집계는 Domain 순수 계산기
-> (`RunStats.swift`) 한 벌로 두 화면이 공유 — 계산이 갈라지지 않는 구조적 보장.
-> 미룬 백로그 2건(시트 콘텐츠 드래그, 린트 44건)도 이번 우산에 편입.
-> 킥오프 확정: `docs/superpowers/specs/2026-07-21-mvp17-run-history-kickoff-design.md`
+## 완료 · 아카이빙됨
 
-- [x] **history-tab** — 3탭 렌더링 + 기존 테스트 확인(첫 태스크, 커스텀 탭바 회귀 이력 때문) → `RunStats` 계산기 → 기록 탭 신설(`AppTab.history`) → 집계 대시보드 + 최근 8주 막대그래프(Swift Charts 첫 도입) → **이사 전부 + 러닝 탭 이번 주 요약 줄**(쪼개면 병합 시점에 죽은 버튼이 남거나 러닝 탭이 오히려 더 비어진다). 세션 1(GPX 저장·집계·화면 전환) 통과. 세션 2-1은 큰 글자 정상 확인 후 다크 모드 배경·차트 기준선을 `Surface2`·`Ink2` 전용 정책으로 보정하고 사용자 수용으로 닫았다. VoiceOver는 이번 마일스톤의 통과 기준에서 제외: [`2026-07-23-history-tab-device-checklist.md`](qa/2026-07-23-history-tab-device-checklist.md). 구현 플랜: [`2026-07-21-history-tab.md`](superpowers/plans/2026-07-21-history-tab.md)
-- [x] **run-idle-polish** — 러닝 탭을 `오늘의 러닝 → 목표 설정 → 시작` 흐름으로 보강하고, 기록·집계 요약 줄은 제거했다. `history-tab` 실기기 QA에서 한 줄 요약 처방이 실패한 근거로 설계를 보정했다: [`2026-07-23-run-idle-polish-design.md`](superpowers/specs/2026-07-23-run-idle-polish-design.md). 구현 플랜: [`2026-07-26-run-idle-polish.md`](superpowers/plans/2026-07-26-run-idle-polish.md). 2026-07-26 사용자 실기기 QA에서 세션 1·2 전 항목 통과: [`2026-07-26-run-idle-polish-device-checklist.md`](qa/2026-07-26-run-idle-polish-device-checklist.md)
-- [x] **sheet-drag** — 코스 탭 구간 리스트가 스크롤 끝에 붙어 있는 동안의 드래그를 시트로 넘긴다. 위·아래 같은 규칙이고, 한 번의 드래그는 한 단계만 움직인다(거리 비례 이동은 트리거를 걸어 이연). 브레인스토밍·설계·`ce-doc-review`(6인)·플랜·구현까지 완료. 설계: [`2026-07-26-sheet-drag-design.md`](superpowers/specs/2026-07-26-sheet-drag-design.md) · 구현 플랜: [`2026-07-26-sheet-drag.md`](superpowers/plans/2026-07-26-sheet-drag.md) · 작업 브랜치 `feature/mvp17-sheet-drag`
- · 실기기 QA 2026-07-27 통과(체크포인트 7개 전부): [`2026-07-26-sheet-drag-device-checklist.md`](qa/2026-07-26-sheet-drag-device-checklist.md) — 범위에서 제외했던 거리 비례 이동·한 손동작 내 인계는 둘 다 사용자가 원하는 현재 동작으로 확인되어 트리거 미충족, 대기 상태로 백로그에 남는다. QA 중 이 마일스톤과 무관한 이슈 2건(바운스-시트 애니메이션 겹침, 구간 탭 카메라 프레이밍이 medium 시트를 반영하지 않음)이 발견되어 각각 별도 백로그 항목으로 분리했다.
-- [x] **lint-cleanup** — 린트 ①(identifier_name 28건)·②(line_length 9건) 정리 완료. ①은 킥오프 §8.2 처분대로 갈랐다 — 보편 관례 10건(`i`·`j`·`a`·`b`)은 `.swiftlint.yml` 규칙 예외로 소멸, 의미 축약 18건은 이름을 제대로 붙였다. **그중 5건(`RunPersistenceDTO`)은 §8.2가 지역 변수로 오분류한 것이었고 실제로는 저장된 JSON 키였다** — 그냥 바꾸면 사용자 기기의 기존 러닝 기록이 해독 불가가 되는 경로라, `CodingKeys`로 wire 문자열을 고정한 뒤 이름을 바꾸고 포맷 고정 테스트(`RunPersistenceDTOWireFormatTests`)로 못박았다. `CodingKeys` 중첩 때문에 `nesting.type_level`을 2로 올렸고(ActivityKit `ContentState` 강제 중첩도 같은 이유), 그 부수 효과로 ③ 7건 중 nesting 2건이 함께 소멸했다. **잔여 경고 5건은 전부 ③(구조)이며 의도된 상태다** — `MapViewRepresentable` 분해는 여전히 별도 마일스톤 규모. 경고 44 → 5건, 테스트 384개(유닛 376 + UI 8) 전체 통과. 구현 플랜: [`2026-07-27-lint-cleanup.md`](superpowers/plans/2026-07-27-lint-cleanup.md)
+### MVP17 — 러닝 기록 관리 + 대기 화면 보강   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp17/`](history/mvp17/))
+
+> 실사용 관찰 "러닝 탭이 초라하다"가 재료. 원인을 B(정보 부족)+C(시각적 완성도)로 확정하고
+> (지도 복원 트리거는 미발동 — MVP16 §2.3 유지) 기록 탭을 신설, `RunStats.swift` 순수 계산기
+> 한 벌을 러닝 탭·기록 탭이 공유하게 했다(①`history-tab`). 실기기 QA에서 러닝 탭 요약 줄
+> 처방이 실패한 것을 근거로 대기 화면을 `오늘의 러닝 → 목표 설정 → 시작` 흐름으로 재설계했다
+> (②`run-idle-polish`). 무관한 백로그 이월 2건도 같은 우산에 편입: 코스 탭 시트 리스트
+> 드래그-인계(③`sheet-drag`, 브레인스토밍→설계→`ce-doc-review`(6인)→구현), 앱 코드 린트
+> 경고 44건 정리(④`lint-cleanup`, 실행 중 킥오프 §8.2의 분류 실수를 스스로 발견 — 5건이
+> 로컬 변수가 아니라 `RunPersistenceDTO`의 저장 JSON 키였음을 확인하고 `CodingKeys`로
+> 데이터 손실을 막음). §8.3 완료 판정(2026-07-27): "초라하다"는 **완전 해소가 아니라
+> 이전보다 나아져서 조건부 통과**, 추후 보완 예정 — 회고 참고.
+
+| 유형 | 파일 | 핵심 내용 |
+|------|------|----------|
+| 기획 | [킥오프 결정](mvp17/2026-07-21-mvp17-run-history-kickoff-design.md) | 원인 B+C 확정, 기록 탭 신설, RunStats 공유 계산기, 마일스톤 4개 순서·경계 규칙, §8.3 완료 판정 절차 |
+| 기획 | [run-idle-polish 설계](mvp17/2026-07-23-run-idle-polish-design.md) | history-tab QA 실패 근거로 대기 화면 재설계(요약 줄 제거 → 목표→시작 흐름) |
+| 기획 | [sheet-drag 설계](mvp17/2026-07-26-sheet-drag-design.md) | 리스트 끝 접촉 판정 규칙, `simultaneousGesture` 동시 인식, `ce-doc-review` 6인 반영 |
+| 플랜 | [history-tab 플랜](mvp17/2026-07-21-history-tab.md) | Task 다수, RunStats 계산기 + 기록 탭 신설 + 이사 + 대시보드 |
+| 플랜 | [run-idle-polish 플랜](mvp17/2026-07-26-run-idle-polish.md) | 대기 화면 재구성 |
+| 플랜 | [sheet-drag 플랜](mvp17/2026-07-26-sheet-drag.md) | Task 다수, 시트 리스트 드래그-인계 구현 |
+| 플랜 | [lint-cleanup 플랜](mvp17/2026-07-27-lint-cleanup.md) | Task 1~5, 규칙 예외·이름 정리·CodingKeys 고정·줄나눔·문서 종결 |
+| QA | [history-tab 실기기 체크리스트](mvp17/2026-07-23-history-tab-device-checklist.md) | GPX 세션 1·2, 다크모드·큰 글자 검증 |
+| QA | [run-idle-polish 실기기 체크리스트](mvp17/2026-07-26-run-idle-polish-device-checklist.md) | 목표 설정→시작→저장 흐름 세션 1·2 검증 |
+| QA | [sheet-drag 실기기 체크리스트](mvp17/2026-07-26-sheet-drag-device-checklist.md) | 체크포인트 7개, 인계 규칙·대칭성 검증 |
+| 회고 | [MVP17 완료 회고](mvp17/260727_mvp17_completion_retro.md) | §8.2 저장 키 오분류 발견, severity 승격 사전 차단, §8.3 조건부 통과 판정 |
 
 ### MVP16 — 러닝/코스 UI 개편   (상태: ✅ 완료 · 아카이빙됨 → [`history/mvp16/`](history/mvp16/))
 
