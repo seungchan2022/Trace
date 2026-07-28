@@ -140,6 +140,14 @@ SwiftLint is configured by `.swiftlint.yml`.
 - "Hand it to the user" is a concrete action, not a passing mention: when a milestone finishes with a checklist ready, the closing message must point at it directly — read the file and show its content (or a clear pointer to open it) rather than only naming the path inside a longer summary. The user should not have to go find the file themselves.
 - Capture feedback from manual testing into `docs/backlog.md`: genuinely broken behavior is fixed in the current session, but intent-mismatches and improvements are recorded as backlog items (where/now/desired) and deferred to a later milestone — do not expand the current milestone to chase them. The backlog is consumed at milestone start; see `docs/agent-rules/skills.md`.
 
+### 위치 시뮬레이션(GPX) QA (2026-07-29)
+
+러닝 기능은 실제로 뛰지 않고 Xcode의 Simulate Location(GPX 재생)으로 QA한다 — MVP14에서 확립된 방식이다.
+
+- **GPX 파일은 저장소에 커밋해 재사용한다.** 회차마다 새로 만들면 경로·페이스가 달라져 사이클 간 비교가 안 된다. 기존 파일: `history/mvp17/trace-history-tab-5km-1min-pace.gpx`(5km, 1분 페이스).
+- **Xcode 쪽 배선은 커밋하지 않는다** — `project.pbxproj`의 파일 참조와 스킴의 `LocationScenarioReference` 둘 다. QA가 끝나면 `git checkout -- Trace.xcodeproj`로 되돌린다. 이유 둘: ① `Trace.xcscheme`은 공유 스킴(`xcshareddata/`)이라 한번 커밋되면 이 스킴으로 실행하는 **모든 세션의 기본값이 GPX 재생**이 되는데, 이 저장소 작업 대부분은 위치 시뮬레이션이 필요 없는 코스 탭·지도 편집이다. ② `.xcodeproj/` 변경은 pre-commit이 검증 스탬프 3개를 요구해(위 Baseline 참고) QA 배선 두 줄 때문에 빌드·테스트·린트를 전부 돌리게 된다.
+- **재생이 끝나는 시점에 맞춰 러닝을 종료한다.** Xcode는 GPX 끝에 도달하면 처음 웨이포인트로 되감아 반복 재생하고(Xcode 자체 동작이라 앱에서 제어 불가), 그때 생기는 순간이동은 정확도 값이 정상이라 앱의 필터를 그대로 통과해 거리에 합산된다(6km 지점에서 계속 두면 11km처럼 부풀어 오른다). 앱 쪽 방어 로직은 아직 없다 — `docs/backlog.md`의 "GPS 거리 이상치(비정상 점프) 방어 로직 없음" 항목 참고.
+
 ### 체크리스트 배치 처리 (2026-07-13)
 
 사용자는 체크리스트 전체를 실기기에서 다 채운 뒤 한 번에 전달한다(항목별로 나눠 보고하지
