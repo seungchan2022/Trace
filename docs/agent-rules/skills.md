@@ -47,23 +47,6 @@ Claude Code calls the same source with `/<name>` through a `.claude/skills/<name
   - This rule supplies the integration that Codex's `openai-curated` superpowers has built in but obra superpowers (v6.x, installed on Claude Code) does not call automatically. Keep it in the rules, not in the plugin's SKILL.md, so it survives plugin updates and applies in both tools.
 - Use `ce-compound` when a workflow rule is updated because of an agent mistake.
 
-## 쓰지 않기로 정한 스킬 (2026-07-30)
-
-아래는 설치돼 있지만 Trace에서 **쓰지 않는다.** 매번 "이것도 써야 하나"를 다시 묻지 않기
-위해 명시한다. 판단 근거는 "지금까지 회고에 기록된 문제 중 이 스킬이 막을 수 있었던 것이
-있나"였다(전수 검토: `docs/workflow-audit.md` §3-2-2).
-
-| 스킬 | 쓰지 않는 이유 |
-|---|---|
-| `superpowers:using-git-worktrees`, `ce-worktree` | 한 작업 세션은 브랜치 하나로 진행한다(`git.md`). 격리가 필요한 상황이 생긴 적 없다 |
-| `superpowers:dispatching-parallel-agents` | Task 순차 실행으로 충분했다. 속도가 문제된 회고가 없다 |
-| `ce-brainstorm`, `ce-plan`, `ce-work`, `ce-debug` | superpowers 쪽과 역할이 겹친다. 겹치는 지점은 superpowers를 쓴다 |
-| `ce-ideate`, `ce-code-review` | 규칙에 있었으나 실제로 쓰지 않았다. 기획은 `brainstorming`, 코드 검사는 `requesting-code-review` + `/code-review`로 충분했다 |
-| 웹·PR 자동화 계열 (`ce-dogfood`, `ce-test-browser`, `ce-polish`, `ce-promote`, `ce-sweep`, `ce-babysit-pr`, `lfg` 등) | 브라우저·GitHub 자동화 기반. iOS 솔로 개발에 해당하지 않는다 |
-
-**아직 정하지 않은 것 (검토 대기):** `superpowers:receiving-code-review`,
-`ce-test-xcode`. 근거와 쟁점은 `docs/workflow-audit.md` §3-2-2 ②.
-
 ## Asking the User Decisions
 
 - When proposing options or asking the user to make a decision, ask **in chat as plain text** using an `A / B / C` list, and mark the recommended option with `(추천)`. Do not use the built-in interview/question UI (e.g. the `AskUserQuestion` tool or any skill's structured-question prompt) for this.
