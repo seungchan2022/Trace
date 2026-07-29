@@ -10,10 +10,22 @@
 - Playwright MCP: configured globally for browser-backed checks when needed
 - Sequential Thinking MCP: configured globally for structured reasoning support when needed
 
+**플러그인을 설치·갱신·활성화한 뒤에는 도구를 완전히 재시작한다.** 재시작 전에는 스킬이
+호출 목록에 나타나지 않고, 호출하면 `Unknown skill`로 실패한다 — 설정은 정상이므로
+설정 파일을 봐서는 원인을 찾을 수 없다. 재시작을 빠뜨리면 규칙이 요구하는 단계가 조용히
+건너뛰어진다. 2026-07-29에 실제로 발생했다(경위: `docs/workflow-audit.md` §5-7).
+
+**`disable-model-invocation: true`가 붙은 스킬은 에이전트가 호출할 수 없다.** 사용자가
+직접 `/<name>`으로 실행해야 한다. compound-engineering 3.19.0에서는 8개가 여기 해당하며,
+그중 `ce-test-xcode`(iOS 빌드·테스트)가 Trace와 관련이 있다.
+
 ## Trace-Specific Shared Skills
 
 - `trace-init`: restore Trace session state at the start of a new chat.
-- `daily-retro`: summarize the day and capture lessons or follow-up work.
+- `daily-retro`: summarize the day and capture lessons or follow-up work. **트리거 —
+  그날 코드나 문서 커밋이 있었고 작업을 마무리하는 시점.** 사용자가 요청하지 않아도
+  에이전트가 한 번 제안한다(강제 아님, 사용자가 넘기면 넘긴다). 트리거가 규칙에 없어서
+  2026-07-15 이후 조용히 멈춰 있었다(경위: `docs/workflow-audit.md` §3-2-2 ③).
 - `trace-archive`: archive a completed MVP's artifacts and update its index/roadmap state.
 - `trace-study`: build a learning walkthrough for a completed MVP.
 - `trace-video-review`: review an external video/content tip (e.g. YouTube) against current Trace rules and memories, and judge whether it's worth adopting.
@@ -34,6 +46,23 @@ Claude Code calls the same source with `/<name>` through a `.claude/skills/<name
 - **Compound step (required at the end of every execute-review cycle).** Immediately after `superpowers:requesting-code-review` feedback is resolved and verified, and as the closing step of `superpowers:finishing-a-development-branch`, check whether the execute-review cycle exposed any mistake, repeated issue, surprising constraint, or reusable lesson. If yes, run `ce-compound` (use `ce-compound mode:headless` for skill-to-skill/automated runs) before moving on or marking the checkpoint complete. Capture: what happened, why, what signal would have caught it earlier, and the concrete rule/check/pattern to reuse. Do not use it for generic summaries.
   - This rule supplies the integration that Codex's `openai-curated` superpowers has built in but obra superpowers (v6.x, installed on Claude Code) does not call automatically. Keep it in the rules, not in the plugin's SKILL.md, so it survives plugin updates and applies in both tools.
 - Use `ce-compound` when a workflow rule is updated because of an agent mistake.
+
+## 쓰지 않기로 정한 스킬 (2026-07-30)
+
+아래는 설치돼 있지만 Trace에서 **쓰지 않는다.** 매번 "이것도 써야 하나"를 다시 묻지 않기
+위해 명시한다. 판단 근거는 "지금까지 회고에 기록된 문제 중 이 스킬이 막을 수 있었던 것이
+있나"였다(전수 검토: `docs/workflow-audit.md` §3-2-2).
+
+| 스킬 | 쓰지 않는 이유 |
+|---|---|
+| `superpowers:using-git-worktrees`, `ce-worktree` | 한 작업 세션은 브랜치 하나로 진행한다(`git.md`). 격리가 필요한 상황이 생긴 적 없다 |
+| `superpowers:dispatching-parallel-agents` | Task 순차 실행으로 충분했다. 속도가 문제된 회고가 없다 |
+| `ce-brainstorm`, `ce-plan`, `ce-work`, `ce-debug` | superpowers 쪽과 역할이 겹친다. 겹치는 지점은 superpowers를 쓴다 |
+| `ce-ideate`, `ce-code-review` | 규칙에 있었으나 실제로 쓰지 않았다. 기획은 `brainstorming`, 코드 검사는 `requesting-code-review` + `/code-review`로 충분했다 |
+| 웹·PR 자동화 계열 (`ce-dogfood`, `ce-test-browser`, `ce-polish`, `ce-promote`, `ce-sweep`, `ce-babysit-pr`, `lfg` 등) | 브라우저·GitHub 자동화 기반. iOS 솔로 개발에 해당하지 않는다 |
+
+**아직 정하지 않은 것 (검토 대기):** `superpowers:receiving-code-review`,
+`ce-test-xcode`. 근거와 쟁점은 `docs/workflow-audit.md` §3-2-2 ②.
 
 ## Asking the User Decisions
 

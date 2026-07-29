@@ -67,14 +67,21 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
 superpowers / compound-engineering을 해당 지점에서 호출한다. 강제(훅)는 아니며, 변경 규모·위험에
 비례해 고른다(매번 전부 거치는 게 아니다).
 
-| 워크플로 지점 | 권장 호출 (이미 설치됨) | 무엇을 잡나 |
+| 워크플로 지점 | 권장 호출 (실존 확인 2026-07-30) | 무엇을 잡나 |
 |---|---|---|
-| MVP 킥오프(로드맵·마일스톤 분해) 직후 | `ce-doc-review` 또는 `ce-adversarial-document-reviewer` | 기획·로드맵의 구조 결함 (구현 전이 수정비용 최저) |
+| MVP 킥오프(로드맵·마일스톤 분해) 직후 | `ce-doc-review` | 기획·로드맵의 구조 결함 (구현 전이 수정비용 최저) |
 | 사이클 spec 완료 시 (표준 무게) | `ce-doc-review` | 설계 구멍·전제 오류 |
-| 기술 결정 갈림길 | `superpowers:brainstorming`(2~3안 비교) + `ce-ideate` | 대안 비교 없이 한 길로 가는 것 |
-| 아키텍처/외부 조사 필요 | `ce-architecture-strategist` · `ce-best-practices-researcher` · `ce-web-researcher` | 구조 이해 부족·바퀴 재발명 |
-| **구현 후 · 커밋 전** (가장 중요) | `superpowers:requesting-code-review` + `/code-review` (적대적: `ce-adversarial-reviewer`) | 코드 결함·회귀 |
+| 기술 결정 갈림길 | `superpowers:brainstorming`(2~3안 비교) | 대안 비교 없이 한 길로 가는 것 |
+| 아키텍처/외부 조사 필요 | `context7` MCP(라이브러리·API 문서) · `WebSearch` | 구조 이해 부족·바퀴 재발명 |
+| **구현 후 · 커밋 전** (가장 중요) | `superpowers:requesting-code-review` + `/code-review` | 코드 결함·회귀 |
 | 막힐 때(버그·재현 안 됨) | `superpowers:systematic-debugging` | 추측 기반 수정 |
+
+- **적대적 검토는 별도 호출이 아니다.** `ce-doc-review`가 문서 내용을 보고 필요하면
+  adversarial 검토자를 내부에서 띄운다(항상 오는 coherence·feasibility 2명 + 조건부 5명, 최대 7명).
+  이전 표에 있던 `ce-adversarial-reviewer`·`ce-adversarial-document-reviewer`·
+  `ce-architecture-strategist`·`ce-best-practices-researcher`·`ce-web-researcher`는
+  설치된 compound-engineering 3.19.0에 **존재하지 않는 이름**이라 2026-07-30에 제거했다
+  (경위: `docs/workflow-audit.md` §5-1).
 
 - **커밋 전 코드리뷰**는 빠뜨리지 않는다(통증이 가장 큰 지점). 지금은 규칙으로 강하게 권장하고,
   반복적으로 빠지면 그때 `.githooks`/훅으로 하드 강제를 검토한다.
