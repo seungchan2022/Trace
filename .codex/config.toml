@@ -27,3 +27,9 @@ compact_prompt = """
 
 [history]
 persistence = "save-all"
+
+# Claude Code 쪽 .mcp.json과 짝을 맞춘 MCP 서버 설정.
+# 한쪽에만 붙이면 도구를 바꾼 세션이 같은 기능을 못 쓴다(docs/agent-rules/dual-tool.md).
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp@latest"]
