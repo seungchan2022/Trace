@@ -82,7 +82,8 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
    **어느 단계를 밟을지는 위 "작업 종류" 표를 따른다** — 아래 목록은 새 기능·작은 기능 기준이고,
    정비는 "정비 작업 경로", 버그는 "버그 처리 경로"로 간다.
    - `superpowers:brainstorming` → `docs/superpowers/specs/<날짜>-<슬러그>-design.md` (정비 ✕)
-   - `superpowers:writing-plans` → `docs/superpowers/plans/<날짜>-<슬러그>.md` (정비는 위험 항목만)
+   - `superpowers:writing-plans` → `docs/superpowers/plans/<날짜>-<슬러그>.md`
+     (정비는 **분류 표 + 위험 갈래 Task만** — 파일 자체는 항상 만든다)
      — **계획 문서의 Task는 코드를 바꾸는 것만 담는다.** QA 체크리스트 작성·결과 수용·로드맵
      갱신 같은 종료 절차는 아래 "마일스톤 종료 절차"가 담당한다.
    - `superpowers:executing-plans` → 구현·리뷰·검증·커밋 (feature 브랜치 1개)
@@ -91,6 +92,7 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
      162줄을 차지했고, 체크리스트 본문이 `docs/qa/` 파일과 중복됐다):
      1. 실기기 QA 체크리스트를 `testing.md` 템플릿으로 **`docs/qa/`에 직접** 쓴다 — 계획 문서에
         초안을 두지 않는다. 작성 의무·담을 내용·전달 방법은 모두 `testing.md`가 정본이다.
+        면제 여부는 위 "작업 종류" 표를 따른다(정비의 조건부 면제는 "정비 작업 경로" 5항).
      2. 사용자에게 제시하고 결과를 받는다(전체를 한 번에 받는다 — `testing.md`).
      3. 결과를 가른다: **진짜 고장**은 지금 고치고, **의도 불일치·개선**은 `docs/backlog.md`로
         (기준 원문은 `testing.md`, 분류 절차는 아래 "버그 처리 경로" 1항).
@@ -110,7 +112,10 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
        커밋되지 않아 세션 내 복구용이고, 체크박스는 커밋되어 도구 간 인계 채널이다(`dual-tool.md`).
      - 그래도 또 빠지면 `.githooks`로 경고를 검토한다(`docs/backlog.md`에 항목 있음).
 3. **MVP 완료** — roadmap의 그 MVP 마일스톤이 모두 `[x]`면:
-   - **실기기 QA 체크리스트 작성 및 제출 (필수)** — UI·제스처·위치·권한 등 시뮬레이터로 검증 불가한 항목이 있는 MVP는 `docs/qa/YYYY-MM-DD-<feature>-device-checklist.md`를 작성하고 사용자에게 제시한다. 순수 로직·docs·리팩터링만 포함된 MVP는 면제. 상세 템플릿은 `docs/agent-rules/testing.md`의 "Real-Device Verification" 절 참고.
+   - **실기기 QA는 MVP 단위로 다시 하지 않는다** — 2항의 마일스톤 종료 절차에서 마일스톤마다
+     이미 제출했다. 작성 의무·면제 조건·템플릿의 정본은 2항과 `testing.md`다. (2026-07-30 정정:
+     이 항목은 원래 "MVP 단위 필수"로 적혀 있었으나 실제로는 마일스톤 단위로 운영돼 왔다 —
+     MVP17은 마일스톤 4개에 체크리스트 3개를 만들고 정비 마일스톤 하나를 면제했다.)
    - `trace-archive` 공용 스킬 — spec+plan을 `history/<mvp>/`로 아카이빙 (Codex `$trace-archive`, Claude Code `/trace-archive`).
    - `trace-study` 공용 스킬 — 학습 정리 (선택, 권장; Codex `$trace-study`, Claude Code `/trace-study`).
 
@@ -158,7 +163,11 @@ superpowers / compound-engineering을 해당 지점에서 호출한다. 강제(�
 `lint-cleanup` 실측에서 정립. 근거: `docs/workflow-audit.md`)
 
 1. **대상 목록·분류 (생략 금지)** — 손댈 대상을 **실측해** 목록으로 만들고 갈래별 처분을 정한다.
-   분량은 표 하나면 된다. **이 단계가 위험을 잡는다** — `lint-cleanup`에서 린트 경고 44건을
+   **`docs/superpowers/plans/<날짜>-<슬러그>.md`에 표로 쓴다** — 위험 갈래가 없어도 이 파일은
+   만든다. 표만 담긴 짧은 문서이며, 위험 갈래가 있으면 그 Task를 이 파일에 덧붙인다.
+   대화에만 두지 않는다 — 이 표가 사라지면 위험 감지 기록 자체가 없어지고, `trace-init`이
+   읽는 plan 체크박스도 없어진다.
+   **이 단계가 위험을 잡는다** — `lint-cleanup`에서 린트 경고 44건을
    분류하다 5건이 `Codable` 저장 키임이 드러났다(그대로 개명하면 사용자 기기의 러닝 기록이
    해독 불가가 되는 경로였다. 함정 원문: `docs/solutions/conventions/codable-property-rename-breaks-stored-blobs.md`).
 2. **상세 계획은 위험 갈래에만** — 분류에서 위험으로 표시된 갈래만 `writing-plans`로 Task별
