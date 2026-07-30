@@ -115,8 +115,11 @@ Claude Code calls the same source with `/<name>` through a `.claude/skills/<name
 | `ce-brainstorm`, `ce-plan`, `ce-work`, `ce-debug` | superpowers 쪽과 역할이 같다. 겹치는 지점은 **superpowers를 쓴다.** 이전에 `brainstorming` + `ce-ideate`를 둘 다 부르게 적혀 있어 같은 일을 두 번 하던 전례가 있다 | 문서 체계를 ce 계열로 통째 전환하기로 결정할 때만 (부분 도입은 이음새가 어긋난다) |
 | `ce-ideate` | ce 세트의 첫 단계이고 출력을 `ce-brainstorm`으로 넘기도록 설계됐다(SKILL.md 3·44행). 기본 출력이 HTML이라 markdown 문서 체계와도 어긋난다. 아이디어 비교는 `superpowers:brainstorming`의 2~3안 비교로 대응한다 | — (같은 기능을 커스텀 스킬로 만들지 검토 중: `docs/backlog.md`) |
 | 브라우저 QA 계열 (`ce-test-browser`, `ce-dogfood`, `ce-polish`) | 웹 페이지를 띄워 검증하는 도구다. Trace는 iOS 앱이고 웹 화면이 없다 | — |
+| `ce-test-xcode` | 빌드·실행·스크린샷·로그 확인을 **이미 XcodeBuildMCP로 직접 하고 있다**(MVP17 스모크 스크린샷 다수, 플랜의 "시뮬레이터에서 눈으로 확인" Step). 이 스킬은 그 절차를 문서화한 것이고, `disable-model-invocation`이라 **사용자가 매번 직접 호출해야** 해서 지금보다 불편해진다 (2026-07-30 검토) | XcodeBuildMCP 없이 작업해야 하거나, 시뮬레이터 확인 절차를 구조화된 보고서로 남길 필요가 생길 때 |
+| `ce-pov` | `trace-video-review`가 Trace 고유 맥락을 담고 있어 대체하지 않는다 — 규칙·메모리 선대조, "모델·도구 선택은 개인 설정이지 레포 규칙이 아니다", 외부 도구의 보안·과설치 선검토, A/B/C 제안 (2026-07-30 사용자 결정: 커스텀 스킬을 원하는 방향으로 이미 설계했으므로 유지) | — |
 
-**아직 정하지 않은 것:** `ce-test-xcode`, 그리고 위 표에 없는 나머지 `ce-*`.
+**아직 정하지 않은 것:** 위 표에 없는 나머지 `ce-*`(`ce-simplify-code`, `ce-explain`,
+`ce-compound-refresh`, `ce-strategy`, `ce-optimize` 등). 필요가 생기면 그때 판단한다.
 근거와 쟁점은 `docs/workflow-audit.md` §3-2-2.
 (`superpowers:receiving-code-review`는 2026-07-30에 **도입**으로 결정 — 위 Required Skill Use 참고.)
 
