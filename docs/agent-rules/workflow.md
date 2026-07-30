@@ -97,10 +97,18 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
      4. 수용된 경우에만 `docs/roadmap.md`의 마일스톤을 `[x]`로 갱신한다
         (사이클에 여러 개가 묶여 있으면 끝난 것부터 개별로 켠다).
      5. 같은 시점에 `milestone-retro` 실행을 **제안**한다(강제 아님. 상세는 `skills.md`).
-   - `subagent-driven-development`로 실행 중이면, Task 리뷰가 끝나 완료 처리할 때마다
-     **plan 파일 내부의 그 Task 체크박스도 같은 턴에 갱신**한다(roadmap 마일스톤 체크박스와는
-     별도). MVP13 사이클 1·2 모두 실행 중엔 갱신하지 않고 아카이빙 시점에 소급 노트를 붙였다
-     — 반복되면 매번 소급 처리 비용이 든다. (2026-07-15)
+   - **plan 체크박스는 그 Task의 커밋에 함께 담는다** (2026-07-30 개정). Task 리뷰가 끝나
+     커밋할 때, 코드 변경과 **같은 커밋에** plan 파일의 그 Task 체크박스 변경을 스테이징한다.
+     체크박스만 고치는 별도 커밋을 만들지 않는다.
+     - 진행 상황이 기록되는 곳은 셋이다: 세션 할 일 목록 · `.git/sdd/progress.md`(원장) ·
+       plan 체크박스. 앞의 둘은 `subagent-driven-development` 흐름에 박혀 있어 자동으로 되고,
+       **plan 체크박스만 우리가 따로 요구하는 것이라 계속 빠졌다** — MVP15·16·17 회고에 세 번
+       연속 같은 지적이 올랐고, 체크박스만 고치는 커밋이 6건 생겼다.
+     - "같은 턴에 갱신"으로 적혀 있던 것을 "같은 커밋"으로 바꾼 이유: **턴은 확인할 수 없고
+       커밋은 `git log`로 확인된다.** 검증 가능한 조건이어야 지켜졌는지 알 수 있다.
+     - 원장(`.git/sdd/progress.md`)과 체크박스는 목적이 달라 하나로 합칠 수 없다 — 원장은
+       커밋되지 않아 세션 내 복구용이고, 체크박스는 커밋되어 도구 간 인계 채널이다(`dual-tool.md`).
+     - 그래도 또 빠지면 `.githooks`로 경고를 검토한다(`docs/backlog.md`에 항목 있음).
 3. **MVP 완료** — roadmap의 그 MVP 마일스톤이 모두 `[x]`면:
    - **실기기 QA 체크리스트 작성 및 제출 (필수)** — UI·제스처·위치·권한 등 시뮬레이터로 검증 불가한 항목이 있는 MVP는 `docs/qa/YYYY-MM-DD-<feature>-device-checklist.md`를 작성하고 사용자에게 제시한다. 순수 로직·docs·리팩터링만 포함된 MVP는 면제. 상세 템플릿은 `docs/agent-rules/testing.md`의 "Real-Device Verification" 절 참고.
    - `trace-archive` 공용 스킬 — spec+plan을 `history/<mvp>/`로 아카이빙 (Codex `$trace-archive`, Claude Code `/trace-archive`).
