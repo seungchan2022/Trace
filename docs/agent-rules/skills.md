@@ -52,8 +52,44 @@ Claude Code calls the same source with `/<name>` through a `.claude/skills/<name
 - Use `superpowers:systematic-debugging` before fixing bugs or unexpected behavior.
 - Use `superpowers:verification-before-completion` before claiming completion.
 - Use `superpowers:requesting-code-review` for major work and before merge.
-- **Compound step (required at the end of every execute-review cycle).** Immediately after `superpowers:requesting-code-review` feedback is resolved and verified, and as the closing step of `superpowers:finishing-a-development-branch`, check whether the execute-review cycle exposed any mistake, repeated issue, surprising constraint, or reusable lesson. If yes, run `ce-compound` (use `ce-compound mode:headless` for skill-to-skill/automated runs) before moving on or marking the checkpoint complete. Capture: what happened, why, what signal would have caught it earlier, and the concrete rule/check/pattern to reuse. Do not use it for generic summaries.
-  - This rule supplies the integration that Codex's `openai-curated` superpowers has built in but obra superpowers (v6.x, installed on Claude Code) does not call automatically. Keep it in the rules, not in the plugin's SKILL.md, so it survives plugin updates and applies in both tools.
+- **Compound step — 판단은 매번, 기록은 해당할 때만.** (2026-07-30 개정)
+
+  **언제 판단하나** — 세 지점. 앞의 둘이 실제 기록 시점이고, 마지막은 그물이다.
+
+  | 시점 | 무엇을 보나 |
+  |---|---|
+  | Task 하나를 끝내고 커밋한 직후 | 그 Task를 만들며 알게 된 것 |
+  | 실기기 QA에서 나온 문제를 고치고 검증한 직후 | 실기기에서만 드러난 것 |
+  | 마일스톤을 닫기 직전 | 위에서 빠뜨린 것이 없는지 최종 확인 |
+
+  **모아뒀다 한꺼번에 하지 않는다.** `ce-compound`는 "맥락이 신선할 때 포착"하도록
+  설계됐고 "한 번에 하나(One learning per run)"를 명시한다. 교훈이 둘이면 두 번 실행한다.
+  미루면 세션 종료·컴팩션과 함께 사라진다 — MVP17 후반이 그렇게 빠졌다.
+
+  **전제 (셋 다 충족해야 기록 대상)** — `ce-compound` 원문 Preconditions:
+  문제가 해결됐고 · 해결이 검증됐고 · 사소하지 않다(오타·뻔한 오류 제외).
+
+  **해당 여부 (하나라도 예면 기록)** — 항목 순서는 `docs/solutions/` 20건의 실제 분포 기준:
+
+  | # | 질문 | 근거 |
+  |---|---|---|
+  | 1 | 도구·프레임워크·환경이 **예상과 다르게** 동작했나 | 20건 중 7건 (가장 잦음) |
+  | 2 | 원인을 찾기 어려운 UI·레이아웃 문제를 풀었나 | 4건 |
+  | 3 | 다른 곳에도 쓸 **해법 패턴**을 찾았나 | 4건 |
+  | 4 | 같은 문제로 **두 번 이상** 막혔나 | 세션 리셋 기준 등 |
+  | 5 | 놓쳤으면 **사용자 데이터·빌드가 깨졌을** 문제를 발견했나 | MVP17 저장 키 개명 건 |
+
+  판단이 애매하면 기준선은 하나다 — **다음에 같은 상황이 와도 또 헤맬 것 같은가.**
+  아니면 기록하지 않는다. 실제로 3개월간 20건, 마일스톤당 1건이 안 된다.
+
+  기록 내용: 무엇이 일어났고 · 왜 그랬고 · 무엇을 봤으면 일찍 잡았을지 · 재사용할 규칙/검사/패턴.
+  일반적인 요약에는 쓰지 않는다. 자동 실행에는 `ce-compound mode:headless`.
+
+  - 이 규칙은 Codex의 `openai-curated` superpowers에는 내장돼 있으나 obra superpowers(v6.x,
+    Claude Code 설치본)가 자동 호출하지 않는 통합을 대신한다. 플러그인 SKILL.md가 아니라
+    규칙에 두어야 플러그인 갱신에도 살아남고 두 도구에 함께 적용된다.
+  - `milestone-retro`와 엮지 않는다. 이쪽은 **에이전트가 기술적 함정을 기록**하는 것이고,
+    회고는 **사용자가 판단·감각을 남기는** 것이다. 회고를 넘겨도 이 판단은 그대로 수행한다.
 - Use `ce-compound` when a workflow rule is updated because of an agent mistake.
 
 ## 쓰지 않기로 정한 스킬 (2026-07-30 사용자와 함께 결정)
