@@ -47,6 +47,29 @@ Claude Code calls the same source with `/<name>` through a `.claude/skills/<name
   - This rule supplies the integration that Codex's `openai-curated` superpowers has built in but obra superpowers (v6.x, installed on Claude Code) does not call automatically. Keep it in the rules, not in the plugin's SKILL.md, so it survives plugin updates and applies in both tools.
 - Use `ce-compound` when a workflow rule is updated because of an agent mistake.
 
+## 쓰지 않기로 정한 스킬 (2026-07-30 사용자와 함께 결정)
+
+설치돼 있지만 Trace에서 쓰지 않는다. 매번 "이것도 써야 하나"를 다시 묻지 않기 위해 명시한다.
+
+**중요 — "안 쓴다"가 "영원히 못 쓴다"는 뜻은 아니다.** 아래 각 항목의 *제안 조건*이 실제로
+관측되면 **에이전트가 먼저 그 스킬을 제안한다.** 사용자가 스킬 이름을 기억해서 직접 꺼내야
+하는 상태로 두지 않는다 — 사용자는 스킬 내부 동작을 알 수 없으므로, 에이전트가 알리지 않으면
+필요한 순간에도 쓸 수 없다(2026-07-30 사용자 확인).
+
+| 스킬 | 쓰지 않는 이유 | 에이전트가 제안할 조건 |
+|---|---|---|
+| `superpowers:using-git-worktrees`, `ce-worktree` | 한 작업 세션은 브랜치 하나로 진행한다(`git.md`). MVP17 마일스톤 4개 중 3개가 서로 파일을 공유했고(`run-idle-polish`는 `history-tab`의 산출물을 제거, `lint-cleanup`은 전 파일 개명), 앞 마일스톤의 실기기 QA 실패가 뒤 마일스톤 설계를 바꿨다 — 순서가 필요한 구조다 | **파일이 겹치지 않는 독립 작업 두 개를 동시에 진행해야 할 때** (예: iOS와 웹 버전을 투 트랙으로) |
+| `superpowers:dispatching-parallel-agents` | 여러 문제를 나눠 조사하는 도구다. TDD로 작게 만들기 때문에 한 번에 하나씩만 깨지고, 버그도 규칙상 하나씩 처리한다(`workflow.md` 버그 처리 경로) | **테스트가 3개 이상 깨졌고 원인이 서로 다를 때** (예: iOS 메이저 버전 전환처럼 한 번에 여러 곳을 건드린 뒤) |
+| `ce-brainstorm`, `ce-plan`, `ce-work`, `ce-debug` | superpowers 쪽과 역할이 같다. 겹치는 지점은 **superpowers를 쓴다.** 이전에 `brainstorming` + `ce-ideate`를 둘 다 부르게 적혀 있어 같은 일을 두 번 하던 전례가 있다 | 문서 체계를 ce 계열로 통째 전환하기로 결정할 때만 (부분 도입은 이음새가 어긋난다) |
+| `ce-ideate` | ce 세트의 첫 단계이고 출력을 `ce-brainstorm`으로 넘기도록 설계됐다(SKILL.md 3·44행). 기본 출력이 HTML이라 markdown 문서 체계와도 어긋난다. 아이디어 비교는 `superpowers:brainstorming`의 2~3안 비교로 대응한다 | — (같은 기능을 커스텀 스킬로 만들지 검토 중: `docs/backlog.md`) |
+| 브라우저 QA 계열 (`ce-test-browser`, `ce-dogfood`, `ce-polish`) | 웹 페이지를 띄워 검증하는 도구다. Trace는 iOS 앱이고 웹 화면이 없다 | — |
+
+**아직 정하지 않은 것:** `superpowers:receiving-code-review`, `ce-test-xcode`,
+그리고 위 표에 없는 나머지 `ce-*`. 근거와 쟁점은 `docs/workflow-audit.md` §3-2-2.
+
+**`ce-code-review`는 여기 없다** — `/code-review`가 곧 `ce-code-review`이며 실제로 쓰고 있다
+(`dual-tool.md` 최종 브랜치 리뷰 절).
+
 ## Asking the User Decisions
 
 - When proposing options or asking the user to make a decision, ask **in chat as plain text** using an `A / B / C` list, and mark the recommended option with `(추천)`. Do not use the built-in interview/question UI (e.g. the `AskUserQuestion` tool or any skill's structured-question prompt) for this.
