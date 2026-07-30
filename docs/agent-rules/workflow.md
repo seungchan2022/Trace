@@ -83,10 +83,20 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
    정비는 "정비 작업 경로", 버그는 "버그 처리 경로"로 간다.
    - `superpowers:brainstorming` → `docs/superpowers/specs/<날짜>-<슬러그>-design.md` (정비 ✕)
    - `superpowers:writing-plans` → `docs/superpowers/plans/<날짜>-<슬러그>.md` (정비는 위험 항목만)
+     — **계획 문서의 Task는 코드를 바꾸는 것만 담는다.** QA 체크리스트 작성·결과 수용·로드맵
+     갱신 같은 종료 절차는 아래 "마일스톤 종료 절차"가 담당한다.
    - `superpowers:executing-plans` → 구현·리뷰·검증·커밋 (feature 브랜치 1개)
-   - 마일스톤이 끝날 때마다 `docs/roadmap.md`의 해당 마일스톤을 `[x]`로 갱신
-     (사이클에 여러 개가 묶여 있으면 끝난 것부터 개별로 켠다).
-   - 같은 시점에 `milestone-retro` 실행을 **제안**한다(강제 아님). 상세는 `docs/agent-rules/skills.md`.
+   - **마일스톤 종료 절차 — 계획 문서의 Task로 만들지 않는다.** 매 마일스톤이 같은 순서를
+     밟으므로 계획마다 다시 쓸 이유가 없다(MVP17 `sheet-drag`는 이 절차가 Task 3·4로 들어가
+     162줄을 차지했고, 체크리스트 본문이 `docs/qa/` 파일과 중복됐다):
+     1. 실기기 QA 체크리스트를 `testing.md` 템플릿으로 **`docs/qa/`에 직접** 쓴다 — 계획 문서에
+        초안을 두지 않는다. 작성 의무·담을 내용·전달 방법은 모두 `testing.md`가 정본이다.
+     2. 사용자에게 제시하고 결과를 받는다(전체를 한 번에 받는다 — `testing.md`).
+     3. 결과를 가른다: **진짜 고장**은 지금 고치고, **의도 불일치·개선**은 `docs/backlog.md`로
+        (기준 원문은 `testing.md`, 분류 절차는 아래 "버그 처리 경로" 1항).
+     4. 수용된 경우에만 `docs/roadmap.md`의 마일스톤을 `[x]`로 갱신한다
+        (사이클에 여러 개가 묶여 있으면 끝난 것부터 개별로 켠다).
+     5. 같은 시점에 `milestone-retro` 실행을 **제안**한다(강제 아님. 상세는 `skills.md`).
    - `subagent-driven-development`로 실행 중이면, Task 리뷰가 끝나 완료 처리할 때마다
      **plan 파일 내부의 그 Task 체크박스도 같은 턴에 갱신**한다(roadmap 마일스톤 체크박스와는
      별도). MVP13 사이클 1·2 모두 실행 중엔 갱신하지 않고 아카이빙 시점에 소급 노트를 붙였다
