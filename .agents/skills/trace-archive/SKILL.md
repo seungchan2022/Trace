@@ -39,16 +39,19 @@ description: 완료된 Trace MVP의 명세·플랜·회고·로드맵 상태를 
 
 ## 3. 아카이빙 (`git mv`)
 
-해당 MVP 마일스톤의 spec/plan을 `history/<slug>/`로 이동:
+해당 MVP 마일스톤의 spec/plan/회고를 `history/<slug>/`로 이동:
 
 ```bash
 mkdir -p history/mvpN
 git mv docs/superpowers/specs/<...>-design.md history/mvpN/
 git mv docs/superpowers/plans/<...>.md          history/mvpN/
+git mv docs/retro/<...>-retro.md                history/mvpN/   # milestone-retro 산출물
 ```
 
-- `docs/superpowers/specs|plans/` 루트에는 **진행 중 마일스톤 문서만** 남는다.
+- `docs/superpowers/specs|plans/`와 `docs/retro/` 루트에는 **진행 중 마일스톤 문서만** 남는다.
 - QA 체크리스트(`docs/qa/`) 등 그 MVP 전용 문서가 있으면 함께 이동을 제안한다.
+- 마일스톤 회고(`milestone-retro` 산출물)는 사용자 인터뷰가 들어간 유일한 마일스톤 단위 기록이므로,
+  **2번 완료 회고를 쓸 때 근거로 먼저 읽는다.** 커밋만 보고 추측해서 쓰지 않는다.
 
 ## 4. INDEX 갱신
 

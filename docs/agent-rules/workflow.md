@@ -49,6 +49,7 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
    - `superpowers:executing-plans` → 구현·리뷰·검증·커밋 (feature 브랜치 1개)
    - 마일스톤이 끝날 때마다 `docs/roadmap.md`의 해당 마일스톤을 `[x]`로 갱신
      (사이클에 여러 개가 묶여 있으면 끝난 것부터 개별로 켠다).
+   - 같은 시점에 `milestone-retro` 실행을 **제안**한다(강제 아님). 상세는 `docs/agent-rules/skills.md`.
    - `subagent-driven-development`로 실행 중이면, Task 리뷰가 끝나 완료 처리할 때마다
      **plan 파일 내부의 그 Task 체크박스도 같은 턴에 갱신**한다(roadmap 마일스톤 체크박스와는
      별도). MVP13 사이클 1·2 모두 실행 중엔 갱신하지 않고 아카이빙 시점에 소급 노트를 붙였다

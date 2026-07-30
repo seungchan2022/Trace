@@ -9,7 +9,7 @@ token budget runs out and work continues in the other.
 Shared (lives in the repo, both tools see it — never duplicate per tool):
 
 - Rule manuals: `docs/agent-rules/*.md`
-- Shared skills: `.agents/skills/*/SKILL.md` (`trace-init`, `daily-retro`, `trace-archive`, `trace-study`, `trace-video-review`)
+- Shared skills: `.agents/skills/*/SKILL.md` (`trace-init`, `daily-retro`, `milestone-retro`, `trace-archive`, `trace-study`, `trace-video-review`)
 - Git history, `.githooks`, plans (`docs/superpowers/plans/`), specs, `project-decisions.md`
 
 Tool-specific (thin adapters; each tool only reads its own):

@@ -26,10 +26,14 @@
 ## Trace-Specific Shared Skills
 
 - `trace-init`: restore Trace session state at the start of a new chat.
-- `daily-retro`: summarize the day and capture lessons or follow-up work. **트리거 —
-  그날 코드나 문서 커밋이 있었고 작업을 마무리하는 시점.** 사용자가 요청하지 않아도
-  에이전트가 한 번 제안한다(강제 아님, 사용자가 넘기면 넘긴다). 트리거가 규칙에 없어서
-  2026-07-15 이후 조용히 멈춰 있었다(경위: `docs/workflow-audit.md` §3-2-2 ③).
+- `daily-retro`: summarize the day and capture lessons or follow-up work.
+  **사용자가 직접 호출한다** — 에이전트가 먼저 제안하지 않는다. 하루라는 단위가 세션 만료로
+  자주 잘려서 회고 기준이 되기 어렵다는 것이 확인됐다(2026-07-30). 완결 단위 회고는
+  `milestone-retro`가 맡는다.
+- `milestone-retro`: 마일스톤 하나가 끝났을 때 사용자 인터뷰 기반 회고를 쓴다.
+  **트리거 — 실기기 QA 결과를 수용하고 `docs/roadmap.md`의 마일스톤을 `[x]`로 바꾸는 시점**에
+  에이전트가 제안한다(강제 아님). 산출물은 `docs/retro/`에 두고 `trace-archive`가 `history/mvpN/`으로 옮긴다.
+  MVP 완료 회고에는 사용자 인터뷰가 없으므로, 사용자 판단이 기록되는 자리는 이 스킬과 `daily-retro`뿐이다.
 - `trace-archive`: archive a completed MVP's artifacts and update its index/roadmap state.
 - `trace-study`: build a learning walkthrough for a completed MVP.
 - `trace-video-review`: review an external video/content tip (e.g. YouTube) against current Trace rules and memories, and judge whether it's worth adopting.
