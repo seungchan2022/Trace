@@ -550,7 +550,33 @@ override는 이미 두 번 해본 방식이라 위험하지 않다 (§4의 ⚡ �
 | 2026-07-30 | `ce-compound` 판단 기준 구체화 (`fcabde1`) | 네 단어 → 전제 3 + 체크리스트 5. 시점도 셋으로 분리 |
 | 2026-07-30 | MVP17 후반 교훈 소급 기록 (`278fb41`, `b11fefe`) | 저장 키 함정 · IDE 색인 지연. `docs/solutions/` 20건 → 22건 |
 | 2026-07-30 | **2단계 — 작업 종류 3분할 + 세션 경계** (커밋 `4a35609`) | 아래 참고 |
+| 2026-07-30 | 마일스톤 종료 절차 분리 (`5901f4c`) · 체크박스를 "같은 커밋"으로 (`5deffe3`) | 실기기 서류가 계획 Task에서 빠짐 |
+| 2026-07-30 | 체크리스트 이중 규정·정비 표 저장 위치 수정 (`10dbbf4`) | 2항·3항 층위 불일치 해소 |
+| 2026-07-30 | `receiving-code-review` 도입 (`821256d`) | 형식적 동의 금지 + 불명확할 때 재진술 |
+| 2026-07-30 | `ce-test-xcode` 보류 · `trace-video-review` 유지 (`4a41486`) | 검증 명령 중복도 함께 제거 |
+| 2026-07-30 | 규칙 파일 크기 리서치 → 기준선 수립 (`a6d3572`) | 자동 로드 120줄 / 상세 파일 300줄. **분리는 하지 않음** |
 | | 다음: 다음 MVP에서 실제로 돌려보고 관찰 | 대기 중 |
+
+### 규칙 파일 분리를 하지 않은 이유 (2026-07-30)
+
+`workflow.md`가 256줄이 되어 분리를 검토했다. 조사 결과 **원칙은 맞지만 Trace는 이미 지키고
+있다** — 자동 로드되는 것은 `AGENTS.md` 65줄뿐이고(권장 80~120줄), `docs/agent-rules/`는
+Rule Index를 통해 필요할 때 읽는다. `@path` import를 쓰지 않는 것이 핵심이다(import는 시작 시
+함께 로드되어 컨텍스트를 줄이지 않는다).
+
+분리하면 90~120줄을 아낄 수 있다는 계산은 나왔으나 보류했다. **어느 절이 실제로 함께
+읽히는지 모르기 때문**이다 — 잘못 나누면 매번 두 파일을 열게 되어 지금보다 나빠진다.
+관찰 장치를 따로 만드는 것은 줄이려는 무게를 오히려 늘리므로, `authoring.md`의 300줄
+기준선이 자동 신호 역할을 하게 두었다(현재 44줄 여유).
+
+한 가지는 정정한다 — "한 파일에 두면 어긋나지 않는다"는 논거는 약했다. 오늘 고친 불일치
+4건 중 **2건은 `workflow.md` 한 파일 안에서** 어긋났다. 긴 파일은 이어 읽으며 모순을 찾기
+어렵다는 점은 분리를 지지하는 근거로 남는다.
+
+출처: [Claude Code best practices](https://code.claude.com/docs/en/best-practices) ·
+[memory](https://code.claude.com/docs/en/memory) ·
+[skill authoring](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices) ·
+[context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
 
 ### 2단계에서 고친 것 (2026-07-30)
 
