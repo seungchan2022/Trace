@@ -10,10 +10,14 @@
 - Playwright MCP: configured globally for browser-backed checks when needed
 - Sequential Thinking MCP: configured globally for structured reasoning support when needed
 
+**규칙이 요구하는 스킬 호출이 실패하면 그 단계를 건너뛰고 진행하지 않는다.** 멈추고 사용자에게
+알린다 — 어떤 스킬이 왜 실패했는지, 재시작이 필요한지. 실패를 삼키고 넘어가면 "필수"로 적힌
+단계가 조용히 빠진다. `ce-compound`가 2026-07-17 이후 두 사이클(MVP16·17) 연속 빠진 것이
+그 예다(경위: `docs/workflow-audit.md` §3-2-2 ③).
+
 **플러그인을 설치·갱신·활성화한 뒤에는 도구를 완전히 재시작한다.** 재시작 전에는 스킬이
 호출 목록에 나타나지 않고, 호출하면 `Unknown skill`로 실패한다 — 설정은 정상이므로
-설정 파일을 봐서는 원인을 찾을 수 없다. 재시작을 빠뜨리면 규칙이 요구하는 단계가 조용히
-건너뛰어진다. 2026-07-29에 실제로 발생했다(경위: `docs/workflow-audit.md` §5-7).
+설정 파일을 봐서는 원인을 찾을 수 없다. 2026-07-29에 실제로 발생했다(경위: `docs/workflow-audit.md` §5-7).
 
 **`disable-model-invocation: true`가 붙은 스킬은 에이전트가 호출할 수 없다.** 사용자가
 직접 `/<name>`으로 실행해야 한다. compound-engineering 3.19.0에서는 8개가 여기 해당하며,

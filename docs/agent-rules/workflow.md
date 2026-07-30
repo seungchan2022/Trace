@@ -72,10 +72,12 @@ superpowers / compound-engineering을 해당 지점에서 호출한다. 강제(�
 | MVP 킥오프(로드맵·마일스톤 분해) 직후 | `ce-doc-review` | 기획·로드맵의 구조 결함 (구현 전이 수정비용 최저) |
 | 사이클 spec 완료 시 (표준 무게) | `ce-doc-review` | 설계 구멍·전제 오류 |
 | 기술 결정 갈림길 | `superpowers:brainstorming`(2~3안 비교) | 대안 비교 없이 한 길로 가는 것 |
-| 아키텍처/외부 조사 필요 | `context7` MCP(라이브러리·API 문서) · `WebSearch` | 구조 이해 부족·바퀴 재발명 |
+| 아키텍처/외부 조사 필요 | `context7`(라이브러리·API 문서) · `WebSearch`로 근거 수집 → 모은 근거로 `advisor` 검토 | 구조 이해 부족·바퀴 재발명 |
 | **구현 후 · 커밋 전** (가장 중요) | `superpowers:requesting-code-review` + `/code-review` | 코드 결함·회귀 |
 | 막힐 때(버그·재현 안 됨) | `superpowers:systematic-debugging` | 추측 기반 수정 |
 
+- **조사 없이 `advisor`를 부르지 않는다** — 근거가 없으면 검토도 추측이 된다. `advisor`를 언제
+  부르는지의 규칙은 `docs/agent-rules/dual-tool.md`에 있다(이 파일에 옮겨 적지 않는다).
 - **적대적 검토는 별도 호출이 아니다.** `ce-doc-review`가 문서 내용을 보고 필요하면
   adversarial 검토자를 내부에서 띄운다(항상 오는 coherence·feasibility 2명 + 조건부 5명, 최대 7명).
   이전 표에 있던 `ce-adversarial-reviewer`·`ce-adversarial-document-reviewer`·
