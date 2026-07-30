@@ -90,6 +90,13 @@ Claude Code calls the same source with `/<name>` through a `.claude/skills/<name
     규칙에 두어야 플러그인 갱신에도 살아남고 두 도구에 함께 적용된다.
   - `milestone-retro`와 엮지 않는다. 이쪽은 **에이전트가 기술적 함정을 기록**하는 것이고,
     회고는 **사용자가 판단·감각을 남기는** 것이다. 회고를 넘겨도 이 판단은 그대로 수행한다.
+- **피드백을 받을 때는 `superpowers:receiving-code-review`를 따른다.** (2026-07-30 도입)
+  적용 지점은 피드백이 들어오는 **모든 곳** — `ce-doc-review` 지적, Task별·최종 코드리뷰,
+  실기기 QA 결과, 사용자의 직접 지적.
+  - **항상**: "맞습니다"·"좋은 지적입니다" 같은 형식적 동의로 먼저 답하지 않는다. 검증하기 전에
+    구현을 약속하지 않는다. 근거가 있으면 반박하고, 확인이 끝나면 말보다 작업으로 답한다.
+  - **지적이 불명확할 때만**: 내 말로 재진술해 확인한 뒤 착수한다. 명확한 지적에 되묻는 것은
+    왕복만 늘린다. MVP15 회고 "버그 신고를 처음에 좁게 잘못 해석했다"가 재진술로 막히는 유형이다.
 - Use `ce-compound` when a workflow rule is updated because of an agent mistake.
 
 ## 쓰지 않기로 정한 스킬 (2026-07-30 사용자와 함께 결정)
@@ -109,8 +116,9 @@ Claude Code calls the same source with `/<name>` through a `.claude/skills/<name
 | `ce-ideate` | ce 세트의 첫 단계이고 출력을 `ce-brainstorm`으로 넘기도록 설계됐다(SKILL.md 3·44행). 기본 출력이 HTML이라 markdown 문서 체계와도 어긋난다. 아이디어 비교는 `superpowers:brainstorming`의 2~3안 비교로 대응한다 | — (같은 기능을 커스텀 스킬로 만들지 검토 중: `docs/backlog.md`) |
 | 브라우저 QA 계열 (`ce-test-browser`, `ce-dogfood`, `ce-polish`) | 웹 페이지를 띄워 검증하는 도구다. Trace는 iOS 앱이고 웹 화면이 없다 | — |
 
-**아직 정하지 않은 것:** `superpowers:receiving-code-review`, `ce-test-xcode`,
-그리고 위 표에 없는 나머지 `ce-*`. 근거와 쟁점은 `docs/workflow-audit.md` §3-2-2.
+**아직 정하지 않은 것:** `ce-test-xcode`, 그리고 위 표에 없는 나머지 `ce-*`.
+근거와 쟁점은 `docs/workflow-audit.md` §3-2-2.
+(`superpowers:receiving-code-review`는 2026-07-30에 **도입**으로 결정 — 위 Required Skill Use 참고.)
 
 **`ce-code-review`는 여기 없다** — `/code-review`가 곧 `ce-code-review`이며 실제로 쓰고 있다
 (`dual-tool.md` 최종 브랜치 리뷰 절).
