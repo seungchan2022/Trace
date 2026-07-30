@@ -97,6 +97,44 @@
 
 ---
 
+## 어떤 스킬이 언제 도나
+
+**⌨️ = 사용자가 직접 친다 · 🤖 = 에이전트가 알아서 켠다**
+
+| 언제 | 스킬 | 누가 | 무엇을 하나 |
+|---|---|---|---|
+| 세션 시작 | `using-superpowers` | 🤖 자동 | "쓸 스킬이 있는지 먼저 확인해라"를 에이전트에 주입 |
+| 세션 시작 | `/trace-init` | ⌨️ | 상태 복원 + "지금 할 수 있는 것" 목록 |
+| MVP 쪼개기 | `brainstorming` | 🤖 | 마일스톤 분해 → 킥오프 문서 |
+| 설계 | `brainstorming` | 🤖 | 인터뷰 → 설계 문서 → **사용자 승인 대기** |
+| 설계 검토 | `/ce-doc-review` | ⌨️ | 검토자 최대 7명이 각자 관점으로 문서를 읽음 |
+| 계획 | `writing-plans` | 🤖 | Task·Step으로 분해 |
+| 구현 | `subagent-driven-development` | 🤖 | Task마다 **구현 담당 1명 + 검사 담당 1명**을 따로 띄움 |
+| 구현 안에서 | `test-driven-development` | 🤖 | 테스트 먼저 → 실패 확인 → 구현 → 통과 |
+| Task 끝날 때 | `requesting-code-review` | 🤖 | 검사 담당에게 넘김 |
+| 지적을 받으면 | `receiving-code-review` | 🤖 | 확인하고 답함. 불명확하면 되물음 |
+| 완료 주장 전 | `verification-before-completion` | 🤖 | 실제로 명령을 돌려 확인 |
+| Task 커밋 직후 | `ce-compound` | 🤖 판단 | 기록할 교훈이 있나 체크리스트로 확인 → 있으면 `docs/solutions/` |
+| 어려운 판단 | `advisor` | 🤖 | 상급 검토자에게 물어봄 (결정 지점에서만) |
+| 버그가 나면 | `systematic-debugging` | 🤖 | 원인 조사 → 가설 → 최소 수정 → 원인 소멸 확인 |
+| 마일스톤 닫을 때 | `milestone-retro` | 🤖 제안 | 회고할지 물어봄. 승인하면 인터뷰 |
+| 하루 정리 | `/daily-retro` | ⌨️ | 직접 부를 때만 |
+| MVP 완료 | `/trace-archive` | ⌨️ | 문서를 `history/mvpN/`으로 |
+| MVP 완료 | `/trace-study` | ⌨️ | 학습 정리 (선택) |
+| 외부 팁 검토 | `/trace-video-review` | ⌨️ | 도입할지 판단 |
+
+**사용자가 쳐야 하는 건 7개뿐이다.** 나머지는 자동으로 돈다.
+
+### 안 쓰기로 정한 것
+
+`ce-brainstorm`·`ce-plan`·`ce-work`·`ce-debug`(superpowers와 중복) · `ce-ideate` ·
+`using-git-worktrees`·`ce-worktree` · `dispatching-parallel-agents` · 브라우저 QA 계열 ·
+`ce-test-xcode`(이미 XcodeBuildMCP로 직접 함)
+
+**"영원히 안 쓴다"가 아니다.** 조건이 오면 에이전트가 먼저 제안한다 —
+예: 테스트가 3개 이상 서로 다른 이유로 깨지면 병렬 조사를, 파일이 안 겹치는 두 작업을
+동시에 해야 하면 워크트리를. 조건 원문은 `skills.md`.
+
 ## 에이전트가 달라진 점
 
 | | 이전 | 지금 |
@@ -119,3 +157,26 @@
 | 어떤 스킬을 쓰나 / 안 쓰나 | `skills.md` |
 | 커밋·브랜치 규칙 | `git.md` |
 | 왜 이렇게 정했나 | `docs/workflow-audit.md` |
+
+---
+
+## 이 워크플로를 다시 손보고 싶을 때
+
+**분석부터 다시 하지 않는다.** 2026-07-29~30에 스킬 49장을 전수 조사하고 발견 15건을
+처리했다. 그 기록이 `docs/workflow-audit.md`에 있다.
+
+| 하려는 것 | 먼저 볼 곳 |
+|---|---|
+| 왜 이렇게 정했는지 확인 | `workflow-audit.md` §5 (발견별 근거) |
+| 안 쓰기로 한 스킬을 다시 검토 | `workflow-audit.md` §3-2-2 + `skills.md`의 "제안할 조건" 칸 |
+| 규칙 파일이 300줄을 넘었을 때 | `authoring.md` 크기 기준선 + `workflow-audit.md`의 분리 보류 근거 |
+| 다음에 관찰할 것 | `workflow-audit.md` §8 진행 기록 |
+
+**아직 검증되지 않은 것 4가지** (다음 MVP에서 확인):
+
+1. 킥오프 표의 **의존 칸을 미리 판단할 수 있나** — MVP17에서는 QA 실패로 드러났다
+2. `trace-init`의 선택지가 실제로 유용한가 — 표가 있는 첫 MVP에서 처음 작동한다
+3. 정비 경로가 정말 가벼운가 — 분류 표만으로 위험을 잡을 수 있는지
+4. plan 체크박스가 이제 지켜지나 — 또 빠지면 `.githooks` 경고를 만든다
+
+이 중 하나라도 안 맞으면 그 부분만 고친다. 전체를 다시 설계하지 않는다.
