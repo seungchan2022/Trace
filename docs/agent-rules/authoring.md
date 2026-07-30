@@ -27,6 +27,19 @@ history rewrite without approval) may also appear in `AGENTS.md`, because an
 agent can act on git before opening `git.md`. Keep that list short and point to
 `docs/agent-rules/git.md` for the rest.
 
+## 파일 크기 기준선 (2026-07-30 조사)
+
+- **`AGENTS.md`(및 심볼릭 `CLAUDE.md`)는 120줄 이하로 유지한다.** 이 파일만 모든 세션에
+  자동 로드된다. 모델이 한 컨텍스트에서 신뢰성 있게 따르는 지시는 150~200개이고 도구
+  시스템 프롬프트가 이미 상당수를 쓴다 — 80줄을 넘으면 규칙이 떨어지기 시작하고 200줄을
+  넘으면 블록 단위로 무시된다(비선형). 현재 65줄.
+- **`docs/agent-rules/` 상세 파일은 자동 로드되지 않으므로 위 한계가 그대로 적용되지 않는다.**
+  Rule Index를 보고 필요할 때 읽는 구조가 곧 progressive disclosure다. `@path` import로
+  바꾸지 말 것 — import는 조직화에만 도움이 되고 **시작 시 함께 로드되어 컨텍스트를 줄이지 않는다.**
+- **상세 파일 하나가 300줄을 넘으면 분리를 검토한다.** 단 **섹션 단위가 아니라 도메인 단위로**
+  나눈다. 같은 흐름의 분기를 떼어놓으면 "한 규칙 한 곳" 원칙이 깨지고 두 파일이 어긋난다
+  (2026-07-30에 같은 내용이 두 곳에 있어 생긴 불일치를 4건 고쳤다).
+
 ## What goes where — the discriminator
 
 Ask: does the agent need this *before* it would naturally open the detail file?

@@ -31,7 +31,7 @@ Full git rules — commit format, integration/merge flow, branch hygiene — liv
 
 Read the relevant rule file before making changes:
 
-- Work units (MVP, milestone), top-down flow, review checkpoints, bug handling path, step visibility, archiving, and study: `docs/agent-rules/workflow.md`
+- Work units (MVP, milestone), top-down flow, review checkpoints, step visibility, archiving, and study: `docs/agent-rules/workflow.md` — **작업 종류별 경로 분기 포함** (새 기능 / 작은 기능 / 정비 / 버그). 마일스톤 착수 전에 어느 경로인지 먼저 정한다.
 - Git safety, branches, commits, and PRs: `docs/agent-rules/git.md`
 - iOS and Swift rules: `docs/agent-rules/ios-swift.md`
 - Architecture rules: `docs/agent-rules/architecture.md`
