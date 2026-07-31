@@ -36,7 +36,7 @@
   에이전트가 제안한다(강제 아님). 산출물은 `docs/retro/`에 두고 `trace-archive`가 `history/mvpN/`으로 옮긴다.
   MVP 완료 회고에는 사용자 인터뷰가 없으므로, 사용자 판단이 기록되는 자리는 이 스킬과 `daily-retro`뿐이다.
 - `trace-archive`: archive a completed MVP's artifacts and update its index/roadmap state.
-- `trace-study`: build a learning walkthrough for a completed MVP.
+- `trace-study`: study one *feature* (not one MVP) from code, test names, and MVP docs; leaves a note that restores understanding in ~10 minutes. Scope and the catch-up unit list live in `docs/superpowers/specs/2026-07-31-trace-study-scope-design.md`.
 - `trace-video-review`: review an external video/content tip (e.g. YouTube) against current Trace rules and memories, and judge whether it's worth adopting.
 
 Each canonical source lives at `.agents/skills/<name>/SKILL.md`. Codex calls it with `$<name>`;

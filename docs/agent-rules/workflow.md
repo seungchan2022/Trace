@@ -246,8 +246,13 @@ superpowers / compound-engineering을 해당 지점에서 호출한다. 강제(�
 
 ## 학습 (실행 절차: `.agents/skills/trace-study/SKILL.md`)
 
-- 완료된 MVP를 "흐름 + 개념" 산문과 셀프 퀴즈로 `history/<mvp>/concepts.md`에 정리한다.
-- 목적: "어떻게 만들었나"를 면접/실무에서 **자기 언어로 설명**할 수 있게 체화하는 것.
+- **단위는 MVP가 아니라 기능**이다. MVP 순서로 돌면 이후 교체·삭제된 화면을 배우게 된다 —
+  MVP 문서는 순회 대상이 아니라 **참조 대상**으로 쓴다. 산출물은 `docs/study/<번호>-<슬러그>.md`.
+- 목표 깊이는 **C**(각 부품이 무엇을 보장하는가 + 어떤 순서로 이어지는가). 코드 한 줄 수준은 필요할 때 연다.
+  UI·레이아웃과 테스트 작성법은 범위 밖 — 그 화면을 건드리는 MVP가 올 때 배운다.
+- 두 모드: **따라잡기**(밀린 9덩어리, 일회성) / **따라가기**(MVP 종료 직후 그 MVP 분량을 덧씀).
+  진행 상태는 `docs/superpowers/plans/*-trace-study-catchup.md` 체크박스에 둬서 `trace-init`이 복원한다.
+- 범위·덩어리 목록·기각한 대안: `docs/superpowers/specs/2026-07-31-trace-study-scope-design.md`
 
 ## frank에서 가져오지 않은 것 (의도적 제외)
 
