@@ -14,7 +14,7 @@
 | `/trace-init` | `.claude/skills/trace-init` → `../../.agents/skills/trace-init` 심볼릭 | Codex와 공통 `SKILL.md`를 쓰는 세션 상태 복원 스킬. 복사 불필요. |
 | `/daily-retro` | `.claude/skills/daily-retro` → `../../.agents/skills/daily-retro` 심볼릭 | 하루 회고 공용 스킬. 복사 불필요. |
 | `/trace-archive` | `.claude/skills/trace-archive` → `../../.agents/skills/trace-archive` 심볼릭 | MVP 아카이빙 공용 스킬. 복사 불필요. |
-| `/trace-study` | `.claude/skills/trace-study` → `../../.agents/skills/trace-study` 심볼릭 | MVP 학습 정리 공용 스킬. 복사 불필요. |
+| `/trace-study` | `.claude/skills/trace-study` → `../../.agents/skills/trace-study` 심볼릭 | 기능 단위 학습 공용 스킬. 복사 불필요. |
 | `/trace-video-review` | `.claude/skills/trace-video-review` → `../../.agents/skills/trace-video-review` 심볼릭 | 외부 영상/콘텐츠 팁 리뷰 공용 스킬. 복사 불필요. |
 
 → 즉 **추가 설치 단계가 없다.** 새 머신에서 클론하면 그대로 동작한다.

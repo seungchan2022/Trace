@@ -120,7 +120,8 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
      이 항목은 원래 "MVP 단위 필수"로 적혀 있었으나 실제로는 마일스톤 단위로 운영돼 왔다 —
      MVP17은 마일스톤 4개에 체크리스트 3개를 만들고 정비 마일스톤 하나를 면제했다.)
    - `trace-archive` 공용 스킬 — spec+plan을 `history/<mvp>/`로 아카이빙 (Codex `$trace-archive`, Claude Code `/trace-archive`).
-   - `trace-study` 공용 스킬 — 학습 정리 (선택, 권장; Codex `$trace-study`, Claude Code `/trace-study`).
+   - `trace-study MVP{N}` 공용 스킬 — 그 MVP가 바꾼 부분을 학습 노트에 덧씀 (선택, 권장;
+     Codex `$trace-study MVP{N}`, Claude Code `/trace-study MVP{N}`). 단위는 MVP가 아니라 기능이다 — 아래 "학습" 절.
 
 > MVP는 "나중에 묶는 라벨"이 아니라 **"먼저 세우는 우산"**이다. 시작 시점에 묶음 기준이
 > 정해지므로, 마일스톤을 다 만든 뒤 "이걸 어느 MVP로 묶지?"를 고민하는 사후 분류 문제가 없다.

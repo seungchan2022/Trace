@@ -16,7 +16,7 @@
 | 새 세션 상태 복원 | `$trace-init` |
 | 하루 회고 | `$daily-retro` 또는 `$daily-retro 260615` |
 | 완료 MVP 아카이빙 | `$trace-archive` 또는 `$trace-archive MVP1` |
-| 완료 MVP 학습 정리 | `$trace-study` 또는 `$trace-study MVP1` |
+| 학습 (기능 단위) | `$trace-study` (다음 덩어리) 또는 `$trace-study MVP18` (그 MVP 분량 덧쓰기) |
 | 외부 영상/콘텐츠 팁 검토 | `$trace-video-review` |
 
 `~/.codex/prompts/`로 이 스킬들을 복사하지 않는다. 이전 전역 복사본이 있다면 새 호출을 검증한 뒤에만 삭제한다.

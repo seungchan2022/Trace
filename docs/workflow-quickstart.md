@@ -93,7 +93,8 @@
 ## 5. MVP 완료
 
 - `trace-archive` — 설계·계획·QA·회고를 `history/mvpN/`으로
-- `trace-study` — 학습 정리 (선택)
+- `trace-study MVP{N}` — 그 MVP가 바꾼 부분을 학습 노트에 덧씀 (선택)
+  - 인자 없이 `trace-study`를 부르면 **밀린 것 따라잡기**(기능 9덩어리)로 간다 — MVP 완료와 무관하게 아무 때나
 
 ---
 
@@ -120,7 +121,8 @@
 | 마일스톤 닫을 때 | `milestone-retro` | 🤖 제안 | 회고할지 물어봄. 승인하면 인터뷰 |
 | 하루 정리 | `/daily-retro` | ⌨️ | 직접 부를 때만 |
 | MVP 완료 | `/trace-archive` | ⌨️ | 문서를 `history/mvpN/`으로 |
-| MVP 완료 | `/trace-study` | ⌨️ | 학습 정리 (선택) |
+| MVP 완료 | `/trace-study MVP{N}` | ⌨️ | 그 MVP가 바꾼 부분을 학습 노트에 덧씀 (선택) |
+| 공부하고 싶을 때 | `/trace-study` | ⌨️ | 밀린 것 따라잡기 — 다음 덩어리부터 |
 | 외부 팁 검토 | `/trace-video-review` | ⌨️ | 도입할지 판단 |
 
 **사용자가 쳐야 하는 건 7개뿐이다.** 나머지는 자동으로 돈다.
