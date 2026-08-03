@@ -1058,7 +1058,53 @@ protocol LocationServiceProtocol {
        <strong>안 받은 것은 존재도 모른다</strong> — 러닝 화면은 저장소가 있는지조차 모른다.</p>
 
     <p>덕분에 <strong>화면 <code>init</code> 한 줄만 보면 그 화면이 무엇을 쓰는지 다 나온다.</strong>
-       컨테이너를 통째로 넘기는 방식이면 코드만 봐서는 알 수 없다.</p>
+       세 화면의 <code>init</code>이 곧 의존 관계 전부다.</p>
+
+<pre class="code"><span class="c">// CoursePlannerPage.swift:59</span>
+init(coursePlanningService: CoursePlanningServiceProtocol,
+     locationService: LocationServiceProtocol,
+     cameraStateStore: CameraStateStore = CameraStateStore(),
+     courseRepository: CourseRepositoryProtocol)
+
+<span class="c">// RunPage.swift:7</span>
+init(session: RunSession, announcer: VoiceAnnouncerProtocol)
+
+<span class="c">// HistoryPage.swift:10</span>
+init(history: RunHistoryViewModel, isActive: Bool)</pre>
+
+    <p>컨테이너를 통째로 넘기는 방식이면 이걸 알 수 없다. 실제로 다른 프로젝트를 비교해 보면
+       <code>MainView(container:)</code>처럼 통째로 넘기는 경우가 있는데, 그러면
+       <strong>어느 화면이 무엇을 쓰는지 코드만 봐서는 못 찾는다.</strong></p>
+
+    <div class="concept">
+      <h4>💡 뷰가 왜 자기가 안 쓰는 의존성을 아나?</h4>
+      <p><code>RunPage</code>는 받은 <code>session</code>·<code>announcer</code>를
+         <strong>그대로 ViewModel에 넘기고 끝</strong>이다. 자기는 안 쓴다.
+         <strong>순수 MVVM이라면 ViewModel을 밖에서 만들어 넘기는 쪽이 맞다.</strong></p>
+      <p>그런데 SwiftUI에서 <code>@State</code>로 ViewModel을 들려면
+         <strong>뷰의 <code>init</code> 안에서 초기화해야 한다.</strong> 그러려면 재료가 그
+         <code>init</code>을 통과할 수밖에 없다. <strong>뷰가 알고 싶어서 아는 게 아니라
+         SwiftUI가 그 자리를 거치게 만든 것</strong>이다.</p>
+      <p>대안(부모가 ViewModel을 소유하고 넘김)은 <code>RootView</code>가 세 화면의 ViewModel
+         수명까지 관리하게 만든다. <strong>트레이드오프를 알고 고른 것</strong>이며
+         되돌리는 조건과 함께 <code>project-decisions.md</code>에 적어뒀다 —
+         한 화면의 의존성이 5개를 넘으면 재검토(현재 최대 4개).</p>
+    </div>
+
+    <h3>그런데 규칙에 구멍이 하나 있다</h3>
+
+    <p>위 <code>CoursePlannerPage.init</code>에서 <strong><code>cameraStateStore</code>만
+       기본값이 있다.</strong> 넷 중 이것만이다. 즉 <strong>안 넘겨도 컴파일되고</strong>,
+       안 넘기면 화면이 조용히 자기 것을 하나 만든다.</p>
+
+    <p>그러면 <strong>테스트가 준비한 격리된 인스턴스가 무시된다.</strong>
+       "컨테이너에서 골라 넘긴다"는 규칙이 그 자리에서 뚫린다.</p>
+
+    <p>실제로 그렇게 부르는 코드가 남아 있다 — <code>Trace/App/ContentView.swift</code>.
+       <strong>다만 이 파일은 죽어 있다.</strong> 참조하는 곳이 자기 자신의 <code>#Preview</code>뿐이고,
+       Xcode 템플릿이 넣어준 것이 그대로 남았다.
+       <strong>기본값이 있었기에 죽은 코드가 컴파일된 채로 남아 있을 수 있었다.</strong>
+       둘 다 백로그에 올렸다.</p>
 
     <div class="oneline">
       <span class="tag">새 부품을 넣는다면</span>
