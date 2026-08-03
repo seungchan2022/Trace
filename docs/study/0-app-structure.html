@@ -294,7 +294,7 @@
       <li class="on"><span class="k">1</span><a href="#p1">앱이 켜지는 순서</a></li>
       <li class="on"><span class="k">2</span><a href="#p2">레이어 6개와 의존 방향</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">약속 읽는 법 — 무엇을 보장하고 무엇을 안 정했나</a></li>
-      <li><span class="k">4</span><span class="todo">조립 지점과 화면 짝(MVVM)</span></li>
+      <li class="on"><span class="k">4</span><a href="#p4">조립 지점 — 새 부품을 어떻게 넣나</a></li>
       <li><span class="k">5</span><span class="todo">동시성 규칙</span></li>
       <li><span class="k">6</span><span class="todo">테스트 전략</span></li>
     </ol>
@@ -974,10 +974,106 @@ protocol LocationServiceProtocol {
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
+
+  <!-- ══════════ 파트 4 ══════════ -->
+  <section class="part" id="p4">
+    <span class="part-tag">파트 4 / 6</span>
+    <h2>조립 지점 — 새 부품을 어떻게 넣나</h2>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>새 부품을 만들 때 <strong>컨테이너에 넣을지, 넣는다면 어떤 모양으로 넣을지</strong> 정할 수 있다.</p>
+    </div>
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      컨테이너는 <strong>두 가지 문제</strong>를 푼다 — 같은 걸 봐야 하는데 따로 노는 문제,
+      그리고 테스트에서 바꿔 넣을 자리가 흩어지는 문제. <strong>그 둘 중 하나에 해당하면 넣는다.</strong>
+    </div>
+
+    <h3>이 파일이 없다면 무슨 일이 생기나</h3>
+
+    <p>화면마다 필요한 걸 각자 만들어야 한다. 그러면 문제가 둘 생긴다.</p>
+
+    <p><strong>문제 1 — 같은 걸 봐야 하는데 따로 논다.</strong>
+       달리기 화면과 잠금화면 위젯은 <strong>같은 달리기</strong>를 보여줘야 하는데, 각자
+       <code>RunSession</code>을 만들면 서로 다른 달리기 두 개가 생긴다.
+       <strong>화면엔 3km, 잠금화면엔 0km</strong>가 된다.</p>
+
+    <p><strong>문제 2 — 테스트에서 바꿔 넣을 자리가 흩어진다.</strong>
+       가짜 GPS를 넣으려면 GPS를 만드는 곳을 전부 찾아 고쳐야 한다. 화면이 늘수록 늘어난다.</p>
+
+    <p><strong>컨테이너는 이 둘을 풀려고 있다.</strong> 그래서 새 부품을 넣을지 말지는
+       <strong>"둘 중 하나에 해당하나"</strong>로 판단하면 된다.</p>
+
+    <h3>결정 ① 프로토콜로 들까, 실물로 들까</h3>
+
+    <p><strong>아이폰에게 부탁해야 하는 것만 프로토콜로 든다.</strong>
+       GPS 좌표 받기, 길찾기(아이폰이 애플 서버에 물어봐 준다), 파일 저장, 소리 내기 — 이 다섯이다.
+       <strong>테스트에서 진짜로 쓸 수 없기 때문</strong>이다. 맥북 앞에서는 GPS가 안 움직이고,
+       진짜로 저장하면 내 데이터가 더럽혀진다.</p>
+
+    <p><strong>우리 코드가 직접 하는 일은 실물로 든다.</strong> 거리 계산, 1km 넘었는지 판단,
+       위젯 내용 결정, 목록 정리. <strong>같은 값을 넣으면 같은 답이 나오므로</strong>
+       테스트에서도 진짜를 그대로 쓴다. 갈아끼울 이유가 없으니 프로토콜도 필요 없다.</p>
+
+    <div class="concept">
+      <h4>💡 그럼 전부 프로토콜로 통일하면 안 되나?</h4>
+      <p>비용이 셋이다. <strong>파일이 두 배</strong>가 되고, <code>Cmd</code>+클릭하면 실제 코드가
+         아니라 빈 약속으로 가서 <strong>따라가기 어려워진다.</strong></p>
+      <p>그리고 Trace에서는 <strong>구조가 깨진다.</strong> 프로토콜은 <code>Domain</code>에 둔다는
+         규칙이 있는데, <code>RunSession</code>용 프로토콜을 <code>Domain</code>에 넣으면
+         <strong><code>Domain</code>이 <code>Application</code>을 알게 된다.</strong>
+         파트 2의 화살표가 거꾸로 간다.</p>
+    </div>
+
+    <h3>결정 ② 하나만 만들까, 각자 만들게 할까</h3>
+
+    <p><strong>여러 곳이 같은 것을 봐야 하면 컨테이너에 넣는다.</strong> 한 곳만 쓰면 그 화면에서
+       만들어도 된다. 다만 <strong>테스트에서 갈아끼워야 하면 한 곳만 써도 컨테이너에 넣는다</strong> —
+       실제로 코스 화면만 쓰는 넷(길찾기·위치·카메라·코스 저장소)이 순전히 그 이유로 들어와 있다.</p>
+
+    <p>컨테이너 10개 중 <strong>두 개에만 주석이 붙어 있다.</strong>
+       <code>runHistoryViewModel</code>과 <code>voiceAnnouncer</code>다.
+       <strong>둘 다 각자 만들면 조용히 틀린다</strong> — 기록이 갱신 안 되거나, 음악 볼륨을
+       한쪽이 되돌렸는데 다른 쪽이 다시 줄인다.
+       반면 <code>RunSession</code>을 둘로 만들면 화면과 잠금화면 숫자가 달라 <strong>바로 들킨다.</strong>
+       <strong>그래서 늦게 들키는 쪽에만 주석을 남겼다.</strong></p>
+
+    <div class="concept">
+      <h4>💡 왜 뷰모델이 컨테이너에 있나?</h4>
+      <p><code>runHistoryViewModel</code>은 <strong>이름만 ViewModel이다.</strong> 안을 보면
+         <code>summaries: [SavedRunSummary]</code>를 들고 <code>load()</code>로 채운다 —
+         스크롤 위치나 선택 항목 같은 <strong>화면 상태가 아니라 데이터</strong>다. 사실상 <strong>창고</strong>다.</p>
+      <p>창고는 하나여야 하니 컨테이너에 있다. <strong>진짜 화면 상태는 따로 있다</strong> —
+         <code>HistoryPage/HistoryPageViewModel.swift</code>. 그건 컨테이너에 없다.</p>
+      <p><strong>컨테이너에 있는 건 뷰모델이라서가 아니라 창고라서다.</strong>
+         이름이 역할과 어긋난 것이고, 백로그에 올려뒀다.</p>
+    </div>
+
+    <h3>결정 ③ 누구에게 줄까</h3>
+
+    <p><strong><code>RootView</code>는 컨테이너를 통째로 넘기지 않는다. 골라서 넘긴다.</strong>
+       코스 화면에 넷, 러닝 화면에 둘, 기록 화면에 하나.
+       <strong>안 받은 것은 존재도 모른다</strong> — 러닝 화면은 저장소가 있는지조차 모른다.</p>
+
+    <p>덕분에 <strong>화면 <code>init</code> 한 줄만 보면 그 화면이 무엇을 쓰는지 다 나온다.</strong>
+       컨테이너를 통째로 넘기는 방식이면 코드만 봐서는 알 수 없다.</p>
+
+    <div class="oneline">
+      <span class="tag">새 부품을 넣는다면</span>
+      심박수를 넣는다고 하면 — <strong>아이폰에게 부탁하나?</strong>(애플워치니까 예 → 프로토콜) ·
+      <strong>여러 곳이 보나?</strong>(잠금화면에도 띄우면 예 → 컨테이너) ·
+      <strong>누구에게 주나?</strong>(러닝 화면에만 → 거기만 넘긴다).
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
   <div class="next">
-    <strong>다음 — 파트 4. 조립 지점과 화면 짝(MVVM).</strong><br>
-    ③에서 열지 않고 넘어간 <code>DependencyContainer</code> 95줄을 통째로 연다.
-    그리고 화면 하나에 Page와 PageViewModel이 왜 짝으로 붙는지.
+    <strong>다음 — 파트 5. 동시성 규칙.</strong><br>
+    새 타입에 <code>@MainActor</code>를 붙일지 말지. MVP12에서 실기기 크래시가 나
+    격리 전략을 통째로 뒤집었던 사건이 여기 있다.
   </div>
 
 </div>
