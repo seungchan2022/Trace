@@ -76,6 +76,23 @@
 - Mark value types that cross concurrency boundaries as `Sendable` when their
   stored properties support it.
 
+### 격리 기본값과 `nonisolated` 판단 (2026-08-03 정리 · 근거는 MVP12 실기기 크래시 `18fa11a`)
+
+- **프로젝트 기본 격리를 두지 않는다.** `SWIFT_DEFAULT_ACTOR_ISOLATION`은 미설정이 정답이다(현재 0건).
+  **새 Xcode 템플릿이 `= MainActor`를 자동으로 넣어주므로**, 프로젝트를 새로 만들거나 빌드 설정을
+  손댈 때 다시 들어오지 않았는지 확인한다. 되돌리면 안 되는 이유는 `project-decisions.md`의
+  "Swift 언어 모드" 항목.
+- **`@MainActor`는 화면·상태를 다루는 타입에 붙인다.** 그 외에는 붙이지 않는다.
+- **`nonisolated`는 "애플이 직접 부르는 멤버"에 붙인다.** 판단 기준은 *무엇을 하는가*가 아니라
+  **누가 부르는가**다. 순수 계산이어도 우리만 부르면 `@MainActor` 아래 둬도 무해하고, 반대로
+  UI 상태를 바꾸는 delegate 콜백이라도 애플이 부르면 **반드시 빼야 한다** — 빼고 그 안에서
+  `Task { @MainActor in }`으로 필요한 부분만 메인에 넘긴다(`CoreLocationService`가 그 형태다).
+- **위험 신호 셋** — ① `~Delegate` 프로토콜이 요구하는 메서드 ② 애플 프로토콜이 요구하는 프로퍼티
+  (`MKOverlay.boundingMapRect`, `MKAnnotation.coordinate` 등) ③ **`NSObject` 상속 + 애플 프로토콜 채택.**
+  **③이 실기기를 죽인 조합이다.** 클래스 상속 불일치는 컴파일 경고가 나지만
+  **프로토콜 준수는 경고가 안 나서** 런타임에만 드러난다(테스트 178개 전부 통과한 상태였다).
+  이 조합의 타입을 새로 만들면 리뷰에서 반드시 확인하고, 시뮬레이터 스모크로 실제 렌더링을 한 번 본다.
+
 ## Xcode
 
 - Prefer Xcode project settings and Swift Package Manager over custom build scripts.
