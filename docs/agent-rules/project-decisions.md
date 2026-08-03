@@ -85,6 +85,8 @@ This file records defaults until the user chooses otherwise.
 
 - SwiftLint 규칙 조정 (결정 2026-07-27, MVP17 `lint-cleanup`): `identifier_name.excluded`에 `i`·`j`(루프 인덱스)·`a`·`b`(기하 파라미터)를 두고, `nesting.type_level`은 2로 올린다. 근거는 규칙의 목적("이름만 보고 뭔지 알게")이며, 의미 축약(`m`·`s`·`e`·`d` 등)은 예외가 아니라 이름을 고치는 쪽으로 처리했다. `nesting` 2레벨은 이 프로젝트의 두 표준 패턴이 요구한다 — 네임스페이스 enum > DTO struct > `CodingKeys`(저장 키 고정에 필수), ActivityKit이 강제하는 `ContentState` 중첩. **`RunPersistenceDTO`·`CoursePersistenceDTO`의 필드 이름은 저장된 JSON 키와 직결된다** — `CodingKeys`가 wire 문자열을 고정하고 있으므로 그 문자열은 포맷 마이그레이션 없이 바꾸지 않는다(`RunPersistenceDTOWireFormatTests`가 방어).
 
+- **뷰가 의존성을 받아 ViewModel을 만든다** (결정 2026-08-03, 학습 청크 0 파트 4에서 사용자 문제제기). `RootView`가 컨테이너에서 골라 각 Page의 `init`에 넘기고, Page가 그 자리에서 `@State`로 ViewModel을 만든다(`RunPage.init(session:announcer:)` 등). **순수 MVVM이라면 ViewModel을 밖에서 만들어 넘기는 쪽이 맞다** — 뷰는 표현만 하고 의존성은 ViewModel이 알아야 한다는 지적은 타당하다. 그럼에도 현 구조를 유지하는 이유는 SwiftUI의 상태 소유 규칙이다: `@State`로 ViewModel을 들려면 뷰의 `init` 안에서 초기화해야 하고, 그러려면 재료가 그 `init`을 통과할 수밖에 없다. 대안(부모가 ViewModel을 `@State`로 소유하고 `let`으로 넘김, iOS 17+ `@Observable`이면 가능)은 **`RootView`가 세 화면의 ViewModel 수명까지 관리**하게 만든다 — 지금 `RootView`는 71줄이고 탭 전환·저장 감시만 한다. **대가는 뷰가 자기가 쓰지 않는 의존성을 아는 것**이며(`RunPage`는 받은 둘을 그대로 ViewModel에 넘기고 끝), 이는 인지하고 받아들인 비용이다. **되돌리는 조건:** ①한 화면이 받는 의존성이 5개를 넘거나(현재 최대는 `CoursePlannerPage` 4개) ②같은 ViewModel을 두 화면이 공유해야 하거나 ③ViewModel 생성 비용이 실측으로 문제가 될 때.
+
 ## Decisions the User May Need to Make Later
 
 - Whether data is local-only or synced
