@@ -20,7 +20,7 @@
 | 2 | `CoursePlannerPage.init`의 `cameraStateStore` 기본값 | 주입 구멍 | 낮음 | 기본값 제거 |
 | 3 | `RunHistoryViewModel` 위치·이름 | 잘못 놓인 파일 | 중간 | `HistoryPage/`로 이동 + 개명 검토 |
 | 4 | 테스트 전용 코드가 출시 빌드에 포함 | 빌드 구성 | 중간 | **선행 조사 필요** |
-| 5 | Domain 프로토콜 4개의 `@MainActor` | 동시성 | **높음** | 계획 문서 후 진행 |
+| 5 | Domain 프로토콜 4개의 `@MainActor` | 동시성 | 높음(검증만) | 떼고 컴파일 → 스모크 |
 | — | 저장소 손상 복구 무고지 | **새 동작** | — | **이번 범위 제외** |
 
 ### 왜 6번을 뺐나
@@ -35,7 +35,7 @@
 컴파일된 채 남아 있을 수 있었다. 기본값을 지우면 `ContentView`가 컴파일 에러가 나므로 같이 처리한다.
 
 **5는 마지막** — MVP12에서 실기기 크래시(`18fa11a`)를 낸 영역이다. 앞의 것들이 그린인 상태에서
-단독으로 건드려야 원인 추적이 된다.
+단독으로 건드려야 원인 추적이 된다. **다만 작업 자체는 4줄이라 계획 문서는 쓰지 않는다**(Task 4 머리말).
 
 ---
 
@@ -70,20 +70,29 @@
 - [ ] 확인 결과에 따라 처분을 정한다. Debug 전용이면 `#if DEBUG` 적용, 아니면 **이 Task는 접고**
       백로그로 되돌린다(무리해서 고치지 않는다).
 
-## Task 4: Domain 프로토콜의 `@MainActor` (#5) — 위험 갈래
+## Task 4: Domain 프로토콜의 `@MainActor` 떼기 (#5)
 
-> **이 Task만 `superpowers:writing-plans`로 상세 계획을 쓴다.** 정비 경로의 "위험 갈래에만
-> 상세 계획" 규칙에 해당한다. 아래는 착수 전 확인 사항이고, Task 분해는 계획 문서에서 한다.
+> **계획 문서를 쓰지 않는다.** 처음엔 "위험 갈래 = 계획 문서" 규칙을 분류만 보고 적용했으나,
+> **위험도와 계획 문서 필요성은 다른 축**이다. 위험하다는 건 *깨질 수 있다*(→ 검증 필요)이고,
+> 계획 문서가 필요하다는 건 *정할 게 많다*는 뜻인데 **여기는 정할 게 없다** — 4줄을 떼고
+> 컴파일러가 가리키는 곳을 고치면 끝이다. **대신 스모크는 면제하지 않는다.**
 
 **Files:**
-- `Trace/Domain/*/Protocol/` 4개 — `LocationServiceProtocol` · `CoursePlanningServiceProtocol` ·
-  `VoiceAnnouncerProtocol` · `RunLocationStreamProtocol`
+- `Trace/Domain/Location/Protocol/LocationServiceProtocol.swift`
+- `Trace/Domain/CoursePlanning/Protocol/CoursePlanningServiceProtocol.swift`
+- `Trace/Domain/RunTracking/Protocol/VoiceAnnouncerProtocol.swift`
+- `Trace/Domain/RunTracking/Protocol/RunLocationStreamProtocol.swift`
 
-- [ ] 상세 계획 문서를 쓴다.
-- [ ] 프로토콜에서 `@MainActor`를 떼고 구현체 4곳에만 남긴다.
-- [ ] 호출부가 이미 `await`을 쓰고 있는지 실측한다 — 파급이 작을 것으로 보이나 확인 전엔 모른다.
-- [ ] **시뮬레이터 스모크 필수.** MVP12 크래시가 컴파일 경고 없이 런타임에만 드러났다
-      (`ios-swift.md` "위험 신호 셋" 참고). 저장 코스 불러오기·지도 렌더링·달리기 시작을 직접 본다.
+- [ ] 네 프로토콜에서 `@MainActor` 한 줄씩을 뗀다.
+- [ ] 컴파일한다. **깨지는 곳은 대부분 가짜 구현체 6개**로 예상된다 —
+      진짜 구현체 4개는 이미 자체 `@MainActor`를 갖고 있어 영향이 없다(실측 확인).
+      가짜는 `UITestingCoursePlanningService`·`UITestingLocationService`·`NoopVoiceAnnouncer`
+      (`DependencyContainer.swift` 내부) · `UITestingRunLocationStream` ·
+      `FakeVoiceAnnouncer`·`MockRunLocationStream`(테스트 타깃).
+- [ ] ⚠️ `VoiceAnnouncerProtocol`은 나머지 셋과 다르다 — `announce`가 **`async`가 아니라서**
+      파급이 다르게 나올 수 있다. 여기서 크게 번지면 **이 프로토콜만 남겨두고 셋만 처리**해도 된다.
+- [ ] **시뮬레이터 스모크 필수** — 저장 코스 불러오기 · 지도 렌더링 · 달리기 시작 · 음성 안내.
+      MVP12 크래시가 컴파일 경고 없이 런타임에만 드러났다(`ios-swift.md` "위험 신호 셋").
 
 ---
 
