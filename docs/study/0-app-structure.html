@@ -295,7 +295,7 @@
       <li class="on"><span class="k">2</span><a href="#p2">레이어 6개와 의존 방향</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">약속 읽는 법 — 무엇을 보장하고 무엇을 안 정했나</a></li>
       <li class="on"><span class="k">4</span><a href="#p4">조립 지점 — 새 부품을 어떻게 넣나</a></li>
-      <li><span class="k">5</span><span class="todo">동시성 규칙</span></li>
+      <li class="on"><span class="k">5</span><a href="#p5">동시성 — @MainActor를 어디에 붙이나</a></li>
       <li><span class="k">6</span><span class="todo">테스트 전략</span></li>
     </ol>
   </nav>
@@ -1116,10 +1116,117 @@ init(history: RunHistoryViewModel, isActive: Bool)</pre>
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
+
+  <!-- ══════════ 파트 5 ══════════ -->
+  <section class="part" id="p5">
+    <span class="part-tag">파트 5 / 6</span>
+    <h2>동시성 — <code>@MainActor</code>를 어디에 붙이나</h2>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>새 타입에 <strong><code>@MainActor</code>를 붙일지 말지</strong> 정할 수 있다.</p>
+    </div>
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      <strong>화면·상태를 다루는 코드에만 붙인다.</strong> 예전엔 "전부 붙임"이었는데
+      <strong>지도 코드가 그것 때문에 죽어서</strong> 뒤집었다.
+    </div>
+
+    <h3>왜 이 파트가 있나</h3>
+
+    <p><strong>잘못 정하면 컴파일도 되고 경고도 없는데 앱이 죽는다.</strong>
+       Trace에서 실제로 그랬다 — 자동 테스트 178개가 전부 통과한 상태에서 실기기가 죽었고,
+       그래서 전략을 통째로 뒤집었다. <strong>그 흔적이 지금 코드에 안 남아 있어서</strong>
+       코드만 봐서는 알 수 없다.</p>
+
+    <div class="concept">
+      <h4>💡 메인 스레드와 <code>@MainActor</code></h4>
+      <p>앱은 여러 일을 동시에 한다. 그 일꾼 하나하나를 <strong>스레드</strong>라고 하는데,
+         <strong>화면을 그리는 일꾼은 딱 하나로 정해져 있다.</strong> 그게 <strong>메인 스레드</strong>다.
+         여러 일꾼이 동시에 화면을 고치면 순서가 꼬이기 때문이다.</p>
+      <p><code>@MainActor</code>는 <strong>"이 코드는 메인 일꾼만 해라"는 표시</strong>다.
+         반대로 <code>nonisolated</code>는 <strong>"여긴 메인 아니어도 된다"</strong>는 표시다.</p>
+    </div>
+
+    <h3>무슨 일이 있었나</h3>
+
+    <p>Xcode로 프로젝트를 처음 만들 때 <strong>"표시를 안 붙인 건 전부 메인 일꾼"</strong>이라는
+       설정이 같이 들어왔다(<code>SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor</code>).
+       앱 코드 대부분이 화면이니 편해 보였고, <strong>MVP12 설계도 이걸 유지하기로 채택</strong>했다.</p>
+
+    <p><strong>그런데 지도가 문제였다.</strong> MapKit은 지도를 조각으로 나눠
+       <strong>백그라운드 일꾼 여러 명이</strong> 그린다. 그리면서 우리 오버레이 코드에
+       <em>"넌 지도의 어느 범위를 차지해?"</em>라고 묻는다.</p>
+
+    <p>우리 오버레이 코드에는 아무 표시가 없었고, 위 설정 때문에 <strong>자동으로 "메인 일꾼만"이
+       됐다.</strong> 애플이 백그라운드에서 부르자 Swift가 약속 위반을 잡아내 <strong>앱을 죽였다.</strong></p>
+
+    <div class="concept">
+      <h4>💡 "백그라운드 작업을 메인에서 돌려서" 죽은 게 아니다</h4>
+      <p>정확히는 <strong>"메인에서만 돌라고 표시해놨는데 애플이 백그라운드에서 불러서"</strong>다.
+         그 코드는 <strong>실제로 돌지도 못했다.</strong> 돌기 전에 죽었다.</p>
+      <p>이 구분이 고치는 방법을 바꾼다. 전자로 이해하면 <em>"메인에서 돌리지 말자"</em>며 코드를
+         옮기게 되는데, <strong>실제 수정은 코드를 한 줄도 안 바꿨다.</strong>
+         <code>nonisolated</code>를 붙여 <em>"여긴 메인 아니어도 된다"</em>고 알려준 게 전부다.
+         <strong>돌아가는 방식이 틀린 게 아니라 붙여둔 표시가 틀렸던 것이다.</strong></p>
+    </div>
+
+    <p>그리고 <strong>컴파일 경고가 하나도 안 났다.</strong> 커밋 메시지에 이유가 적혀 있다 —
+       클래스 상속이면 경고가 나는데 <strong>이 타입들은 프로토콜 준수(<code>MKAnnotation</code>·
+       <code>MKOverlay</code>)라 경고 없이 런타임에서만 드러났다.</strong>
+       발견 경로는 <strong>시뮬레이터에서 저장한 코스를 불러본 것</strong>이었다.</p>
+
+    <h3>그래서 지금 규칙</h3>
+
+    <p><strong>기본은 아무것도 안 붙인다. 화면·상태를 다루는 타입에만 <code>@MainActor</code>를 붙인다.</strong>
+       설정은 지웠고 현재 프로젝트 파일에 0건이다.</p>
+
+    <h3>전체에 붙일 필요는 없다 — 세 단계로 쪼갠다</h3>
+
+    <p><code>CoreLocationService</code>(위치 담당)가 그 예다.</p>
+
+<pre class="code">@MainActor                                     <span class="c">// ① 클래스 전체는 메인</span>
+final class CoreLocationService: NSObject, ... {
+
+    func currentLocation() async throws -> ...  <span class="c">// 메인에서 돎</span>
+
+    nonisolated func locationManager(...) {     <span class="c">// ② 애플이 부르는 함수만 빼놓음</span>
+        Task { @MainActor in                    <span class="c">// ③ 상태 건드릴 때만 다시 들어감</span>
+            self.finish(.success(coord))
+        }
+    }
+}</pre>
+
+    <p><strong>①</strong> 클래스 대부분이 상태를 다루니 전체는 <code>@MainActor</code>.
+       <strong>②</strong> 애플이 부르는 delegate 함수는 <strong>어느 일꾼으로 부를지 우리가 모르니</strong>
+       <code>nonisolated</code>로 빼놓는다. <strong>③</strong> 그 함수도 결국 상태를 바꿔야 하므로
+       그 순간만 <code>Task { @MainActor in }</code>으로 메인에 넘긴다.</p>
+
+    <p><strong>지도 크래시는 정확히 ②를 안 해서 났다.</strong> 같은 프로젝트 안에서
+       위치 담당은 제대로 했고 지도 오버레이는 안 해서 갈렸다.
+       이 패턴은 Trace에 여섯 군데 나온다.</p>
+
+    <div class="oneline">
+      <span class="tag">새 타입을 만든다면</span>
+      <strong>"화면·상태를 건드리나?"</strong> → 예면 <code>@MainActor</code> ·
+      <strong>"애플 프레임워크가 이 함수를 직접 부르나?"</strong> → 예면 그 함수만
+      <code>nonisolated</code>로 빼고 안에서 필요할 때만 메인으로 넘긴다.
+    </div>
+
+    <div class="later">
+      <b>남은 빈틈:</b> Domain 프로토콜 4개에 <code>@MainActor</code>가 붙어 있다.
+      MVP12 설계는 이걸 <b>빼기로 했었는데</b>(사용자 지적), 전략을 뒤집는 과정에서
+      동작 보존을 위해 기계적으로 되살아났다. 백로그에 경위와 함께 올려뒀다.
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
   <div class="next">
-    <strong>다음 — 파트 5. 동시성 규칙.</strong><br>
-    새 타입에 <code>@MainActor</code>를 붙일지 말지. MVP12에서 실기기 크래시가 나
-    격리 전략을 통째로 뒤집었던 사건이 여기 있다.
+    <strong>다음 — 파트 6. 테스트 전략.</strong><br>
+    무엇을 자동 테스트로 보고 무엇을 실기기로 보나. 파트 5의 크래시가
+    테스트 178개를 통과하고도 났다는 사실이 여기로 이어진다.
   </div>
 
 </div>
