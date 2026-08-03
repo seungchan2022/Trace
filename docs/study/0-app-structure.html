@@ -651,8 +651,9 @@ struct TraceApp: App {                                  <span class="c">// ①</
       </div>
       <div class="card">
         <div class="nm">Application &nbsp;· 6파일 1,027줄</div>
-        <div class="ro"><strong>여러 단계에 걸친 진행 상태.</strong> <code>RunSession</code>과
-          <code>CourseEditSession</code>이 여기 산다. "지금 어디까지 왔나"를 들고 있는 것들이다.</div>
+        <div class="ro"><strong>시간에 걸친 진행 상태.</strong> <code>RunSession</code>(달리기 진행)과
+          <code>CourseEditSession</code>(코스 편집 진행), 그리고 그 둘을 지켜보는 넷.
+          <strong>"지금 어디까지 왔나"</strong>를 들고 있다.</div>
       </div>
       <div class="card">
         <div class="nm">Infrastructure &nbsp;· 12파일 905줄</div>
@@ -673,6 +674,21 @@ struct TraceApp: App {                                  <span class="c">// ①</
         <div class="ro"><strong>색·간격 같은 공용 값과 공용 부품.</strong>
           화면마다 색을 따로 적지 않게 한 곳에 모았다.</div>
       </div>
+    </div>
+
+    <div class="concept">
+      <h4>💡 <code>Domain</code>과 <code>Application</code>은 뭐가 다른가 — 시간이다</h4>
+      <p><strong><code>Domain</code>에는 시간이 없다.</strong> <code>RunSample</code>은 어느 한 순간의
+         좌표 하나이고, <code>CourseCoordinate</code>도 점 하나다. <strong>값이다.</strong></p>
+      <p><strong><code>Application</code>에는 시간이 있다.</strong> <code>RunSession</code>은 좌표가
+         계속 쌓이면서 <strong>변하는 상태</strong>다. 시작했다가 멈췄다가 다시 뛰다가 끝난다.</p>
+      <p>한 줄로 하면 — <strong><code>Domain</code>은 "무엇인가", <code>Application</code>은
+         "지금 어디까지 왔나"</strong>다.</p>
+      <p><strong>클린 아키텍처의 원 넷에 얹으면</strong> 이렇다.
+         ①엔티티 → <code>Domain/Entity/</code> · ②유스케이스 → <code>Application/</code>
+         (인터페이스는 <code>Domain/Protocol/</code>에 두는 게 정통 방식) ·
+         ③인터페이스 어댑터 / ④프레임워크 → <code>Infrastructure/</code>와 <code>Pages/</code>.
+         <strong><code>Application</code>은 유스케이스 층의 자리가 맞고, 채운 모양만 세션 객체다.</strong></p>
     </div>
 
     <h3><code>Domain</code> 25개를 열어보면</h3>
@@ -762,6 +778,20 @@ flowchart TD
        나머지 한 개(<code>RunActivityAttributes</code>)만 <code>ActivityKit</code>을 더 쓰는데,
        잠금화면 위젯 규격을 애플이 그렇게 요구해서 생긴 예외다. 코드 주석에도 의도가 그대로 적혀 있다 —
        <em>"음성 안내 포트 — Domain은 AVFoundation을 모른다."</em></p>
+
+    <div class="concept">
+      <h4>💡 그럼 GPS 좌표는 <code>Domain</code>에 어떻게 들어가 있나?</h4>
+      <p>애플이 주는 위치 타입은 <code>CLLocation</code>이고 그건 CoreLocation 소속이다.
+         <strong>그런데 <code>Domain</code>의 <code>RunSample</code>은 <code>CLLocation</code>이 아니다.</strong>
+         위도·경도·고도·속도·정확도가 <strong>전부 그냥 숫자</strong>다.</p>
+      <p><strong>애플 타입을 우리 숫자로 바꾸는 일은 <code>Infrastructure</code>가 한다.</strong>
+         그래서 <code>Domain</code>이 CoreLocation을 몰라도 된다.</p>
+      <p><strong>새 기능도 같은 방식이다.</strong> 심박수를 넣는다면 —
+         <strong>값의 정의(분당 몇 회 + 언제)는 <code>Domain</code></strong>에 우리 타입으로 만들고,
+         HealthKit이 주는 타입을 그걸로 바꾸는 <strong>구현체는 <code>Infrastructure</code></strong>,
+         그 사이를 잇는 <strong>약속(프로토콜)은 <code>Domain</code></strong>에 둔다.
+         <em>"심박수는 애플 타입이니 Domain에 못 넣는다"가 아니다 — 우리가 정의하면 된다.</em></p>
+    </div>
 
     <h3>이 구조로 얻는 것 — 받은 대가와 안 쓴 보험</h3>
 
