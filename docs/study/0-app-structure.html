@@ -1,0 +1,565 @@
+<title>Trace 학습 0 — 앱 구조</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --accent:   #06B6A4;
+    --deep:     #04796E;
+    --ground:   #FAFCFB;
+    --surface:  #EFF6F4;
+    --tint:     #E3F1EE;
+    --rule:     #DAE6E3;
+    --ink:      #0E1817;
+    --muted:    #52625E;
+    --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
+            system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 37rem; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+  p { margin-bottom: 1rem; }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 700; }
+  em { font-style: normal; color: var(--muted); }
+  code {
+    font-family: var(--mono); font-size: .84em;
+    color: var(--deep); word-break: break-word;
+  }
+
+  /* ── 머리말 ───────────────────────── */
+  .kicker {
+    font-size: .85rem; font-weight: 700;
+    letter-spacing: .04em;
+    color: var(--deep); margin-bottom: .5rem;
+  }
+  h1 {
+    font-size: 2.2rem; font-weight: 800; line-height: 1.15;
+    letter-spacing: -.03em; margin-bottom: .5rem;
+  }
+  .sub { color: var(--muted); font-size: .95rem; margin-bottom: 2rem; }
+
+  /* ── 목차 ─────────────────────────── */
+  .toc {
+    border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1rem 1.2rem; margin-bottom: 3rem;
+    background: #fff;
+  }
+  .toc h4 {
+    font-size: .88rem; font-weight: 800; letter-spacing: -.005em;
+    color: var(--muted); margin-bottom: .8rem;
+  }
+  .toc ol { list-style: none; display: flex; flex-direction: column; gap: .38rem; }
+  .toc li {
+    font-size: .96rem; color: var(--muted);
+    display: flex; gap: .7rem; align-items: baseline;
+  }
+  .toc li .k {
+    font-family: var(--mono); font-size: .88rem; font-weight: 600;
+    color: #B9CCC8; min-width: 1.2rem;
+  }
+  .toc li.on { color: var(--ink); font-weight: 700; }
+  .toc li.on .k { color: var(--accent); }
+
+  /* ── 파트 헤더 ─────────────────────── */
+  .part { margin-top: 3.5rem; }
+  .part-tag {
+    display: inline-block;
+    font-size: .82rem; font-weight: 700; letter-spacing: .02em;
+    color: #fff; background: var(--deep);
+    padding: .26rem .68rem; border-radius: 5px;
+    margin-bottom: .85rem;
+  }
+  h2 {
+    font-size: 1.6rem; font-weight: 800;
+    letter-spacing: -.025em; line-height: 1.25;
+    margin-bottom: 1.1rem;
+  }
+  h3 {
+    font-size: 1.02rem; font-weight: 800; letter-spacing: -.005em;
+    margin: 2.3rem 0 .8rem;
+    padding-bottom: .4rem; border-bottom: 1px solid var(--rule);
+  }
+
+  /* ── 한 줄 요약 (파트 시작) ───────────── */
+  .oneline {
+    background: var(--tint);
+    border-radius: 10px;
+    padding: .95rem 1.2rem;
+    margin-bottom: 1.6rem;
+    font-weight: 700; line-height: 1.65;
+  }
+  .oneline .tag {
+    display: block;
+    font-size: .84rem; font-weight: 800; letter-spacing: .01em;
+    color: var(--deep); margin-bottom: .35rem;
+  }
+
+  /* ── 등장인물 명패 ──────────────────── */
+  .roster { display: flex; flex-direction: column; gap: .5rem; margin: 1.4rem 0; }
+  .card {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 9px; padding: .75rem 1rem;
+    display: grid; grid-template-columns: 1fr; gap: .15rem;
+  }
+  .card .nm {
+    font-family: var(--mono); font-size: .98rem;
+    font-weight: 700; color: var(--deep); letter-spacing: -.01em;
+    margin-bottom: .1rem;
+  }
+  .card .ro { font-size: .93rem; line-height: 1.65; }
+  .card.hero { border-color: var(--accent); border-width: 2px; background: var(--tint); }
+
+  /* ── 개념 박스 ─────────────────────── */
+  .concept {
+    background: #fff; border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 1.1rem 1.3rem; margin: 1.7rem 0;
+  }
+  .concept h4 {
+    font-size: 1.2rem; font-weight: 800; letter-spacing: -.015em;
+    line-height: 1.4; margin-bottom: .75rem;
+  }
+  .concept p { font-size: .95rem; line-height: 1.75; margin-bottom: .75rem; }
+  .concept p:last-child { margin-bottom: 0; }
+
+  /* ── 순서 ─────────────────────────── */
+  .steps { margin: 1.4rem 0; display: flex; flex-direction: column; gap: .9rem; }
+  .st { display: grid; grid-template-columns: 1.9rem 1fr; gap: .6rem; }
+  .st .n {
+    font-family: var(--mono); font-size: 1.05rem;
+    color: var(--accent); font-weight: 700; line-height: 1.65;
+  }
+  .st .t { font-size: .96rem; line-height: 1.7; }
+  .st .t b { font-weight: 700; }
+
+  /* ── 도식 ─────────────────────────── */
+  figure {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.3rem .5rem .85rem;
+    margin: 1.8rem 0; overflow-x: auto;
+  }
+  figcaption {
+    font-size: .86rem; font-weight: 600; letter-spacing: -.005em;
+    color: var(--muted);
+    text-align: center; margin-top: .9rem;
+  }
+  pre.mermaid { background: transparent; text-align: center; }
+
+  /* mermaid 렌더 보정 — 기본 테마는 노드가 어둡고 선 위 글씨가 묻힌다.
+     mermaid가 SVG 안에 id 선택자로 스타일을 주입하므로 !important가 필요하다. */
+  figure .node rect, figure .node polygon,
+  figure .node circle, figure .node path {
+    fill: #FFFFFF !important;
+    stroke: var(--accent) !important;
+    stroke-width: 1.7px !important;
+  }
+  figure .nodeLabel, figure .nodeLabel p, figure .node .label {
+    color: var(--ink) !important;
+    fill: var(--ink) !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.5 !important;
+  }
+  /* 선 위 글씨: 글자는 진하게, 배경 사각형만 흰색으로.
+     순서 주의 — 배경 규칙이 뒤에 와야 글자색 규칙에 덮이지 않는다. */
+  figure .edgeLabel, figure .edgeLabel * {
+    color: #0E1817 !important;
+    fill: #0E1817 !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.5 !important;
+    background-color: #FFFFFF !important;
+  }
+  figure .edgeLabel rect,
+  figure .edgeLabel .background,
+  figure rect.edgeLabelBackground,
+  figure .edgeLabels rect {
+    fill: #FFFFFF !important;
+    stroke: none !important;
+    opacity: 1 !important;
+  }
+  figure .edgePath path, figure .flowchart-link, figure path.path {
+    stroke: #A3BFBA !important;
+    stroke-width: 1.7px !important;
+  }
+  figure marker path, figure .marker {
+    fill: #A3BFBA !important;
+    stroke: #A3BFBA !important;
+  }
+
+  /* ── 코드 ─────────────────────────── */
+  pre.code {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem 1.15rem; margin: 1.5rem 0;
+    overflow-x: auto; font-family: var(--mono);
+    font-size: .79rem; line-height: 1.7;
+  }
+  pre.code .c { color: var(--accent); }
+
+  /* ── 나중에 ───────────────────────── */
+  .later {
+    font-size: .88rem; color: var(--muted);
+    border-left: 2px solid var(--rule); padding-left: .85rem;
+    margin: 1.2rem 0;
+  }
+
+  .next {
+    margin-top: 3.5rem; padding: 1.2rem 1.3rem;
+    background: var(--surface); border-radius: 12px;
+    font-size: .94rem; color: var(--muted);
+  }
+  .next strong { color: var(--ink); }
+
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .wrap { padding: 2.2rem 1.1rem 4rem; }
+    h1 { font-size: 1.8rem; } h2 { font-size: 1.35rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="kicker">따라잡기 0 / 9</div>
+  <h1>앱 구조</h1>
+  <div class="sub">2026-08-03 · 파트 0~1</div>
+
+  <nav class="toc">
+    <h4>이 덩어리의 6파트</h4>
+    <ol>
+      <li class="on"><span class="k">0</span> 이 앱에 뭐가 있나 — 등장인물</li>
+      <li class="on"><span class="k">1</span> 앱이 켜지는 순서</li>
+      <li><span class="k">2</span> 레이어 6개와 의존 방향</li>
+      <li><span class="k">3</span> 프로토콜 경계 — 갈아끼울 수 있는 이유</li>
+      <li><span class="k">4</span> 조립 지점과 화면 짝(MVVM)</li>
+      <li><span class="k">5</span> 동시성 규칙</li>
+      <li><span class="k">6</span> 테스트 전략</li>
+    </ol>
+  </nav>
+
+  <h3>이 앱은 어떤 방향으로 짜여 있나</h3>
+
+  <p>Trace의 설계에는 <strong>일관된 방향이 하나</strong> 있다. 바로
+     <strong>바깥 세상에 닿는 것을 전부 갈아끼울 수 있게 만든 것</strong>이다.</p>
+
+  <p>바깥 세상이란 GPS, 애플 지도 서버, 디스크, 스피커처럼 <strong>앱이 통제할 수 없는 것</strong>들이다.
+     이것들은 느리고, 실패하고, 결과가 매번 다르다. 그래서 Trace는 이것들을 코드 곳곳에 흩뿌리지 않고
+     <strong>한 겹 뒤에 숨긴 다음, 통째로 가짜와 바꿔 끼울 수 있게</strong> 해뒀다.</p>
+
+  <p>이 방향 하나에서 나머지가 줄줄이 따라 나온다. 앱을 켤 때 진짜/가짜 갈림길이 있는 것도,
+     만드는 자리를 한 군데로 모은 것도, 폴더를 여섯 개로 나눈 것도 전부 이것 때문이다.
+     <strong>이 덩어리는 그 방향을 이해하는 것이 목표다.</strong></p>
+
+  <p>그리고 이걸 알면 <strong>다음 기능을 어디에 놓을지</strong>도 따라온다. "달리는 중에 심박수를
+     보여주자"를 하기로 했을 때, 심박수 읽어오는 코드를 어느 폴더에 두고 누가 그걸 알아도 되는지를
+     <strong>규칙에 맞춰 스스로 정할 수 있게 된다.</strong></p>
+
+  <!-- ══════════ 파트 0 ══════════ -->
+  <section class="part">
+    <span class="part-tag">파트 0 / 6</span>
+    <h2>이 앱에 뭐가 있나</h2>
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      Trace는 코스를 그리고, 그 코스를 달리고, 달린 걸 다시 본다.
+      화면 셋 뒤에 일하는 것들이 붙어 있고, 달리기의 주인공은 <code>RunSession</code>이다.
+    </div>
+
+    <p>구조를 보기 전에 <strong>등장인물부터</strong> 알아야 한다. 이름을 모르는 것의 역할을
+       설명해봐야 안 들어오기 때문이다. 여기서는 <em>"뭐가 있고 각자 뭘 하는지"</em>만 본다.</p>
+
+    <figure>
+      <pre class="mermaid">
+%%{init:{'theme':'base','themeVariables':{'primaryColor':'#FFFFFF','primaryTextColor':'#0E1817','primaryBorderColor':'#06B6A4','lineColor':'#A3BFBA','secondaryColor':'#EFF6F4','tertiaryColor':'#FFFFFF','edgeLabelBackground':'#FFFFFF','fontSize':'14px'}}}%%
+flowchart TD
+  U(["사용자"]) --> T1["코스 화면"]
+  U --> T2["러닝 화면"]
+  U --> T3["기록 화면"]
+
+  T1 --> P1["길찾기<br/>비뚤한 선 → 실제 도로"]
+  T1 --> P2["코스 편집 세션<br/>구간 잇기·되돌리기"]
+  T1 --> P3["코스 저장소"]
+
+  T2 --> R0["RunSession<br/>달리기 한 번의 전부"]
+  R0 --> R1["위치 스트림<br/>GPS 받아오기"]
+  R0 --> R2["기록 저장소"]
+  R0 -. 지켜본다 .-> R3["잠금화면 담당"]
+  R0 -. 지켜본다 .-> R4["소리 담당"]
+
+  T3 --> H["기록 저장소에서<br/>저장된 달리기를 읽어온다"]
+      </pre>
+      <figcaption>화면 셋과 그 뒤에서 일하는 것들</figcaption>
+    </figure>
+
+    <p><em>기록 화면이 읽는 곳은 러닝 화면이 쓰는 그 저장소와 같은 것이다. 그림에서는 선이
+       가로지르지 않게 따로 그렸다.</em></p>
+
+    <h3>코스 쪽</h3>
+
+    <p>지도에 손가락으로 선을 그으면 그게 <strong>실제 도로를 따라가는 경로</strong>로 바뀌어야 한다.
+       비뚤배뚤 그은 선을 그대로 쓰면 건물을 뚫고 지나가니까. 그 일을 하는 것이 아래 셋 중 첫 번째다.</p>
+
+    <div class="roster">
+      <div class="card">
+        <div class="nm">MapKitCoursePlanningService</div>
+        <div class="ro">애플 지도에 <em>"여기서 여기까지 걸어가는 길 알려줘"</em>라고 물어보고 답을 받아온다.
+          이름은 길지만 하는 일은 그거 하나다.</div>
+      </div>
+      <div class="card">
+        <div class="nm">CourseEditSession</div>
+        <div class="ro">만들어진 경로 조각들을 이어붙이고, 되돌리고, 지운다.
+          코스 하나를 편집하는 동안의 상태를 통째로 들고 있다.</div>
+      </div>
+      <div class="card">
+        <div class="nm">SwiftDataCourseRepository</div>
+        <div class="ro">이름 붙여 저장한 코스를 디스크에 넣고 꺼내온다.
+          <em>Repository</em>는 "저장소"라는 뜻으로, 저장·조회만 하는 것에 붙이는 흔한 이름이다.</div>
+      </div>
+    </div>
+
+    <h3>러닝 쪽 — 여기에 주인공이 있다</h3>
+
+    <div class="roster">
+      <div class="card hero">
+        <div class="nm">RunSession &nbsp;← 주인공</div>
+        <div class="ro"><strong>달리기 한 번의 진행 상태를 통째로 들고 있는 것.</strong>
+          "달리기 한 번"을 대표하는 물건이다.</div>
+      </div>
+    </div>
+
+    <div class="concept">
+      <h4>💡 <code>RunSession</code> 안에 뭐가 들었나?</h4>
+      <p>지금 <strong>달리는 중인지 멈춘 건지 끝난 건지</strong>, 지금까지 <strong>몇 미터</strong>인지,
+         <strong>몇 분</strong>인지, <strong>어디를 지나왔는지</strong>, 5km 목표라면 <strong>몇 %</strong>인지,
+         <strong>일시정지를 몇 번 얼마나</strong> 했는지.</p>
+      <p><strong>달리기에 관한 숫자는 전부 여기 모인다.</strong> 그래서 앞으로 이 이름이 계속 나온다.
+         달리기 화면도 이걸 보고 그리고, 잠금화면도 이걸 보고 그린다.
+         <strong>달리기의 원본</strong>이라고 생각하면 된다.</p>
+    </div>
+
+    <div class="roster">
+      <div class="card">
+        <div class="nm">RunLocationTracker</div>
+        <div class="ro">아이폰에서 GPS가 하나 올 때마다 <code>RunSession</code>에 흘려준다.
+          <code>RunSession</code>은 그걸로 거리와 페이스를 다시 계산한다.</div>
+      </div>
+      <div class="card">
+        <div class="nm">SwiftDataRunRecordRepository</div>
+        <div class="ro">다 뛰고 나면 기록을 저장한다. 코스 저장소와 짝이다.</div>
+      </div>
+      <div class="card">
+        <div class="nm">RunActivityController</div>
+        <div class="ro"><code>RunSession</code>을 옆에서 지켜보다가 잠금화면 위젯을 띄우고 갱신한다.</div>
+      </div>
+      <div class="card">
+        <div class="nm">RunAudioCoach</div>
+        <div class="ro"><code>RunSession</code>을 옆에서 지켜보다가 1km마다 소리로 알려준다.</div>
+      </div>
+    </div>
+
+    <h3>그리고 이 전부를 만들어 담아두는 자리</h3>
+
+    <div class="roster">
+      <div class="card hero">
+        <div class="nm">DependencyContainer</div>
+        <div class="ro">위에 나온 것들을 <strong>앱 켤 때 한 번에 만들어서 한 군데 담아둔다.</strong>
+          화면들은 여기서 필요한 걸 꺼내 쓴다. 95줄짜리 작은 파일인데
+          <strong>이 덩어리에서 가장 중요하다</strong> — 파트 4에서 통째로 연다.</div>
+      </div>
+    </div>
+
+    <div class="oneline">
+      <span class="tag">외울 것</span>
+      이름을 다 외울 필요는 없다. <strong>"달리기는 <code>RunSession</code>이 대표한다"</strong>와
+      <strong>"만드는 자리가 한 군데 있다"</strong> 두 개면 충분하다.
+    </div>
+  </section>
+
+  <!-- ══════════ 파트 1 ══════════ -->
+  <section class="part">
+    <span class="part-tag">파트 1 / 6</span>
+    <h2>앱이 켜지는 순서</h2>
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      앱이 켜지면 등장인물을 전부 만들고, 그중 버튼이 없어서 스스로 알아채야 하는 둘만
+      미리 신청을 걸어둔 뒤, 화면을 띄운다.
+    </div>
+
+    <p>먼저 하나 밝혀둘 것이 있다. <strong>여기 나오는 건 전부 코드 안에서만 일어나는 일이라
+       화면에서는 아무것도 보이지 않는다.</strong> 아이콘을 누르고 첫 화면이 뜨기까지의 짧은 순간이다.</p>
+
+    <figure>
+      <pre class="mermaid">
+%%{init:{'theme':'base','themeVariables':{'primaryColor':'#FFFFFF','primaryTextColor':'#0E1817','primaryBorderColor':'#06B6A4','lineColor':'#A3BFBA','secondaryColor':'#EFF6F4','tertiaryColor':'#FFFFFF','edgeLabelBackground':'#FFFFFF','fontSize':'14px'}}}%%
+flowchart TD
+  A["① 앱이 켜진다"] --> B{"② 테스트용인가?"}
+  B -- 예 --> C1["③ 가짜로 전부 만든다"]
+  B -- 아니오 --> C2["③ 진짜로 전부 만든다"]
+  C1 --> D["④ 둘에게 지켜보라고 시킨다"]
+  C2 --> D
+  D --> E["⑤ 잠금화면 버튼의 연결 지점 등록"]
+  E --> F["⑥ 화면을 띄운다"]
+      </pre>
+      <figcaption>앱이 켜질 때 — ①에서 ⑥까지</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="st"><div class="n">①</div><div class="t">
+        <b>앱이 켜진다.</b> 아이폰이 <code>TraceApp</code>의 시작 부분을 딱 한 번 실행한다.
+        화면은 아직 없다. 여기서 하는 일은 화면을 그리는 게 아니라
+        <b>화면이 쓸 것들을 미리 만들어두는 것</b>이다.</div></div>
+
+      <div class="st"><div class="n">②</div><div class="t">
+        <b>진짜로 돌지, 테스트용으로 돌지 정한다.</b> 앱을 켤 때
+        <code>-traceUITesting</code>이라는 꼬리표가 붙어 있으면 테스트용으로 간다.
+        평소에 아이콘을 눌러 켜면 안 붙어 있다.
+        <b>갈림길은 여기 한 곳뿐이고, 이후 코드는 자기가 어느 쪽인지 모른다.</b></div></div>
+
+      <div class="st"><div class="n">③</div><div class="t">
+        <b>파트 0의 등장인물을 전부 만든다.</b> 길찾기, 위치, 저장소 둘,
+        <code>RunSession</code>, 잠금화면 담당, 소리 담당까지
+        <code>DependencyContainer</code> 안에서 한 번에 만들어진다.
+        <b>여기가 앱의 조립 지점이다.</b></div></div>
+
+      <div class="st"><div class="n">④</div><div class="t">
+        <b>잠금화면 담당과 소리 담당에게 "지켜봐"라고 시킨다.</b>
+        이 둘만 그렇게 한다. 나머지는 안 시킨다. 아래에서 이유만 짚는다.</div></div>
+
+      <div class="st"><div class="n">⑤</div><div class="t">
+        <b>잠금화면 버튼이 두드릴 문을 열어둔다.</b> 잠금화면 위젯의 "포인트 찍기" 버튼이
+        눌렸을 때 실행될 것을 미리 등록한다.</div></div>
+
+      <div class="st"><div class="n">⑥</div><div class="t">
+        <b>화면을 띄운다.</b> 여기서 처음 화면이 나온다. ③에서 만든 것을 통째로 넘긴다.
+        탭 셋이 동시에 살아 있고, 안 보이는 쪽은 투명도를 0으로 만들어 숨긴다.</div></div>
+    </div>
+
+    <div class="later">
+      ⑤의 잠금화면 버튼은 <b>7번 덩어리</b>, ⑥의 탭 처리 방식은 <b>UI 쪽이라 학습 범위 밖</b>이다.
+      (탭을 치우면 SwiftUI가 그 화면을 없애버려서, 저장 전의 작업 중인 것 — 그리던 코스,
+      보고 있던 지도 위치 — 이 날아간다. 그래서 안 치우고 숨기기만 한다.)
+    </div>
+
+    <h3>④에서 왜 둘만인가</h3>
+
+    <p>달리는 동안 돌아가는 기능은 훨씬 많다. 거리 계산, 일시정지, 목표 진행, 신호 약함 감지,
+       기록 저장까지 아홉 가지쯤 된다. <strong>그런데 앱 켤 때 "지켜봐"라고 시키는 건 딱 둘이다.</strong></p>
+
+    <p>갈리는 기준은 하나다. <strong>불러주는 사람이 있느냐.</strong></p>
+
+    <figure>
+      <pre class="mermaid">
+%%{init:{'theme':'base','themeVariables':{'primaryColor':'#FFFFFF','primaryTextColor':'#0E1817','primaryBorderColor':'#06B6A4','lineColor':'#A3BFBA','secondaryColor':'#EFF6F4','tertiaryColor':'#FFFFFF','edgeLabelBackground':'#FFFFFF','fontSize':'14px'}}}%%
+flowchart LR
+  UI["달리기 화면"] -- "시작해 / 멈춰" --> RS["RunSession"]
+  RS -. "값이 바뀌면 자동 통보" .-> LA["잠금화면 담당"]
+  RS -. "값이 바뀌면 자동 통보" .-> AC["소리 담당"]
+      </pre>
+      <figcaption>실선 = 불러서 시킨다 · 점선 = 스스로 지켜본다</figcaption>
+    </figure>
+
+    <p>거리 계산이든 일시정지든 대부분은 <code>RunSession</code>이 하고,
+       <strong>달리기 화면이 직접 부린다.</strong> "시작"을 누르면 화면이 <em>"시작해"</em>라고 말하고,
+       "일시정지"를 누르면 <em>"멈춰"</em>라고 말한다. 불러줄 때만 움직이니 미리 시켜둘 게 없다.</p>
+
+    <p><strong>잠금화면과 소리는 버튼이 없다.</strong> "지금 위젯 띄워" 버튼도 "지금 말해" 버튼도 없다.
+       1km를 지나는 순간 사용자는 그냥 뛰고 있을 뿐이다. 불러주는 사람이 없으니
+       <strong>스스로 알아채는 수밖에 없고</strong>, 알아채려면 미리
+       <em>"이 값이 바뀌면 나를 깨워줘"</em>라고 신청해둬야 한다.</p>
+
+    <p>주의할 게 하나 있다. <strong>앱 켤 때 시작되는 건 "신청"까지고, 일은 아직 안 한다.</strong>
+       잠금화면 담당은 켜자마자 지켜보기만 하고 위젯은 안 띄운다. 달리기가 시작돼야 띄운다.
+       <code>RunSession</code>도 <strong>앱 켤 때 이미 만들어져 있지만 가만히 있다가</strong>
+       화면이 부를 때 움직인다. <strong>만들어지는 것과 일하는 것은 다른 시점이다.</strong></p>
+
+    <div class="later">
+      "지켜본다"가 코드로 정확히 어떻게 동작하는지(<code>startObserving</code>은 이 프로젝트가
+      직접 지은 이름이고, 그 안에서 Swift의 <code>withObservationTracking</code>을 쓴다)는
+      <b>6번(소리)·7번(잠금화면) 덩어리</b>에서 다룬다. 여기서는
+      <b>"버튼 없는 기능은 스스로 지켜본다"</b>까지만.
+    </div>
+
+    <h3>②의 테스트용 갈림길</h3>
+
+    <div class="concept">
+      <h4>💡 UI 테스트는 왜 앱 코드에 갈림길이 필요한가?</h4>
+      <p>먼저 <strong>UI 테스트에는 사람이 없다.</strong> 사람이 시뮬레이터를 보는 게 아니라
+         <strong>프로그램이 앱을 대신 켜고, 대신 버튼을 누르고, 화면에 뭐가 떴는지 스스로 확인</strong>한다.
+         명령어 하나 치면 알아서 돌고 "통과/실패"만 뱉는다.</p>
+      <p>그리고 <strong>그 프로그램은 앱을 "다른 프로그램"으로 띄운다.</strong>
+         서로 다른 프로세스라 앱 <strong>안에 손을 넣을 수가 없다.</strong>
+         밖에서 할 수 있는 건 셋뿐이다 — <strong>꼬리표를 붙여서 켜기, 화면 두드리기,
+         화면에 뭐가 보이는지 읽기.</strong></p>
+      <p>그래서 <code>-traceUITesting</code>이라는 <strong>꼬리표가 유일한 통로</strong>고,
+         앱이 스스로 그걸 읽고 갈아끼우는 수밖에 없다. 반면 <strong>단위 테스트는 같은 프로그램
+         안에서 돌아서</strong> 꼬리표 없이 가짜를 직접 넣는다. 실제로 <code>RunSessionTests</code>는
+         자기가 만든 가짜 위치 스트림과 가짜 저장소를 그대로 넘긴다.
+         <strong>그래서 앱 코드에 갈림길이 있고 단위 테스트에는 없다.</strong></p>
+    </div>
+
+    <p>갈아끼우는 건 넷이다. <strong>길찾기</strong>는 진짜로 하면 애플 서버에 요청이 가서 느리고,
+       인터넷이 없으면 실패하고, 응답이 매번 조금씩 다르다. <strong>위치</strong>는 서울시청으로
+       고정한다 — 안 그러면 시뮬레이터 설정에 따라 화면이 달라져서 <em>같은 테스트가 어제는 통과하고
+       오늘은 실패</em>한다. <strong>저장소 둘</strong>은 메모리에만 쓴다. 안 그러면 테스트가 실제로
+       저장해둔 코스를 건드린다. <strong>소리</strong>는 아무것도 안 하는 걸로 바꾼다.</p>
+
+    <p>공통점은 <strong>"매번 결과가 같아야 한다"</strong>이다. 사람이 없으니
+       <em>"어? 오늘은 위치가 다르네"</em> 하고 넘어가 줄 사람도 없다. 바깥 세상에 닿는 것은 전부
+       결과가 흔들리므로 그것들만 골라서 갈아끼운다.
+       <strong>갈아끼울 수 있게 만들어놓은 구조가 파트 3의 주제다.</strong></p>
+
+    <p>덧붙여 이 가짜 세상은 <strong>시뮬레이터에서 손으로 확인할 때도 쓴다.</strong>
+       맥북 앞에 앉아 있으면 GPS가 안 움직여서 달리기 화면이 0km에 멈춰 있는데, 가짜 위치가
+       0.5초마다 북쪽으로 1.5m씩 옮겨준다. 초속 3m, 킬로미터당 5분 33초 — 실제 달리기 페이스다.</p>
+
+    <h3>코드로 보면</h3>
+
+    <p><code>Trace/App/TraceApp.swift</code>, 파일 전체가 39줄이다.
+       <strong>지금까지 얘기한 ①~⑥이 이 안에 전부 들어 있다.</strong></p>
+
+<pre class="code">@main
+struct TraceApp: App {                                  <span class="c">// ①</span>
+    private let container: DependencyContainer
+
+    init() {
+        if ProcessInfo.processInfo.arguments             <span class="c">// ②</span>
+             .contains("-traceUITesting") {
+            container = .uiTesting()
+        } else {
+            container = .live()                          <span class="c">// ③</span>
+        }
+        container.runActivityController.startObserving() <span class="c">// ④</span>
+        container.runAudioCoach.startObserving()         <span class="c">// ④</span>
+
+        MarkRunWaypointIntentBridge.handler = { ... }     <span class="c">// ⑤</span>
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            RootView(container: container)               <span class="c">// ⑥</span>
+        }
+    }
+}</pre>
+
+    <p><strong>코드가 한 줄씩 안 읽혀도 괜찮다.</strong> 지금 필요한 건 해석이 아니라
+       <em>"이 순서가 저 파일 안에 있다"</em>를 아는 것이다.</p>
+  </section>
+
+  <div class="next">
+    <strong>다음 — 파트 2. 레이어 6개와 의존 방향.</strong><br>
+    파트 0의 등장인물들이 각자 어느 폴더에 사는지, 그리고 누가 누구를 알아도 되는지.
+    맨 위에서 말한 <strong>"바깥 세상을 갈아끼울 수 있게"</strong>가 폴더 구조로 어떻게 나타나는지가
+    여기서 나온다.
+  </div>
+
+</div>
