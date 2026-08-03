@@ -296,7 +296,7 @@
       <li class="on"><span class="k">3</span><a href="#p3">약속 읽는 법 — 무엇을 보장하고 무엇을 안 정했나</a></li>
       <li class="on"><span class="k">4</span><a href="#p4">조립 지점 — 새 부품을 어떻게 넣나</a></li>
       <li class="on"><span class="k">5</span><a href="#p5">동시성 — @MainActor를 어디에 붙이나</a></li>
-      <li><span class="k">6</span><span class="todo">테스트 전략</span></li>
+      <li class="on"><span class="k">6</span><a href="#p6">테스트 — 어느 층에서 확인하나</a></li>
     </ol>
   </nav>
 
@@ -1203,6 +1203,23 @@ final class CoreLocationService: NSObject, ... {
        <code>nonisolated</code>로 빼놓는다. <strong>③</strong> 그 함수도 결국 상태를 바꿔야 하므로
        그 순간만 <code>Task { @MainActor in }</code>으로 메인에 넘긴다.</p>
 
+    <div class="concept">
+      <h4>💡 "우리가 부른다 / 애플이 부른다"를 눈으로 확인하는 법</h4>
+      <p><strong>만드는 것과 부르는 것은 다른 일이다.</strong>
+         <em>만든다</em>는 함수 안에 "무엇을 할지" 적는 것이고,
+         <em>부른다</em>는 "지금 해라"라고 시키는 것이다.</p>
+      <p>확인법은 <strong>함수 이름으로 프로젝트를 검색하는 것</strong>이다. 실제로 해보면 이렇다 —
+         <code>currentLocation()</code>은 부르는 줄이 <strong>2군데</strong> 나온다
+         (<code>CoursePlannerPageViewModel.swift</code> 96·111행). 우리가 쓴 줄이다.
+         반면 <code>locationManager(_:didUpdateLocations:)</code>는 부르는 줄이
+         <strong>0군데</strong>다.</p>
+      <p><strong>그런데 그 함수는 실행된다.</strong> GPS가 새 위치를 잡을 때마다.
+         우리가 안 부르는데 실행되니 누군가 시키는 것이고, 그게 iOS다
+         (<code>manager.delegate = self</code>로 등록해뒀기 때문).
+         <strong>무엇을 할지는 우리가 정했고, 언제 할지는 iOS가 정한다.</strong>
+         "언제"를 모르니 어느 스레드일지도 모르고, 그래서 "메인만"이라고 써두면 지킬 수 없는 약속이 된다.</p>
+    </div>
+
     <p><strong>지도 크래시는 정확히 ②를 안 해서 났다.</strong> 같은 프로젝트 안에서
        위치 담당은 제대로 했고 지도 오버레이는 안 해서 갈렸다.
        이 패턴은 Trace에 여섯 군데 나온다.</p>
@@ -1223,10 +1240,100 @@ final class CoreLocationService: NSObject, ... {
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
+
+  <!-- ══════════ 파트 6 ══════════ -->
+  <section class="part" id="p6">
+    <span class="part-tag">파트 6 / 6</span>
+    <h2>테스트 — 어느 층에서 확인하나</h2>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>새 기능을 <strong>자동 테스트로 볼지 실기기로 볼지</strong> 정할 수 있다.</p>
+    </div>
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      층이 셋이고 <strong>층마다 "여기까지만 본다"는 경계</strong>가 있다.
+      단위 376개 · UI 7개 · 그리고 자동으로는 못 보는 것들.
+    </div>
+
+    <h3>숫자가 전략을 말한다</h3>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>층</th><th>규모</th><th>무엇을 보나</th></tr></thead>
+        <tbody>
+          <tr><td><strong>단위 테스트</strong></td><td>46파일 5,968줄 · <strong>376개</strong></td>
+              <td>답이 항상 같은 계산</td></tr>
+          <tr><td><strong>UI 테스트</strong></td><td>2파일 184줄 · <strong>7개</strong></td>
+              <td>화면이 뜨고 눌리는지</td></tr>
+          <tr><td><strong>실기기 · 스모크</strong></td><td>자동화 없음</td>
+              <td>렌더링 · 소리 · 잠금화면 · 진짜 GPS</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>376 대 7이다.</strong> 거의 전부가 단위 테스트다.</p>
+
+    <h3>단위 테스트 — 이름이 곧 명세다</h3>
+
+<pre class="code">test_평균페이스는_거리와_시간에서_계산된다
+test_거리나_시간이_0이면_평균페이스는_nil
+test_이웃_구간은_경계_좌표를_공유해_선이_끊기지_않는다
+test_수직정확도가_나쁜_샘플은_고도계산에서_제외된다</pre>
+
+    <p>이름이 한글이라 <strong>함수 본문을 안 봐도 무엇을 보장하는지 읽힌다.</strong>
+       그래서 학습할 때도 <strong>테스트는 이름만 훑는다</strong> — 이름 목록이 곧 그 부품의 보장 목록이다.</p>
+
+    <p>그리고 <strong>싸고 빠르다.</strong> 화면도 안 띄우고 GPS도 안 켠다.
+       파트 2에서 본 구조 덕분이다 — 계산 로직이 <code>Domain</code>·<code>Application</code>에 있고
+       바깥에 안 닿으니, 값만 넣으면 답이 나온다.</p>
+
+    <h3>UI 테스트가 7개뿐인 이유</h3>
+
+<pre class="code">testSelectingTwoPointsShowsDistance
+testRunTabHasNoHistoryEntryPointAndHistoryTabShowsEmptyState
+testSegmentRowButtonsStayTappableWithListDragGesture</pre>
+
+    <p><strong>보장이 훨씬 굵다.</strong> <em>"두 점 찍으면 거리가 보인다"</em> 정도고,
+       그 거리가 정확한지는 안 본다(그건 단위 테스트 몫).</p>
+
+    <p><strong>그리고 비싸다.</strong> 앱을 진짜로 띄우고 버튼을 눌러야 해서 느리고,
+       <strong>가짜 부품을 꽂아야만 돌아간다.</strong> 파트 1에서 본
+       <code>-traceUITesting</code> 꼬리표가 그것 때문에 있다.</p>
+
+    <h3>그런데 둘 다로 못 잡는 게 있다</h3>
+
+    <div class="concept">
+      <h4>💡 383개가 전부 통과한 상태에서 앱이 죽었다</h4>
+      <p>파트 5의 지도 크래시다. 단위 376 + UI 7이 <strong>전부 그린이었는데</strong>
+         실기기에서 저장한 코스를 불러오자 죽었다.</p>
+      <p>이유는 그 크래시가 <strong>MapKit이 지도를 실제로 그릴 때</strong>만 일어나기 때문이다.
+         단위 테스트는 지도를 안 띄우고, UI 테스트는 띄우지만 <strong>가짜 길찾기</strong>를 쓴다.
+         <strong>진짜 렌더링 경로를 밟는 테스트가 없었다.</strong></p>
+      <p>발견 경로는 <strong>시뮬레이터 스모크</strong>였다 — 사람이 직접 앱을 켜서
+         저장한 코스를 불러본 것. <strong>세 번째 층이 왜 필요한지</strong>가 이 사건에 다 들어 있다.</p>
+    </div>
+
+    <p>자동으로 못 보는 것들은 대체로 <strong>파트 4에서 "아이폰에게 부탁하는 것"으로 분류했던 바로 그것들</strong>이다 —
+       지도 렌더링, 소리, 잠금화면 위젯, 진짜 GPS. <strong>갈아끼워야 테스트가 되는 것들이라,
+       갈아끼우고 나면 진짜는 안 보게 된다.</strong> 그 대가를 실기기 QA가 갚는다.</p>
+
+    <div class="oneline">
+      <span class="tag">새 기능을 만든다면</span>
+      <strong>답이 항상 같은 계산</strong> → 단위 테스트 ·
+      <strong>화면이 뜨고 눌리는지</strong> → UI 테스트(비싸니 아껴서) ·
+      <strong>하드웨어·렌더링·소리</strong> → 실기기로 직접 본다.
+      특히 <code>NSObject</code> + 애플 프로토콜 타입을 새로 만들면 <strong>반드시 스모크까지</strong>(파트 5).
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
   <div class="next">
-    <strong>다음 — 파트 6. 테스트 전략.</strong><br>
-    무엇을 자동 테스트로 보고 무엇을 실기기로 보나. 파트 5의 크래시가
-    테스트 178개를 통과하고도 났다는 사실이 여기로 이어진다.
+    <strong>여섯 파트 모두 작성 완료.</strong><br>
+    남은 절차 — advisor 팩트체크 → 지적 반영 → 확인 문제 5개 → 진행 상태 체크.
+    그다음은 <strong>1번 덩어리(손으로 그은 선이 도로 경로가 되는 법)</strong>.
   </div>
 
 </div>
