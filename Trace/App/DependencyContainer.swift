@@ -6,8 +6,10 @@ struct DependencyContainer {
     let cameraStateStore: CameraStateStore
     let courseRepository: CourseRepositoryProtocol
     let runRecordRepository: RunRecordRepositoryProtocol
-    /// 기록 탭과 러닝 탭 요약 줄이 같은 배열을 봐야 한다 — 각자 인스턴스를 들면
-    /// 한쪽의 삭제·저장이 다른 쪽에 반영되지 않은 채 공존한다(스펙 §7.2)
+    /// HistoryPage와 RootView(저장 완료 시 재조회)가 같은 인스턴스를 봐야 한다 — 각자 들면
+    /// RootView가 다시 불러온 목록이 화면에 반영되지 않아 방금 뛴 기록이 보이지 않는다(스펙 §7.2).
+    /// 2026-08-03 정정: 근거가 "기록 탭과 러닝 탭 요약 줄"이었으나 MVP16 탭 재편으로 러닝 탭의
+    /// 요약 줄이 사라졌다(RunPage는 session·announcer만 받는다). 공유 요구는 그대로, 근거만 갱신.
     let runHistoryViewModel: RunHistoryViewModel
     let runSession: RunSession
     let runActivityController: RunActivityController
