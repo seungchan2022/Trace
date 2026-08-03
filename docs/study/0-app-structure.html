@@ -109,6 +109,21 @@
     padding-bottom: .4rem; border-bottom: 1px solid var(--rule);
   }
 
+  /* ── 이 파트를 끝내면 (능력 선언) ──────── */
+  .goal {
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: .9rem 1.2rem;
+    margin-bottom: 1.1rem;
+    background: #fff;
+  }
+  .goal .tag {
+    display: block;
+    font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .3rem;
+  }
+  .goal p { font-size: 1.05rem; font-weight: 700; line-height: 1.6; margin: 0; }
+
   /* ── 한 줄 요약 (파트 시작) ───────────── */
   .oneline {
     background: var(--tint);
@@ -307,6 +322,11 @@
     <span class="part-tag">파트 0 / 6</span>
     <h2>이 앱에 뭐가 있나</h2>
 
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>이 앱에 <strong>뭐가 있는지</strong> 이름과 역할을 댈 수 있다.</p>
+    </div>
+
     <div class="oneline">
       <span class="tag">이 파트 한 줄</span>
       Trace는 코스를 그리고, 그 코스를 달리고, 달린 걸 다시 본다.
@@ -428,6 +448,11 @@ flowchart TD
   <section class="part" id="p1">
     <span class="part-tag">파트 1 / 6</span>
     <h2>앱이 켜지는 순서</h2>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>새 부품을 <strong>언제 만들고 언제 일을 시작시킬지</strong> 정할 수 있다.</p>
+    </div>
 
     <div class="oneline">
       <span class="tag">이 파트 한 줄</span>
@@ -600,6 +625,11 @@ struct TraceApp: App {                                  <span class="c">// ①</
   <section class="part" id="p2">
     <span class="part-tag">파트 2 / 6</span>
     <h2>레이어 6개와 의존 방향</h2>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>새 코드를 <strong>어느 폴더에 놓을지</strong> 정할 수 있다.</p>
+    </div>
 
     <div class="oneline">
       <span class="tag">이 파트 한 줄</span>
@@ -808,6 +838,11 @@ flowchart TD
   <section class="part" id="p3">
     <span class="part-tag">파트 3 / 6</span>
     <h2>약속 읽는 법 — 무엇을 보장하고 무엇을 안 정했나</h2>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>새 프로토콜의 <strong><code>throws</code>·<code>async</code>·반환값을</strong> 정할 수 있다. 남의 프로토콜은 <strong>세 줄만 보고</strong> 계약을 읽을 수 있다.</p>
+    </div>
 
     <div class="oneline">
       <span class="tag">이 파트 한 줄</span>
