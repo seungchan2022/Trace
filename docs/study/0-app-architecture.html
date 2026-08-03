@@ -89,6 +89,24 @@
   .toc li.on { color: var(--ink); font-weight: 700; }
   .toc li.on .k { color: var(--accent); }
 
+  /* ── 3분 복습 ─────────────────────── */
+  .recap {
+    border: 2px solid var(--accent); border-radius: 12px;
+    padding: 1.2rem 1.35rem; margin-bottom: 3rem; background: #fff;
+  }
+  .recap h3 {
+    font-size: 1.15rem; font-weight: 800; margin: 0 0 .3rem;
+    border: none; padding: 0;
+  }
+  .recap .hint { font-size: .88rem; color: var(--muted); margin-bottom: 1rem; }
+  .recap ol { list-style: none; display: flex; flex-direction: column; gap: .85rem; }
+  .recap li { display: grid; grid-template-columns: 1.5rem 1fr; gap: .55rem; }
+  .recap .k {
+    font-family: var(--mono); font-size: .92rem; font-weight: 700; color: var(--accent);
+  }
+  .recap .can { font-weight: 700; font-size: .96rem; line-height: 1.55; }
+  .recap .sum { font-size: .92rem; color: var(--muted); line-height: 1.6; margin-top: .1rem; }
+
   /* ── 파트 헤더 ─────────────────────── */
   .part { margin-top: 3.5rem; }
   .part-tag {
@@ -300,6 +318,54 @@
       <li class="on"><span class="k">·</span><a href="#close">마무리 — 어디를 열면 되나 · 왜 이렇게 됐나 · 팩트체크</a></li>
     </ol>
   </nav>
+
+
+  <section class="recap">
+    <h3>3분 복습</h3>
+    <p class="hint">전체를 다시 읽기 전에 여기부터. <strong>굵은 줄이 "무엇을 정할 수 있게 되는가"</strong>이고,
+       아래 줄이 그 근거다. 막히는 줄이 있으면 그 파트만 열면 된다.</p>
+    <ol>
+      <li><span class="k">0</span><div>
+        <div class="can">이 앱에 뭐가 있는지 이름과 역할을 댈 수 있다.</div>
+        <div class="sum">코스를 그리고, 그 코스를 달리고, 달린 걸 다시 본다. 화면 셋 뒤에 일하는 것들이 붙어 있고
+          <strong>달리기의 주인공은 <code>RunSession</code></strong>. 만드는 자리는 <code>DependencyContainer</code> 한 곳.</div>
+      </div></li>
+      <li><span class="k">1</span><div>
+        <div class="can">새 부품을 언제 만들고 언제 일을 시작시킬지 정할 수 있다.</div>
+        <div class="sum">앱이 켜지면 등장인물을 <strong>전부 만들고</strong>, 그중 버튼이 없어 스스로 알아채야 하는 둘만
+          미리 신청을 걸어둔 뒤 화면을 띄운다. <strong>만들어지는 때 · 지켜보기 시작하는 때 · 실제로 일하는 때가 다 다르다.</strong></div>
+      </div></li>
+      <li><span class="k">2</span><div>
+        <div class="can">새 코드를 어느 폴더에 놓을지 정할 수 있다.</div>
+        <div class="sum">폴더는 6개인데 <strong>화살표는 전부 <code>Domain</code>을 향한다.</strong>
+          <code>Domain</code>에 엔티티만이 아니라 <strong>인터페이스도 있어야</strong> 화살표가 뒤집힌다.
+          바깥 프레임워크는 <code>Infrastructure</code>에만 있다. 유스케이스 층은 아직 없다.</div>
+      </div></li>
+      <li><span class="k">3</span><div>
+        <div class="can">새 프로토콜의 <code>throws</code>·<code>async</code>·반환값을 정할 수 있다.</div>
+        <div class="sum">파트 2가 "약속이 어디 있나"라면 여기는 <strong>"약속에 뭐라고 적혀 있나"</strong>.
+          <code>throws</code> 세 글자가 화면에 에러 상태가 필요한지를 정한다. <strong>일부러 안 정한 것이 더 중요하다.</strong></div>
+      </div></li>
+      <li><span class="k">4</span><div>
+        <div class="can">새 부품을 컨테이너에 어떻게 넣을지 정할 수 있다.</div>
+        <div class="sum">컨테이너는 두 문제를 푼다 — <strong>같은 걸 봐야 하는데 따로 노는 문제</strong>,
+          <strong>테스트에서 바꿔 넣을 자리가 흩어지는 문제.</strong> 둘 중 하나면 넣는다.
+          아이폰에게 부탁하는 것만 프로토콜로 들고, 필요한 것만 골라 화면에 넘긴다.</div>
+      </div></li>
+      <li><span class="k">5</span><div>
+        <div class="can">새 타입에 <code>@MainActor</code>를 붙일지 정할 수 있다.</div>
+        <div class="sum">화면·상태를 다루는 코드에만 붙인다. <strong>애플이 직접 부르는 멤버는 <code>nonisolated</code>로 뺀다</strong>
+          (delegate 메서드, 애플 프로토콜이 요구하는 프로퍼티). 예전엔 "전부 붙임"이었는데
+          <strong>지도 코드가 그것 때문에 죽어서</strong> 뒤집었고, 경고도 안 났다.</div>
+      </div></li>
+      <li><span class="k">6</span><div>
+        <div class="can">새 기능을 어느 층에서 확인할지 정할 수 있다.</div>
+        <div class="sum">단위 376 · UI 7 · 그리고 <strong>자동으로는 못 보는 것들.</strong>
+          답이 항상 같은 계산은 단위, 화면이 뜨고 눌리는지는 UI, <strong>하드웨어·렌더링·소리는 사람이 직접.</strong>
+          178개가 전부 통과한 상태에서 앱이 죽은 적이 있다.</div>
+      </div></li>
+    </ol>
+  </section>
 
   <h3>이 앱은 어떤 방향으로 짜여 있나</h3>
 
