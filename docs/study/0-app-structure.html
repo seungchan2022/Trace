@@ -846,13 +846,26 @@ flowchart TD
 
     <div class="oneline">
       <span class="tag">이 파트 한 줄</span>
-      파트 2가 <strong>약속이 어디 있나</strong>였다면, 여기는 <strong>약속에 뭐라고 적혀 있나</strong>다.
-      <code>throws</code>가 있냐 없냐 같은 <strong>세 글자가 화면 설계를 정한다.</strong>
+      <strong>파트 2는 "어디에 놓나", 파트 3은 "무엇을 약속하나"다.</strong>
+      계약을 <strong>읽고</strong>(남의 부품을 쓸 때) <strong>쓰는</strong>(내 부품을 만들 때) 법.
     </div>
 
-    <p><strong>이 파트는 앞으로 남은 8덩어리를 읽을 도구다.</strong> 목표 깊이 C가
-       <em>"무엇을 받아 무엇을 보장하는가"</em>인데, 그게 프로토콜에 <strong>문자 그대로</strong> 적혀 있다.
-       구현을 다 읽지 않아도 계약을 알 수 있다.</p>
+    <h3>왜 이 파트가 있나</h3>
+
+    <p><strong>첫째, 안 그러면 9덩어리를 못 끝낸다.</strong> 남은 8덩어리마다 프로토콜이 나오는데
+       매번 구현체 수백 줄을 읽을 수는 없다. <strong>계약만 읽고 넘어갈 수 있어야</strong> 진도가 나간다.
+       목표 깊이 C가 <em>"무엇을 받아 무엇을 보장하는가"</em>인데, 그게 프로토콜에
+       <strong>문자 그대로</strong> 적혀 있다.</p>
+
+    <p><strong>둘째, 다음 MVP에서 직접 해야 하는 일이다.</strong> 새 기능을 넣으면
+       프로토콜을 <strong>내가 설계해야</strong> 한다. 이 덩어리의 목표가
+       <em>"새 물건을 어디에 놓을지 스스로 정하는 것"</em>인데,
+       <strong>파트 2가 "어느 폴더"를 정한다면 파트 3은 "어떤 계약"을 정한다.</strong></p>
+
+    <p><strong>셋째, 여기가 AI 코드가 조용히 틀리는 자리다.</strong>
+       <code>throws</code>를 붙이든 안 붙이든 <strong>컴파일은 되고 앱도 돈다.</strong>
+       달라지는 건 사용자가 실패를 아느냐뿐이다. 눈으로는 안 보이고
+       <strong>계약을 읽을 줄 알아야만 보인다.</strong></p>
 
     <h3>세 줄에 계약이 다 들어 있다</h3>
 
@@ -922,12 +935,40 @@ protocol LocationServiceProtocol {
        띄울 이유도 없기 때문이다. 실제로 통화 중이라 실패하면
        <strong>그 발화를 그냥 건너뛴다</strong>(재시도 없음 — 플랜 결정).</p>
 
+    <h3>다음 덩어리로 넘어가는 연습</h3>
+
+    <p>1번 덩어리(손으로 그은 선 → 도로 경로)에서 만날 프로토콜이다.
+       <strong>구현체를 열기 전에 이것부터 읽으면 무엇이 달라지는지</strong> 보는 연습이다.</p>
+
+<pre class="code">protocol CoursePlanningServiceProtocol {
+    func route(from: CourseCoordinate, to: CourseCoordinate) async throws -> PlannedCourse
+    func snappedRoute(through points: [CourseCoordinate]) async throws -> PlannedCourse
+}</pre>
+
+    <p>두 줄로 알 수 있는 것 — <strong>둘 다 실패한다</strong>(길찾기가 안 될 수 있으니 처리가 필요),
+       <strong>둘 다 기다려야 한다</strong>(로딩 표시가 필요할 수 있음),
+       <strong>하나는 두 점 하나는 여러 점</strong>(탭으로 찍는 경우와 손으로 긋는 경우),
+       <strong>결과 모양은 같다.</strong>
+       구현이 MapKit을 쓰는지 다른 걸 쓰는지는 여전히 모르고, 알 필요도 없다.</p>
+
+    <div class="concept">
+      <h4>💡 프로토콜이 계약만 담는 건 아니다</h4>
+      <p>이 파일에는 <code>snappedRoute</code>의 <strong>기본 구현이 함께 들어 있다</strong>
+         (<code>extension</code>). 그 안에 정책이 박혀 있다 — 점들을 인접 구간으로 쪼개 하나씩
+         길찾기, 접합부 <strong>중복 좌표 제거</strong>, 실패하면 <strong>200ms 쉬고 2번까지 재시도</strong>,
+         단 <code>throttled</code>(요청 과다)면 재시도하지 않음.</p>
+      <p>그래서 실제 구현체 <code>MapKitCoursePlanningService</code>는 <strong>85줄뿐</strong>이다 —
+         <code>route</code> 하나만 만들면 되기 때문이다.</p>
+      <p><strong>이게 먼저 읽는 값어치다.</strong> 프로토콜을 안 읽고 구현체부터 열었다면
+         <em>"재시도는 어디서 하지?"</em>를 85줄에서 찾다가 못 찾는다. 거기 없기 때문이다.</p>
+    </div>
+
     <div class="oneline">
       <span class="tag">정리</span>
       <strong>약속의 모양이 용도를 따라간다.</strong> 위치는 실패를 <strong>알려야</strong> 하고,
       조회는 <strong>절대 실패하지 않겠다</strong>고 약속하고,
       음성은 <strong>성공 여부를 알릴 필요가 없다.</strong>
-      이게 "무엇을 받아 무엇을 보장하는가"의 실물이다.
+      그리고 계약을 먼저 읽으면 <strong>구현체에서 무엇을 찾을지</strong> 안다.
     </div>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
