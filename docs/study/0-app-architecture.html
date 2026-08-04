@@ -687,12 +687,16 @@ struct TraceApp: App {                                  <span class="c">// ①</
     private let container: DependencyContainer
 
     init() {
+        #if DEBUG                                        <span class="c">// 출시 빌드엔 아예 없음</span>
         if ProcessInfo.processInfo.arguments             <span class="c">// ②</span>
              .contains("-traceUITesting") {
             container = .uiTesting()
         } else {
             container = .live()                          <span class="c">// ③</span>
         }
+        #else
+        container = .live()
+        #endif
         container.runActivityController.startObserving() <span class="c">// ④</span>
         container.runAudioCoach.startObserving()         <span class="c">// ④</span>
 
@@ -708,6 +712,12 @@ struct TraceApp: App {                                  <span class="c">// ①</
 
     <p><strong>코드가 한 줄씩 안 읽혀도 괜찮다.</strong> 지금 필요한 건 해석이 아니라
        <em>"이 순서가 저 파일 안에 있다"</em>를 아는 것이다.</p>
+
+    <div class="later">
+      <b>2026-08-04 정비 —</b> 원래 <code>#if DEBUG</code>가 없었다. 테스트용 갈림길과 가짜 구현체들이
+      <b>출시 빌드에도 그대로 들어가 있었다.</b> 지금은 Release 바이너리에서 완전히 빠진다
+      (실측: <code>UITesting</code> 문자열 Release 0건 / Debug 13건).
+    </div>
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
@@ -989,10 +999,14 @@ flowchart TD
 
     <h3>세 줄에 계약이 다 들어 있다</h3>
 
-<pre class="code">@MainActor
-protocol LocationServiceProtocol {
+<pre class="code">protocol LocationServiceProtocol {
     func currentLocation() async throws -> CourseCoordinate
 }</pre>
+
+    <div class="later">
+      <b>2026-08-04 정비 전에는</b> 여기 맨 윗줄에 <code>@MainActor</code>가 붙어 있었다.
+      Domain이 모든 구현체에 "메인 스레드에서 돌아라"를 강제하던 것이라 걷어냈다. 자세한 경위는 파트 5.
+    </div>
 
     <p>한 줄을 넷으로 쪼개 읽는다. <code>currentLocation()</code>은 <strong>아무것도 안 받는다.</strong>
        <code>async</code>는 <strong>시간이 걸릴 수 있으니 기다리라</strong>는 뜻이다.

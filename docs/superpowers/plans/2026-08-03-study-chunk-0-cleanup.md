@@ -220,7 +220,25 @@ protocol P { func f() async }
 ---
 ## 마친 뒤
 
-- [ ] `/trace-study`로 `docs/study/0-app-architecture.html`에 "정비에서 이렇게 바꿨다"를 덧쓴다.
+- [x] `/trace-study`로 `docs/study/0-app-architecture.html`에 "정비에서 이렇게 바꿨다"를 덧쓴다.
       노트의 "왜 이렇게 됐나"와 백로그 언급이 지금 상태와 어긋나므로 반드시 갱신한다.
-- [ ] 처리된 백로그 항목을 닫는다.
-- [ ] `ce-compound` 판단 — 재사용 가능한 교훈이 있으면 기록한다.
+      → **스킬을 거치지 않고 직접 편집했다.** 학습 세션이 아니라 이미 아는 결과를 반영하는
+      기계적 수정이라 판단했다. 노트 맨 앞에 "이 학습이 코드를 바꿨다" 요약표를 넣고,
+      파트 3·4·5의 서술과 **코드 상자 3개**(프로토콜 선언 · `TraceApp.init` · `CoreLocationService`)를
+      현재 코드로 교체했다.
+      ⚠️ **코드 상자를 처음에 놓쳤다** — 사용자가 브라우저로 보고 지적해서 발견했다. 노트를
+      갱신할 때는 **산문뿐 아니라 인용된 코드 전부를 실제 파일과 대조**해야 한다.
+- [x] 처리된 백로그 항목을 닫는다. → 4건 `done`(ContentView · cameraStateStore · 테스트 전용 코드 ·
+      프로토콜 `@MainActor`), 2건 `open` 유지(`RunHistoryViewModel` **이름**, 저장소 손상 복구 무고지).
+      open 34 → 30건.
+- [x] `ce-compound` 판단 — 재사용 가능한 교훈이 있으면 기록한다. → **둘 다 기록했다.**
+      ① 동시성 규칙: `docs/solutions/conventions/mainactor-witness-inference-overrides-class-isolation.md`
+      ② 워크플로 교훈: `docs/solutions/workflow-issues/maintenance-plan-risk-classification-is-often-inverted.md`
+      (②는 `lint-cleanup`의 "44건 중 5건이 저장 키였다"와 **같은 모양이 두 번째**라 일반화했다 —
+      분류는 가설이며, 한 항목씩 떼어 각각 빌드하면 오독이 걸러진다.)
+
+## 사이클 종료
+
+`docs/roadmap.md` "완료 · MVP 밖 독립 사이클"에 결과를 기록했다.
+**`trace-archive` 대상이 아니다** — 그 스킬은 MVP 단위로 도는데 이건 MVP가 아니다.
+이 계획 문서는 `docs/superpowers/plans/`에 그대로 둔다.

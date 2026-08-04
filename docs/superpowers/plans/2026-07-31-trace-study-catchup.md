@@ -19,6 +19,9 @@
 ## 진행 상태
 
 - [x] **0. 앱 구조** → `docs/study/0-app-architecture.html` (2026-08-03 완료 · 7파트 + 확인 문제 6)
+      · **2026-08-04 갱신** — 이 학습이 찾아낸 잔재·구멍 5건을 정비 사이클
+      `study-chunk-0-cleanup`으로 처리하고 그 결과를 노트에 덧썼다(코드 상자도 현재 코드로 교체).
+      노트 맨 앞 "이 학습이 코드를 바꿨다" 표가 요약이다. 경위: `docs/roadmap.md`
 - [ ] **1. 손으로 그은 선이 도로 경로가 되는 법** → `docs/study/1-drawn-path-to-route.html`
 - [ ] **2. 구간을 이어붙이고 재는 법** → `docs/study/2-segment-stitching.html`
 - [ ] **3. 지도 위에 표시하는 법** → `docs/study/3-map-rendering.html`
