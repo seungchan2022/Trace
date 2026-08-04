@@ -1,0 +1,756 @@
+<title>Trace 학습 1 — 손으로 그은 선이 도로 경로가 되는 법</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --accent:   #06B6A4;
+    --deep:     #04796E;
+    --ground:   #FAFCFB;
+    --surface:  #EFF6F4;
+    --tint:     #E3F1EE;
+    --rule:     #DAE6E3;
+    --ink:      #0E1817;
+    --muted:    #52625E;
+    --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
+            system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 37rem; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+  p { margin-bottom: 1rem; }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 700; }
+  em { font-style: normal; color: var(--muted); }
+  code {
+    font-family: var(--mono); font-size: .84em;
+    color: var(--deep); word-break: break-word;
+  }
+
+  /* ── 머리말 ───────────────────────── */
+  .kicker {
+    font-size: .85rem; font-weight: 700;
+    letter-spacing: .04em;
+    color: var(--deep); margin-bottom: .5rem;
+  }
+  h1 {
+    font-size: 2.2rem; font-weight: 800; line-height: 1.15;
+    letter-spacing: -.03em; margin-bottom: .5rem;
+    text-wrap: balance;
+  }
+  .sub { color: var(--muted); font-size: .95rem; margin-bottom: 2rem; }
+
+  /* ── 목차 ─────────────────────────── */
+  .toc {
+    border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1rem 1.2rem; margin-bottom: 3rem;
+    background: #fff;
+  }
+  .toc h4 {
+    font-size: .88rem; font-weight: 800; letter-spacing: -.005em;
+    color: var(--muted); margin-bottom: .8rem;
+  }
+  .toc ol { list-style: none; display: flex; flex-direction: column; gap: .38rem; }
+  .toc li {
+    font-size: .96rem; color: var(--muted);
+    display: flex; gap: .7rem; align-items: baseline;
+  }
+  .toc li .k {
+    font-family: var(--mono); font-size: .88rem; font-weight: 600;
+    color: #B9CCC8; min-width: 1.2rem;
+  }
+  .toc h4 .tocnote { font-weight: 500; font-size: .82rem; color: #93A8A4; }
+  .toc a {
+    color: var(--ink); text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .toc a:hover, .toc a:focus-visible {
+    color: var(--deep); border-bottom-color: var(--accent);
+  }
+  .toc .todo { color: #97A9A5; }
+
+  section.part { scroll-margin-top: 1.5rem; }
+  #toc { scroll-margin-top: 1.5rem; }
+
+  .backtop {
+    display: inline-block; margin-top: 1.8rem;
+    font-size: .86rem; color: var(--muted);
+    text-decoration: none; border-bottom: 1px solid var(--rule);
+  }
+  .backtop:hover, .backtop:focus-visible { color: var(--deep); border-bottom-color: var(--accent); }
+  .toc li.on { color: var(--ink); font-weight: 700; }
+  .toc li.on .k { color: var(--accent); }
+
+  /* ── 3분 복습 / 로드맵 ─────────────── */
+  .recap {
+    border: 2px solid var(--accent); border-radius: 12px;
+    padding: 1.2rem 1.35rem; margin-bottom: 3rem; background: #fff;
+  }
+  .recap h3 {
+    font-size: 1.15rem; font-weight: 800; margin: 0 0 .3rem;
+    border: none; padding: 0;
+  }
+  .recap .hint { font-size: .88rem; color: var(--muted); margin-bottom: 1rem; }
+  .recap ol { list-style: none; display: flex; flex-direction: column; gap: .85rem; }
+  .recap li { display: grid; grid-template-columns: 1.5rem 1fr; gap: .55rem; }
+  .recap .k {
+    font-family: var(--mono); font-size: .92rem; font-weight: 700; color: var(--accent);
+  }
+  .recap .can { font-weight: 700; font-size: .96rem; line-height: 1.55; }
+  .recap .sum { font-size: .92rem; color: var(--muted); line-height: 1.6; margin-top: .1rem; }
+  .recap li.pending .can { color: var(--muted); font-weight: 600; }
+
+  /* ── 파트 헤더 ─────────────────────── */
+  .part { margin-top: 3.5rem; }
+  .part-tag {
+    display: inline-block;
+    font-size: .82rem; font-weight: 700; letter-spacing: .02em;
+    color: #fff; background: var(--deep);
+    padding: .26rem .68rem; border-radius: 5px;
+    margin-bottom: .85rem;
+  }
+  h2 {
+    font-size: 1.6rem; font-weight: 800;
+    letter-spacing: -.025em; line-height: 1.25;
+    margin-bottom: 1.1rem;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 1.02rem; font-weight: 800; letter-spacing: -.005em;
+    margin: 2.3rem 0 .8rem;
+    padding-bottom: .4rem; border-bottom: 1px solid var(--rule);
+  }
+
+  /* ── 이 파트를 끝내면 (능력 선언) ──────── */
+  .goal {
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: .9rem 1.2rem;
+    margin-bottom: 1.1rem;
+    background: #fff;
+  }
+  .goal .tag {
+    display: block;
+    font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .3rem;
+  }
+  .goal p { font-size: 1.05rem; font-weight: 700; line-height: 1.6; margin: 0; }
+
+  /* ── 한 줄 요약 (파트 시작) ───────────── */
+  .oneline {
+    background: var(--tint);
+    border-radius: 10px;
+    padding: .95rem 1.2rem;
+    margin-bottom: 1.6rem;
+    font-weight: 700; line-height: 1.65;
+  }
+  .oneline .tag {
+    display: block;
+    font-size: .84rem; font-weight: 800; letter-spacing: .01em;
+    color: var(--deep); margin-bottom: .35rem;
+  }
+
+  /* ── 등장인물 명패 ──────────────────── */
+  .roster { display: flex; flex-direction: column; gap: .5rem; margin: 1.4rem 0; }
+  .card {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 9px; padding: .75rem 1rem;
+    display: grid; grid-template-columns: 1fr; gap: .15rem;
+  }
+  .card .nm {
+    font-family: var(--mono); font-size: .98rem;
+    font-weight: 700; color: var(--deep); letter-spacing: -.01em;
+    margin-bottom: .1rem;
+  }
+  .card .ro { font-size: .93rem; line-height: 1.65; }
+  .card.hero { border-color: var(--accent); border-width: 2px; background: var(--tint); }
+
+  /* ── 개념 박스 ─────────────────────── */
+  .concept {
+    background: #fff; border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 1.1rem 1.3rem; margin: 1.7rem 0;
+  }
+  .concept h4 {
+    font-size: 1.2rem; font-weight: 800; letter-spacing: -.015em;
+    line-height: 1.4; margin-bottom: .75rem;
+  }
+  .concept p { font-size: .95rem; line-height: 1.75; margin-bottom: .75rem; }
+  .concept p:last-child { margin-bottom: 0; }
+
+  /* ── 순서 ─────────────────────────── */
+  .steps { margin: 1.4rem 0; display: flex; flex-direction: column; gap: .9rem; }
+  .st { display: grid; grid-template-columns: 1.9rem 1fr; gap: .6rem; }
+  .st .n {
+    font-family: var(--mono); font-size: 1.05rem;
+    color: var(--accent); font-weight: 700; line-height: 1.65;
+  }
+  .st .t { font-size: .96rem; line-height: 1.7; }
+  .st .t b { font-weight: 700; }
+
+  /* ── 사용자 장면 묶음 ──────────────── */
+  .scene {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.15rem 1.3rem; margin: 1.4rem 0;
+  }
+  .scene .who {
+    font-size: .84rem; font-weight: 800; color: var(--deep);
+    margin-bottom: .2rem;
+  }
+  .scene .steps { margin: .7rem 0 0; }
+  .scene .seen {
+    margin-top: .9rem; padding-top: .8rem;
+    border-top: 1px solid var(--rule);
+    font-size: .89rem; color: var(--muted); line-height: 1.65;
+  }
+
+  /* ── 경계선 ───────────────────────── */
+  .bounds { display: flex; flex-direction: column; gap: .55rem; margin: 1.4rem 0; }
+  .bd {
+    display: grid; grid-template-columns: 4.6rem 1fr; gap: .7rem;
+    align-items: baseline;
+    font-size: .95rem; line-height: 1.7;
+  }
+  .bd .lb {
+    font-size: .8rem; font-weight: 800; text-align: center;
+    padding: .16rem .3rem; border-radius: 5px;
+    background: var(--surface); color: var(--muted);
+  }
+  .bd.here .lb { background: var(--accent); color: #fff; }
+
+  /* ── 도식 ─────────────────────────── */
+  figure {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.3rem .5rem .85rem;
+    margin: 1.8rem 0; overflow-x: auto;
+  }
+  figcaption {
+    font-size: .86rem; font-weight: 600; letter-spacing: -.005em;
+    color: var(--muted);
+    text-align: center; margin-top: .9rem;
+  }
+  pre.mermaid { background: transparent; text-align: center; }
+
+  figure .node rect, figure .node polygon,
+  figure .node circle, figure .node path {
+    fill: #FFFFFF !important;
+    stroke: var(--accent) !important;
+    stroke-width: 1.7px !important;
+  }
+  figure .nodeLabel, figure .nodeLabel p, figure .node .label {
+    color: var(--ink) !important;
+    fill: var(--ink) !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.5 !important;
+  }
+  figure .edgeLabel, figure .edgeLabel * {
+    color: #0E1817 !important;
+    fill: #0E1817 !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.5 !important;
+    background-color: #FFFFFF !important;
+  }
+  figure .edgeLabel rect,
+  figure .edgeLabel .background,
+  figure rect.edgeLabelBackground,
+  figure .edgeLabels rect {
+    fill: #FFFFFF !important;
+    stroke: none !important;
+    opacity: 1 !important;
+  }
+  figure .edgePath path, figure .flowchart-link, figure path.path {
+    stroke: #A3BFBA !important;
+    stroke-width: 1.7px !important;
+  }
+  figure marker path, figure .marker {
+    fill: #A3BFBA !important;
+    stroke: #A3BFBA !important;
+  }
+
+  /* ── 코드 ─────────────────────────── */
+  pre.code {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem 1.15rem; margin: 1.5rem 0;
+    overflow-x: auto; font-family: var(--mono);
+    font-size: .79rem; line-height: 1.7;
+  }
+  pre.code .c { color: var(--accent); }
+
+  /* ── 실측 표 (수치 전용) ─────────────── */
+  .tablewrap { overflow-x: auto; margin: 1.5rem 0; }
+  table {
+    border-collapse: collapse; width: 100%;
+    font-size: .92rem; background: #fff;
+    border: 1px solid var(--rule); border-radius: 10px;
+  }
+  th, td {
+    text-align: left; padding: .65rem .85rem;
+    border-bottom: 1px solid var(--rule); vertical-align: top;
+    line-height: 1.6;
+  }
+  tr:last-child td { border-bottom: none; }
+  th {
+    font-size: .84rem; font-weight: 700;
+    color: var(--muted); background: var(--surface);
+  }
+  td em { font-size: .87rem; }
+  td .pt {
+    display: inline-block; min-width: 1.35rem; text-align: center;
+    font-family: var(--mono); font-weight: 700;
+    color: var(--deep);
+  }
+
+  /* ── 나중에 ───────────────────────── */
+  .later {
+    font-size: .88rem; color: var(--muted);
+    border-left: 2px solid var(--rule); padding-left: .85rem;
+    margin: 1.2rem 0;
+  }
+
+  .next {
+    margin-top: 3.5rem; padding: 1.2rem 1.3rem;
+    background: var(--surface); border-radius: 12px;
+    font-size: .94rem; color: var(--muted);
+  }
+  .next strong { color: var(--ink); }
+
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .wrap { padding: 2.2rem 1.1rem 4rem; }
+    h1 { font-size: 1.8rem; } h2 { font-size: 1.35rem; }
+    .bd { grid-template-columns: 4.2rem 1fr; }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="kicker">따라잡기 1 / 9</div>
+  <h1>손으로 그은 선이<br>도로 경로가 되는 법</h1>
+  <p class="sub">
+    지도를 탭하거나 손으로 그은 것을 <strong>실제 걸어갈 수 있는 도로 경로</strong>로 바꾸고
+    거리를 재는 데까지. 만드는 순서로 7파트.
+  </p>
+
+  <nav class="toc" id="toc">
+    <h4>목차 <span class="tocnote">— 파트는 진행하며 하나씩 채워진다</span></h4>
+    <ol>
+      <li><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
+      <li><span class="k">소개</span><a href="#range">어디까지가 청크 1인가</a></li>
+      <li><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
+      <li><span class="k">소개</span><a href="#map">장면 ↔ 맡은 파일</a></li>
+      <li><span class="k">1</span><span class="todo">필요한 데이터를 추려서 모양을 정한다</span></li>
+      <li><span class="k">2</span><span class="todo">약속을 정한다 — 프로토콜</span></li>
+      <li><span class="k">3</span><span class="todo">약속을 지킨다 — MapKit 어댑터</span></li>
+      <li><span class="k">4</span><span class="todo">쉬운 것부터 조립 — 탭 두 번</span></li>
+      <li><span class="k">5</span><span class="todo">그리기가 부른 도구 — 다운샘플러</span></li>
+      <li><span class="k">6</span><span class="todo">어려운 것 조립 — 그린 선</span></li>
+      <li><span class="k">7</span><span class="todo">뷰에 꽂는다 — 제스처 두 개</span></li>
+    </ol>
+  </nav>
+
+  <section class="part" id="intro">
+    <div class="part-tag">소개 1 / 4</div>
+    <h2>이 청크가 만드는 것</h2>
+
+    <div class="goal">
+      <span class="tag">한 문장으로</span>
+      <p>
+        사용자가 지도 위에 가고 싶은 길을 표시하면 — 탭으로 찍든 손으로 긋든 —
+        그것을 실제 걸어갈 수 있는 <strong>도로 경로</strong>로 바꾸고 <strong>거리</strong>까지
+        계산해서 내놓는 것.
+      </p>
+    </div>
+
+    <p>
+      여기서 핵심은 <strong>"손으로 그은 그대로 쓰지 않는다"</strong>는 점이다. 사람이 지도 위에
+      손가락으로 그은 선은 건물을 관통하고 강을 가로지른다. 그 선을 그대로 두면 예쁜 낙서일 뿐
+      뛸 수 있는 코스가 아니다. 그래서 그은 선을 <strong>근처의 실제 도로로 옮겨 붙이는</strong>
+      작업이 필요하고, 그 결과로 비로소 "몇 km"라는 숫자가 나온다.
+      <strong>이 옮겨 붙이는 일을 '스냅'이라고 부른다.</strong>
+    </p>
+
+    <div class="concept">
+      <h4>💡 '스냅(snap)'이란?</h4>
+      <p>
+        대충 표시한 위치를 <strong>가까운 정해진 자리로 착 달라붙게 옮기는 것</strong>을 말한다.
+        문서 편집기에서 도형을 대충 놓으면 격자선에 딱 맞춰지는 그 동작과 같은 말이다.
+      </p>
+      <p>
+        여기서는 <strong>손으로 그은 선을 근처 도로 위로 옮겨 붙이는 것</strong>이 스냅이다.
+        Trace의 코드와 문서에 <code>snappedRoute</code>, "마커 스냅" 같은 이름으로 계속 나오는데,
+        전부 이 뜻이다.
+      </p>
+      <p>
+        <strong>뒤에서 이 말이 다시 나오는 자리:</strong> 파트 2에는 <code>snappedRoute</code>라는
+        이름의 약속이 선언돼 있고, 파트 3은 MapKit에게 "여기서 저기까지 걸어가는 길"을 물어보는
+        일 자체가 스냅이며, 파트 6에는 그린 선의 <strong>시작점을 기존 코스 끝점으로 갈아끼우는</strong>
+        처리(<code>snappedStrokeStart</code>)가 나온다.
+      </p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 그런데 스냅을 어떻게 하나 — '맵매칭'을 쓰지 않는다</h4>
+      <p>
+        지도·내비 앱이 이 일에 쓰는 기술에는 이름이 있다. <strong>맵매칭(map matching)</strong>이다.
+        <strong>지나간 점들의 줄(궤적)을 통째로 받아 도로망 위 어느 길이었는지 한 번에 맞춰주는</strong>
+        것으로, 내비가 GPS 신호가 튀어도 차를 도로 위에 딱 붙여 보여주는 게 이것이다.
+        핵심은 입력이 <strong>점 하나하나가 아니라 궤적 전체</strong>라는 점이다.
+      </p>
+      <p>
+        <strong>Trace는 맵매칭을 쓰지 않는다. 쓸 데가 없어서다.</strong> 2026-06-20 조사 결론이
+        설계 문서에 남아 있다 — 한국 보행용 맵매칭 API는 사실상 없다(Naver 보행 미지원 ·
+        Kakao는 URL Scheme만 · Mapbox는 한국 제외 · Tmap은 유료에 24시간 저장 제한 ·
+        Valhalla/OSM은 서버를 직접 운영해야 함). 그래서 <strong>"궤적을 통째로 맞춰줘"라고
+        부탁하는 대신, "여기서 저기까지 걸어가는 길"을 여러 번 물어보는 것으로 대신했다.</strong>
+        이것이 이 청크가 하는 일의 정체다.
+      </p>
+      <p>
+        <strong>이 대체가 공짜는 아니다.</strong> 설계 문서의 한 줄이 대가를 정확히 말한다 —
+        <em>"MKDirections는 궤적/경유지 입력이 없어 각 구간을 독립 최적화한다."</em>
+        구간들이 <strong>서로를 모르는 채로</strong> 계산된다는 뜻이다. 그래서 점을 촘촘히 찍을수록
+        모양이 좋아지지 않고 <strong>오히려 나빠지는</strong> 구간이 생긴다(진짜 맵매칭이라면
+        반대여야 한다). 그 실측 표는 <strong>파트 5</strong>에서 통째로 본다.
+      </p>
+      <p>
+        맵매칭 제공자로 갈아타는 것은 지금도 <strong>살아있는 선택지</strong>다.
+        <code>project-decisions.md</code>에 <em>"근본책(맵매칭 제공자)은 여전히 미래 옵션"</em>으로
+        적혀 있다.
+      </p>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <section class="part" id="range">
+    <div class="part-tag">소개 2 / 4</div>
+    <h2>어디까지가 청크 1인가</h2>
+
+    <p>
+      따라잡기는 <strong>청크 9개</strong>로 되어 있고 <strong>한 청크가 한 세션</strong>이다.
+      청크 0(앱 구조)은 지난번에 끝냈고 지금이 청크 1이다. 청크 2·3은 <strong>다음에 할
+      별개의 세션</strong>이지, 이 세션의 일부가 아니다. 이 세션 안의 구분은 <strong>파트 1~7</strong>이다.
+    </p>
+
+    <h3>먼저 부를 이름부터</h3>
+
+    <p>
+      셋을 구분해야 이야기가 엉키지 않는다. 크기가 다른 세 가지다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>말</th><th>뜻</th><th>코드 이름</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>조각</strong></td><td>길찾기를 한 번 부른 결과. 점 A에서 점 B까지</td><td><code>leg</code></td></tr>
+          <tr><td><strong>구간</strong></td><td>손을 한 번 뗀 결과. 조각들을 <strong>합친</strong> 것</td><td><code>CourseSegment</code></td></tr>
+          <tr><td><strong>코스</strong></td><td>최종 경로. 구간들을 <strong>이어붙인</strong> 것</td><td><code>PlannedCourse</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>"합치기"와 "이어붙이기"를 구별해서 쓴다.</strong> 조각을 모으는 것은 <strong>합치기</strong>,
+      구간을 모으는 것은 <strong>이어붙이기</strong>다. 둘 다 "붙인다"고 부르면 층이 뒤섞여
+      무슨 말인지 알 수 없게 된다.
+    </p>
+
+    <h3>한 번 그으면 무슨 일이 일어나나</h3>
+
+    <figure>
+      <pre class="mermaid">
+flowchart TD
+  A["손가락으로 한 번 그음<br/>점 수백 개"]
+  B["점 솎아내기<br/>120m마다 하나 → 17개"]
+  C["점 사이마다 길찾기<br/>조각 16개"]
+  D["합치기<br/>구간 1개 — 청크 1은 여기서 끝"]
+  E["이어붙이기<br/>코스 = 구간 목록 — 청크 2"]
+  F["지도에 그리기<br/>색 · 겹침 · 라벨 — 청크 3"]
+  A --> B --> C --> D --> E --> F
+      </pre>
+      <figcaption>1.9km를 한 번에 그었을 때의 실측 숫자다(파트 5에서 그 표를 본다)</figcaption>
+    </figure>
+
+    <p>
+      <strong>청크 1은 구간 하나를 손에 쥔 순간 끝난다.</strong> 그 구간이 코스의 몇 번째인지,
+      코스라는 게 있기는 한지 — 청크 1은 <strong>모른다.</strong>
+    </p>
+
+    <h3>세 번 그어보면 셋의 차이가 보인다</h3>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>사용자가 한 일</th><th>청크 1</th><th>청크 2</th><th>청크 3</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>처음 그음</td>
+            <td>구간 A 완성</td>
+            <td>코스가 비었으니 그냥 넣음</td>
+            <td>선 하나 + 출발·도착 핀</td>
+          </tr>
+          <tr>
+            <td>도착점 근처에서 또 그음</td>
+            <td>구간 B 완성</td>
+            <td>A <strong>뒤에</strong> B를 붙임</td>
+            <td>A·B를 <strong>다른 색</strong>으로</td>
+          </tr>
+          <tr>
+            <td>출발점 근처에서 반대로 그음</td>
+            <td>구간 C 완성</td>
+            <td><strong>뒤집어서</strong> A <strong>앞에</strong> 붙임</td>
+            <td>겹치는 데는 <strong>옆으로 밀어서</strong></td>
+          </tr>
+          <tr>
+            <td>되돌리기를 누름</td>
+            <td>—</td>
+            <td>마지막에 붙인 C를 뺌</td>
+            <td>다시 그림</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      가운데 칸이 늘 같다는 것에 주목한다. <strong>청크 1이 하는 일은 매번 똑같다</strong> —
+      그은 것을 구간 하나로 만드는 것뿐이다. 상황에 따라 달라지는 판단은 전부 청크 2가 한다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 그럼 청크 1만으로는 화면에 아무것도 안 나오나?</h4>
+      <p>
+        <strong>거의 그렇다.</strong> 그은 선이 도로 경로로 바뀌는 장면은 청크 2·3까지 가야 보인다.
+        딱 하나 예외가 <strong>손가락을 따라오는 민트색 선</strong>이다. 그건 길찾기를 부르기
+        <em>전에</em> 손가락이 지나간 화면 위치를 그대로 잇는 것이라, 청크 1 안에서 완결된다.
+      </p>
+      <p>
+        그런데도 이 청크에 <strong>파트 7(뷰에 꽂기)</strong>이 있는 이유는, 뷰에 방향이
+        <strong>두 개</strong>이기 때문이다. <strong>들어오는 쪽</strong>(손가락 → 좌표)이 파트 7이고,
+        <strong>나가는 쪽</strong>(계산된 경로 → 지도)이 청크 3이다. 들어오는 쪽이 없으면
+        청크 1은 시작조차 못 한다.
+      </p>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <section class="part" id="scenes">
+    <div class="part-tag">소개 3 / 4</div>
+    <h2>이렇게 되게 만들 거다 — 사용자가 겪을 장면</h2>
+
+    <p>
+      아래는 <strong>완성된 앱의 사용 설명서가 아니라, 만들기 전에 "이렇게 되게 하자"고 정한
+      목표 장면</strong>이다. 이후 파트들은 전부 이 장면을 어떻게 실현했는가에 대한 이야기다.
+      코스를 만드는 방법은 두 가지이고, <strong>둘은 같은 길찾기 기능을 나눠 쓴다.</strong>
+      아래 세 묶음 중 <strong>세 번째가 실사용에서 가장 자주 겪는 장면</strong>이다 —
+      앞의 둘은 코스를 처음 열 때 한 번뿐이다.
+    </p>
+
+    <div class="scene">
+      <div class="who">탭으로 만들 때</div>
+      <div class="steps">
+        <div class="st"><span class="n">①</span><span class="t">지도에서 출발점을 톡 누른다 → 임시 마커가 생긴다</span></div>
+        <div class="st"><span class="n">②</span><span class="t">도착점을 톡 누른다</span></div>
+        <div class="st"><span class="n">③</span><span class="t">잠깐 로딩이 돈다</span></div>
+        <div class="st"><span class="n">④</span><span class="t"><b>도로를 따라가는 선</b>이 나타나고 거리가 뜬다</span></div>
+      </div>
+      <p class="seen">점이 두 개뿐이라 길찾기는 <strong>딱 한 번</strong>만 부르면 된다. 그래서 이쪽이 훨씬 단순하다.</p>
+    </div>
+
+    <div class="scene">
+      <div class="who">손으로 그릴 때</div>
+      <div class="steps">
+        <div class="st"><span class="n">⑤</span><span class="t">그리기 모드를 켠다</span></div>
+        <div class="st"><span class="n">⑥</span><span class="t">지도를 잠깐 <b>꾹 누른 다음</b> 손가락을 끈다 → 민트색 선이 손가락을 따라온다</span></div>
+        <div class="st"><span class="n">⑦</span><span class="t">손을 뗀다</span></div>
+        <div class="st"><span class="n">⑧</span><span class="t">잠깐 로딩이 돈다</span></div>
+        <div class="st"><span class="n">⑨</span><span class="t">삐뚤빼뚤하던 손 그림이 <b>도로를 따라가는 선</b>으로 바뀌고 거리가 뜬다</span></div>
+      </div>
+      <p class="seen">손가락이 지나간 점은 수백 개다. 그걸 다 길찾기에 보낼 수는 없다 —
+        이 사실이 이 기능의 거의 모든 설계를 좌우한다.</p>
+    </div>
+
+    <div class="scene">
+      <div class="who">이미 만든 코스에 이어 붙일 때 — 실제로는 이쪽이 더 흔하다</div>
+      <div class="steps">
+        <div class="st"><span class="n">⑩</span><span class="t">선이 이미 있는 상태에서 지도를 한 번 톡 → <b>기존 코스의 가까운 쪽 끝</b>에서 그 지점까지 이어진다 (탭 두 번이 아니라 <b>한 번</b>)</span></div>
+        <div class="st"><span class="n">⑪</span><span class="t"><b>출발 핀</b>을 톡 → 도착점에서 출발점까지 되짚는 <b>왕복 구간</b>이 붙는다</span></div>
+        <div class="st"><span class="n">⑫</span><span class="t">도착 핀을 톡 → <em>"이미 도착점입니다"</em>. 닫힌 코스의 병합 핀을 톡 → <em>"이미 닫힌 코스입니다"</em></span></div>
+        <div class="st"><span class="n">⑬</span><span class="t">기존 코스 끝 근처에서 다시 그으면 → 그린 선의 <b>시작점이 기존 끝점으로 갈아끼워져</b> 딱 붙는다</span></div>
+      </div>
+      <p class="seen">
+        처음 두 점을 찍는 ①②는 사실 <strong>맨 처음 한 번뿐</strong>이다. 그 뒤로는 계속 이 장면이다.
+      </p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 ⑩~⑬은 청크 1이 하는 일이 아니다</h4>
+      <p>
+        <strong>이어붙이기 판정은 전부 청크 2다.</strong> 앞에 붙일지 뒤에 붙일지, 방향을 뒤집을지,
+        틈이 벌어졌으면 어떻게 메울지 — 이 장면들에서 사용자가 체감하는 똑똑함은
+        <strong>전부 다음 세션의 내용</strong>이다.
+      </p>
+      <p>
+        그런데도 여기 적어둔 이유는, <strong>청크 1이 무엇을 만들어 넘겨야 하는지</strong>가
+        이 장면에서 정해지기 때문이다. 청크 1은 매번 똑같이 <strong>구간 하나</strong>만 만들어
+        건네고, 그것이 코스의 앞에 갈지 뒤에 갈지는 신경 쓰지 않는다.
+      </p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 왜 "꾹 누른 다음"인가 (⑥)</h4>
+      <p>
+        그리기 모드에서도 <strong>지도를 움직일 수 있어야</strong> 하기 때문이다. 손가락이 닿자마자
+        선을 그리기 시작하면, 지도를 옮기려고 미는 동작까지 전부 낙서가 되어버린다.
+      </p>
+      <p>
+        그래서 <strong>짧게 눌렀다 끌면 지도가 움직이고, 꾹 누른 채로 끌면 선이 그려지도록</strong>
+        갈랐다. 원래는 이 구분이 없어서 그리기 모드에서 지도를 못 움직였고, 나중에 고친 것이다 —
+        <strong>파트 7</strong>에서 그 사연을 다룬다.
+      </p>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <section class="part" id="map">
+    <div class="part-tag">소개 4 / 4</div>
+    <h2>장면 ↔ 맡은 파일</h2>
+
+    <p>
+      각 장면을 실제로 어느 파일이 만들어내는지, 그리고 그게 몇 번 파트인지다.
+      <strong>파트 번호가 거꾸로 내려가는 것에 주목한다.</strong>
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>사용자가 보는 장면</th><th>그걸 맡은 파일</th><th>파트</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>손가락을 끄니 민트색 선이 따라온다 <em>(⑥)</em></td>
+            <td><code>MapViewRepresentable</code></td>
+            <td><span class="pt">7</span></td>
+          </tr>
+          <tr>
+            <td>손을 떼니 로딩이 돈다 <em>(③⑧)</em></td>
+            <td><code>CoursePlannerPageViewModel</code></td>
+            <td><span class="pt">4·6</span></td>
+          </tr>
+          <tr>
+            <td>손 그림이 도로 따라가는 선으로 바뀐다 <em>(⑨)</em></td>
+            <td><code>MapKitCoursePlanningService</code></td>
+            <td><span class="pt">3</span></td>
+          </tr>
+          <tr>
+            <td>거리가 숫자로 뜬다 <em>(④⑨)</em></td>
+            <td><code>CourseSegment</code></td>
+            <td><span class="pt">1</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      위에서부터 <strong>7 → 4 → 3 → 1</strong>이다. 사용자가 <em>먼저</em> 겪는 것일수록
+      <em>나중에</em> 만드는 것이다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 왜 겪는 순서와 만드는 순서가 반대인가</h4>
+      <p>
+        화면은 <strong>혼자서는 아무것도 못 하기 때문</strong>이다. 버튼을 눌렀을 때 부를 것이
+        이미 있어야 화면을 붙일 수 있다. 그래서 안쪽부터 만들고 화면을 맨 마지막에 꽂는다.
+      </p>
+      <p>
+        이 노트도 그 순서를 따른다. 그래서 <strong>파트 1은 화면 이야기가 전혀 없이 시작한다</strong> —
+        정상이다. 대신 파트마다 첫 줄에 "이건 위 장면 중 어디"를 적어두었으니, 길을 잃으면
+        이 표로 돌아오면 된다.
+      </p>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <div class="recap" style="margin-top:3.5rem">
+    <h3>만드는 순서 — 파트 7개</h3>
+    <p class="hint">각 줄이 <strong>그 파트를 끝내면 할 수 있게 되는 것</strong>이다.
+      파트가 끝날 때마다 한 줄 요약이 아래에 붙는다.</p>
+    <ol>
+      <li class="pending">
+        <span class="k">1</span>
+        <div>
+          <div class="can">새 기능을 시작할 때 어떤 데이터가 필요한지 추려내고,
+            그것을 어떤 모양으로 담을지 정할 수 있다</div>
+          <div class="sum">필요한 데이터를 추려서 모양을 정한다 — 엔티티 4개</div>
+        </div>
+      </li>
+      <li class="pending">
+        <span class="k">2</span>
+        <div>
+          <div class="can">외부에 의존하는 기능을 들일 때 <code>async</code>·<code>throws</code>·반환값을 정할 수 있다</div>
+          <div class="sum">약속을 정한다 — 프로토콜</div>
+        </div>
+      </li>
+      <li class="pending">
+        <span class="k">3</span>
+        <div>
+          <div class="can">길찾기를 다른 회사 것으로 갈아끼울 때 어디만 고치면 되는지 정할 수 있다</div>
+          <div class="sum">약속을 지킨다 — MapKit 어댑터</div>
+        </div>
+      </li>
+      <li class="pending">
+        <span class="k">4</span>
+        <div>
+          <div class="can">화면과 서비스 사이에서 무엇을 책임지고 무엇을 안 할지 정할 수 있다</div>
+          <div class="sum">쉬운 것부터 조립 — 탭 두 번이 구간 하나가 되기까지</div>
+        </div>
+      </li>
+      <li class="pending">
+        <span class="k">5</span>
+        <div>
+          <div class="can">점 사이 최소 간격을 바꾸면 무엇이 좋아지고 무엇이 깨지는지 판정할 수 있다</div>
+          <div class="sum">그리기가 부른 도구 — 점을 솎아내는 다운샘플러</div>
+        </div>
+      </li>
+      <li class="pending">
+        <span class="k">6</span>
+        <div>
+          <div class="can">사용자가 중간에 손을 바꿨을 때 무엇이 버려져야 하는지 정할 수 있다</div>
+          <div class="sum">어려운 것 조립 — 그린 선이 구간 하나가 되기까지</div>
+        </div>
+      </li>
+      <li class="pending">
+        <span class="k">7</span>
+        <div>
+          <div class="can">새 제스처를 넣을 때 지도 이동과 안 부딪히는 조건을 정할 수 있다</div>
+          <div class="sum">뷰에 꽂는다 — 탭과 그리기가 한 지도에서 공존하는 법</div>
+          <div class="sum"><strong>여기서 답할 질문(2026-08-04):</strong> MapKit이 원래 주는
+            제스처는 무엇이고 우리가 얹은 것은 무엇인가 · 더블탭 확대, 탭하고 손 안 뗀 채
+            위아래로 확대 같은 기본 동작과 어떻게 안 부딪히게 했나 · 탭하면 마커가 저절로
+            생기나, 아니면 직접 만든 것인가</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="next">
+    <strong>다음</strong> — 파트 1 「필요한 데이터를 추려서 모양을 정한다」. 위 장면 표의 맨 아랫줄,
+    <em>"거리가 숫자로 뜬다"</em>를 담을 그릇부터 만든다.
+  </div>
+
+</div>
