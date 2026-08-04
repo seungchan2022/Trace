@@ -6,6 +6,12 @@ import MapKit
 final class MapKitCoursePlanningService: CoursePlanningServiceProtocol {
     private var cache: [String: PlannedCourse] = [:]
 
+    // ⚠️ 클래스의 @MainActor와 중복이 아니다 — 지우면 컴파일이 깨진다.
+    // nonisolated한 async 프로토콜 요구사항을 witness하면 클래스 @MainActor가 이 멤버에
+    // 적용되지 않는다(SE-0461 + SWIFT_APPROACHABLE_CONCURRENCY). 명시가 추론을 이긴다.
+    // 지워도 되는지 확인하는 법: 이 줄을 지우고 빌드한다. 통과하면 Swift가 바뀐 것이다.
+    // 근거·해법 매트릭스: docs/solutions/conventions/mainactor-witness-inference-overrides-class-isolation.md
+    @MainActor
     func route(
         from start: CourseCoordinate,
         to destination: CourseCoordinate

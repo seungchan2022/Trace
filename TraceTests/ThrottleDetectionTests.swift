@@ -28,7 +28,6 @@ nonisolated final class ThrottleDetectionTests: XCTestCase {
     }
 }
 
-@MainActor
 private final class ThrottleStubService: CoursePlanningServiceProtocol {
     var routeCallCount = 0
 

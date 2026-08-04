@@ -639,7 +639,6 @@ private struct RouteCall: Equatable {
     let to: CourseCoordinate
 }
 
-@MainActor
 private final class StubCourseService: CoursePlanningServiceProtocol {
     private(set) var routeCalls: [RouteCall] = []
     var routeCallCount: Int { routeCalls.count }
@@ -649,7 +648,6 @@ private final class StubCourseService: CoursePlanningServiceProtocol {
     }
 }
 
-@MainActor
 private final class FailingCourseService: CoursePlanningServiceProtocol {
     func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -> PlannedCourse {
         throw CoursePlanningError.routeNotFound

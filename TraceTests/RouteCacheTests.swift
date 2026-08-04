@@ -43,7 +43,6 @@ nonisolated final class RouteCacheTests: XCTestCase {
     }
 }
 
-@MainActor
 private final class SpyMapKitService: CoursePlanningServiceProtocol {
     var apiCallCount = 0
     private var cache: [String: PlannedCourse] = [:]

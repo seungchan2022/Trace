@@ -124,99 +124,100 @@
 - `Trace/Domain/RunTracking/Protocol/VoiceAnnouncerProtocol.swift`
 - `Trace/Domain/RunTracking/Protocol/RunLocationStreamProtocol.swift`
 
-- [x] 네 프로토콜에서 `@MainActor` 한 줄씩을 뗀다. → **1개만 뗐다(`VoiceAnnouncerProtocol`).
-      나머지 셋은 되돌렸다.** 아래 실측 참조.
+- [x] 네 프로토콜에서 `@MainActor` 한 줄씩을 뗀다. → **넷 다 뗐다.**
 - [x] 컴파일한다. **깨지는 곳은 대부분 가짜 구현체 6개**로 예상된다 —
       진짜 구현체 4개는 이미 자체 `@MainActor`를 갖고 있어 영향이 없다(실측 확인).
-      → 🔴 **이 예상은 완전히 틀렸다.** 가짜 구현체는 **한 곳도 안 깨졌고**, 깨진 것은 **전부
-      진짜 구현체**였다. "자체 `@MainActor`를 갖고 있으니 안전하다"는 추론이 거꾸로였다.
+      → 🔴 **이 예상은 정확히 거꾸로였다.** 가짜 구현체는 **한 곳도 안 깨졌고**, 깨진 것은
+      **전부 진짜 구현체**였다. "자체 `@MainActor`가 있으니 안전하다"는 추론이 반대였다.
 - [x] ⚠️ `VoiceAnnouncerProtocol`은 나머지 셋과 다르다 — `announce`가 **`async`가 아니라서**
-      파급이 다르게 나올 수 있다. → 다르게 나온 건 맞는데 **방향이 반대다.** 플랜은 이것만
-      위험할까 걱정했으나, 실제로는 **이것만 유일하게 통과**했다.
+      파급이 다르게 나올 수 있다. → 다른 게 맞는데 **방향이 반대다.** 플랜은 이것만 위험할까
+      걱정했으나, 실제로는 **이것만 아무 조치 없이 통과**했다.
 - [x] **시뮬레이터 스모크 필수** — 저장 코스 불러오기 · 지도 렌더링 · 달리기 시작 · 음성 안내.
-      MVP12 크래시가 컴파일 경고 없이 런타임에만 드러났다(`ios-swift.md` "위험 신호 셋").
-      → **live 컨테이너로 전 구간 통과, 크래시·이상 없음.** 결과는 아래.
+      → **live 컨테이너로 네 프로토콜 경로 전부 통과, 크래시 0건.** 결과는 아래.
 
-### 🔑 실측 결과 — 가르는 축은 "진짜/가짜"가 아니라 **async 요구사항의 유무**
+### 🔑 핵심 발견 — 클래스의 `@MainActor`가 프로토콜 witness에는 적용되지 않는다
 
-프로토콜을 하나씩 떼고 각각 빌드해 분리했다(4회 빌드).
+**10줄 최소 재현으로 규칙을 격리했다** (MapKit·CoreLocation 무관):
 
-| 프로토콜 | `async` 요구사항 | 결과 | 깨진 곳 |
-|---|---|---|---|
-| `LocationServiceProtocol` | `currentLocation()` | 🛑 | `CoreLocationService` — 자기 `manager`·`broadcaster`를 못 건드림 |
-| `CoursePlanningServiceProtocol` | `route`/`snappedRoute` | 🛑 | `MapKitCoursePlanningService` — 자기 `cache`를 못 건드림 |
-| `RunLocationStreamProtocol` | `requestSessionFullAccuracy()` | 🛑 | `RunLocationTracker` — `manager`가 메인액터를 못 벗어남 |
-| `VoiceAnnouncerProtocol` | **없음(전부 동기)** | ✅ | 앱·테스트 타깃 모두 컴파일 |
+```swift
+protocol P { func f() async }
+@MainActor final class C: P {
+    var x = 0
+    func f() async { x += 1 }   // ❌ main actor-isolated property 'x' ... nonisolated context
+}
+```
 
-**규칙:** `async` 요구사항이 하나라도 있는 프로토콜에서 `@MainActor`를 떼면, 그 프로토콜을
-만족하는 **`@MainActor` 진짜 구현체가 자기 메인액터 상태를 못 만지게 된다.** 요구사항이 전부
-동기인 프로토콜만 움직인다. (컴파일러 내부 기제 — `SWIFT_APPROACHABLE_CONCURRENCY = YES`와
-격리 conformance — 까지는 확인하지 않았다. 위 규칙은 기제와 무관하게 실측으로 성립한다.)
+**프로토콜 채택 한 줄이 있고 없고의 차이다.** 채택을 지우면 같은 코드가 통과한다.
 
-**셋을 되돌린 근거는 플랜의 중단 기준 그대로다** — "컴파일 에러가 가짜 구현체 밖으로 번진다
-→ 🛑 멈춤". 진짜 구현체를 고쳐야 통과하는 상황이고, 그 수정은 `nonisolated`를 새로 붙이는
-방향(🛑 행)으로 갈 수밖에 없다. **`nonisolated`는 한 곳도 붙이지 않았다.**
+원인은 `SWIFT_APPROACHABLE_CONCURRENCY = YES`가 켜는 SE-0461이다 — nonisolated한 `async`
+요구사항이 `nonisolated(nonsending)`(호출자 액터에서 실행)가 되면서, **멤버에 명시가 없을 때
+요구사항 쪽 격리가 클래스 쪽 추론을 이긴다.** 멤버에 직접 쓴 `@MainActor`는 추론이 아니라
+명시라서 둘 다 이긴다.
 
-### 스모크 범위 (실측으로 좁힘)
+⚠️ **"Swift 버그"라고 단정하지 말 것.** SE-0461 원문에 프로토콜 witness와 격리 추론의
+상호작용이 아예 없어(원문 확인) 의도인지 빈틈인지 판단 근거가 없다.
 
-바뀐 것은 `VoiceAnnouncerProtocol` 하나뿐이라 **저장 코스 불러오기·지도 렌더링은 이제 게이트가
-아니다**(Location·CoursePlanning 경로가 안 바뀌었다). 정말 봐야 할 것은 **nonisolated가 된 프로토콜
-확장 기본 구현 4개**(`announce(_:)` · `holdAudioSession()` · `releaseAudioSession()` · `stopSpeaking()`)이고,
-호출부 실측 결과 이들을 전부 태우는 흐름은 **카운트다운**이다:
+### 검증한 해법 매트릭스
 
-| 흐름 | 태우는 것 | 호출부 |
+| 방법 | 결과 | 비고 |
 |---|---|---|
-| 카운트다운 3-2-1 발화 | `holdAudioSession()` + `announce(word)` | `RunPageViewModel:149,160` |
-| 카운트다운 취소 | `stopSpeaking()` + `releaseAudioSession()` | `RunPageViewModel:182,183` |
-| 달리기 시작·종료·km·목표 | `announce(_:)` 단일 인자 | `RunAudioCoach:60,67,86,99,113` |
+| 아무 조치 없음 | ❌ | |
+| **멤버에 `@MainActor` 명시** | ✅ | **채택** |
+| 프로토콜에 `@MainActor` | ✅ | 원래 상태 — Domain이 실행 컨텍스트를 강제 |
+| 격리 conformance (`extension C: @MainActor P`) | ❌ | 동기 요구사항엔 통하나 async엔 안 통함 |
+| 요구사항을 `@concurrent`로 | ❌ | |
+| `nonisolated`만 | ❌ | 메인 액터 상태 접근 불가 |
+| `nonisolated` + `await MainActor.run { }` | ✅ | 🛑 **금지** — 동작이 바뀐다 |
+| `SWIFT_APPROACHABLE_CONCURRENCY = NO` | ✅ | 프로젝트 전체 동시성 모델 후퇴 |
+| 요구사항이 전부 동기 | ✅ | `VoiceAnnouncerProtocol`이 그냥 통과한 이유 |
 
-⚠️ **`-traceUITesting`으로 띄우면 안 된다** — 그 컨테이너는 `announce`가 빈 몸통인
-`NoopVoiceAnnouncer`를 꽂으므로, 실제로 conformance가 바뀐 `SpeechVoiceAnnouncer`를 하나도
-검증하지 못한다. **live 컨테이너로 띄운다.**
+**`nonisolated`는 한 곳도 붙이지 않았다.** 붙이면 모든 상태 접근을 `await MainActor.run { }`으로
+감싸야 하고, 그 순간 메서드가 한 덩어리로 돌던 것이 **끼어들기 가능한 조각들**로 쪼개진다.
+`CoreLocationService`의 `ContinuationBroadcaster`(겹친 요청을 같은 결과로 묶는 로직)가 정확히
+여기서 깨지고, 그것이 MVP12에서 앱이 죽은 방식이다. 플랜의 🛑 행 그대로다.
 
-📌 **스모크 중 알게 된 것:** `SpeechVoiceAnnouncer`는 네 멤버를 **전부 자체 구현**한다
-(`announce(_:pace:kind:)`·`holdAudioSession`·`releaseAudioSession`·`stopSpeaking`). 따라서 실사용에서
-nonisolated 확장 기본 구현을 실제로 타는 것은 **`announce(_:)`·`announce(_:pace:)` 둘뿐**이고
-(3인자 메서드로 포워딩), 나머지 셋은 클래스 자기 구현으로 해소된다. 확장이 위험 표면이라는
-판단은 맞았지만 **표면이 예상보다 좁다.**
+멤버 `@MainActor` 명시는 **순 격리가 전과 같아 동작이 안 바뀐다** — 플랜의 ✅ 행("구현체에
+`@MainActor`가 늘어난다 — 조이는 방향이라 안전")에 해당한다.
+
+### 최종 변경
+
+| 위치 | 변경 |
+|---|---|
+| Domain 프로토콜 **4개** | `@MainActor` **제거** |
+| 진짜 구현체 3곳의 async 멤버 | `@MainActor` 명시 (+3줄, 근거 주석 포함) |
+| 테스트 스텁 **9개** | `@MainActor` **제거** (−9줄) |
+
+테스트 스텁 9개는 카운터를 올리고 값을 돌려주는 게 전부라 **메인이 전혀 필요 없는** 것들이었다.
+프로토콜이 강제하니 따라 붙어 있었을 뿐이고, 프로토콜에서 떼자 진짜 필요한 곳이 드러났다.
 
 ### 스모크 결과 (2026-08-04, iPhone 17 Pro / iOS 26.5, live 컨테이너)
 
-| 흐름 | 태운 것 | 결과 |
+⚠️ `-traceUITesting`으로 띄우면 안 된다 — 가짜 구현체가 꽂혀 진짜 conformance를 검증하지 못한다.
+
+| 흐름 | 검증하는 프로토콜 | 결과 |
 |---|---|---|
-| 러닝 탭 → 시작 → 카운트다운 3-2-1 | `holdAudioSession()` + `announce(word)` | ✅ `run.countdownScreen` 정상 진입 |
-| 카운트다운 완료 → 트래킹 | `announce(start)` (`RunAudioCoach`) | ✅ 트래킹 진입, GPS 획득 후 시간·거리 갱신 |
-| 일시정지 | `announce(_:pace:)` 2인자 기본 구현 | ✅ "일시정지됨" 표시 |
-| 길게 눌러 종료 | `announce(finish)` + `releaseAudioSession()` | ✅ "러닝 요약 / 기록 저장됨" |
-| GPS 대기 중 취소 | `stopSpeaking()` + `releaseAudioSession()` | ✅ 대기 화면 복귀 |
-| 기록 탭 | (Task 2로 옮긴 `RunHistoryViewModel`) | ✅ 방금 저장한 0:00:41 기록이 최상단 반영 |
-| 코스 탭 지도 | (이번에 안 바뀐 경로 — sanity) | ✅ 서울시청 일대 렌더링 정상 |
+| 내 위치 버튼 | `LocationServiceProtocol.currentLocation()` | ✅ 현재 위치로 센터링 |
+| 지도 두 지점 탭 | `CoursePlanningServiceProtocol.route()` | ✅ **도보 경로 195m 계산**, 폴리라인·출발/도착 핀 렌더링 |
+| 달리기 시작 → 트래킹 → 종료 | `RunLocationStreamProtocol` | ✅ "기록 저장됨" |
+| 카운트다운 3-2-1 · 시작 · 일시정지 · 종료 | `VoiceAnnouncerProtocol` | ✅ 전 구간 |
+| 지도 렌더링 | (sanity) | ✅ |
 
-런타임 로그에 크래시·`Swift runtime failure`·데이터 레이스 없음. (로그의 "mysterious crashes"
-문자열은 시뮬레이터 접근성 번들 중복 경고문의 일부로, 앱과 무관하다.)
+런타임 로그에 크래시·`Swift runtime failure`·데이터 레이스 **0건**.
+(로그의 "mysterious crashes"는 시뮬레이터 접근성 번들 중복 경고문의 일부로 앱과 무관하다.)
 
-⚠️ **환경 이슈 1건(코드와 무관):** 첫 실행이 `FBSOpenApplicationServiceErrorDomain / Busy
-("Application failed preflight checks")`로 거부됐다. 직전에 테스트 스위트를 여러 번 돌린 탓이며,
-`testing.md`의 CoreSimulator 데몬 재시작 절차로 해소했다.
+⚠️ **환경 이슈 2건(코드 무관):** ①`FBSOpenApplicationServiceErrorDomain / Busy` 실행 거부,
+②접근성 트리가 빈 채로 반환. 둘 다 `testing.md`의 CoreSimulator 데몬 재시작으로 해소했다.
 
-### 이 Task의 요점과 중단 기준
+📌 **도구 노하우:** `coursePlanner.map`은 tap 대상으로 안 잡힌다(`action: none`). `touch`(down+up)는
+통한다. 서로 다른 두 지점을 찍으려면 **탭 → 지도 스와이프 → 탭** 순서로 한다.
 
-**요점:** 프로토콜이 "너희 전부 메인에서 돌아라"고 강제하던 것을 빼서,
-**필요한 곳에서만 각자 `@MainActor`를 붙이게** 한다. MVP12 설계가 원했던 형태다(*"격리는 구현체가 선택"*).
+📌 **`SpeechVoiceAnnouncer`는 프로토콜 멤버 넷을 전부 자체 구현**하므로, 실사용에서 nonisolated
+확장 기본 구현을 타는 것은 `announce(_:)`·`announce(_:pace:)` 둘뿐이다.
 
-**중단 기준 — 아래가 나오면 되돌리고 백로그로 돌린다.**
-
-| 신호 | 판정 |
-|---|---|
-| 구현체에 `@MainActor`가 **늘어난다** | ✅ 통과 — 예상된 결과다. 조이는 방향이라 안전하다 |
-| **`nonisolated`를 새로 붙여야 한다** | 🛑 **멈춤** — 푸는 방향이다. *"메인 아니어도 된다"*고 우겼다가 실제로는 메인이어야 했던 것이 **MVP12에서 앱이 죽은 방식**이다. 왜 필요한지 이해하기 전엔 붙이지 않는다 |
-| 컴파일 에러가 **가짜 구현체 밖으로 번진다** | 🛑 멈춤 — 진짜 구현체·호출부까지 고쳐야 하면 예상 밖이다 |
-| 스모크에서 뭐라도 이상하다 | 🛑 멈춤 |
-
-**되돌리기는 쉽다** — Task 1~3이 먼저 커밋된 상태에서 시작하므로 그 커밋으로 돌아가면 된다.
+**전체 근거·최소 재현·기각한 대안:**
+`docs/solutions/conventions/mainactor-witness-inference-overrides-class-isolation.md`
 
 ---
-
 ## 마친 뒤
 
 - [ ] `/trace-study`로 `docs/study/0-app-architecture.html`에 "정비에서 이렇게 바꿨다"를 덧쓴다.

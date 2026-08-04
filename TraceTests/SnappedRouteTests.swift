@@ -58,7 +58,6 @@ nonisolated final class SnappedRouteTests: XCTestCase {
 
 private enum StubLegError: Error { case boom }
 
-@MainActor
 private final class StubLegService: CoursePlanningServiceProtocol {
     var calls = 0
     private var shouldFailNext: Bool

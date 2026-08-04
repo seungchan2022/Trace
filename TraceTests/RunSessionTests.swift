@@ -483,7 +483,6 @@ extension RunSessionTests {
     }
 }
 
-@MainActor
 final class MockRunLocationStream: RunLocationStreamProtocol {
     var accuracy: RunLocationAccuracy = .full
     var accuracyAfterRequest: RunLocationAccuracy = .full

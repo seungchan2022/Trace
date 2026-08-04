@@ -87,6 +87,12 @@ This file records defaults until the user chooses otherwise.
 
 - **뷰가 의존성을 받아 ViewModel을 만든다** (결정 2026-08-03, 학습 청크 0 파트 4에서 사용자 문제제기). `RootView`가 컨테이너에서 골라 각 Page의 `init`에 넘기고, Page가 그 자리에서 `@State`로 ViewModel을 만든다(`RunPage.init(session:announcer:)` 등). **순수 MVVM이라면 ViewModel을 밖에서 만들어 넘기는 쪽이 맞다** — 뷰는 표현만 하고 의존성은 ViewModel이 알아야 한다는 지적은 타당하다. 그럼에도 현 구조를 유지하는 이유는 SwiftUI의 상태 소유 규칙이다: `@State`로 ViewModel을 들려면 뷰의 `init` 안에서 초기화해야 하고, 그러려면 재료가 그 `init`을 통과할 수밖에 없다. 대안(부모가 ViewModel을 `@State`로 소유하고 `let`으로 넘김, iOS 17+ `@Observable`이면 가능)은 **`RootView`가 세 화면의 ViewModel 수명까지 관리**하게 만든다 — 지금 `RootView`는 71줄이고 탭 전환·저장 감시만 한다. **대가는 뷰가 자기가 쓰지 않는 의존성을 아는 것**이며(`RunPage`는 받은 둘을 그대로 ViewModel에 넘기고 끝), 이는 인지하고 받아들인 비용이다. **되돌리는 조건:** ①한 화면이 받는 의존성이 5개를 넘거나(현재 최대는 `CoursePlannerPage` 4개) ②같은 ViewModel을 두 화면이 공유해야 하거나 ③ViewModel 생성 비용이 실측으로 문제가 될 때.
 
+- **Domain 프로토콜은 `@MainActor`를 갖지 않는다 — 격리는 구현체가 선언한다** (결정 2026-08-04, 정비 사이클 `study-chunk-0-cleanup`). MVP12 설계 의도(*"Domain 프로토콜이 모든 구현체를 main으로 강제할 이유 없음. 격리는 구현체가 선택"*)를 실제로 복원했다. 네 프로토콜(`LocationServiceProtocol`·`CoursePlanningServiceProtocol`·`VoiceAnnouncerProtocol`·`RunLocationStreamProtocol`) 전부에서 `@MainActor`를 제거했다. **`nonisolated`는 한 곳도 붙이지 않았다** — 붙이는 순간 메인 액터 상태 접근을 `await MainActor.run { }`으로 감싸야 하고, 그러면 메서드가 한 덩어리로 돌던 것이 끼어들기 가능한 조각들로 쪼개져 **동작이 바뀐다**(`CoreLocationService`의 `ContinuationBroadcaster`가 이것에 깨지는 코드이며, MVP12에서 앱이 죽은 방식이다).
+  - **대신 진짜 구현체 3곳의 async 멤버에 `@MainActor`를 명시했다** — `CoreLocationService.currentLocation()` · `MapKitCoursePlanningService.route(from:to:)` · `RunLocationTracker.requestSessionFullAccuracy()`. 클래스에 이미 `@MainActor`가 있는데도 필요하다: **nonisolated한 `async` 프로토콜 요구사항을 witness하면 클래스의 `@MainActor`가 그 멤버에 적용되지 않는다**(SE-0461 + `SWIFT_APPROACHABLE_CONCURRENCY = YES`). 명시가 추론을 이긴다. 순 격리(net isolation)는 전과 동일하므로 **동작 변화 없음**이다.
+  - **테스트 스텁 9개에서는 `@MainActor`를 제거했다** — 프로토콜이 강제하던 것이라 붙어 있었을 뿐, 메인 스레드가 필요 없는 것들이었다. 프로토콜에서 떼자 진짜 필요한 곳이 드러났다.
+  - **되돌리는 조건:** 구현체 3곳의 멤버 `@MainActor`는 Swift가 이 자리를 채우면 지울 수 있다. **확인법은 지우고 빌드하는 것** — 통과하면 지워도 된다. 더 근본적으로는 `CLLocationManager`를 actor로 감싸 요구사항에서 `async`를 없애면 문제 자체가 소멸하나, 이는 마일스톤 규모다.
+  - 검증 매트릭스·최소 재현·기각한 대안 전체: `docs/solutions/conventions/mainactor-witness-inference-overrides-class-isolation.md`
+
 ## Decisions the User May Need to Make Later
 
 - Whether data is local-only or synced

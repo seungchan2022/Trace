@@ -790,7 +790,6 @@ nonisolated final class CoursePlannerViewModelTests: XCTestCase {
 
 // MARK: - Test Doubles
 
-@MainActor
 private final class StubCoursePlanningService: CoursePlanningServiceProtocol {
     var routeCallCount = 0
     var recordedFromCoordinates: [CourseCoordinate] = []
@@ -807,7 +806,6 @@ private final class StubCoursePlanningService: CoursePlanningServiceProtocol {
     }
 }
 
-@MainActor
 private final class BlockingCoursePlanningService: CoursePlanningServiceProtocol {
     private var routeEnteredContinuation: CheckedContinuation<Void, Never>?
     private var routeReleaseContinuation: CheckedContinuation<Void, Never>?
@@ -835,7 +833,6 @@ private final class BlockingCoursePlanningService: CoursePlanningServiceProtocol
     }
 }
 
-@MainActor
 private final class StubLocationService: LocationServiceProtocol {
     var stubbedLocation: CourseCoordinate? = CourseCoordinate(latitude: 37.5666, longitude: 126.9784)
     var stubbedError: Error?
