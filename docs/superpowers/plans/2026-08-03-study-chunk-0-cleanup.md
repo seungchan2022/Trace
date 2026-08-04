@@ -66,10 +66,18 @@
 **Files:**
 - Move: `Trace/Pages/RunPage/RunHistoryViewModel.swift` → `Trace/Pages/HistoryPage/`
 
-- [ ] 파일을 `HistoryPage/`로 옮긴다(사용처는 `HistoryPage`와 `RootView`뿐, `RunPage`는 안 쓴다).
-- [ ] 개명(`RunHistoryStore` 등)을 할지 결정한다 — 이름은 ViewModel인데 실제 역할은
+- [x] 파일을 `HistoryPage/`로 옮긴다(사용처는 `HistoryPage`와 `RootView`뿐, `RunPage`는 안 쓴다).
+      → `git mv`만으로 끝. 동기화 그룹이라 `.pbxproj` 편집 불필요.
+- [x] 개명(`RunHistoryStore` 등)을 할지 결정한다 — 이름은 ViewModel인데 실제 역할은
       공유 데이터 창고다. **개명은 참조가 여러 곳이라 이동과 분리해서 판단한다.**
-- [ ] 빌드·테스트·린트 통과 확인.
+      → **결정: 개명하지 않는다(보류).** 이름이 역할과 어긋난다는 지적 자체는 타당하다. 그런데
+      `RunHistoryStore`로 가면 **`@Observable` 화면 상태에 `*Store`라는 새 명명 범주**가 생긴다 —
+      이 프로젝트는 지금 전부 `*ViewModel`이다. 명명 규약은 `project-decisions.md`에 남길
+      **열린 결정**이고, "열린 아키텍처 결정이 없다"는 정비 경로의 전제를 깬다. 파급도 참조
+      개수(14곳)보다 넓다: 타입명 + `DependencyContainer.runHistoryViewModel` 프로퍼티 +
+      `HistoryPageViewModel.history` + 테스트 파일명·클래스명. **위치 문제만 이번에 닫고,
+      이름은 백로그에 남긴다.**
+- [x] 빌드·테스트·린트 통과 확인. → 빌드 성공 · 테스트 383/383 통과 · 린트 5건(사전 존재분).
 
 ## Task 3: 테스트 전용 코드의 출시 빌드 포함 (#4) — 선행 조사
 
