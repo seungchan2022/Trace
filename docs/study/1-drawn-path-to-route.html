@@ -350,7 +350,7 @@
       <li><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li><span class="k">소개</span><a href="#map">장면 ↔ 맡은 파일</a></li>
       <li class="on"><span class="k">1</span><a href="#p1">필요한 데이터를 추려서 모양을 정한다</a></li>
-      <li><span class="k">2</span><span class="todo">약속을 정한다 — 프로토콜</span></li>
+      <li class="on"><span class="k">2</span><a href="#p2">약속을 정한다 — 프로토콜</a></li>
       <li><span class="k">3</span><span class="todo">약속을 지킨다 — MapKit 어댑터</span></li>
       <li><span class="k">4</span><span class="todo">쉬운 것부터 조립 — 탭 두 번</span></li>
       <li><span class="k">5</span><span class="todo">그리기가 부른 도구 — 다운샘플러</span></li>
@@ -377,11 +377,17 @@
             <strong>실패</strong>는 사용자에게 다르게 안내할 만큼만 셋</div>
         </div>
       </li>
-      <li class="pending">
+      <li>
         <span class="k">2</span>
         <div>
           <div class="can">외부에 의존하는 기능을 들일 때 <code>async</code>·<code>throws</code>·반환값을 정할 수 있다</div>
-          <div class="sum">약속을 정한다 — 프로토콜</div>
+          <div class="sum">파일은 <strong>블록 둘</strong>(<code>protocol</code> + <code>extension</code>) ·
+            <strong>제공자마다 달라지는 것만 요구사항</strong>(<code>route</code>), 어느 구현체든 같은 것은
+            <strong>기본 구현</strong>(<code>snappedRoute</code>) · <code>async</code>·<code>throws</code>는
+            <strong>호출부에 <code>await</code>·<code>try</code>를 강제</strong> ·
+            <strong>스로틀만 재시도에서 빼냈다</strong>(카운터를 더 올리므로) ·
+            ⚠️ 그런데 <strong><code>snappedRoute</code>는 호출되지 않는다</strong> — MVP3 증분 라우팅이
+            ViewModel로 옮겨갔다</div>
         </div>
       </li>
       <li class="pending">
@@ -915,12 +921,20 @@ flowchart TD
       <table>
         <thead><tr><th>실패</th><th>언제</th><th>사용자에게</th></tr></thead>
         <tbody>
-          <tr><td>길을 못 찾음</td><td>강 건너편처럼 걸어갈 길이 아예 없을 때</td><td>"도보 경로를 찾을 수 없습니다"</td></tr>
+          <tr><td>길을 못 찾음</td><td>요청은 성공했는데 경로 목록이 비어서 왔을 때</td><td>"도보 경로를 찾을 수 없습니다"</td></tr>
           <tr><td>너무 많이 물어봄</td><td>짧은 시간에 요청을 쏟아부어 애플이 막을 때</td><td>"요청이 많아 잠시 후 다시 시도해주세요"</td></tr>
           <tr><td>그 밖의 실패</td><td>네트워크 끊김 등 나머지 전부</td><td>"경로를 계산할 수 없습니다"</td></tr>
         </tbody>
       </table>
     </div>
+
+    <p>
+      ⚠️ <strong>①은 생각보다 좁다</strong>(2026-08-04 정정 — 원래 "강 건너편처럼 걸어갈 길이
+      아예 없을 때"라고 썼는데 코드와 달랐다). 어댑터에서 ①이 나오는 자리는 <strong>요청이
+      성공한 뒤 경로 목록이 비어 있을 때</strong> 하나뿐이다. MapKit이 <em>에러를 던지면</em> —
+      그게 "길이 없다"는 에러라도 — 스로틀 판정만 거친 뒤 <strong>전부 ③으로 간다.</strong>
+      그래서 "강 건너편" 상황이 ①인지 ③인지는 코드만으로 확정할 수 없다.
+    </p>
 
     <p>
       애플이 주는 실패 종류는 훨씬 많다 — 서버 실패, 장소 못 찾음, 응답 해석 실패, 그리고
@@ -954,9 +968,193 @@ flowchart TD
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
+  <section class="part" id="p2">
+    <div class="part-tag">파트 2 / 7</div>
+    <h2>약속을 정한다 — 프로토콜</h2>
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      파트 1에서 만든 타입들을 <strong>어떤 시그니처로 주고받을지</strong> 정한다.
+      파일 하나, 요구사항 두 개, 그리고 <strong>기본 구현 하나</strong>.
+    </div>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>외부에 의존하는 기능을 들일 때 <code>async</code>·<code>throws</code>·반환값을 정할 수 있다.</p>
+    </div>
+
+    <p>
+      <strong>사용자 장면으로는 어디인가</strong> — 여전히 <strong>아무 데도 아니다.</strong>
+      화면에 보이는 것이 없다. 다만 파트 1과 다른 점이 하나 있다 —
+      여기서 정하는 <code>async</code>와 <code>throws</code>가 <strong>호출부 코드의 모양을
+      강제로 정해버린다.</strong> 그 강제가 뒤의 파트 4·6에서 계속 따라다닌다.
+    </p>
+
+    <h3>① 파일은 블록 두 개다</h3>
+
+    <p>
+      <code>CoursePlanningServiceProtocol.swift</code> 한 파일 안에 블록이 둘 있다.
+      위는 <code>protocol</code>, 아래는 그 프로토콜의 <code>extension</code>이다.
+    </p>
+
+<pre class="code">protocol CoursePlanningServiceProtocol {
+    func route(from:to:) async throws -&gt; PlannedCourse
+    func snappedRoute(through:) async throws -&gt; PlannedCourse     <span class="c">// 선언만</span>
+}
+
+extension CoursePlanningServiceProtocol {
+    func snappedRoute(through:) async throws -&gt; PlannedCourse {   <span class="c">// 기본 구현</span>
+        ...
+    }
+}</pre>
+
+    <p>
+      <strong><code>snappedRoute</code>가 두 번 나오는 것</strong>이 이 파일의 핵심이다.
+      위쪽은 <strong>요구사항</strong>(채택한 타입이 만들어야 하는 것), 아래쪽은
+      <strong>기본 구현</strong>(안 만들면 대신 쓰이는 것)이다. 그래서 실제 구현체
+      <code>MapKitCoursePlanningService</code>에는 <strong><code>route</code>만 있고
+      <code>snappedRoute</code>는 없는데도 컴파일이 된다.</strong>
+    </p>
+
+    <h3>② 시그니처 한 줄 — 부르는 쪽 기준으로</h3>
+
+<pre class="code">func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -&gt; PlannedCourse</pre>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>적힌 것</th><th>부르는 쪽 기준으로</th></tr></thead>
+        <tbody>
+          <tr><td><code>from</code> / <code>to</code></td><td><strong>내가 주는 것</strong> — 출발 지점, 도착 지점</td></tr>
+          <tr><td><code>async</code></td><td>시간이 걸린다 → 호출부가 <code>await</code>를 써야 한다</td></tr>
+          <tr><td><code>throws</code></td><td>실패할 수 있다 → 호출부가 <code>try</code>를 써야 한다</td></tr>
+          <tr><td><code>-&gt; PlannedCourse</code></td><td><strong>내가 받는 것</strong> — 코스</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      주고받는 타입이 <strong>전부 파트 1에서 만든 것</strong>이라는 점을 확인하고 넘어간다.
+      새로 만든 타입이 하나도 없다. 그리고 <strong>이 파일에는 MapKit이 한 번도 안 나온다</strong> —
+      <code>import</code>도 <code>Foundation</code> 하나뿐이다.
+    </p>
+
+    <h3>③ <code>route</code>와 <code>snappedRoute</code>의 차이</h3>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th><code>route</code></th><th><code>snappedRoute</code></th></tr></thead>
+        <tbody>
+          <tr><td>내가 주는 것</td><td>지점 <strong>2개</strong></td><td>지점 <strong>배열</strong></td></tr>
+          <tr><td>하는 일</td><td><strong>외부 제공자를 실제로 호출</strong></td><td><code>route</code>를 <strong>N−1번 반복</strong>해 이어붙임</td></tr>
+          <tr><td>어디에 구현</td><td>채택한 타입(Infrastructure)</td><td><code>extension</code> 기본 구현</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="concept">
+      <h4>💡 왜 <code>snappedRoute</code>만 <code>extension</code>에 기본 구현으로 뒀나</h4>
+      <p>
+        갈라놓은 기준은 <strong>"제공자가 바뀌면 이 코드도 바뀌는가"</strong>다.
+        <code>route</code>는 바뀐다 — MapKit이냐 네이버냐에 따라 안이 완전히 달라진다.
+        그런데 <strong><code>snappedRoute</code>는 안 바뀐다.</strong> "지점을 두 개씩 짝지어
+        <code>route</code>를 반복 호출하고 결과를 이어붙인다"는 절차는 제공자와 무관하다.
+      </p>
+      <p>
+        그래서 제공자마다 달라지는 것만 <strong>요구사항</strong>으로 남기고, 어느 구현체든
+        똑같이 짤 것은 <strong>기본 구현으로 한 번만</strong> 써뒀다. 새 어댑터를 추가할 때
+        <code>route</code> 하나만 쓰면 <code>snappedRoute</code>는 딸려온다.
+      </p>
+      <p>
+        <strong>그런데 왜 <code>extension</code>에만 두지 않고 요구사항으로도 선언했나.</strong>
+        <code>extension</code>에만 두면 구현체가 그것을 <strong>갈아끼울 수 없다.</strong>
+        요구사항으로도 선언해두면 "기본은 이걸 쓰되, 더 나은 방법이 있는 구현체는 직접
+        구현해도 된다"가 된다. 예컨대 여러 지점을 한 번에 받는 API를 가진 제공자라면
+        반복 호출 대신 한 번의 요청으로 끝낼 수 있다.
+      </p>
+      <p>
+        <strong>다만 그 유연성은 지금 값을 못 하고 있다</strong> — 실제로 갈아끼운 구현체가
+        하나도 없고, 아래 ⑤에서 보듯 호출조차 되지 않는다.
+      </p>
+    </div>
+
+    <h3>④ 재시도와, 거기서 빠진 하나</h3>
+
+    <p>
+      기본 구현이 하는 일은 넷이다. 지점을 두 개씩 짝지어 <code>route</code>를 반복 호출하고,
+      결과를 이어붙여 거리를 더하고, <strong>실패하면 0.2초 뒤 한 번 더 부르고</strong>,
+      <strong>단 스로틀이면 재시도 없이 즉시 다시 던진다.</strong>
+    </p>
+
+    <div class="concept">
+      <h4>💡 왜 스로틀만 재시도에서 빼냈나</h4>
+      <p>
+        파트 1의 실패 셋 중 ②"너무 많이 물어봄"만 성격이 다르기 때문이다. ①③은
+        <strong>길에 대한 답</strong>이지만 ②는 <strong>요청한 쪽에 대한 통보</strong>다.
+        한도가 시간당 요청 횟수로 매겨지므로(프로젝트 문서 기준 60초당 50회),
+        재시도는 결과를 못 얻는 데서 그치지 않고 <strong>그 카운터를 하나 더 올려 회복을
+        늦춘다.</strong> 그래서 예외를 만들었다.
+      </p>
+      <p>
+        <strong>거꾸로 ①은 빼지 않았다.</strong> ①도 같은 두 지점으로 다시 물어보면 답이 같은
+        확정 실패라 재시도가 무의미하고, 게다가 그 헛된 요청이 <strong>②를 예외로 뺀 바로 그
+        카운터를 올린다.</strong> 케이스가 이미 구분돼 있으니 조건 한 줄이면 뺄 수 있었는데
+        안 뺐다. 다만 손해가 눈에 안 띌 만큼 작다 — ①이 실제로 터지는 조건이 좁고(파트 1 ④ 참고),
+        무엇보다 <strong>이 코드가 애초에 실행되지 않는다</strong>(⑤). 백로그에 적어두었다.
+      </p>
+    </div>
+
+    <h3>⑤ 만들었는데 안 쓰게 된 것 — <code>snappedRoute</code>는 호출되지 않는다</h3>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>확인한 것</th><th>결과</th></tr></thead>
+        <tbody>
+          <tr><td><code>snappedRoute</code>를 직접 구현한 타입</td><td><strong>0개</strong> (구현체 1 + 테스트 스텁 8, 전부 <code>route</code>만)</td></tr>
+          <tr><td>앱 코드에서의 호출</td><td><strong>0곳</strong></td></tr>
+          <tr><td>호출하는 곳</td><td><code>SnappedRouteTests</code> · <code>ThrottleDetectionTests</code> — <strong>테스트뿐</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      갈라진 시점은 MVP3 <code>stroke-pipeline</code>(<code>705d095</code>)이다. 그 커밋이
+      ViewModel의 <code>snappedRoute</code> 호출을 지우고 <strong>같은 일을 하는 반복문을
+      <code>routeStrokeAndAttach</code> 안에 직접 넣었다.</strong>
+    </p>
+
+    <div class="concept">
+      <h4>💡 왜 기본 구현을 두고 ViewModel에 다시 썼나</h4>
+      <p>
+        <strong>증분 라우팅</strong> 때문이다. 획을 새로 그을 때마다 전체를 다시 계산하지 않고
+        <strong>새로 늘어난 구간 + 기존 코스와의 연결 1건</strong>만 계산하도록 바꿨는데,
+        <code>snappedRoute</code>는 "받은 지점 전부를 처음부터 이어붙인다"라서 그 방식을
+        표현할 수 없다.
+      </p>
+      <p>
+        거기에 ViewModel 쪽 반복문에는 기본 구현에 없는 것이 둘 붙어 있다 —
+        <strong>계산 도중 사용자가 다시 그으면 앞의 결과를 버리는 검사</strong>와,
+        구간 좌표가 2개 미만이면 즉시 중단하고 안내 문구를 띄우는 처리다. 둘 다 화면 상태를
+        아는 쪽에서만 할 수 있는 일이라 도메인 기본 구현으로는 넣기 어렵다.
+      </p>
+      <p>
+        <strong>남은 코드가 지금 무엇을 오해시키나</strong> — 프로토콜만 읽으면
+        <em>"그리기는 <code>snappedRoute</code>가 처리하는구나"</em>로 읽힌다. 실제로는 그 경로가
+        죽어 있고 ViewModel이 처리한다. 이 오해는 실제로 났다.
+      </p>
+      <p>
+        ⚠️ <strong>스로틀 판정 자체는 살아 있다.</strong> 죽은 것은 <em>재시도</em>뿐이다.
+        <code>GEOErrorDomain -3</code> 등을 <code>.throttled</code>로 바꾸는 코드는
+        <code>MapKitCoursePlanningService.route</code> 안에 있고, ViewModel이 그 에러를 받아
+        "요청이 많아 잠시 후 다시 시도해주세요"를 띄운다. 이 경로는 정상 동작한다.
+      </p>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
   <div class="next">
-    <strong>다음</strong> — 파트 2 「약속을 정한다」. 여기서 정한 그릇들을 주고받을
-    <em>약속</em>을 세운다.
+    <strong>다음</strong> — 파트 3 「약속을 지킨다 — MapKit 어댑터」.
+    <code>route</code>를 실제로 구현하는 곳, 즉 <em>제공자를 갈아끼울 때 고치는 유일한 파일</em>을 연다.
   </div>
 
 </div>
