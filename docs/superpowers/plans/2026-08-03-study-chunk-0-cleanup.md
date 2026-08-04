@@ -46,10 +46,20 @@
 - Delete: `Trace/App/ContentView.swift`
 - Modify: `Trace/Pages/CoursePlannerPage/CoursePlannerPage.swift` (init 기본값 제거)
 
-- [ ] `ContentView.swift`를 삭제하고 Xcode 프로젝트에서도 제외한다.
-- [ ] `CoursePlannerPage.init`의 `cameraStateStore: CameraStateStore = CameraStateStore()`에서
+- [x] `ContentView.swift`를 삭제하고 Xcode 프로젝트에서도 제외한다.
+      → 프로젝트가 `PBXFileSystemSynchronizedRootGroup`을 쓰므로 **디스크에서 지우면 끝**이고
+      `.pbxproj` 편집이 필요 없었다(빌드 로그가 `ContentView.o` 스테일 제거로 확인).
+- [x] `CoursePlannerPage.init`의 `cameraStateStore: CameraStateStore = CameraStateStore()`에서
       기본값을 제거한다. 호출부는 `RootView` 하나뿐이므로 파급이 없어야 한다 — 실측으로 확인한다.
-- [ ] 빌드·테스트·린트 통과 확인.
+      → **실측 정정: 호출부는 셋이다** — `RootView` · 삭제한 `ContentView` · `CoursePlannerPage.swift`
+      맨 아래 `#Preview`. 다만 `#Preview`는 이미 `container.cameraStateStore`를 명시하고 있어
+      기본값에 기대던 곳은 `ContentView` 하나뿐이었다. 결론(파급 없음)은 그대로다.
+      → `CoursePlannerPageViewModel.init`에도 같은 기본값이 있으나 **건드리지 않는다**: 단위 테스트
+      ~18개 호출부 중 3곳만 명시 전달이라 나머지가 전부 깨진다. 백로그가 지적한 구멍(uiTesting의
+      격리된 `CameraStateStore(defaults:)`가 조용히 무시됨)은 Page 쪽 기본값이 사라지면 닫힌다 —
+      Page는 받은 것을 항상 그대로 ViewModel에 넘기기 때문이다.
+- [x] 빌드·테스트·린트 통과 확인. → 빌드 성공 · 테스트 384/384 통과 · 린트 5건(전부 사전 존재
+      ③ 구조 경고, 백로그 기록분).
 
 ## Task 2: `RunHistoryViewModel` 위치와 이름 (#3)
 

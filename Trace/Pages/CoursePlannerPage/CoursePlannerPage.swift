@@ -59,7 +59,7 @@ struct CoursePlannerPage: View {
     init(
         coursePlanningService: CoursePlanningServiceProtocol,
         locationService: LocationServiceProtocol,
-        cameraStateStore: CameraStateStore = CameraStateStore(),
+        cameraStateStore: CameraStateStore,
         courseRepository: CourseRepositoryProtocol
     ) {
         self.cameraStateStore = cameraStateStore
