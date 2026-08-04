@@ -769,7 +769,7 @@ flowchart TD
 
     <div class="oneline">
       <span class="tag">이 파트 한 줄</span>
-      길찾기도 화면도 아직 없다. <strong>무엇을 주고받을지 그릇부터 네 개 정한다</strong> —
+      길찾기도 화면도 아직 없다. <strong>무엇을 주고받을지 타입부터 네 개 정한다</strong> —
       지점 · 구간 · 코스 · 실패.
     </div>
 
@@ -781,7 +781,7 @@ flowchart TD
 
     <p>
       <strong>사용자 장면으로는 어디인가</strong> — 맨 마지막 <em>"거리가 숫자로 뜬다"</em>(④⑨) 자리다.
-      화면에 아무것도 안 보이는 단계지만, 그 숫자와 선을 담을 그릇이 여기서 정해진다.
+      화면에 아무것도 안 보이는 단계지만, 그 숫자와 선을 담을 타입이 여기서 정해진다.
     </p>
 
     <h3>① 지점 — 지도 위 한 곳</h3>
@@ -1012,7 +1012,7 @@ flowchart TD
       </p>
     </div>
 
-    <h3>① 파일은 블록 두 개다</h3>
+    <h3>① 파일 모양과 시그니처</h3>
 
     <p>
       <code>CoursePlanningServiceProtocol.swift</code> 한 파일 안에 블록이 둘 있다.
@@ -1036,10 +1036,12 @@ extension CoursePlanningServiceProtocol {
       <strong>기본 구현</strong>(안 만들면 대신 쓰이는 것)이다. 그래서 실제 구현체
       <code>MapKitCoursePlanningService</code>에는 <strong><code>route</code>만 있고
       <code>snappedRoute</code>는 없는데도 컴파일이 된다.</strong>
-      왜 이렇게 갈랐는지는 ③에서 본다.
+      왜 이렇게 갈랐는지는 ②에서 본다.
     </p>
 
-    <h3>② 시그니처 한 줄 — 부르는 쪽 기준으로</h3>
+    <p>
+      시그니처는 이렇다. <strong>부르는 쪽 기준</strong>으로 읽는다.
+    </p>
 
 <pre class="code">func route(from start: CourseCoordinate, to destination: CourseCoordinate) async throws -&gt; PlannedCourse</pre>
 
@@ -1061,7 +1063,7 @@ extension CoursePlanningServiceProtocol {
       <code>import</code>도 <code>Foundation</code> 하나뿐이다.
     </p>
 
-    <h3>③ <code>route</code>와 <code>snappedRoute</code>의 차이</h3>
+    <h3>② <code>route</code>와 <code>snappedRoute</code>의 차이</h3>
 
     <div class="tablewrap">
       <table>
@@ -1096,44 +1098,49 @@ extension CoursePlanningServiceProtocol {
       </p>
       <p>
         <strong>다만 그 유연성은 지금 값을 못 하고 있다</strong> — 실제로 갈아끼운 구현체가
-        하나도 없고, 아래 ⑥에서 보듯 호출조차 되지 않는다.
+        하나도 없고, 아래 ⑤에서 보듯 호출조차 되지 않는다.
       </p>
     </div>
 
-    <h3>④ 요청이 실제로 어떻게 나가나</h3>
+    <h3>③ 요청이 실제로 어떻게 나가나</h3>
 
     <p>
       다음 절부터 <strong>재시도</strong>와 <strong>스로틀</strong>이 나오는데, 그게 왜 문제인지는
       요청이 나가는 모양을 봐야 이해된다. 손으로 한 번 그었을 때의 전체 흐름이다.
     </p>
 
-<pre class="code">┌─ 내 앱 ─────────────────────────────────────────────┐
-│ ① 꾹 누르고 손가락을 끈다                            │
-│    화면 좌표를 모으고 민트색 선을 그림                │
-│    <span class="c">→ 서버 호출 0건</span>                                  │
-│                                                     │
-│ ② 손을 뗀다                    <span class="c">← 여기가 시작 신호</span>    │
-│                                                     │
-│ ③ 300ms 기다린다               <span class="c">← 디바운스</span>            │
-│    이 사이에 또 그으면 ②의 것은 버려진다             │
-│    = 빠르게 여러 번 그으면 마지막 것만 산다          │
-│                                                     │
-│ ④ 점 솎아내기                                       │
-│    수백 개 → 120m 간격으로 17개  <span class="c">(파트 5)</span>           │
-│                                                     │
-│ ⑤ 17개를 두 개씩 짝지어 route를 16번 호출            │
-│    이미 물어본 두 점이면 캐시에서 꺼냄               │
-└──────────────── 요청 16건 (각각 따로) ──────────────┘
-                       ↓
-┌─ 애플 서버 ─────────────────────────────────────────┐
-│ ⑥ 요청 1건 = 응답 1건. <span class="c">서버는 자르지 않는다.</span>          │
-│    ⚠️ 60초 안에 50건을 넘으면 그 요청을 <span class="c">거부</span>          │
-└─────────────────────────────────────────────────────┘
-                       ↓
-┌─ 내 앱 ─────────────────────────────────────────────┐
-│ ⑦ 응답 16개를 이어붙여 구간 1개 완성                 │
-│ ⑧ 도로를 따라가는 선 + 거리가 화면에 뜬다            │
-└─────────────────────────────────────────────────────┘</pre>
+<pre class="code">━━ <span class="c">내 앱</span> ━━━━━━━━━━━━━━━━━━━━━━
+│
+│ ① 꾹 누르고 손가락을 끈다
+│    화면 좌표를 모으고 민트색 선을 그림
+│    <span class="c">→ 서버 호출 0건</span>
+│
+│ ② 손을 뗀다                <span class="c">← 시작 신호</span>
+│
+│ ③ 300ms 기다린다           <span class="c">← 디바운스</span>
+│    이 사이에 또 그으면 ②의 것은 버려진다
+│    = 빠르게 여러 번 그으면 마지막 것만 산다
+│
+│ ④ 점 솎아내기
+│    수백 개 → 120m 간격으로 17개  <span class="c">(파트 5)</span>
+│
+│ ⑤ 17개를 두 개씩 짝지어 route를 16번 호출
+│    이미 물어본 두 점이면 캐시에서 꺼냄
+│
+▼  <span class="c">요청 16건 — 각각 따로 나간다</span>
+
+━━ <span class="c">애플 서버</span> ━━━━━━━━━━━━━━━━
+│
+│ ⑥ 요청 1건 = 응답 1건
+│    <span class="c">서버는 자르지 않는다. 자르는 건 우리다.</span>
+│    ⚠️ 60초 안에 50건을 넘으면 그 요청을 <span class="c">거부</span>
+│
+▼
+
+━━ <span class="c">내 앱</span> ━━━━━━━━━━━━━━━━━━━━━━
+│
+│ ⑦ 응답 16개를 이어붙여 구간 1개 완성
+│ ⑧ 도로를 따라가는 선 + 거리가 화면에 뜬다</pre>
 
     <p>
       <strong>16조각으로 나누는 것은 우리 앱이 한다.</strong> 애플은 요청 하나에 응답 하나를 줄 뿐이다.
@@ -1184,7 +1191,7 @@ extension CoursePlanningServiceProtocol {
       </p>
     </div>
 
-    <h3>⑤ 재시도와, 거기서 빠진 하나</h3>
+    <h3>④ 재시도와, 거기서 빠진 하나</h3>
 
     <p>
       기본 구현이 하는 일은 넷이다. 지점을 두 개씩 짝지어 <code>route</code>를 반복 호출하고,
@@ -1212,12 +1219,12 @@ extension CoursePlanningServiceProtocol {
       </p>
       <p>
         다만 손해가 눈에 안 띌 만큼 작다 — “길을 못 찾음”이 실제로 터지는 조건이 좁고
-        (파트 1 ④ 참고), 무엇보다 <strong>이 코드가 애초에 실행되지 않는다</strong>(바로 아래 ⑥).
+        (파트 1 ④ 참고), 무엇보다 <strong>이 코드가 애초에 실행되지 않는다</strong>(바로 아래 ⑤).
         백로그에 적어두었다.
       </p>
     </div>
 
-    <h3>⑥ 만들었는데 안 쓰게 된 것 — <code>snappedRoute</code>는 호출되지 않는다</h3>
+    <h3>⑤ 만들었는데 안 쓰게 된 것 — <code>snappedRoute</code>는 호출되지 않는다</h3>
 
     <div class="tablewrap">
       <table>
@@ -1239,19 +1246,28 @@ extension CoursePlanningServiceProtocol {
     <div class="concept">
       <h4>💡 왜 기본 구현을 버렸나 — 전체 재계산이 문제였다</h4>
       <p>
-        MVP2까지는 획을 새로 그을 때마다 <strong>코스 전체를 처음부터 다시 계산</strong>했다.
-        함수 이름부터 <code>recomputeSnappedCourse</code>, 말 그대로 재계산이다. 그러면
-        요청 수가 이렇게 쌓인다.
+        MVP2까지의 코드는 획을 새로 그을 때마다 <strong>지금까지 그은 모든 획의 점을 한 덩어리로
+        합친 뒤, 그 전체를 처음부터 다시 솎아내고 다시 라우팅</strong>했다. 함수 이름부터
+        <code>recomputeSnappedCourse</code>, 말 그대로 재계산이다.
       </p>
 
-<pre class="code">첫 획   → 요청 16건
-둘째 획 → 요청 32건   <span class="c">(첫 획 것까지 다시)</span>
-셋째 획 → 요청 48건   <span class="c">(앞의 둘까지 다시)</span></pre>
+<pre class="code">획 1 · 획 2 · 획 3 의 원본 점을 전부 합친다
+        ↓
+합친 전체를 <span class="c">처음부터 다시</span> 솎아낸다   ← 여기가 문제
+        ↓
+나온 지점들을 <span class="c">전부</span> 다시 라우팅한다</pre>
 
       <p>
-        이미 답을 아는 구간에 또 요청을 보내는 것이고, 앞 절에서 본 <strong>스로틀 한도(60초 50건)에
-        훨씬 빨리 닿는다.</strong> MVP3에서 이것을 <strong>증분 계산</strong>으로 바꿨다 —
-        새로 늘어난 부분 + 기존 코스와의 <strong>연결 1건</strong>만 계산한다.
+        <strong>여기서 캐시가 안 먹는다는 것이 핵심이다.</strong> 캐시는 “같은 두 지점”을 열쇠로
+        쓰는데, 합친 점 전체를 다시 솎아내면 <strong>솎아낸 지점의 자리가 매번 달라진다.</strong>
+        앞 획에서 이미 물어봤던 것과 <em>거의 같지만 정확히 같지는 않은</em> 지점 쌍이 나오고,
+        그러면 캐시를 비껴가 <strong>서버로 새 요청이 나간다.</strong> 획이 쌓일수록 한 번 그을 때
+        나가는 요청이 누적해서 늘어나고, 앞 절의 <strong>스로틀 한도(60초 50건)에 훨씬 빨리 닿는다.</strong>
+      </p>
+      <p>
+        MVP3에서 이것을 <strong>증분 계산</strong>으로 바꿨다 — 새로 늘어난 부분 + 기존 코스와의
+        <strong>연결 1건</strong>만 계산한다. 이미 만들어진 구간은 다시 건드리지 않으므로
+        재샘플링 자체가 일어나지 않는다.
       </p>
       <p>
         <strong><code>snappedRoute</code>로는 그것을 못 한다.</strong> 이유가 둘이다.
