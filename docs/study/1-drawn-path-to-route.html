@@ -77,8 +77,76 @@
   }
   .toc .todo { color: #97A9A5; }
 
-  section.part { scroll-margin-top: 1.5rem; }
+  details.part { scroll-margin-top: 1.5rem; }
   #toc { scroll-margin-top: 1.5rem; }
+
+  /* ── 접히는 파트 ───────────────────── */
+  details.part {
+    border-top: 1px solid var(--rule);
+    margin-top: 0;
+    padding-top: .2rem;
+  }
+  details.part > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.15rem .3rem 1.15rem 2rem;
+    position: relative;
+    border-radius: 8px;
+  }
+  details.part > summary::-webkit-details-marker { display: none; }
+  details.part > summary::before {
+    content: "▸";
+    position: absolute; left: .5rem; top: 1.15rem;
+    color: var(--accent); font-size: 1rem; line-height: 1.5;
+    transition: transform .15s ease;
+  }
+  details.part[open] > summary::before { content: "▾"; }
+  details.part > summary:hover { background: var(--surface); }
+  details.part > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  details.part > summary .part-tag { margin-bottom: .45rem; }
+  details.part > summary .ptitle {
+    display: block;
+    font-size: 1.45rem; font-weight: 800;
+    letter-spacing: -.025em; line-height: 1.25;
+    text-wrap: balance;
+  }
+  details.part:not([open]) > summary .ptitle { color: var(--muted); font-weight: 700; }
+  .pbody { padding: 0 .3rem 1rem; }
+  .pbody > h3:first-child { margin-top: .6rem; }
+
+  /* ── 오른쪽 고정 목차 ──────────────── */
+  .floating-toc {
+    position: fixed; top: 50%; right: 1.2rem;
+    transform: translateY(-50%);
+    z-index: 20;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--rule); border-radius: 10px;
+    padding: .7rem .8rem;
+    max-height: 82vh; overflow-y: auto;
+    font-size: .82rem; line-height: 1.5;
+  }
+  .floating-toc ol { list-style: none; display: flex; flex-direction: column; gap: .3rem; }
+  .floating-toc li { display: flex; gap: .45rem; align-items: baseline; }
+  .floating-toc .k {
+    font-family: var(--mono); font-size: .78rem; font-weight: 700;
+    color: #B9CCC8; min-width: 1.6rem;
+  }
+  .floating-toc a {
+    color: var(--muted); text-decoration: none;
+    border-bottom: 1px solid transparent;
+    max-width: 11rem; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .floating-toc a:hover { color: var(--deep); border-bottom-color: var(--accent); }
+  .floating-toc li.active .k { color: var(--accent); }
+  .floating-toc li.active a { color: var(--ink); font-weight: 700; }
+  .floating-toc .ft-head {
+    font-size: .74rem; font-weight: 800; color: var(--deep);
+    margin-bottom: .5rem; padding-bottom: .35rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  @media (max-width: 1180px) { .floating-toc { display: none; } }
 
   .backtop {
     display: inline-block; margin-top: 1.8rem;
@@ -329,9 +397,23 @@
     body { font-size: 16px; }
     .wrap { padding: 2.2rem 1.1rem 4rem; }
     h1 { font-size: 1.8rem; } h2 { font-size: 1.35rem; }
+    details.part > summary .ptitle { font-size: 1.28rem; }
     .bd { grid-template-columns: 4.2rem 1fr; }
   }
 </style>
+
+<nav class="floating-toc" aria-label="파트 바로가기">
+  <div class="ft-head">파트 바로가기</div>
+  <ol>
+    <li><span class="k">소개</span><a href="#intro" data-target="intro">이 청크가 만드는 것</a></li>
+    <li><span class="k">소개</span><a href="#range" data-target="range">어디까지가 청크 1인가</a></li>
+    <li><span class="k">소개</span><a href="#scenes" data-target="scenes">사용자가 겪을 장면</a></li>
+    <li><span class="k">소개</span><a href="#map" data-target="map">장면 ↔ 맡은 파일</a></li>
+    <li><span class="k">복습</span><a href="#recap" data-target="recap">3분 복습</a></li>
+    <li><span class="k">1</span><a href="#p1" data-target="p1">데이터 모양을 정한다</a></li>
+    <li><span class="k">2</span><a href="#p2" data-target="p2">약속을 정한다 — 프로토콜</a></li>
+  </ol>
+</nav>
 
 <div class="wrap">
 
@@ -435,9 +517,12 @@
     </ol>
   </div>
 
-  <section class="part" id="intro">
-    <div class="part-tag">소개 1 / 4</div>
-    <h2>이 청크가 만드는 것</h2>
+  <details class="part" id="intro">
+    <summary>
+      <span class="part-tag">소개 1 / 4</span>
+      <span class="ptitle">이 청크가 만드는 것</span>
+    </summary>
+    <div class="pbody">
 
     <div class="goal">
       <span class="tag">한 문장으로</span>
@@ -506,11 +591,15 @@
     </div>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
-  </section>
+    </div>
+  </details>
 
-  <section class="part" id="range">
-    <div class="part-tag">소개 2 / 4</div>
-    <h2>어디까지가 청크 1인가</h2>
+  <details class="part" id="range" open>
+    <summary>
+      <span class="part-tag">소개 2 / 4</span>
+      <span class="ptitle">어디까지가 청크 1인가</span>
+    </summary>
+    <div class="pbody">
 
     <p>
       따라잡기는 <strong>청크 9개</strong>로 되어 있고 <strong>한 청크가 한 세션</strong>이다.
@@ -621,11 +710,15 @@ flowchart TD
     </div>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
-  </section>
+    </div>
+  </details>
 
-  <section class="part" id="scenes">
-    <div class="part-tag">소개 3 / 4</div>
-    <h2>이렇게 되게 만들 거다 — 사용자가 겪을 장면</h2>
+  <details class="part" id="scenes">
+    <summary>
+      <span class="part-tag">소개 3 / 4</span>
+      <span class="ptitle">이렇게 되게 만들 거다 — 사용자가 겪을 장면</span>
+    </summary>
+    <div class="pbody">
 
     <p>
       아래는 <strong>완성된 앱의 사용 설명서가 아니라, 만들기 전에 "이렇게 되게 하자"고 정한
@@ -700,11 +793,15 @@ flowchart TD
     </div>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
-  </section>
+    </div>
+  </details>
 
-  <section class="part" id="map">
-    <div class="part-tag">소개 4 / 4</div>
-    <h2>장면 ↔ 맡은 파일</h2>
+  <details class="part" id="map">
+    <summary>
+      <span class="part-tag">소개 4 / 4</span>
+      <span class="ptitle">장면 ↔ 맡은 파일</span>
+    </summary>
+    <div class="pbody">
 
     <p>
       각 장면을 실제로 어느 파일이 만들어내는지, 그리고 그게 몇 번 파트인지다.
@@ -760,12 +857,16 @@ flowchart TD
     </div>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
-  </section>
+    </div>
+  </details>
 
 
-  <section class="part" id="p1">
-    <div class="part-tag">파트 1 / 7</div>
-    <h2>필요한 데이터를 추려서 모양을 정한다</h2>
+  <details class="part" id="p1">
+    <summary>
+      <span class="part-tag">파트 1 / 7</span>
+      <span class="ptitle">필요한 데이터를 추려서 모양을 정한다</span>
+    </summary>
+    <div class="pbody">
 
     <div class="oneline">
       <span class="tag">이 파트 한 줄</span>
@@ -969,11 +1070,15 @@ flowchart TD
     </div>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
-  </section>
+    </div>
+  </details>
 
-  <section class="part" id="p2">
-    <div class="part-tag">파트 2 / 7</div>
-    <h2>약속을 정한다 — 프로토콜</h2>
+  <details class="part" id="p2" open>
+    <summary>
+      <span class="part-tag">파트 2 / 7</span>
+      <span class="ptitle">약속을 정한다 — 프로토콜</span>
+    </summary>
+    <div class="pbody">
 
     <div class="oneline">
       <span class="tag">이 파트 한 줄</span>
@@ -1321,7 +1426,8 @@ extension CoursePlanningServiceProtocol {
     </p>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
-  </section>
+    </div>
+  </details>
 
   <div class="next">
     <strong>다음</strong> — 파트 3 「약속을 지킨다 — MapKit 어댑터」.
@@ -1329,3 +1435,67 @@ extension CoursePlanningServiceProtocol {
   </div>
 
 </div>
+
+<script>
+(function () {
+  function targetOf(hash) {
+    if (!hash || hash.length < 2) return null;
+    try { return document.getElementById(decodeURIComponent(hash.slice(1))); }
+    catch (e) { return null; }
+  }
+  function reveal(el) {
+    if (!el) return;
+    if (el.tagName === 'DETAILS') el.open = true;
+    var d = el.parentElement && el.parentElement.closest ? el.parentElement.closest('details') : null;
+    while (d) { d.open = true; d = d.parentElement ? d.parentElement.closest('details') : null; }
+  }
+
+  // 목차에서 접힌 파트로 점프하면 먼저 펼친다
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    if (a) reveal(targetOf(a.getAttribute('href')));
+  }, true);
+
+  window.addEventListener('hashchange', function () {
+    var el = targetOf(location.hash);
+    if (el) { reveal(el); el.scrollIntoView(); }
+  });
+  if (location.hash) reveal(targetOf(location.hash));
+
+  // 접힌 채로 렌더된 도식이 폭 0으로 깨졌으면 되살린다
+  document.addEventListener('toggle', function (e) {
+    var d = e.target;
+    if (!d || d.tagName !== 'DETAILS' || !d.open) return;
+    d.querySelectorAll('svg').forEach(function (svg) {
+      var mw = svg.style.maxWidth;
+      if (mw && parseFloat(mw) < 40) svg.style.maxWidth = '100%';
+    });
+    window.dispatchEvent(new Event('resize'));
+  }, true);
+
+  // 오른쪽 고정 목차 — 현재 보고 있는 절 표시
+  var links = document.querySelectorAll('.floating-toc a[data-target]');
+  if (!links.length) return;
+  var watched = [];
+  links.forEach(function (a) {
+    var el = document.getElementById(a.getAttribute('data-target'));
+    if (el) watched.push(el);
+  });
+  var active = null;
+  function setActive(id) {
+    if (id === active) return;
+    active = id;
+    links.forEach(function (a) {
+      a.parentElement.classList.toggle('active', a.getAttribute('data-target') === id);
+    });
+  }
+  var io = new IntersectionObserver(function (entries) {
+    var vis = entries.filter(function (x) { return x.isIntersecting; }).map(function (x) { return x.target; });
+    if (!vis.length) return;
+    vis.sort(function (a, b) { return a.getBoundingClientRect().top - b.getBoundingClientRect().top; });
+    setActive(vis[0].id);
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  watched.forEach(function (t) { io.observe(t); });
+  if (watched[0]) setActive(watched[0].id);
+})();
+</script>
