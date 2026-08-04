@@ -127,7 +127,7 @@
     font-size: .82rem; line-height: 1.5;
   }
   .floating-toc ol { list-style: none; display: flex; flex-direction: column; gap: .3rem; }
-  .floating-toc li { display: flex; gap: .45rem; align-items: baseline; }
+  .floating-toc li { display: flex; gap: .45rem; align-items: baseline; position: relative; }
   .floating-toc .k {
     font-family: var(--mono); font-size: .78rem; font-weight: 700;
     color: #B9CCC8; min-width: 1.6rem;
@@ -146,7 +146,36 @@
     margin-bottom: .5rem; padding-bottom: .35rem;
     border-bottom: 1px solid var(--rule);
   }
-  @media (max-width: 1180px) { .floating-toc { display: none; } }
+  .floating-toc .k i { font-style: normal; }
+  .floating-toc .ks { display: none; }
+
+  /* 좁아지면 본문과 겹치므로 번호만 남긴다 (제목은 마우스 올리면 뜬다) */
+  @media (max-width: 1079px) {
+    .floating-toc { right: .5rem; padding: .55rem .4rem; }
+    .floating-toc .ft-head { display: none; }
+    .floating-toc ol { gap: .45rem; }
+    .floating-toc li { justify-content: center; }
+    /* 링크가 항목 전체를 덮게 해서 동그라미를 눌러도 이동하게 한다 */
+    .floating-toc a {
+      position: absolute; inset: 0; max-width: none;
+      text-indent: -9999px; overflow: hidden;
+      border-bottom: none;
+    }
+    .floating-toc .k {
+      min-width: 0; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.85rem; height: 1.85rem; border-radius: 50%;
+      background: var(--surface); color: var(--muted);
+      font-size: .74rem; font-weight: 700;
+    }
+    .floating-toc .kf { display: none; }
+    .floating-toc .ks { display: inline; }
+    .floating-toc li.active .k { background: var(--accent); color: #fff; }
+    .floating-toc li:hover .k { background: var(--tint); color: var(--deep); }
+    .floating-toc li.active:hover .k { background: var(--accent); color: #fff; }
+  }
+
+  @media (max-width: 700px) { .floating-toc { display: none; } }
 
   .backtop {
     display: inline-block; margin-top: 1.8rem;
@@ -405,13 +434,13 @@
 <nav class="floating-toc" aria-label="파트 바로가기">
   <div class="ft-head">파트 바로가기</div>
   <ol>
-    <li><span class="k">소개</span><a href="#intro" data-target="intro">이 청크가 만드는 것</a></li>
-    <li><span class="k">소개</span><a href="#range" data-target="range">어디까지가 청크 1인가</a></li>
-    <li><span class="k">소개</span><a href="#scenes" data-target="scenes">사용자가 겪을 장면</a></li>
-    <li><span class="k">소개</span><a href="#map" data-target="map">장면 ↔ 맡은 파일</a></li>
-    <li><span class="k">복습</span><a href="#recap" data-target="recap">3분 복습</a></li>
-    <li><span class="k">1</span><a href="#p1" data-target="p1">데이터 모양을 정한다</a></li>
-    <li><span class="k">2</span><a href="#p2" data-target="p2">약속을 정한다 — 프로토콜</a></li>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소1</i></span><a href="#intro" data-target="intro" title="소개 1 — 이 청크가 만드는 것">이 청크가 만드는 것</a></li>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소2</i></span><a href="#range" data-target="range" title="소개 2 — 어디까지가 청크 1인가">어디까지가 청크 1인가</a></li>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소3</i></span><a href="#scenes" data-target="scenes" title="소개 3 — 사용자가 겪을 장면">사용자가 겪을 장면</a></li>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소4</i></span><a href="#map" data-target="map" title="소개 4 — 장면 ↔ 맡은 파일">장면 ↔ 맡은 파일</a></li>
+    <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
+    <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 데이터 모양을 정한다">데이터 모양을 정한다</a></li>
+    <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 약속을 정한다 · 프로토콜">약속을 정한다 — 프로토콜</a></li>
   </ol>
 </nav>
 
