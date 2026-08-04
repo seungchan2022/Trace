@@ -1,6 +1,8 @@
 import Foundation
 
+#if DEBUG
 /// UI 테스트/시뮬레이터 수동 확인용 — 0.5초마다 북쪽으로 이동하는 가짜 위치 스트림.
+/// 스킴의 TestAction이 Debug 구성이라 출시 빌드에서는 통째로 뺀다.
 @MainActor
 final class UITestingRunLocationStream: RunLocationStreamProtocol {
     private var feedTask: Task<Void, Never>?
@@ -35,3 +37,4 @@ final class UITestingRunLocationStream: RunLocationStreamProtocol {
         feedTask = nil
     }
 }
+#endif

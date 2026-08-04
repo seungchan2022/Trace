@@ -12,11 +12,16 @@ struct TraceApp: App {
     private let container: DependencyContainer
 
     init() {
+        // -traceUITesting 분기는 Debug에만 존재한다 — uiTesting() 자체가 출시 빌드에서 빠진다.
+        #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-traceUITesting") {
             container = .uiTesting()
         } else {
             container = .live()
         }
+        #else
+        container = .live()
+        #endif
         container.runActivityController.startObserving()
         container.runAudioCoach.startObserving()
 

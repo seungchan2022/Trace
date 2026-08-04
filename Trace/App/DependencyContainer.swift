@@ -37,6 +37,8 @@ struct DependencyContainer {
         )
     }
 
+    /// UI 테스트/프리뷰 전용 — 스킴의 TestAction이 Debug 구성이라 출시 빌드에서는 통째로 뺀다.
+    #if DEBUG
     @MainActor
     static func uiTesting() -> DependencyContainer {
         let uiTestingDefaults = UserDefaults(suiteName: "uiTesting") ?? .standard
@@ -58,8 +60,10 @@ struct DependencyContainer {
             voiceAnnouncer: voiceAnnouncer
         )
     }
+    #endif
 }
 
+#if DEBUG
 private final class UITestingCoursePlanningService: CoursePlanningServiceProtocol {
     func route(
         from start: CourseCoordinate,
@@ -95,3 +99,4 @@ private final class UITestingLocationService: LocationServiceProtocol {
 private final class NoopVoiceAnnouncer: VoiceAnnouncerProtocol {
     func announce(_ text: String, pace: AnnouncementPace, kind: AnnouncementKind) {}
 }
+#endif

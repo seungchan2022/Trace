@@ -84,10 +84,32 @@
 **Files:**
 - Investigate: `Trace/App/DependencyContainer.swift`, `Trace/App/UITestingRunLocationStream.swift`
 
-- [ ] **먼저 UI 테스트가 어느 빌드 구성에서 도는지 확인한다.** Release에서 돈다면
+- [x] **먼저 UI 테스트가 어느 빌드 구성에서 도는지 확인한다.** Release에서 돈다면
       `#if DEBUG`로 감싸는 순간 UI 테스트가 깨진다 — 이 확인 없이 착수하지 않는다.
-- [ ] 확인 결과에 따라 처분을 정한다. Debug 전용이면 `#if DEBUG` 적용, 아니면 **이 Task는 접고**
-      백로그로 되돌린다(무리해서 고치지 않는다).
+      → **Debug 전용 확인.** `Trace.xcscheme`의 `<TestAction buildConfiguration = "Debug">`.
+      게이트 통과.
+- [x] 확인 결과에 따라 처분을 정한다. Debug 전용이면 `#if DEBUG` 적용, 아니면 **이 Task는 접고**
+      백로그로 되돌린다(무리해서 고치지 않는다). → `#if DEBUG` 적용.
+
+**적용 범위 4곳:** `DependencyContainer.uiTesting()` · 파일 하단 private 가짜 3개 · `UITestingRunLocationStream`
+전체 · `TraceApp.init`의 `-traceUITesting` 분기(Release는 `.live()` 직행).
+
+**플랜이 예상 못 한 걸림돌 — `#Preview`가 Release에서도 컴파일된다.** 첫 Release 빌드가
+`CoursePlannerPage.swift:361: type 'DependencyContainer' has no member 'uiTesting'`로 깨졌다.
+앱 전체에 `#Preview`가 **하나뿐**이라 같은 기제(`#if DEBUG`)로 2줄 감싸 해결했다 — 프리뷰
+구조를 손대지 않았으므로 "무리해서 고치지 않는다"에 걸리지 않는다.
+
+**목적 달성 실측(바이너리 대조):**
+
+| 산출물 | `UITesting`·`NoopVoice` 문자열 |
+|---|---|
+| Release `Trace.app/Trace` | **0건** ← 출시 빌드에서 사라짐 |
+| Debug `Trace.debug.dylib` | 13건 ← UI 테스트 경로는 그대로 |
+
+(같은 Release 바이너리에서 `CoursePlannerPage`는 10건 잡혀 `strings` 자체는 정상 동작 확인.)
+
+- [x] 빌드(Debug·**Release 둘 다**)·테스트·린트 통과 확인. → Debug 빌드 성공 · Release 빌드 성공 ·
+      테스트 383/383 통과(UI 테스트 8개 포함) · 린트 5건(사전 존재분).
 
 ## Task 4: Domain 프로토콜의 `@MainActor` 떼기 (#5)
 

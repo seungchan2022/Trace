@@ -357,6 +357,9 @@ struct CoursePlannerPage: View {
     }
 }
 
+// #Preview 본문은 Release 구성에서도 컴파일된다(2026-08-04 실측) — Debug 전용인
+// uiTesting()을 쓰므로 프리뷰 자체를 #if DEBUG로 감싼다. 프리뷰는 Debug로만 빌드되므로 무손실.
+#if DEBUG
 #Preview {
     let container = DependencyContainer.uiTesting()
     CoursePlannerPage(
@@ -366,3 +369,4 @@ struct CoursePlannerPage: View {
         courseRepository: container.courseRepository
     )
 }
+#endif
