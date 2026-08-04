@@ -1036,6 +1036,7 @@ extension CoursePlanningServiceProtocol {
       <strong>기본 구현</strong>(안 만들면 대신 쓰이는 것)이다. 그래서 실제 구현체
       <code>MapKitCoursePlanningService</code>에는 <strong><code>route</code>만 있고
       <code>snappedRoute</code>는 없는데도 컴파일이 된다.</strong>
+      왜 이렇게 갈랐는지는 ③에서 본다.
     </p>
 
     <h3>② 시그니처 한 줄 — 부르는 쪽 기준으로</h3>
@@ -1076,10 +1077,10 @@ extension CoursePlanningServiceProtocol {
     <div class="concept">
       <h4>💡 왜 <code>snappedRoute</code>만 <code>extension</code>에 기본 구현으로 뒀나</h4>
       <p>
-        갈라놓은 기준은 <strong>"제공자가 바뀌면 이 코드도 바뀌는가"</strong>다.
+        갈라놓은 기준은 <strong>“제공자가 바뀌면 이 코드도 바뀌는가”</strong>다.
         <code>route</code>는 바뀐다 — MapKit이냐 네이버냐에 따라 안이 완전히 달라진다.
-        그런데 <strong><code>snappedRoute</code>는 안 바뀐다.</strong> "지점을 두 개씩 짝지어
-        <code>route</code>를 반복 호출하고 결과를 이어붙인다"는 절차는 제공자와 무관하다.
+        그런데 <strong><code>snappedRoute</code>는 안 바뀐다.</strong> “지점을 두 개씩 짝지어
+        <code>route</code>를 반복 호출하고 결과를 이어붙인다”는 절차는 제공자와 무관하다.
       </p>
       <p>
         그래서 제공자마다 달라지는 것만 <strong>요구사항</strong>으로 남기고, 어느 구현체든
@@ -1089,8 +1090,8 @@ extension CoursePlanningServiceProtocol {
       <p>
         <strong>그런데 왜 <code>extension</code>에만 두지 않고 요구사항으로도 선언했나.</strong>
         <code>extension</code>에만 두면 구현체가 그것을 <strong>갈아끼울 수 없다.</strong>
-        요구사항으로도 선언해두면 "기본은 이걸 쓰되, 더 나은 방법이 있는 구현체는 직접
-        구현해도 된다"가 된다. 예컨대 여러 지점을 한 번에 받는 API를 가진 제공자라면
+        요구사항으로도 선언해두면 “기본은 이걸 쓰되, 더 나은 방법이 있는 구현체는 직접
+        구현해도 된다”가 된다. 예컨대 여러 지점을 한 번에 받는 API를 가진 제공자라면
         반복 호출 대신 한 번의 요청으로 끝낼 수 있다.
       </p>
       <p>
@@ -1194,18 +1195,25 @@ extension CoursePlanningServiceProtocol {
     <div class="concept">
       <h4>💡 왜 스로틀만 재시도에서 빼냈나</h4>
       <p>
-        파트 1의 실패 셋 중 ②"너무 많이 물어봄"만 성격이 다르기 때문이다. ①③은
-        <strong>길에 대한 답</strong>이지만 ②는 <strong>요청한 쪽에 대한 통보</strong>다.
-        한도가 시간당 요청 횟수로 매겨지므로(프로젝트 문서 기준 60초당 50회),
-        재시도는 결과를 못 얻는 데서 그치지 않고 <strong>그 카운터를 하나 더 올려 회복을
-        늦춘다.</strong> 그래서 예외를 만들었다.
+        파트 1에서 정한 실패 셋(<em>길을 못 찾음 · 너무 많이 물어봄 · 그 밖의 실패</em>) 중
+        <strong>“너무 많이 물어봄”만 성격이 다르기</strong> 때문이다. 나머지 둘은
+        <strong>길에 대한 답</strong>이지만 이것은 <strong>요청한 쪽에 대한 통보</strong>다.
       </p>
       <p>
-        <strong>거꾸로 ①은 빼지 않았다.</strong> ①도 같은 두 지점으로 다시 물어보면 답이 같은
-        확정 실패라 재시도가 무의미하고, 게다가 그 헛된 요청이 <strong>②를 예외로 뺀 바로 그
-        카운터를 올린다.</strong> 케이스가 이미 구분돼 있으니 조건 한 줄이면 뺄 수 있었는데
-        안 뺐다. 다만 손해가 눈에 안 띌 만큼 작다 — ①이 실제로 터지는 조건이 좁고(파트 1 ④ 참고),
-        무엇보다 <strong>이 코드가 애초에 실행되지 않는다</strong>(⑥). 백로그에 적어두었다.
+        한도가 시간당 요청 횟수로 매겨지므로(프로젝트 문서 기준 60초당 50회), 재시도는 결과를
+        못 얻는 데서 그치지 않고 <strong>그 카운터를 하나 더 올려 회복을 늦춘다.</strong>
+        그래서 예외를 만들었다.
+      </p>
+      <p>
+        <strong>거꾸로 “길을 못 찾음”은 빼지 않았다.</strong> 이것도 같은 두 지점으로 다시 물으면
+        답이 같은 확정 실패라 재시도가 무의미하고, 게다가 그 헛된 요청이 <strong>“너무 많이
+        물어봄”을 예외로 뺀 바로 그 카운터를 올린다.</strong> 케이스가 이미 구분돼 있으니 조건
+        한 줄이면 뺄 수 있었는데 안 뺐다.
+      </p>
+      <p>
+        다만 손해가 눈에 안 띌 만큼 작다 — “길을 못 찾음”이 실제로 터지는 조건이 좁고
+        (파트 1 ④ 참고), 무엇보다 <strong>이 코드가 애초에 실행되지 않는다</strong>(바로 아래 ⑥).
+        백로그에 적어두었다.
       </p>
     </div>
 
@@ -1229,31 +1237,72 @@ extension CoursePlanningServiceProtocol {
     </p>
 
     <div class="concept">
-      <h4>💡 왜 기본 구현을 두고 ViewModel에 다시 썼나</h4>
+      <h4>💡 왜 기본 구현을 버렸나 — 전체 재계산이 문제였다</h4>
       <p>
-        <strong>증분 라우팅</strong> 때문이다. 획을 새로 그을 때마다 전체를 다시 계산하지 않고
-        <strong>새로 늘어난 구간 + 기존 코스와의 연결 1건</strong>만 계산하도록 바꿨는데,
-        <code>snappedRoute</code>는 "받은 지점 전부를 처음부터 이어붙인다"라서 그 방식을
-        표현할 수 없다.
+        MVP2까지는 획을 새로 그을 때마다 <strong>코스 전체를 처음부터 다시 계산</strong>했다.
+        함수 이름부터 <code>recomputeSnappedCourse</code>, 말 그대로 재계산이다. 그러면
+        요청 수가 이렇게 쌓인다.
+      </p>
+
+<pre class="code">첫 획   → 요청 16건
+둘째 획 → 요청 32건   <span class="c">(첫 획 것까지 다시)</span>
+셋째 획 → 요청 48건   <span class="c">(앞의 둘까지 다시)</span></pre>
+
+      <p>
+        이미 답을 아는 구간에 또 요청을 보내는 것이고, 앞 절에서 본 <strong>스로틀 한도(60초 50건)에
+        훨씬 빨리 닿는다.</strong> MVP3에서 이것을 <strong>증분 계산</strong>으로 바꿨다 —
+        새로 늘어난 부분 + 기존 코스와의 <strong>연결 1건</strong>만 계산한다.
       </p>
       <p>
-        거기에 ViewModel 쪽 반복문에는 기본 구현에 없는 것이 둘 붙어 있다 —
-        <strong>계산 도중 사용자가 다시 그으면 앞의 결과를 버리는 검사</strong>와,
-        구간 좌표가 2개 미만이면 즉시 중단하고 안내 문구를 띄우는 처리다. 둘 다 화면 상태를
-        아는 쪽에서만 할 수 있는 일이라 도메인 기본 구현으로는 넣기 어렵다.
-      </p>
-      <p>
-        <strong>남은 코드가 지금 무엇을 오해시키나</strong> — 프로토콜만 읽으면
-        <em>"그리기는 <code>snappedRoute</code>가 처리하는구나"</em>로 읽힌다. 실제로는 그 경로가
-        죽어 있고 ViewModel이 처리한다. 이 오해는 실제로 났다.
-      </p>
-      <p>
-        ⚠️ <strong>스로틀 판정 자체는 살아 있다.</strong> 죽은 것은 <em>재시도</em>뿐이다.
-        <code>GEOErrorDomain -3</code> 등을 <code>.throttled</code>로 바꾸는 코드는
-        <code>MapKitCoursePlanningService.route</code> 안에 있고, ViewModel이 그 에러를 받아
-        "요청이 많아 잠시 후 다시 시도해주세요"를 띄운다. 이 경로는 정상 동작한다.
+        <strong><code>snappedRoute</code>로는 그것을 못 한다.</strong> 이유가 둘이다.
+        ①<strong>표현할 자리가 없다</strong> — 받는 것이 지점 배열 하나뿐이라
+        <em>“앞부분은 이미 계산됐으니 건너뛰어”</em>를 적을 파라미터가 없다.
+        ②<strong>판단에 필요한 정보를 모른다</strong> — 새 획을 코스 앞에 붙일지 뒤에 붙일지,
+        뒤집어야 하는지는 <strong>지금 코스가 어떤 상태인지</strong>를 알아야 정하는데,
+        도메인 기본 구현은 코스를 모른다.
       </p>
     </div>
+
+    <div class="concept">
+      <h4>💡 그런데 옮겨간 자리가 맞나 — 파트 6에서 판정한다</h4>
+      <p>
+        코스 상태를 아는 곳으로 가야 했던 것까지는 맞다. 그런데 <strong>간 곳이 ViewModel이다.</strong>
+        복잡한 계산은 아래 레이어가 하고 ViewModel은 조립·표현을 맡는 것이 이 프로젝트의 구조인데,
+        <strong>반복 라우팅과 이어붙이기가 통째로 ViewModel에 들어가 있다.</strong>
+      </p>
+      <p>
+        <strong>더 맞아 보이는 자리가 이미 있다.</strong> Application 레이어의
+        <code>CourseEditSession</code>이 코스 상태를 들고 붙이기·되돌리기·구간 연결을 담당하고,
+        <strong>이미 <code>route</code>를 직접 부른다</strong>(구간 사이 틈을 메울 때).
+        즉 “라우팅을 조립하는 자리”가 만들어져 있고 쓰이고 있는데, <strong>획 라우팅만
+        ViewModel에 남았다.</strong> 실측 신호도 있다 — <code>CoursePlannerPageViewModel</code>은
+        클래스 본문 <strong>322줄로 상한(300)을 넘겨</strong> 린트 경고가 떠 있고
+        <code>docs/backlog.md</code>에 열려 있다.
+      </p>
+      <p>
+        <strong>다만 전부 내려보낼 수는 없다.</strong> <em>계산 도중 사용자가 다시 그으면 앞
+        결과를 버리는 검사</em>는 “지금 화면에서 사용자가 뭘 하고 있나”라서 화면 쪽 관심사다.
+        그래서 후보는 “전부 옮긴다”가 아니라 <strong>“라우팅·이어붙이기는 내리고 취소 판정만
+        남긴다”</strong>가 된다.
+      </p>
+      <p>
+        <strong>판정은 파트 6에서 한다.</strong> 거기가 ViewModel 조립을 다루는 파트라
+        코드를 놓고 보는 것이 맞다. 파트 2에서는 <em>“배치가 어정쩡하다”</em>까지만 알면 된다.
+      </p>
+    </div>
+
+    <p>
+      <strong>남은 코드가 지금 무엇을 오해시키나</strong> — 프로토콜만 읽으면
+      <em>“그리기는 <code>snappedRoute</code>가 처리하는구나”</em>로 읽힌다. 실제로는 그 경로가
+      죽어 있고 ViewModel이 처리한다. <strong>이 오해는 실제로 났다.</strong>
+    </p>
+
+    <p>
+      ⚠️ <strong>스로틀 판정 자체는 살아 있다. 죽은 것은 재시도뿐이다.</strong>
+      <code>GEOErrorDomain -3</code> 등을 <code>.throttled</code>로 바꾸는 코드는
+      <code>MapKitCoursePlanningService.route</code> 안에 있고, ViewModel이 그 에러를 받아
+      “요청이 많아 잠시 후 다시 시도해주세요”를 띄운다. <strong>이 경로는 정상 동작한다.</strong>
+    </p>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
