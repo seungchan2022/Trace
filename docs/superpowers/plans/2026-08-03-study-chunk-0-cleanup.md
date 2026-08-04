@@ -124,16 +124,80 @@
 - `Trace/Domain/RunTracking/Protocol/VoiceAnnouncerProtocol.swift`
 - `Trace/Domain/RunTracking/Protocol/RunLocationStreamProtocol.swift`
 
-- [ ] 네 프로토콜에서 `@MainActor` 한 줄씩을 뗀다.
-- [ ] 컴파일한다. **깨지는 곳은 대부분 가짜 구현체 6개**로 예상된다 —
+- [x] 네 프로토콜에서 `@MainActor` 한 줄씩을 뗀다. → **1개만 뗐다(`VoiceAnnouncerProtocol`).
+      나머지 셋은 되돌렸다.** 아래 실측 참조.
+- [x] 컴파일한다. **깨지는 곳은 대부분 가짜 구현체 6개**로 예상된다 —
       진짜 구현체 4개는 이미 자체 `@MainActor`를 갖고 있어 영향이 없다(실측 확인).
-      가짜는 `UITestingCoursePlanningService`·`UITestingLocationService`·`NoopVoiceAnnouncer`
-      (`DependencyContainer.swift` 내부) · `UITestingRunLocationStream` ·
-      `FakeVoiceAnnouncer`·`MockRunLocationStream`(테스트 타깃).
-- [ ] ⚠️ `VoiceAnnouncerProtocol`은 나머지 셋과 다르다 — `announce`가 **`async`가 아니라서**
-      파급이 다르게 나올 수 있다. 여기서 크게 번지면 **이 프로토콜만 남겨두고 셋만 처리**해도 된다.
-- [ ] **시뮬레이터 스모크 필수** — 저장 코스 불러오기 · 지도 렌더링 · 달리기 시작 · 음성 안내.
+      → 🔴 **이 예상은 완전히 틀렸다.** 가짜 구현체는 **한 곳도 안 깨졌고**, 깨진 것은 **전부
+      진짜 구현체**였다. "자체 `@MainActor`를 갖고 있으니 안전하다"는 추론이 거꾸로였다.
+- [x] ⚠️ `VoiceAnnouncerProtocol`은 나머지 셋과 다르다 — `announce`가 **`async`가 아니라서**
+      파급이 다르게 나올 수 있다. → 다르게 나온 건 맞는데 **방향이 반대다.** 플랜은 이것만
+      위험할까 걱정했으나, 실제로는 **이것만 유일하게 통과**했다.
+- [x] **시뮬레이터 스모크 필수** — 저장 코스 불러오기 · 지도 렌더링 · 달리기 시작 · 음성 안내.
       MVP12 크래시가 컴파일 경고 없이 런타임에만 드러났다(`ios-swift.md` "위험 신호 셋").
+      → **live 컨테이너로 전 구간 통과, 크래시·이상 없음.** 결과는 아래.
+
+### 🔑 실측 결과 — 가르는 축은 "진짜/가짜"가 아니라 **async 요구사항의 유무**
+
+프로토콜을 하나씩 떼고 각각 빌드해 분리했다(4회 빌드).
+
+| 프로토콜 | `async` 요구사항 | 결과 | 깨진 곳 |
+|---|---|---|---|
+| `LocationServiceProtocol` | `currentLocation()` | 🛑 | `CoreLocationService` — 자기 `manager`·`broadcaster`를 못 건드림 |
+| `CoursePlanningServiceProtocol` | `route`/`snappedRoute` | 🛑 | `MapKitCoursePlanningService` — 자기 `cache`를 못 건드림 |
+| `RunLocationStreamProtocol` | `requestSessionFullAccuracy()` | 🛑 | `RunLocationTracker` — `manager`가 메인액터를 못 벗어남 |
+| `VoiceAnnouncerProtocol` | **없음(전부 동기)** | ✅ | 앱·테스트 타깃 모두 컴파일 |
+
+**규칙:** `async` 요구사항이 하나라도 있는 프로토콜에서 `@MainActor`를 떼면, 그 프로토콜을
+만족하는 **`@MainActor` 진짜 구현체가 자기 메인액터 상태를 못 만지게 된다.** 요구사항이 전부
+동기인 프로토콜만 움직인다. (컴파일러 내부 기제 — `SWIFT_APPROACHABLE_CONCURRENCY = YES`와
+격리 conformance — 까지는 확인하지 않았다. 위 규칙은 기제와 무관하게 실측으로 성립한다.)
+
+**셋을 되돌린 근거는 플랜의 중단 기준 그대로다** — "컴파일 에러가 가짜 구현체 밖으로 번진다
+→ 🛑 멈춤". 진짜 구현체를 고쳐야 통과하는 상황이고, 그 수정은 `nonisolated`를 새로 붙이는
+방향(🛑 행)으로 갈 수밖에 없다. **`nonisolated`는 한 곳도 붙이지 않았다.**
+
+### 스모크 범위 (실측으로 좁힘)
+
+바뀐 것은 `VoiceAnnouncerProtocol` 하나뿐이라 **저장 코스 불러오기·지도 렌더링은 이제 게이트가
+아니다**(Location·CoursePlanning 경로가 안 바뀌었다). 정말 봐야 할 것은 **nonisolated가 된 프로토콜
+확장 기본 구현 4개**(`announce(_:)` · `holdAudioSession()` · `releaseAudioSession()` · `stopSpeaking()`)이고,
+호출부 실측 결과 이들을 전부 태우는 흐름은 **카운트다운**이다:
+
+| 흐름 | 태우는 것 | 호출부 |
+|---|---|---|
+| 카운트다운 3-2-1 발화 | `holdAudioSession()` + `announce(word)` | `RunPageViewModel:149,160` |
+| 카운트다운 취소 | `stopSpeaking()` + `releaseAudioSession()` | `RunPageViewModel:182,183` |
+| 달리기 시작·종료·km·목표 | `announce(_:)` 단일 인자 | `RunAudioCoach:60,67,86,99,113` |
+
+⚠️ **`-traceUITesting`으로 띄우면 안 된다** — 그 컨테이너는 `announce`가 빈 몸통인
+`NoopVoiceAnnouncer`를 꽂으므로, 실제로 conformance가 바뀐 `SpeechVoiceAnnouncer`를 하나도
+검증하지 못한다. **live 컨테이너로 띄운다.**
+
+📌 **스모크 중 알게 된 것:** `SpeechVoiceAnnouncer`는 네 멤버를 **전부 자체 구현**한다
+(`announce(_:pace:kind:)`·`holdAudioSession`·`releaseAudioSession`·`stopSpeaking`). 따라서 실사용에서
+nonisolated 확장 기본 구현을 실제로 타는 것은 **`announce(_:)`·`announce(_:pace:)` 둘뿐**이고
+(3인자 메서드로 포워딩), 나머지 셋은 클래스 자기 구현으로 해소된다. 확장이 위험 표면이라는
+판단은 맞았지만 **표면이 예상보다 좁다.**
+
+### 스모크 결과 (2026-08-04, iPhone 17 Pro / iOS 26.5, live 컨테이너)
+
+| 흐름 | 태운 것 | 결과 |
+|---|---|---|
+| 러닝 탭 → 시작 → 카운트다운 3-2-1 | `holdAudioSession()` + `announce(word)` | ✅ `run.countdownScreen` 정상 진입 |
+| 카운트다운 완료 → 트래킹 | `announce(start)` (`RunAudioCoach`) | ✅ 트래킹 진입, GPS 획득 후 시간·거리 갱신 |
+| 일시정지 | `announce(_:pace:)` 2인자 기본 구현 | ✅ "일시정지됨" 표시 |
+| 길게 눌러 종료 | `announce(finish)` + `releaseAudioSession()` | ✅ "러닝 요약 / 기록 저장됨" |
+| GPS 대기 중 취소 | `stopSpeaking()` + `releaseAudioSession()` | ✅ 대기 화면 복귀 |
+| 기록 탭 | (Task 2로 옮긴 `RunHistoryViewModel`) | ✅ 방금 저장한 0:00:41 기록이 최상단 반영 |
+| 코스 탭 지도 | (이번에 안 바뀐 경로 — sanity) | ✅ 서울시청 일대 렌더링 정상 |
+
+런타임 로그에 크래시·`Swift runtime failure`·데이터 레이스 없음. (로그의 "mysterious crashes"
+문자열은 시뮬레이터 접근성 번들 중복 경고문의 일부로, 앱과 무관하다.)
+
+⚠️ **환경 이슈 1건(코드와 무관):** 첫 실행이 `FBSOpenApplicationServiceErrorDomain / Busy
+("Application failed preflight checks")`로 거부됐다. 직전에 테스트 스위트를 여러 번 돌린 탓이며,
+`testing.md`의 CoreSimulator 데몬 재시작 절차로 해소했다.
 
 ### 이 Task의 요점과 중단 기준
 
