@@ -356,7 +356,10 @@
         <div class="can">새 타입에 <code>@MainActor</code>를 붙일지 정할 수 있다.</div>
         <div class="sum">화면·상태를 다루는 코드에만 붙인다. <strong>애플이 직접 부르는 멤버는 <code>nonisolated</code>로 뺀다</strong>
           (delegate 메서드, 애플 프로토콜이 요구하는 프로퍼티). 예전엔 "전부 붙임"이었는데
-          <strong>지도 코드가 그것 때문에 죽어서</strong> 뒤집었고, 경고도 안 났다.</div>
+          <strong>지도 코드가 그것 때문에 죽어서</strong> 뒤집었고, 경고도 안 났다.
+          <strong>Domain 프로토콜에는 안 붙인다</strong>(2026-08-04 정비로 4개 전부 제거) —
+          단, <code>async</code> 요구사항을 만족하는 메서드는 클래스에 붙은 것이 적용되지 않아
+          <strong>메서드에 한 번 더 명시</strong>해야 한다.</div>
       </div></li>
       <li><span class="k">6</span><div>
         <div class="can">새 기능을 어느 층에서 확인할지 정할 수 있다.</div>
@@ -366,6 +369,26 @@
       </div></li>
     </ol>
   </section>
+
+  <div class="concept">
+    <h4>✅ 이 학습이 코드를 바꿨다 — 2026-08-04 정비</h4>
+    <p>이 노트를 쓰면서 <strong>"왜 이렇게 됐나"를 묻다가 잔재와 구멍 5건이 드러났다.</strong>
+       별도 정비 사이클로 돌려 4건을 닫았다. 아래 파트들의 해당 대목에 결과를 덧붙여 뒀다.</p>
+    <div class="tablewrap">
+    <table>
+      <tr><th>무엇</th><th>결과</th><th>파트</th></tr>
+      <tr><td><code>ContentView.swift</code>가 죽은 코드</td><td>✅ 삭제</td><td>4</td></tr>
+      <tr><td><code>cameraStateStore</code> 기본값이 주입 구멍</td><td>✅ 기본값 제거</td><td>4</td></tr>
+      <tr><td>테스트 전용 코드가 출시 빌드에 포함</td><td>✅ <code>#if DEBUG</code>로 제외 (Release 바이너리에서 0건 확인)</td><td>—</td></tr>
+      <tr><td>Domain 프로토콜 4개의 <code>@MainActor</code></td><td>✅ 4개 전부 제거</td><td>5</td></tr>
+      <tr><td><code>RunHistoryViewModel</code> 위치·이름</td><td>⚠️ 위치만 이동, 이름은 보류</td><td>4</td></tr>
+      <tr><td>저장소 손상 복구가 조용함</td><td>⏸️ 범위 밖(새 동작이라 정비 아님)</td><td>6</td></tr>
+    </table>
+    </div>
+    <p><strong>진행 중 예상이 두 번 뒤집혔다.</strong> ①"호출부는 하나뿐"이라던 것이 셋이었고,
+       ②<code>@MainActor</code> 건은 "가짜 구현체만 깨진다"던 예상과 정반대로
+       <strong>진짜 구현체만</strong> 깨졌다. 둘 다 해당 대목에 적어뒀다.</p>
+  </div>
 
   <h3>이 앱은 어떤 방향으로 짜여 있나</h3>
 
@@ -1145,7 +1168,15 @@ protocol LocationServiceProtocol {
       <p>창고는 하나여야 하니 컨테이너에 있다. <strong>진짜 화면 상태는 따로 있다</strong> —
          <code>HistoryPage/HistoryPageViewModel.swift</code>. 그건 컨테이너에 없다.</p>
       <p><strong>컨테이너에 있는 건 뷰모델이라서가 아니라 창고라서다.</strong>
-         이름이 역할과 어긋난 것이고, 백로그에 올려뒀다.</p>
+         이름이 역할과 어긋난 것이다.</p>
+      <p><b>2026-08-04 정비 — 절반만 고쳤다.</b> 이 파일은 원래
+         <code>Pages/RunPage/</code>에 있었는데 <strong><code>RunPage</code>는 이걸 쓰지도 않았다</strong>
+         (쓰는 곳은 <code>HistoryPage</code>와 <code>RootView</code>뿐). 폴더가 역할을 잘못 가리키고
+         있어서 <code>Pages/HistoryPage/</code>로 <strong>옮겼다.</strong></p>
+      <p><strong>이름은 안 바꿨다.</strong> <code>RunHistoryStore</code>로 가면
+         <code>@Observable</code> 화면 상태에 <code>*Store</code>라는 <strong>새 명명 범주</strong>가
+         생기는데, 이 프로젝트는 지금 전부 <code>*ViewModel</code>이다. 명명 규약을 새로 정하는 일이라
+         "고칠 것만 고친다"는 정비 작업의 범위를 넘는다. 백로그에 남겨뒀다.</p>
     </div>
 
     <h3>결정 ③ 누구에게 줄까</h3>
@@ -1160,7 +1191,7 @@ protocol LocationServiceProtocol {
 <pre class="code"><span class="c">// CoursePlannerPage.swift:59</span>
 init(coursePlanningService: CoursePlanningServiceProtocol,
      locationService: LocationServiceProtocol,
-     cameraStateStore: CameraStateStore = CameraStateStore(),
+     cameraStateStore: CameraStateStore,
      courseRepository: CourseRepositoryProtocol)
 
 <span class="c">// RunPage.swift:7</span>
@@ -1188,20 +1219,34 @@ init(history: RunHistoryViewModel, isActive: Bool)</pre>
          한 화면의 의존성이 5개를 넘으면 재검토(현재 최대 4개).</p>
     </div>
 
-    <h3>그런데 규칙에 구멍이 하나 있다</h3>
+    <h3>여기 구멍이 하나 있었다 — 이 학습이 찾아서 막았다</h3>
 
-    <p>위 <code>CoursePlannerPage.init</code>에서 <strong><code>cameraStateStore</code>만
-       기본값이 있다.</strong> 넷 중 이것만이다. 즉 <strong>안 넘겨도 컴파일되고</strong>,
-       안 넘기면 화면이 조용히 자기 것을 하나 만든다.</p>
+    <p>원래 <code>CoursePlannerPage.init</code>에서 <strong><code>cameraStateStore</code>만
+       기본값이 있었다</strong>(<code>= CameraStateStore()</code>). 넷 중 이것만.
+       즉 <strong>안 넘겨도 컴파일되고</strong>, 안 넘기면 화면이 조용히 자기 것을 하나 만들었다.</p>
 
     <p>그러면 <strong>테스트가 준비한 격리된 인스턴스가 무시된다.</strong>
        "컨테이너에서 골라 넘긴다"는 규칙이 그 자리에서 뚫린다.</p>
 
-    <p>실제로 그렇게 부르는 코드가 남아 있다 — <code>Trace/App/ContentView.swift</code>.
-       <strong>다만 이 파일은 죽어 있다.</strong> 참조하는 곳이 자기 자신의 <code>#Preview</code>뿐이고,
-       Xcode 템플릿이 넣어준 것이 그대로 남았다.
-       <strong>기본값이 있었기에 죽은 코드가 컴파일된 채로 남아 있을 수 있었다.</strong>
-       둘 다 백로그에 올렸다.</p>
+    <p>실제로 그렇게 부르는 코드가 남아 있었다 — <code>Trace/App/ContentView.swift</code>.
+       <strong>그런데 이 파일은 죽어 있었다.</strong> 참조하는 곳이 자기 자신의 <code>#Preview</code>뿐이고,
+       Xcode 템플릿이 넣어준 것이 그대로 남은 것이었다.
+       <strong>기본값이 있었기에 죽은 코드가 컴파일된 채로 남아 있을 수 있었다.</strong></p>
+
+    <div class="concept">
+      <h4>✅ 2026-08-04 정비에서 둘 다 처리했다</h4>
+      <p><code>ContentView.swift</code>를 <strong>삭제</strong>하고 <code>cameraStateStore</code>
+         <strong>기본값을 제거</strong>했다. 위 코드 상자는 이미 고쳐진 모습이다.</p>
+      <p><strong>착수 전 예상이 하나 틀렸다.</strong> 백로그에는 "호출부는 <code>RootView</code>
+         하나뿐"이라고 적혀 있었는데, 실제로 세어 보니 <strong>셋</strong>이었다 —
+         <code>RootView</code> · 죽은 <code>ContentView</code> · <code>CoursePlannerPage.swift</code>
+         맨 아래 <code>#Preview</code>. 다만 <code>#Preview</code>는 이미 명시해서 넘기고 있었고,
+         기본값에 기대던 곳은 <code>ContentView</code> 하나였다. 결론(파급 없음)은 맞았지만
+         <strong>근거는 틀렸던 것</strong>이다.</p>
+      <p>한편 <code>CoursePlannerPageViewModel.init</code>에도 <strong>같은 기본값이 남아 있다</strong>.
+         단위 테스트 ~18곳이 그 기본값에 기대고 있어 건드리지 않았다. 화면이 받은 것을 항상 그대로
+         ViewModel에 넘기므로, 화면 쪽 기본값이 사라진 것만으로 위 구멍은 닫힌다.</p>
+    </div>
 
     <div class="oneline">
       <span class="tag">새 부품을 넣는다면</span>
@@ -1286,6 +1331,7 @@ init(history: RunHistoryViewModel, isActive: Bool)</pre>
 <pre class="code">@MainActor                                     <span class="c">// ① 클래스 전체는 메인</span>
 final class CoreLocationService: NSObject, ... {
 
+    @MainActor                                  <span class="c">// ④ 중복 아님! 아래 설명</span>
     func currentLocation() async throws -> ...  <span class="c">// 메인에서 돎</span>
 
     nonisolated func locationManager(...) {     <span class="c">// ② 애플이 부르는 함수만 빼놓음</span>
@@ -1328,10 +1374,60 @@ final class CoreLocationService: NSObject, ... {
       <code>nonisolated</code>로 빼고 안에서 필요할 때만 메인으로 넘긴다.
     </div>
 
+    <h3>✅ 노트가 "남은 빈틈"이라 적었던 것 — 2026-08-04에 메웠다</h3>
+
+    <p>원래 여기엔 이렇게 적혀 있었다: <em>"Domain 프로토콜 4개에 <code>@MainActor</code>가 붙어 있다.
+       MVP12 설계는 이걸 빼기로 했었는데 전략을 뒤집는 과정에서 기계적으로 되살아났다."</em></p>
+
+    <p><strong>넷 다 뺐다.</strong> 이제 Domain 프로토콜은 실행 컨텍스트를 강제하지 않는다 —
+       MVP12가 원했던 <em>"격리는 구현체가 선택"</em> 그대로다.
+       그리고 <strong><code>nonisolated</code>는 한 곳도 안 붙였다.</strong></p>
+
+    <div class="concept">
+      <h4>④ 클래스에 붙였는데 메서드에 또 붙는 이유</h4>
+      <p>위 코드 상자의 ④가 그것이다. <strong>중복처럼 보이지만 지우면 컴파일이 깨진다.</strong></p>
+      <p>규칙은 이렇다 — <strong><code>async</code> 프로토콜 요구사항을 만족(witness)하는 메서드는,
+         클래스에 붙은 <code>@MainActor</code>가 적용되지 않는다.</strong>
+         프로토콜을 채택하는 한 줄이 있고 없고의 차이다.</p>
+      <p>10줄로 재현된다:</p>
+<pre class="code">protocol P { func f() async }
+
+@MainActor final class C: P {
+    var x = 0
+    func f() async { x += 1 }   <span class="c">// ❌ 자기 x를 못 만진다</span>
+}</pre>
+      <p><code>: P</code>만 지우면 같은 코드가 통과한다. 원인은 Swift 6.2의 SE-0461이다 —
+         nonisolated한 <code>async</code> 요구사항이 "호출자 액터에서 실행"으로 바뀌면서,
+         <strong>메서드에 명시가 없으면 요구사항 쪽 격리가 클래스 쪽을 이긴다.</strong>
+         메서드에 직접 쓴 <code>@MainActor</code>는 추론이 아니라 <strong>명시</strong>라서 둘 다 이긴다.</p>
+      <p><strong>동작은 안 바뀐다.</strong> 원래도 메인에서 돌던 것을 컴파일러에게 다시 말해줄 뿐이다.</p>
+      <p><strong>언제 지울 수 있나:</strong> 기다릴 필요 없다. <strong>지우고 빌드하면 답이 나온다.</strong>
+         통과하면 Swift가 이 자리를 채운 것이니 지워도 된다.</p>
+    </div>
+
+    <div class="concept">
+      <h4>🛑 <code>nonisolated</code>로 해결하면 왜 안 되나</h4>
+      <p><code>nonisolated</code>만 붙이면 컴파일이 안 된다(메인 액터 상태를 못 만짐).
+         통과시키려면 모든 상태 접근을 <code>await MainActor.run { }</code>으로 감싸야 하는데,
+         <strong>그 순간 동작이 바뀐다.</strong></p>
+      <p>메서드 전체가 메인에서 <strong>한 덩어리</strong>로 돌던 것이,
+         잠깐 들렀다 나오기의 <strong>연속</strong>이 된다. 그 사이사이에 다른 작업이 끼어든다.
+         <code>CoreLocationService</code>의 "겹친 요청을 같은 결과로 묶는" 로직이 정확히 여기서 깨진다.</p>
+      <p>그리고 <em>"메인 아니어도 된다"</em>고 선언했다가 실제로는 메인이어야 했던 것이
+         <strong>MVP12에서 앱이 죽은 방식</strong>이다.</p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 곁다리 소득 — 테스트 스텁 9개에서 <code>@MainActor</code>를 뺐다</h4>
+      <p>프로토콜에서 <code>@MainActor</code>를 빼자 <strong>진짜로 필요한 곳이 어디인지 드러났다.</strong>
+         테스트 스텁 9개(카운터 올리고 값 돌려주는 게 전부인 것들)는 메인 스레드가 전혀 필요 없는데
+         붙어 있었다. 프로토콜이 강제하니 <em>"필요해서"가 아니라 "따라서"</em> 붙은 것이었다.</p>
+      <p><strong>교훈:</strong> 프로토콜에 격리를 박아두면, 구현체들이 정말 필요한지 따져보지 않고 따라 붙는다.</p>
+    </div>
+
     <div class="later">
-      <b>남은 빈틈:</b> Domain 프로토콜 4개에 <code>@MainActor</code>가 붙어 있다.
-      MVP12 설계는 이걸 <b>빼기로 했었는데</b>(사용자 지적), 전략을 뒤집는 과정에서
-      동작 보존을 위해 기계적으로 되살아났다. 백로그에 경위와 함께 올려뒀다.
+      전체 검증 매트릭스(격리 conformance·<code>@concurrent</code> 등 기각한 대안 8가지 포함)와
+      최소 재현은 <code>docs/solutions/conventions/mainactor-witness-inference-overrides-class-isolation.md</code>에 있다.
     </div>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
