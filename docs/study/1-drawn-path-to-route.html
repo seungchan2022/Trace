@@ -408,6 +408,35 @@
     color: var(--deep);
   }
 
+  /* ── 정정 ─────────────────────────── */
+  .fix {
+    margin: 1.1rem 0; padding: .85rem 1rem;
+    background: #fff8ec; border-left: 3px solid #d98c1f;
+    border-radius: 0 8px 8px 0;
+    font-size: .92rem; line-height: 1.72;
+  }
+  .fix strong { color: #8a5510; }
+  .fixtag { color: #8a5510; font-size: .85em; }
+
+  /* ── 구간 마무리 — 알고 갈 것 ─────────── */
+  .takeaway {
+    margin: 1.5rem 0 2rem;
+    padding: .9rem 1.15rem;
+    background: var(--tint);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+  }
+  .takeaway .tag {
+    display: block;
+    font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .3rem;
+  }
+  .takeaway p { font-weight: 700; line-height: 1.7; margin: 0; }
+  .takeaway .aside {
+    display: block; margin-top: .55rem;
+    font-size: .89rem; font-weight: 500; color: var(--muted);
+  }
+
   /* ── 나중에 ───────────────────────── */
   .later {
     font-size: .88rem; color: var(--muted);
@@ -441,6 +470,7 @@
     <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
     <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 데이터 모양을 정한다">데이터 모양을 정한다</a></li>
     <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 약속을 정한다 · 프로토콜">약속을 정한다 — 프로토콜</a></li>
+    <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 약속을 지킨다 · MapKit 구현체">약속을 지킨다 — 구현체</a></li>
   </ol>
 </nav>
 
@@ -462,7 +492,7 @@
       <li><span class="k">소개</span><a href="#map">장면 ↔ 맡은 파일</a></li>
       <li class="on"><span class="k">1</span><a href="#p1">필요한 데이터를 추려서 모양을 정한다</a></li>
       <li class="on"><span class="k">2</span><a href="#p2">약속을 정한다 — 프로토콜</a></li>
-      <li><span class="k">3</span><span class="todo">약속을 지킨다 — MapKit 어댑터</span></li>
+      <li class="on"><span class="k">3</span><a href="#p3">약속을 지킨다 — MapKit 구현체</a></li>
       <li><span class="k">4</span><span class="todo">쉬운 것부터 조립 — 탭 두 번</span></li>
       <li><span class="k">5</span><span class="todo">그리기가 부른 도구 — 다운샘플러</span></li>
       <li><span class="k">6</span><span class="todo">어려운 것 조립 — 그린 선</span></li>
@@ -500,15 +530,24 @@
             <code>async</code>·<code>throws</code>는 <strong>호출부에 <code>await</code>·<code>try</code>를 강제</strong> ·
             그리기는 <strong>한 획에 요청 16건</strong>이라 디바운스 300ms·캐시로 줄이고, 그래도 넘으면
             <strong>애플이 스로틀로 거부</strong> → 재시도하면 카운터를 더 올리므로 <strong>스로틀만 재시도에서 뺐다</strong> ·
-            ⚠️ 그런데 <strong><code>snappedRoute</code>는 호출되지 않는다</strong> — MVP3 증분 라우팅이
-            같은 로직을 ViewModel로 옮겼다</div>
+            ⚠️ 그런데 <strong><code>snappedRoute</code>는 호출되지 않는다</strong> — MVP3에서
+            <strong>새 획을 앞에 붙일지 뒤집을지 판정</strong>해야 해졌는데 기본 구현은 코스 상태를
+            몰라서 못 한다. 그 판정과 라우팅이 통째로 ViewModel로 옮겨갔다
+            <span class="fixtag">(2026-08-05 정정 — 원래 “요청 폭증 때문”이라 적었으나 코드 확인 결과 아님)</span></div>
         </div>
       </li>
-      <li class="pending">
+      <li>
         <span class="k">3</span>
         <div>
           <div class="can">길찾기를 다른 회사 것으로 갈아끼울 때 어디만 고치면 되는지 정할 수 있다</div>
-          <div class="sum">약속을 지킨다 — MapKit 어댑터</div>
+          <div class="sum">갈아끼우는 단위는 <strong>회사가 아니라 기능</strong> — MapKit은 지도(화면 4개)와
+            길찾기(이 파일 1개) 두 가지를 하고, 바꾸는 건 <strong>한쪽뿐</strong>이다 ·
+            구현체가 하는 일은 셋인데 전부 번역이다 — <strong>타입</strong>(<code>private</code> 변환 한 쌍,
+            도메인은 끝까지 MapKit을 모른다) · <strong>에러</strong>(<code>catch</code>가 둘,
+            <strong>타입으로</strong> 먼저 가려내지 않으면 우리가 던진 것이 뭉개진다) ·
+            <strong>캐시</strong>(“같은 질문”은 거리가 아니라 <strong>5자리 눈금의 같은 칸</strong>) ·
+            스로틀 조건은 <strong>실기기에서 겪고 늘린 것</strong>이라 갈아끼우면 버려진다 ·
+            ⚠️ <strong>이 파일에는 테스트가 없다</strong> — 테스트가 로직 <strong>복사본</strong>을 지킨다</div>
         </div>
       </li>
       <li class="pending">
@@ -1102,7 +1141,7 @@ flowchart TD
     </div>
   </details>
 
-  <details class="part" id="p2" open>
+  <details class="part" id="p2">
     <summary>
       <span class="part-tag">파트 2 / 7</span>
       <span class="ptitle">약속을 정한다 — 프로토콜</span>
@@ -1378,38 +1417,65 @@ extension CoursePlanningServiceProtocol {
     </p>
 
     <div class="concept">
-      <h4>💡 왜 기본 구현을 버렸나 — 전체 재계산이 문제였다</h4>
+      <h4>💡 왜 기본 구현을 버렸나 — 붙일 위치와 방향을 정할 수 없었다</h4>
+
+      <div class="fix">
+        ⚠️ <strong>2026-08-05 정정.</strong> 이 절은 원래 <em>“전체 재계산이 캐시를 비껴가 요청이
+        폭증했다”</em>고 썼다. <strong>코드를 확인한 결과 틀렸다</strong>(파트 3 진행 중 사용자
+        질문에서 드러남). 아래가 바로잡은 내용이고, 무엇이 어떻게 틀렸는지는 이 절 끝에 적었다.
+      </div>
+
       <p>
         MVP2까지의 코드는 획을 새로 그을 때마다 <strong>지금까지 그은 모든 획의 점을 한 덩어리로
         합친 뒤, 그 전체를 처음부터 다시 솎아내고 다시 라우팅</strong>했다. 함수 이름부터
         <code>recomputeSnappedCourse</code>, 말 그대로 재계산이다.
       </p>
 
-<pre class="code">획 1 · 획 2 · 획 3 의 원본 점을 전부 합친다
+<pre class="code">획 1 · 획 2 · 획 3 의 원본 점을 <span class="c">그린 순서대로</span> 합친다   ← 여기가 문제
         ↓
-합친 전체를 <span class="c">처음부터 다시</span> 솎아낸다   ← 여기가 문제
+합친 전체를 처음부터 다시 솎아낸다
         ↓
-나온 지점들을 <span class="c">전부</span> 다시 라우팅한다</pre>
+나온 지점들을 전부 다시 라우팅한다</pre>
 
       <p>
-        <strong>여기서 캐시가 안 먹는다는 것이 핵심이다.</strong> 캐시는 “같은 두 지점”을 열쇠로
-        쓰는데, 합친 점 전체를 다시 솎아내면 <strong>솎아낸 지점의 자리가 매번 달라진다.</strong>
-        앞 획에서 이미 물어봤던 것과 <em>거의 같지만 정확히 같지는 않은</em> 지점 쌍이 나오고,
-        그러면 캐시를 비껴가 <strong>서버로 새 요청이 나간다.</strong> 획이 쌓일수록 한 번 그을 때
-        나가는 요청이 누적해서 늘어나고, 앞 절의 <strong>스로틀 한도(60초 50건)에 훨씬 빨리 닿는다.</strong>
+        <strong>문제는 “그린 순서대로”다.</strong> 합치는 코드가
+        <code>drawnStrokes.flatMap</code>이라 <strong>그은 순서 외의 배치를 표현할 자리가 없다.</strong>
+        그런데 사용자는 <strong>기존 코스 앞쪽에 이어 그리기도 하고, 거꾸로 긋기도 한다.</strong>
+        그러면 새 획을 <strong>앞에 붙이거나(prepend) 좌표를 뒤집어야</strong> 하는데, 순서대로
+        합치는 방식으로는 그 판단을 넣을 데가 없다.
       </p>
       <p>
-        MVP3에서 이것을 <strong>증분 계산</strong>으로 바꿨다 — 새로 늘어난 부분 + 기존 코스와의
-        <strong>연결 1건</strong>만 계산한다. 이미 만들어진 구간은 다시 건드리지 않으므로
-        재샘플링 자체가 일어나지 않는다.
+        이건 추론이 아니라 <strong>실기기에서 실제로 나온 피드백</strong>이다 —
+        <code>docs/backlog.md</code>의 MVP2 항목 <em>“비연속 구간 그리기 시 이상한 결과”</em>가
+        그것이고, <strong>MVP3에서 방향 감지 + 증분 계산으로 닫혔다</strong>고 기록돼 있다.
       </p>
       <p>
-        <strong><code>snappedRoute</code>로는 그것을 못 한다.</strong> 이유가 둘이다.
-        ①<strong>표현할 자리가 없다</strong> — 받는 것이 지점 배열 하나뿐이라
-        <em>“앞부분은 이미 계산됐으니 건너뛰어”</em>를 적을 파라미터가 없다.
-        ②<strong>판단에 필요한 정보를 모른다</strong> — 새 획을 코스 앞에 붙일지 뒤에 붙일지,
+        MVP3에서 <strong>증분 계산</strong>으로 바꿨다 — 새 획 하나만 솎아내고, 기존 코스와의
+        <strong>연결 1건</strong>만 따로 계산한다. 같은 커밋(<code>705d095</code>)에
+        <strong><code>StrokeDirectionResolver</code></strong>가 함께 들어왔다.
+        새 획을 <code>append</code>할지 <code>prepend</code>할지 <code>initial</code>인지를
+        판정하는 것이고, <strong>이 판정을 넣을 자리를 만드는 것이 이 변경의 목적</strong>이다.
+      </p>
+
+      <div class="fix">
+        <strong>무엇이 틀렸었나 — 캐시는 제 역할을 하고 있었다.</strong>
+        원래 이 절은 <em>“합친 전체를 다시 솎아내면 솎아낸 지점 자리가 매번 달라져 캐시를
+        비껴간다”</em>고 주장했다. 당시 솎아내기 코드를 보면 판정 기준이
+        <strong>“직전에 채택한 점에서 120m 이상 떨어졌나”</strong> 하나뿐이라,
+        <strong>뒤에 무엇이 붙든 앞쪽 채택점은 그대로다.</strong> 즉 앞 획에서 물어본 지점 쌍은
+        캐시에서 그대로 나온다. 달라지는 것은 접합부 한두 개뿐이다.
+        <strong>요청 폭증을 막고 있던 것이 바로 그 캐시였고</strong>, 전체 재계산 방식이 버틸 수
+        있었던 이유도 그것이다. 증분으로 바뀌면서 <strong>캐시는 없어진 게 아니라 역할이 줄었다</strong>
+        (캐시 자체는 파트 3 ⑤에서 다룬다).
+      </div>
+      <p>
+        <strong><code>snappedRoute</code>로는 그것을 못 한다.</strong> 이유가 둘이고,
+        <strong>①이 더 근본이다.</strong>
+        ①<strong>판단에 필요한 정보를 모른다</strong> — 새 획을 코스 앞에 붙일지 뒤에 붙일지,
         뒤집어야 하는지는 <strong>지금 코스가 어떤 상태인지</strong>를 알아야 정하는데,
-        도메인 기본 구현은 코스를 모른다.
+        도메인 기본 구현은 코스를 모른다. 받는 것이 지점 배열 하나뿐이다.
+        ②<strong>결과를 적을 자리도 없다</strong> — 설령 알아냈다 해도
+        <em>“이 획은 앞에 붙이고 뒤집어라”</em>를 넘길 파라미터가 없다.
       </p>
     </div>
 
@@ -1458,9 +1524,524 @@ extension CoursePlanningServiceProtocol {
     </div>
   </details>
 
+  <details class="part" id="p3" open>
+    <summary>
+      <span class="part-tag">파트 3 / 7</span>
+      <span class="ptitle">약속을 지킨다 — MapKit 구현체</span>
+    </summary>
+    <div class="pbody">
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      파일 하나 <strong>91줄</strong>. 하는 일이 셋인데 성격이 같다 — <strong>타입을 번역하고,
+      에러를 번역하고, 같은 질문은 다시 묻지 않는다.</strong>
+    </div>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>길찾기를 다른 회사 것으로 갈아끼울 때 <strong>어디만 고치면 되는지</strong> 정할 수 있다.</p>
+    </div>
+
+    <p>
+      <strong>사용자 장면으로는 어디인가</strong> — 소개 4 표의 셋째 줄,
+      <em>“손 그림이 도로 따라가는 선으로 바뀐다”</em>(⑨)다. <strong>처음으로 화면에 나타날 것을
+      실제로 만들어내는 부품</strong>이지만, 화면에 꽂는 것은 아직 아니다(파트 7).
+    </p>
+
+    <div class="concept">
+      <h4>💡 먼저 용어 — “어댑터”와 “구현체”는 같은 것이다</h4>
+      <p>
+        <code>MapKitCoursePlanningService</code> <strong>하나</strong>를 두고 부르는 이름이 둘이다.
+        <strong>구현체</strong>는 <em>문법</em>을 보고 부르는 이름 — 프로토콜을 채택해 요구사항
+        (<code>route</code>)을 실제로 구현한 타입이다. <strong>어댑터</strong>는 <em>역할</em>을 보고
+        부르는 이름 — 그 구현체가 하는 일이 <strong>외부 것을 우리 것에 맞게 갈아끼우는 것</strong>일 때 붙인다.
+      </p>
+      <p>
+        프로토콜을 채택했다고 전부 어댑터인 것은 아니다. 테스트용 가짜 구현체
+        (<code>SpyMapKitService</code>)도 <strong>구현체</strong>지만 외부에 붙이는 것이 없으니
+        <strong>어댑터는 아니다.</strong> 이 파일은 둘 다다 — 그래서 이 파트의 내용이 전부
+        “번역”이다. <strong>이 노트는 이후 <em>구현체</em>로 통일해서 쓴다.</strong>
+      </p>
+    </div>
+
+    <h3>① 어디에 있나 — “유일한 파일”의 범위부터 정확히</h3>
+
+    <p>
+      경로 자체가 설명이다. <strong>폴더 이름에 제공자 이름이 들어가 있다</strong> —
+      두 번째 구현체가 올 자리를 비워둔 모양이고, <code>Naver/</code>를 옆에 만들면 된다.
+    </p>
+
+<pre class="code">Trace/Infrastructure/CoursePlanning/<span class="c">MapKit</span>/MapKitCoursePlanningService.swift</pre>
+
+    <p>
+      그런데 여기서 말을 조심해야 한다. <strong>MapKit이 하는 일이 하나가 아니기</strong> 때문이다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>무엇</th><th>Trace에서 쓰는 곳</th></tr></thead>
+        <tbody>
+          <tr><td><strong>지도를 그린다</strong></td><td><code>MKMapView</code> — 화면에 도로·건물을 그리는 <strong>UI</strong></td><td>화면 파일 <strong>4개</strong></td></tr>
+          <tr><td><strong>길을 물어본다</strong></td><td><code>MKDirections</code> — 요청을 보내고 경로를 받는 <strong>데이터</strong></td><td>이 파일 <strong>1개</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      실측이다 — <code>import MapKit</code>을 하는 파일은 앱 전체에 <strong>5개</strong>이고,
+      그중 <strong>길찾기를 부르는 것은 이 파일 하나뿐</strong>이다. 나머지 넷은 전부 화면
+      (지도 그리기·핀·기록 미리보기)이다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 “길찾기를 네이버로 바꾸면 지도도 네이버 지도가 되나?”</h4>
+      <p>
+        <strong>아니다. 지도는 애플 지도 그대로 둘 수 있다.</strong> 위 표의 아래 칸만 바꾸는
+        것이기 때문이다. 좌표는 그냥 위도·경도 숫자라 애플 지도 위에 네이버가 준 경로를 그릴 수
+        있다(그렇게 써도 되는지는 각 회사 이용약관 문제이고, 여기서는 확인하지 않았다).
+      </p>
+      <p>
+        <strong>다만 “실제로 그런 결정을 하면 둘 다 바꾸지 않겠나”는 생각도 맞다.</strong>
+        요점은 그것이 <strong>작업 두 개</strong>라는 것이다. 파트 3이 다루는 것은 그중 아래 칸 하나다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">① 알고 갈 것</span>
+      <p>갈아끼우는 단위는 <strong>회사가 아니라 기능</strong>이다.
+        길찾기를 바꾸면 <strong>1개</strong>, 지도를 바꾸면 <strong>4개</strong>를 고친다.
+        <span class="aside">이걸 구분하지 않으면 “어디만 고치면 되나”의 답이
+          “MapKit 쓰는 데 전부”가 되어 틀린다.</span></p>
+    </div>
+
+    <h3>② 번역 1 — 타입</h3>
+
+    <p>
+      파일 <strong>맨 아래</strong>에 짧은 <code>extension</code>이 둘 있다. 양방향 한 쌍이고,
+      안에서 하는 일은 위도·경도를 <strong>그대로 옮겨 담는 것뿐</strong>이다. 값이 완전히 같다.
+    </p>
+
+<pre class="code">private extension CLLocationCoordinate2D {
+    init(_ coordinate: CourseCoordinate)        <span class="c">// 도메인 → MapKit  (보낼 때)</span>
+}
+
+private extension CourseCoordinate {
+    init(_ coordinate: CLLocationCoordinate2D)  <span class="c">// MapKit → 도메인  (받을 때)</span>
+}</pre>
+
+    <p>
+      <strong><code>private</code>이라 이 파일 밖에서는 존재하지 않는다.</strong>
+    </p>
+
+    <p>
+      <strong>값이 같은데 왜 옮겨 담나.</strong> 파트 1에서 지점을 직접 만든 이유가
+      <em>“값이 아니라 소속이 문제라서”</em>였다. <strong>그 결정의 비용을 여기서 치른다</strong> —
+      똑같은 숫자를 옮기는 코드가 생긴다. 대신 도메인은 MapKit을 모르고,
+      <strong>이 비용은 이 파일 안에 갇혀 있어</strong> 갈아끼울 때 파일과 함께 버려진다.
+    </p>
+
+    <p>
+      받을 때가 조금 낯설다. 애플이 준 경로선에서 좌표를 꺼내는 절차가 넷이다.
+    </p>
+
+<pre class="code">① 점이 몇 개인지 먼저 묻는다        (route.polyline.pointCount)
+② 그 크기만큼 빈 배열을 미리 만든다   <span class="c">← 이 줄이 낯설다</span>
+③ "여기에 채워줘"라고 넘긴다         (getCoordinates(&amp;배열, range:))
+④ 채워진 것을 도메인 타입으로 옮긴다   (map)</pre>
+
+    <p>
+      ②가 필요한 이유는 <strong><code>MKPolyline</code>이 좌표 배열을 그냥 주지 않기</strong>
+      때문이다. 자기가 들고 있는 것을 복사해줄 테니 받을 그릇을 가져오라는 모양이고, C 시절 API의
+      형태가 남은 것이다. <code>route.polyline.coordinates</code> 같은 프로퍼티가 있었으면 ①②③이
+      한 줄로 끝났을 것이다. <strong>이 네 단계 자체는 곁가지다</strong> — 이 파일이 하는 일의
+      상당 부분이 “옮겨 담기”라는 것만 보면 된다.
+    </p>
+
+    <p>
+      한 문장만 미리 짚는다 — <strong>이 구현체는 만들어낸 구간을 항상 <code>.tapped</code>로
+      표시한다.</strong> 자기가 왜 불렸는지(탭인지 그리기인지)를 모르기 때문이다. 그리기 쪽은 이
+      표시를 버리고 좌표와 거리만 꺼내 <code>.drawn</code>으로 다시 감싼다
+      (<code>CoursePlannerPageViewModel.swift:283</code>). 그게 무슨 문제를 만드는지는 <strong>파트 6</strong>에서 본다.
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">② 알고 갈 것</span>
+      <p><strong>변환은 구현체 안에서 한다. 도메인은 끝까지 MapKit을 모른다.</strong>
+        <span class="aside">새로 정하는 것이 아니라 파트 1·2 결정의 결과다 — 도메인이 MapKit을
+          모르기로 했으니 변환할 수 있는 자리가 구현체뿐이다. 남은 진짜 선택은
+          “변환 코드를 파일 안에 둘까(Trace) 별도 매퍼 파일로 뺄까” 하나이고,
+          <strong>갈아끼울 때 같이 버려질 코드는 갈아끼울 파일 안에 두는 편이 낫다.</strong></span></p>
+    </div>
+
+    <h3>③ 번역 2 — 에러, <code>catch</code>가 둘인 이유</h3>
+
+    <p>
+      파트 1에서 실패를 셋으로 정했는데 <strong>애플은 그 셋을 모른다.</strong> 누군가 우리 셋 중
+      하나로 바꿔야 하고 그 자리가 여기다. <code>route</code> 안의 뼈대는 이렇다.
+    </p>
+
+<pre class="code">do {
+    let response = try await MKDirections(request: request).calculate()
+
+    guard let route = response.routes.first else {
+        throw CoursePlanningError.routeNotFound      <span class="c">← 우리가 던진다</span>
+    }
+    ...
+} catch let error as CoursePlanningError {
+    throw error                                      <span class="c">① 우리 것은 그대로 다시 던진다</span>
+} catch {
+    ...                                              <span class="c">② 애플 것만 번역한다</span>
+}</pre>
+
+    <p>
+      <code>do</code> 블록 안에서 던져진 것은 <strong>누가 던졌든 전부</strong> <code>catch</code>로
+      들어온다. 그래서 ①이 없으면 우리가 방금 던진 <code>.routeNotFound</code>가 ②에 잡혀
+      <strong><code>.requestFailed</code>로 뭉개진다.</strong> 파트 1에서 셋으로 나눈 것이 여기서
+      둘로 줄어든다.
+    </p>
+
+    <p>
+      ①이 하는 일은 <code>throw error</code> 한 줄, 즉 <strong>아무것도 안 하고 그대로 다시
+      던지는 것</strong>이다. 이미 우리 말로 되어 있어 바꿀 것이 없다. 그 에러는 <code>route</code>
+      밖으로 나가 <strong>부른 쪽(ViewModel)</strong>이 받고, 사용자에게 어떤 문구를 띄울지는
+      거기서 정한다. <strong>이 파일은 분류까지만 한다.</strong>
+    </p>
+
+    <div class="concept">
+      <h4>💡 “길을 못 찾음”은 애플이 던진 에러가 아니다</h4>
+      <p>
+        <strong>애플은 성공으로 답했다.</strong> <code>calculate()</code>가 에러 없이 정상
+        반환했는데 그 안의 경로 목록이 <strong>비어 있었을 뿐</strong>이다. 애플 입장에서는
+        <em>“요청 잘 처리했고 결과가 0건”</em>이라 실패가 아니다.
+        <strong>그것을 실패로 정하고 에러를 직접 만들어 던진 쪽이 우리다.</strong>
+      </p>
+      <p>
+        그래서 세 실패의 출처가 다르다 — <code>routeNotFound</code>는 <strong>우리가</strong>
+        <code>guard</code>로 던져 ①로 가고, <code>throttled</code>·<code>requestFailed</code>는
+        <strong>애플 에러를 ②가 번역</strong>한 것이다.
+      </p>
+      <p>
+        ⚠️ 다만 ①이 가르는 기준은 <em>“길을 못 찾음이냐”</em>가 아니라
+        <strong><code>CoursePlanningError</code> 타입이냐</strong>다. 지금 이 파일에서 우리가 던지는
+        도메인 에러가 하나뿐이라 결과가 같아 보일 뿐, <strong>①은 값이 아니라 타입으로 가른다.</strong>
+      </p>
+      <p>
+        ⚠️ 그리고 <strong>“길이 없음”이 항상 ①로 오지는 않는다.</strong> 애플이 그것을
+        <em>에러로</em> 던지면 ②로 가서 <code>.requestFailed</code>가 된다. 같은 상황인데 애플이
+        어떻게 답하느냐에 따라 두 갈래로 갈리고, 사용자에게 나가는 문구도 달라진다.
+      </p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 <code>requestFailed</code>는 “경로를 찾을 수 없다”가 아니다</h4>
+      <p>
+        섞이기 쉬운 둘이다. <code>routeNotFound</code>가 <strong>“경로를 찾을 수 없다”</strong>이고,
+        <code>requestFailed</code>는 <strong>“그 밖의 실패”</strong>(네트워크 끊김, 알 수 없는 에러)다.
+        화면 문구도 각각 <em>“도보 경로를 찾을 수 없습니다.”</em>와
+        <em>“경로를 계산할 수 없습니다.”</em>로 다르다.
+      </p>
+      <p>
+        ⚠️ <strong>그런데 그 셋이 화면까지 온전히 오지 않는다.</strong> 확인해 보니 탭 경로와 그리기
+        경로가 <strong>서로 다른 하나씩을 빠뜨리고 있다</strong> — 탭은 <code>routeNotFound</code>만
+        따로 잡고 스로틀을 안 잡으며, 그리기는 정반대다. 그래서 <strong>그리기로 스로틀에 걸린 직후
+        탭을 하면 이유를 못 듣는다.</strong> <code>docs/backlog.md</code>에 올렸다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">③ 알고 갈 것</span>
+      <p><strong>우리가 던진 실패와 애플이 준 에러는 같은 <code>catch</code>로 들어온다.
+        타입으로 먼저 가려내지 않으면 우리 것이 애플 것 취급을 받아 뭉개진다.</strong></p>
+    </div>
+
+    <h3>④ 스로틀 조건 — 미리 알고 쓴 것이 아니다</h3>
+
+    <p>
+      ②의 안쪽에서 하는 판정은 <strong>하나뿐</strong>이다 — <em>“스로틀인가?”</em>
+      맞으면 <code>.throttled</code>, 아니면 <strong>나머지 전부</strong> <code>.requestFailed</code>다.
+      그 조건이 이렇게 생겼다.
+    </p>
+
+<pre class="code">let isThrottled =
+    (nsError.domain == "GEOErrorDomain" &amp;&amp; nsError.code == -3) ||
+    (nsError.domain == "MKErrorDomain"  &amp;&amp; nsError.code == 3)  ||
+    (nsError.domain == MKError.errorDomain &amp;&amp; nsError.code == MKError.loadingThrottled.rawValue)</pre>
+
+    <p>
+      <strong>세 줄인데 실제로는 둘이다.</strong> SDK로 확인했다 —
+      <code>MKError.errorDomain</code>은 문자열 <code>"MKErrorDomain"</code>이고
+      <code>MKError.loadingThrottled.rawValue</code>는 <code>3</code>이다.
+      <strong>2번과 3번은 같은 검사를 두 가지 방식으로 쓴 것</strong>이다.
+      <code>||</code>로 묶여 있어 동작에는 문제가 없다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>언제</th><th>무슨 일</th></tr></thead>
+        <tbody>
+          <tr><td>MVP3 <code>4e7a23b</code></td><td><code>GEOErrorDomain -3</code> <strong>하나</strong>로 시작</td></tr>
+          <tr><td><strong>바로 다음 날</strong> <code>245a68e</code><br><em>“실기기 피드백 3건 수정”</em></td><td>그걸로 <strong>안 걸리는 것이 실기기에서 나왔다</strong> → 두 줄 추가 + <code>#if DEBUG</code> 로그 추가</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      급히 늘리다 같은 검사가 두 번 들어갔고 지금까지 그대로다. 같이 들어간
+      <code>#if DEBUG</code> 로그는 <strong>다음에 또 모르는 에러가 오면 <code>domain</code>과
+      <code>code</code>를 찍어두려고</strong> 남긴 것이다(출시 빌드에는 안 들어간다).
+    </p>
+
+    <div class="concept">
+      <h4>💡 순서가 거꾸로다 — 문서에 있는 쪽이 나중에 들어왔다</h4>
+      <p>
+        <code>MKError.loadingThrottled</code>는 애플이 이름 붙여 <strong>공개한</strong> 것이고,
+        <code>GEOErrorDomain</code>은 <strong>쓸 공개 상수조차 없어</strong> 문자열을 직접 박았다.
+        그런데 <strong>문자열을 박은 쪽이 먼저 들어왔고, 문서에 있는 쪽이 나중에 추가됐다.</strong>
+        (첫 조건을 처음에 어떻게 알아냈는지는 커밋에 적혀 있지 않다.)
+      </p>
+      <p>
+        첫 줄과 셋째 줄의 <strong>대비</strong>가 그 사정을 그대로 보여준다 —
+        하나는 상수, 하나는 문자열이다.
+      </p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 왜 <code>domain</code>과 <code>code</code>를 <strong>둘 다</strong> 보나</h4>
+      <p>
+        <code>code</code>는 <strong>숫자일 뿐이고 그 숫자의 뜻은 <code>domain</code>마다 다르다.</strong>
+        <code>MKErrorDomain</code>에서 <code>3</code>은 “요청이 너무 많다”이지만 다른 도메인에서는
+        전혀 다른 뜻이거나 아무 뜻도 없다. <code>code</code>만 보면 우연히 같은 숫자를 쓰는 다른
+        에러를 스로틀로 잘못 분류한다.
+      </p>
+      <p>
+        <code>GEOErrorDomain</code>의 <code>-3</code>이 음수인 것도 같은 이유다 — 도메인이 다르면
+        번호 체계도 따로 논다. <strong><code>domain</code>과 <code>code</code> 한 쌍이 에러 하나를
+        특정하는 최소 단위</strong>다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">④ 알고 갈 것</span>
+      <p>이 조건들은 <strong>미리 알고 쓴 것이 아니라 실기기에서 겪고 늘린 것</strong>이다.
+        갈아끼우면 통째로 버려지는 지식이고, <strong>그래서 파일 하나에 가둬둔 것이 값을 한다.</strong>
+        <span class="aside">조건 둘이 겹친다는 것과 <code>#if DEBUG</code> 문법 자체는 곁가지다.</span></p>
+    </div>
+
+    <h3>⑤ 캐시 — “같은 질문”을 무엇으로 정의했나</h3>
+
+    <p>
+      이 파일이 하는 세 번째 일이다. <strong>캐시가 작동하려면 <em>“이 요청이 전에 한 것과
+      같은가”</em>를 판정해야 하고, 그 판정 기준이 곧 키</strong>다. 출발·도착 좌표로 문자열
+      하나를 만든다.
+    </p>
+
+<pre class="code">출발 (37.500001, 127.000002)
+도착 (37.510003, 127.000001)
+          ↓  소수 5자리로 반올림
+   "37.5,127.0-&gt;37.51,127.0"      <span class="c">← 이 문자열이 딕셔너리의 키</span></pre>
+
+    <div class="concept">
+      <h4>💡 무엇을 캐시하나 — 화면의 경로 전체가 아니다</h4>
+      <p>
+        <strong>캐시 한 칸 = <code>route</code> 호출 한 번의 결과</strong>다. 두 지점 사이 도로 경로
+        한 토막(좌표 목록 + 거리)이고, 파트 1의 “구간”보다 작다.
+      </p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>사용자가 한 것</th><th><code>route</code> 호출</th><th>캐시 칸</th></tr></thead>
+          <tbody>
+            <tr><td>탭 두 번</td><td>1번</td><td><strong>1칸</strong></td></tr>
+            <tr><td>손으로 한 획</td><td>16번</td><td><strong>16칸</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        단 <strong><code>route</code> 호출 횟수와 애플 요청 횟수는 다르다</strong> — 그 둘을
+        어긋나게 만드는 것이 캐시의 목적이다. 캐시에 있으면 <strong>애플 요청 0건</strong>이고
+        새 칸도 안 생긴다. 같은 획을 두 번 그으면 <code>route</code>는 32번 불리지만 칸은 16개
+        그대로다.
+      </p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 일반적인 캐시와 같은 것인가 — 같다. 담는 시점만 다르다</h4>
+      <p>
+        <em>“보관해뒀다 다시 쓰고, 메모리를 더 쓰는 대신 시간을 아낀다”</em>는 정의 그대로다.
+        갈리는 것은 하나뿐이다 — <strong>미리 담아두는 것</strong>(실행 전에, 아직 안 쓴 것까지)이
+        아니라 <strong>했던 것을 담아두는 것</strong>(실제로 한 번 한 결과)이다. 처음 물어보는 두
+        지점은 애플에 실제로 요청하고, 그 결과를 다음에 쓴다.
+      </p>
+      <p>
+        <strong>목적의 무게중심도 다르다.</strong> 보통 캐시는 속도를 위해 쓰지만, 이 캐시를 넣은
+        커밋(<code>0e3fcb0</code>, MVP2)의 메시지는 <em>“MKDirections 중복 호출을 방지하고 스로틀
+        한계를 완화”</em>다. <strong>아끼는 대상이 시간이 아니라 횟수</strong>다 — 애플이 60초에
+        50건을 넘으면 거부하는데 그리기는 한 획에 16건이 나가기 때문이다.
+      </p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 캐시는 왜 구현체 안에 있나 — 디바운스는 화면에 있는데</h4>
+      <p>
+        요청을 줄이는 장치가 둘인데 사는 곳이 다르다. <strong>디바운스 300ms</strong>는
+        <code>CoursePlannerPageViewModel.swift:230</code>, 즉 <strong>화면 쪽</strong>이다.
+        갈린 기준은 <strong>판단에 무엇이 필요한가</strong>다.
+      </p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>장치</th><th>판단에 필요한 것</th><th>사는 곳</th></tr></thead>
+          <tbody>
+            <tr><td>디바운스 300ms</td><td>“사용자가 아직 손을 움직이는 중인가”</td><td>화면</td></tr>
+            <tr><td>캐시</td><td>“이 질문을 전에 해봤나”</td><td><strong>구현체</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        디바운스는 사용자를 봐야 정하고, <strong>캐시는 주고받은 요청만 보면 정한다.</strong>
+        그리고 캐시가 아끼는 스로틀 한도는 <strong>앱 전체</strong>에 걸리므로 화면 하나의
+        관심사가 아니다. 화면에 뒀다면 화면을 나가는 순간 통째로 날아갔을 것이다.
+      </p>
+      <p>
+        <strong>도메인 기본 구현(<code>extension</code>)에는 애초에 둘 수 없다</strong> —
+        결과를 들고 있어야 하는데 프로토콜 <code>extension</code>은 저장 프로퍼티를 가질 수 없다.
+        <strong>기준이 가리켜도 문법이 막는 자리가 있다.</strong>
+      </p>
+    </div>
+
+    <p>
+      키에 대해 정확히 읽어야 할 것이 둘이다.
+    </p>
+
+    <p>
+      <strong>첫째, 반올림은 거리 기준이 아니다.</strong> <em>“1m 이내면 같은 걸로 친다”</em>가
+      아니라 <strong>좌표를 5자리 눈금에 떨어뜨리고 같은 칸인지만 본다.</strong>
+      그래서 <code>37.500004</code>와 <code>37.500006</code>은 <strong>0.2m 차이인데 다른 칸</strong>이다.
+      칸 하나는 위도 기준 대략 1.1m다. <strong>1m 넘게 떨어져도 같은 칸이면 맞고, 아주 가까워도
+      칸 경계에 걸리면 안 맞는다.</strong>
+    </p>
+
+    <p>
+      <strong>둘째, 방향이 키에 들어간다.</strong> <code>"A-&gt;B"</code>와 <code>"B-&gt;A"</code>가
+      다른 키다. 낭비처럼 보이지만 <strong>맞는 결정</strong>이다 — 일방통행이나 계단이 있으면
+      반대 방향은 실제로 다른 길이고 거리도 다르다.
+    </p>
+
+    <p>
+      수명은 <strong>앱 전체</strong>다. <code>DependencyContainer</code>가 앱을 켤 때 이 구현체를
+      하나 만들고 그것이 끝까지 살아 있어, 화면을 나갔다 들어와도 캐시가 남는다.
+      <strong>상한은 없다</strong> — 쌓이기만 한다. 지금 규모에서는 문제가 안 되지만
+      <strong>자라는 것을 막는 장치가 하나도 없다</strong>는 것은 사실이라 백로그에 올렸다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 캐시는 MVP3 증분 전환과 인과관계가 없다</h4>
+      <p>
+        파트 2 ⑤가 원래 이 둘을 연결했는데 <strong>그 연결이 틀려서 2026-08-05에 지웠다.</strong>
+        증분으로 간 이유는 <strong>방향</strong>(새 획을 앞에 붙일지 뒤집을지)이었고, 캐시는 그
+        이야기에 등장하지 않는다.
+      </p>
+      <p>
+        <strong>캐시가 하는 일은 부르는 쪽이 무엇이든 똑같다</strong> — 같은 두 지점을 또 물으면
+        저장된 값을 준다. 다만 <strong>얼마나 자주 맞는지는 부르는 쪽에 따라 달라진다.</strong>
+        전체 재계산(MVP2)은 앞부분이 매번 그대로 다시 나와 자주 맞았고, 증분(MVP3~)은 새로 그은
+        부분만 물으므로 덜 맞는다. <strong>인과는 없고 빈도만 영향받는다</strong> — 캐시는
+        없어진 것이 아니라 역할이 줄었다.
+      </p>
+      <p>
+        <strong>실제 히트율은 측정된 적이 없다.</strong> 그래서 <em>“지금도 값을 하는가”</em>는
+        지금 상태로는 답할 수 없고 재봐야 안다. 백로그의 상한 항목에 함께 적어두었다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">⑤ 알고 갈 것</span>
+      <p><strong>“같은 질문”은 좌표가 가까운지가 아니라 5자리 눈금의 같은 칸에 떨어졌는지로
+        정했다.</strong>
+        <span class="aside">키를 숫자 쌍이 아니라 문자열로 만든 것은 구현 선택일 뿐 곁가지다.</span></p>
+    </div>
+
+    <h3>⚠️ 발견 — 이 파일에는 테스트가 하나도 없다</h3>
+
+    <p>
+      ①~⑤에서 본 일 셋이 실제로 그렇게 동작한다고 무엇이 보장하는지 확인하려다 나온 것이다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>확인한 것</th><th>결과</th></tr></thead>
+        <tbody>
+          <tr><td><code>MapKitCoursePlanningService</code>를 참조하는 <strong>테스트 파일</strong></td><td><strong>0개</strong></td></tr>
+          <tr><td><code>RouteCacheTests</code> 3건이 테스트하는 것</td><td><code>SpyMapKitService</code> — <strong>캐시 로직을 그대로 베낀 복사본</strong></td></tr>
+          <tr><td><code>ThrottleDetectionTests</code> 2건이 테스트하는 것</td><td><code>ThrottleStubService</code> — 무조건 <code>.throttled</code>를 던지는 스텁</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>③④에서 본 것이 전부 커버 0이다.</strong> <code>catch</code> 순서도, 스로틀 조건도
+      테스트가 건드리지 않는다. <code>ThrottleDetectionTests</code>는 이름과 달리
+      <strong>스로틀을 감지하는지 확인하지 않는다</strong> — 이미 <code>.throttled</code>라고
+      정해놓고 던지는 스텁을 써서 <em>“재시도를 안 하는가”</em>만 본다.
+    </p>
+
+    <p>
+      캐시 쪽은 더 구체적으로 말할 수 있다. <strong>진짜 파일의 <code>round(값, 5)</code>를
+      <code>3</code>으로 바꿔도 테스트 5건이 전부 통과한다.</strong> 복사본은 그대로 5자리이기 때문이다.
+    </p>
+
+    <p>
+      <strong>왜 이렇게 됐나 — 테스트를 잘못 쓴 것이 아니다.</strong> <code>route</code>가 함수
+      안에서 <code>MKDirections(request:).calculate()</code>를 직접 만들어 부른다. 끼어들 자리가
+      없어 <strong>네트워크 없이 이 함수를 부를 방법이 없다.</strong> 테스트를 쓰려면 로직을 베끼는
+      것 외에 선택지가 없었다. <strong>TDD를 지켜도 이 결과가 나온다</strong> — 먼저 쓰려는데
+      진짜 파일을 못 부르니 스텁을 만들게 되고, 그 스텁에 로직이 베껴진다.
+      (<code>docs/agent-rules/testing.md</code>에는 외부 API를 직접 부르는 구현체를 어떻게 다룰지에
+      대한 규칙이 아예 없다.)
+    </p>
+
+    <p>
+      그래서 고칠 대상은 테스트가 아니라 <strong>구조</strong>다 — 키 생성·캐시를 별도 타입으로
+      빼거나, 길찾기 계산 호출을 주입받게 하거나. 백로그에 올렸고,
+      <strong>캐시 히트율 측정과 같은 작업</strong>이 된다.
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">발견에서 알고 갈 것</span>
+      <p><strong>“테스트가 있다”와 “그 코드가 테스트된다”는 다르다.</strong>
+        여기서는 테스트가 진짜 파일이 아니라 그 <strong>복사본</strong>을 지키고 있다.</p>
+    </div>
+
+    <h3>닫으며 — 갈아끼울 때 실제로 고치는 것</h3>
+
+    <p>
+      길찾기를 네이버 것으로 바꾼다면 이렇게 된다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th></th></tr></thead>
+        <tbody>
+          <tr><td><strong>고치는 것</strong></td><td>이 파일 옆에 새 구현체 하나를 만들고, <code>DependencyContainer.live()</code>의 <strong>한 줄</strong>을 바꾼다</td></tr>
+          <tr><td><strong>안 고치는 것</strong></td><td>도메인 타입 · 프로토콜 · ViewModel · 뷰. 그리고 <strong>지도 렌더링도 그대로</strong> 애플 지도다</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>따라오는 것이 셋 있다.</strong> ①<code>GEOErrorDomain -3</code> 같은 실측 지식은
+      버려지고 새 제공자의 에러를 처음부터 다시 알아내야 한다. ②<strong>캐시도 새로 짜야 한다</strong> —
+      구현체 안에 있기 때문이고, 이것이 그 배치의 대가다. ③새 제공자가 실패 셋에 안 맞는 에러
+      (예: API 키 만료)를 주면 <code>.requestFailed</code>로 뭉개진다 — 그때 파트 1의 “실패는 셋”
+      결정을 다시 열어야 한다.
+    </p>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음</strong> — 파트 3 「약속을 지킨다 — MapKit 어댑터」.
-    <code>route</code>를 실제로 구현하는 곳, 즉 <em>제공자를 갈아끼울 때 고치는 유일한 파일</em>을 연다.
+    <strong>다음</strong> — 파트 4 「쉬운 것부터 조립 — 탭 두 번」.
+    지금까지 만든 것을 <em>처음으로 이어 붙이는</em> 파트다. 화면과 서비스 사이에서
+    ViewModel이 무엇을 책임지고 무엇을 안 하는지를 본다.
   </div>
 
 </div>
