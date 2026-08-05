@@ -1449,6 +1449,16 @@ extension CoursePlanningServiceProtocol {
         <code>docs/backlog.md</code>의 MVP2 항목 <em>“비연속 구간 그리기 시 이상한 결과”</em>가
         그것이고, <strong>MVP3에서 방향 감지 + 증분 계산으로 닫혔다</strong>고 기록돼 있다.
       </p>
+
+      <div class="fix">
+        <strong>다만 기록에는 이유가 둘 적혀 있다.</strong> 같은 작업이 닫은 MVP2 피드백이
+        <em>“비연속 구간 그리기 시 이상한 결과”</em>와 <em>“스로틀 한계 측정 + 모니터링”</em>
+        <strong>둘</strong>이고, <code>project-decisions.md</code>에도 <em>“MVP3에서 증분 계산으로
+        해결”</em>이 스로틀 항목 아래에 적혀 있다. <strong>그런데 아래 실측을 보면 증분이 요청을
+        줄이지 않는다</strong>(7건 → 8건). 그래서 이 노트는 <strong>기록 둘 중 방향 쪽이 근본
+        동기</strong>이고 스로틀 완화는 함께 적힌 것으로 본다. 확정 근거가 될 MVP3 설계 문서는
+        저장소에 남아 있지 않아, <strong>여기까지가 근거로 말할 수 있는 전부다.</strong>
+      </div>
       <p>
         MVP3에서 <strong>증분 계산</strong>으로 바꿨다 — 새 획 하나만 솎아내고, 기존 코스와의
         <strong>연결 1건</strong>만 따로 계산한다. 같은 커밋(<code>705d095</code>)에
