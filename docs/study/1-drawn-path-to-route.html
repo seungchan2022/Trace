@@ -473,6 +473,7 @@
     <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 약속을 지킨다 · MapKit 구현체">약속을 지킨다 — 구현체</a></li>
     <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 쉬운 것부터 조립 · 탭 두 번">쉬운 것부터 조립 — 탭</a></li>
     <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — 그리기가 부른 도구 · 다운샘플러">그리기가 부른 도구 — 다운샘플러</a></li>
+    <li><span class="k"><i class="kf">6</i><i class="ks">6</i></span><a href="#p6" data-target="p6" title="파트 6 — 어려운 것 조립 · 그린 선">어려운 것 조립 — 그린 선</a></li>
   </ol>
 </nav>
 
@@ -497,7 +498,7 @@
       <li class="on"><span class="k">3</span><a href="#p3">약속을 지킨다 — MapKit 구현체</a></li>
       <li class="on"><span class="k">4</span><a href="#p4">쉬운 것부터 조립 — 탭 두 번</a></li>
       <li class="on"><span class="k">5</span><a href="#p5">그리기가 부른 도구 — 다운샘플러</a></li>
-      <li><span class="k">6</span><span class="todo">어려운 것 조립 — 그린 선</span></li>
+      <li class="on"><span class="k">6</span><a href="#p6">어려운 것 조립 — 그린 선</a></li>
       <li><span class="k">7</span><span class="todo">뷰에 꽂는다 — 제스처 두 개</span></li>
     </ol>
   </nav>
@@ -589,11 +590,24 @@
             ⚠️ 테스트 6줄은 <strong>모양 붕괴는 잡지만 요청 실패는 못 잡는다</strong></div>
         </div>
       </li>
-      <li class="pending">
+      <li>
         <span class="k">6</span>
         <div>
           <div class="can">사용자가 중간에 손을 바꿨을 때 무엇이 버려져야 하는지 정할 수 있다</div>
-          <div class="sum">어려운 것 조립 — 그린 선이 구간 하나가 되기까지</div>
+          <div class="sum">파트 4와 <strong>같은 일</strong>이고 조각 수만 다르다(1 대 16) — 새로 생기는 것은
+            <strong>“16번”이 만드는 문제뿐</strong> · 조각은 <strong>하나씩 차례로</strong> 묻고
+            <strong>겹치는 점을 빼고</strong> 이어 붙이며, <strong>중간에 하나만 실패해도 통째로 버린다</strong>
+            (반쪽 구간을 안 만든다) · ⚠️ <strong>조각끼리 맞물렸는지는 검사하지 않는다</strong> —
+            같은 좌표를 양쪽에 보내니 맞을 것이라는 전제인데 <strong>캐시가 그걸 보장하지 않는다</strong>
+            (키가 <code>(출발,도착)</code> 쌍이라 서로 다른 키) · <strong>오래 걸리는 일은 취소하지 못한다</strong> —
+            그래서 <strong>시작할 때 번호를 복사해 두고</strong>(<code>let</code>) 결과를 쓰기 직전에
+            ViewModel의 값(<code>var</code>)과 비교해 <strong>다르면 안 쓴다</strong>.
+            표시 하나로 안 되는 이유는 <strong>계산이 동시에 여러 개 떠 있어서</strong>다 —
+            누가 무효인지 가려야 한다. <strong>“버린다”에 지우는 동작은 없다</strong>(넘기는 자리에 못 가서 사라짐) ·
+            올리는 곳은 <strong>네 상황</strong>, 비교는 <code>await</code> 직후 <strong>7곳</strong>,
+            <strong>복사본은 기다리는 쪽에만</strong> 있다(<code>clear</code>·모드 전환은 올리기만) ·
+            붙여 그은 <strong>첫 점은 길찾기 전에 기존 끝점으로 바꿔친다</strong> — 안 하면 도로 스냅으로 더 멀어져
+            <strong>“먼 경우” 취급</strong>을 받고 요청이 1건 는다 · 구간 하나를 세션에 건네면 <strong>청크 1은 끝</strong></div>
         </div>
       </li>
       <li class="pending">
@@ -2517,7 +2531,7 @@ ViewModel이 보는 순서
     </div>
   </details>
 
-  <details class="part" id="p5" open>
+  <details class="part" id="p5">
     <summary>
       <span class="part-tag">파트 5 / 7</span>
       <span class="ptitle">그리기가 부른 도구 — 다운샘플러</span>
@@ -3018,10 +3032,412 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
     </div>
   </details>
 
+  <details class="part" id="p6" open>
+    <summary>
+      <span class="part-tag">파트 6 / 7</span>
+      <span class="ptitle">어려운 것 조립 — 그린 선</span>
+    </summary>
+    <div class="pbody">
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      <strong>파트 5가 골라낸 점 17개로 길찾기를 16번 부르고, 돌아온 것을 구간 하나로 합친다.</strong>
+    </div>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>사용자가 중간에 손을 바꿨을 때 무엇이 버려져야 하는지 정할 수 있다.</p>
+    </div>
+
+    <p>
+      <strong>사용자 장면으로는 어디인가</strong> — <em>손을 뗀 순간부터 도로 위 선이 나타나기까지</em>다.
+      손가락을 따라오던 선이 사라지고 <strong>화면에 로딩밖에 없는 그 잠깐</strong>이 이 파트다.
+      그 뒤 도로에 붙은 선을 실제로 <em>그리는</em> 일은 청크 3이다.
+    </p>
+
+    <h3>들어가며 — 파트 4와 같은 일이다</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 이 파트가 <em>완전히 새로운 것</em>으로 보이면 부담만 커진다.
+      실제로는 파트 4에서 이미 다 본 일이고, <strong>숫자 하나만 다르다.</strong>
+    </p>
+
+    <p>아래 표는 <strong>탭과 그리기가 어디서 갈리는지</strong>를 보여준다 — 갈리는 곳은 한 칸뿐이다.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th></th><th>조각</th><th>길찾기</th><th>만드는 것</th><th>넘기는 곳</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>탭</strong> (파트 4)</td><td>1개</td><td><strong>1번</strong></td><td>구간 1개</td><td><code>session.attach</code></td></tr>
+          <tr><td><strong>그리기</strong> (파트 6)</td><td>16개</td><td><strong>16번</strong></td><td>구간 1개</td><td><code>session.attach</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>파트 6이 새로 다루는 것은 “16번”이 만드는 문제뿐이다.</strong> 1번은 금방 끝나는데
+      16번은 시간이 걸리고, 1번은 실패하면 그걸로 끝인데 16번은 <em>중간에</em> 실패할 수 있고,
+      1번은 돌아온 것을 그냥 쓰면 되는데 16개는 이어 붙여야 한다.
+    </p>
+
+    <h3>① 점 17개가 구간 하나가 되기까지</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 파트 5는 <em>점을 골라내는 데서</em> 끝났다. 손에 남은 것은 점
+      17개뿐이고 <strong>길찾기는 아직 한 번도 안 불렀다.</strong> 여기서 그 17개를 실제로 쓴다.
+    </p>
+
+<pre class="code">
+점 17개        ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ●
+                └┬┘└┬┘└┬┘                    └┬┘
+조각 16개         1   2   3      ...           16
+
+조각마다 길찾기 1번씩   →  요청 16건
+돌아온 16뭉치를 이어 붙임 →  좌표 한 줄
+                        →  구간 1개 (CourseSegment)</pre>
+
+    <p>여기서 정해진 것이 넷이다.</p>
+
+    <h4>하나씩 차례로 부른다</h4>
+
+    <p>
+      16건을 한꺼번에 보내지 않는다. <strong>1번이 돌아와야 2번을 보낸다.</strong>
+      그래서 걸리는 시간이 <strong>한 번 걸리는 시간의 16배</strong>가 되고,
+      <strong>이 파트의 나머지 문제가 전부 그 시간에서 나온다.</strong>
+    </p>
+
+    <h4>중간에 하나가 실패하면 통째로 버린다</h4>
+
+<pre class="code">
+1~6번 성공  →  좌표가 이미 쌓여 있음
+7번 실패    →  ✗
+                └→ 쌓아둔 1~6번을 버리고 함수를 끝낸다</pre>
+
+    <p>
+      <strong>반쪽짜리 구간을 만들지 않는다.</strong> 화면에는 에러 문구만 뜨고 선은 안 생기며,
+      앞서 그려둔 코스는 그대로 남는다.
+    </p>
+
+    <h4>이어 붙일 때 겹치는 점 하나를 뺀다</h4>
+
+    <p>파트 5에서 본 그것이다 — 점 하나가 두 조각에 겹쳐 쓰이기 때문이다.</p>
+
+<pre class="code">
+조각 1 이 준 좌표:  A ... B
+조각 2 가 준 좌표:  B ... C     ← B 로 시작한다
+                    ↑ 이걸 빼고 붙인다
+
+이어 붙인 결과:     A ... B ... C</pre>
+
+    <p>
+      첫 조각만 통째로 넣고 <strong>두 번째부터는 맨 앞 좌표 하나를 뺀다.</strong>
+      거리는 조각마다 길찾기가 알려준 값을 <strong>그냥 더한다.</strong>
+    </p>
+
+    <h4>맞물렸는지는 검사하지 않는다</h4>
+
+    <p>
+      앱이 검사하는 것은 <strong>“그 조각이 성공했나”(좌표가 2개 이상 왔나) 하나뿐</strong>이다.
+      조각 N의 마지막 좌표와 조각 N+1의 첫 좌표가 같은 지점인지는 <strong>한 번도 비교하지 않는다.</strong>
+    </p>
+
+    <div class="concept">
+      <h4>💡 그런데도 지금까지 어긋나지 않은 이유</h4>
+      <p>
+        <strong>같은 좌표를 양쪽에 보내기 때문이다.</strong> 조각 1은 <code>route(1번점 → 2번점)</code>,
+        조각 2는 <code>route(2번점 → 3번점)</code>이라 <strong>2번점이 양쪽에 똑같이 들어간다.</strong>
+        같은 입력이면 같은 도로 지점으로 스냅될 것이라는 전제가 성립하는 동안은 맞물린다.
+      </p>
+      <p>
+        <strong>다만 그 전제를 보장하는 것은 어디에도 없다.</strong> 애플이 “같은 좌표를 출발지로
+        스냅할 때와 도착지로 스냅할 때 같은 지점을 준다”고 적어둔 곳이 없고,
+        <strong>캐시도 이걸 보장하지 않는다</strong> — 캐시 키가 <code>(출발, 도착)</code> 쌍이라
+        <code>1→2</code>와 <code>2→3</code>은 서로 <strong>다른 키</strong>다.
+        (판정과 처방은 백로그로 보냈다.)
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>조각 16개를 <strong>하나씩 차례로</strong> 묻고, <strong>겹치는 점을 빼고</strong> 이어 붙여
+        구간 하나로 만든다. <strong>하나라도 실패하면 통째로 버린다.</strong></p>
+    </div>
+
+    <h3>② 16번 도는 동안 사용자가 딴 걸 누르면</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 앞의 것이 전부 <strong>시간이 걸리는 일</strong>이었다.
+      그런데 <strong>그 시간 동안 사용자는 가만히 있지 않는다.</strong> 이 파트의 능력 선언이 바로 여기다.
+    </p>
+
+    <p>
+      그리고 <strong>이미 나간 요청은 되돌릴 수 없다.</strong> 애플 쪽에서 도는 것이라
+      사용자가 뭘 누르든 <strong>결과는 반드시 돌아온다.</strong> 문제는 그것이
+      <em>이미 의미가 없어진 뒤에</em> 도착한다는 것이다.
+    </p>
+
+    <h4>증상 — 지운 코스가 되살아난다</h4>
+
+<pre class="code">
+0.0초   획을 긋고 손을 뗌      →  로딩 시작
+0.5초   [전체 지우기] 누름      →  화면에서 선이 사라진다  ✓
+2.0초   ...                    →  선이 다시 나타난다      ✗</pre>
+
+    <p>
+      0.5초에 지우기를 눌렀어도 <strong>4번부터 16번까지의 요청은 계속 나가고 있었다.</strong>
+      그것이 2.0초에 전부 돌아와 구간 하나를 완성하고, 그 구간이 <strong>텅 빈 코스에 붙는다.</strong>
+      커밋(<code>c078d99</code>, 2026-06-21)이 이 현상에 이름을 붙여 적어놨다 —
+      <strong>“유령 course 부활”</strong>. 테스트도 같은 말을 한다:
+      <em>“clear() 이후 완료된 recompute가 course를 부활시키면 안 됩니다.”</em>
+    </p>
+
+    <h4>막는 방법 — 취소하지 않고, 돌아온 결과를 안 쓴다</h4>
+
+    <div class="concept">
+      <h4>💡 왜 “지웠음” 표시 하나로는 안 되나</h4>
+      <p>
+        <strong>계산이 동시에 여러 개 떠 있을 수 있기 때문이다.</strong>
+      </p>
+      <pre class="code">
+획 A 계산 중  ────────────────────────→  결과 도착
+       획 B 계산 시작  ──────────────────────→  결과 도착</pre>
+      <p>
+        이 순간 <strong>A는 무효고 B는 유효하다.</strong> 둘 다 떠 있는데 하나는 버리고 하나는 써야 한다.
+        <em>“지웠음”</em> 같은 표시 하나로는 <strong>누가 무효인지</strong>를 가리지 못한다.
+        그래서 <strong>계산마다 시작할 때 번호를 하나씩 받아 간다.</strong>
+      </p>
+    </div>
+
+<pre class="code">
+획 A 시작  →  번호 1 받아감
+획 B 시작  →  번호 2 받아감   (이때 앱의 번호도 2가 됨)
+
+A 결과 도착  →  내 번호 1, 앱은 2  →  나보다 최신이 있다  →  버림
+B 결과 도착  →  내 번호 2, 앱은 2  →  내가 최신이다      →  씀</pre>
+
+    <p>번호가 답하는 것은 하나뿐이다 — <strong>“내가 아직 최신인가.”</strong></p>
+
+    <h4>코드로는 세 줄이다</h4>
+
+    <p>
+      <strong>이 장치는 부품이 아니라 코드에만 있다.</strong> 파일도 타입도 없어서
+      코드를 안 보면 볼 데가 없다. 그래서 여기만 예외로 줄을 그대로 싣는다.
+    </p>
+
+<pre class="code">
+private var recomputeGeneration = 0                          // ① ViewModel이 계속 들고 있는 값
+
+recomputeGeneration += 1                                     // ② 올린다
+let generation = recomputeGeneration                         // ③ 지금 값을 복사해 둔다
+
+guard generation == recomputeGeneration else { return }      // ④ 쓰기 직전에 비교</pre>
+
+    <p>아래 표는 <strong>이게 왜 성립하는지</strong>를 보여준다 — 차이는 <code>let</code>과 <code>var</code> 하나다.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th></th><th>무엇인가</th><th>기다리는 동안</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>recomputeGeneration</code></td><td>ViewModel의 <strong><code>var</code> 프로퍼티</strong> (<code>private</code>)</td><td><strong>바뀔 수 있다</strong></td></tr>
+          <tr><td><code>generation</code></td><td>함수 안의 <strong><code>let</code> 상수</strong></td><td><strong>못 바뀐다</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <code>await</code>로 자는 동안 앞엣것만 바뀌므로, 깨어나서 둘을 비교하면
+      <strong>“내가 자는 사이에 누가 올렸나”</strong>가 나온다. 다르면 그 자리에서 <code>return</code>이다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 “버린다”에 지우는 동작은 없다</h4>
+      <p>
+        결과는 <strong>멀쩡히 온다.</strong> 네트워크도 성공했고 좌표도 손에 들어와 있다.
+        그런데 <strong>그것을 쓰는 다음 줄로 안 간다.</strong>
+      </p>
+      <p>
+        세션에 넘기는 일은 <strong>반복문이 전부 끝난 뒤 한 번</strong>이라, 중간에 <code>return</code>하면
+        거기까지 도달하지 못한다. 쌓아둔 좌표는 <strong>함수 안에서만 살던 값</strong>이라
+        함수가 끝나면 같이 없어진다. <strong>지우는 코드가 따로 있는 것이 아니라,
+        넘기는 자리에 못 가서 저절로 없어지는 것이다.</strong>
+      </p>
+    </div>
+
+    <h4>어디서 올리고 어디서 비교하나</h4>
+
+    <p>아래 표는 <strong>번호를 올리는 쪽과 복사해 두는 쪽이 왜 갈리는지</strong>를 보여준다.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th></th><th>올린다</th><th>복사해 둔다</th><th>왜</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>탭 계산 · 그리기 계산</td><td>✅</td><td>✅</td><td><code>await</code>로 <strong>기다린다</strong></td></tr>
+          <tr><td>모드 전환 · 전체 지우기</td><td>✅</td><td>❌</td><td>기다리지 않고 <strong>즉시 끝난다</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>복사본은 자고 일어날 사람에게만 필요하다.</strong> <code>clear()</code>와 모드 전환에는
+      <code>await</code>가 없어서 <em>“그때의 값”</em>이라는 것 자체가 없다. 올리기만 하면
+      <strong>아직 안 깨어난 계산들의 <code>generation</code>이 전부 옛날 값이 된다</strong> —
+      떠 있는 계산이 몇 개인지 알 필요도, 찾아다닐 필요도 없다.
+    </p>
+
+    <p>
+      올리는 자리는 <strong>네 상황</strong>(코드에는 다섯 줄 — 모드 전환이 양쪽 분기에 하나씩)이고,
+      비교하는 자리는 <strong>일곱 곳</strong>(탭 3 · 그리기 4)으로 전부
+      <code>await</code> 직후다. <strong>되돌리기·다시하기는 올리지 않는다</strong> —
+      의도인지 누락인지는 코드·문서에 근거가 없다.
+      <strong>화면 그리는 코드에는 이 비교가 한 군데도 없다.</strong>
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>오래 걸리는 일은 <strong>취소하지 못한다.</strong> 대신 <strong>시작할 때 번호를 복사해 두고,
+        결과를 쓰기 직전에 번호가 그대로인지 본다.</strong> 바뀌었으면 그 결과는 안 쓴다.</p>
+    </div>
+
+    <h3>③ 붙여 그은 첫 점을 갈아끼운다</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — <strong>손가락으로는 기존 코스의 끝점을 정확히 짚을 수 없다.</strong>
+      그대로 보내면 “붙여 그었는데 안 붙은” 결과가 나온다. 그걸 막는 처리가 길찾기 앞에 하나 있다.
+    </p>
+
+    <p><strong>어디에 놓이나</strong> — 다운샘플러 다음, 길찾기 전이다. <strong>점 17개 중 맨 앞 하나만</strong> 손댄다.</p>
+
+<pre class="code">
+손 뗌  →  다운샘플러  →  [ ③ ]  →  길찾기 16번  →  세션
+             점 17개     첫 점만 교체</pre>
+
+    <p>
+      <strong>이미 코스가 있고 그 끝에서 이어 그릴 때만</strong> 일어난다. 코스가 없거나
+      엉뚱한 데서 그으면 아무것도 하지 않는다.
+    </p>
+
+<pre class="code">
+기존 코스 도착점    37.49790, 127.02760
+내가 그은 첫 점      37.49812, 127.02783    ← 30m 어긋남</pre>
+
+    <p>
+      화면에서 30m는 손가락 굵기도 안 된다. <strong>사용자는 딱 붙여서 시작했다고 느낀다.</strong>
+      그런데 이걸 그대로 보내면 길찾기가 <strong>가까운 도로로 끌어당겨</strong> 오히려 더 멀어질 수 있다.
+    </p>
+
+<pre class="code">
+내가 그은 첫 점    30m 떨어짐
+       ↓ 길찾기가 도로로 당김
+돌아온 좌표        50m 떨어짐
+       ↓
+세션: "멀리서 그렸네"  →  틈 메우는 길찾기 1건 추가</pre>
+
+    <p>
+      세션이 붙일 자리를 정할 때 기준이 <strong>20m</strong>(<code>connectionThresholdMeters</code>)인데
+      50m는 그 밖이다. <strong>붙여 그었는데도 “먼 경우” 취급을 받고 요청도 한 건 더 나간다.</strong>
+      그래서 보내기 전에 바꿔친다.
+    </p>
+
+<pre class="code">
+새 첫 점이 도착점 20m 안  →  첫 점 = 도착점
+새 첫 점이 출발점 20m 안  →  첫 점 = 출발점
+둘 다 아님                →  아무것도 안 함</pre>
+
+    <p>
+      <strong>도착점을 먼저 본다</strong>(이어 그리는 것은 대개 끝에서 이어가므로).
+      핀을 직접 눌러 시작한 경우는 거리를 재지 않고 <strong>그 핀으로 바로</strong> 간다 —
+      핀 히트는 화면에서 <strong>24pt</strong>로 재고, 실거리 20m 검사는 그 뒤에 온다.
+      <strong>재는 단위가 다르기 때문</strong>이다: 화면 거리는 줌과 무관하고, 크게 확대하면
+      20m가 24pt보다 넓게 벌어져 화면으로만 재면 놓친다
+      (<em>“고배율 줌인에서 24pt &lt; 20m인 구간을 커버”</em> — 문서 리뷰 2026-07-04).
+    </p>
+
+    <p>
+      코드 주석이 이유를 그대로 적어놨다 —
+      <em>“치환이 없으면 <strong>도로 스냅 드리프트</strong>로 attach 근접 판정이 깨진다.”</em>
+    </p>
+
+    <div class="concept">
+      <h4>💡 “멀 때 알아서 이어주는 것”과는 다른 기능이다</h4>
+      <p>
+        멀리서 그었을 때 <strong>출발점·도착점 중 가까운 쪽을 찾아 그 사이를 메우는 것</strong>은
+        <strong>세션이 하는 일(청크 2)</strong>이다. ③은 거기에 관여하지 않는다.
+      </p>
+      <p>
+        <strong>양쪽 다 보완이 있고 방식이 다를 뿐이다.</strong> 가까울 때는 ③이 첫 점을 바꿔쳐서
+        <strong>추가 요청 없이</strong> 맞물리게 하고, 멀 때는 세션이 <strong>틈 메우는 길찾기를 1건 더</strong> 부른다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>손가락 오차는 <strong>길찾기에 보내기 전에</strong> 지운다. <strong>첫 점 하나를 기존 코스 끝점으로
+        바꿔치는 것</strong>이 전부고, 안 하면 붙여 그은 것이 <strong>먼 경우 취급</strong>을 받는다.</p>
+    </div>
+
+    <h3>④ 세션에 건네면 청크 1은 끝</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 여기가 <strong>청크 1의 경계선</strong>이다. 어디까지가 이 학습이고
+      어디부터가 다음인지가 이 한 줄에서 갈린다.
+    </p>
+
+    <p>
+      조각 16개를 이어 붙여 구간 하나를 만들었다. 그다음은 <code>session.attach(구간)</code> 한 줄이고,
+      <strong>어디에 붙일지는 세션(<code>CourseEditSession</code>)이 정한다.</strong>
+      앞에 붙일지 뒤에 붙일지, 방향을 뒤집을지, 틈을 메울지 — 전부 <strong>청크 2</strong>다.
+    </p>
+
+    <p>
+      <strong>청크 1이 하는 일은 매번 똑같다</strong> — 그은 것을 <strong>구간 하나</strong>로 만들어 건네는 것.
+      탭이든 그리기든 다르지 않고, 그리기가 길찾기를 16번 부르든 <strong>결과는 구간 하나</strong>다.
+    </p>
+
+    <div class="fix">
+      <strong>배치에 대해 파트 2에서 미뤄둔 질문 — 결론은 “기록이 없다”.</strong>
+      <code>47e3dbf</code>(2026-07-01)가 그리기를 <em>“획 하나 = 구간 하나”</em>로 통일하면서
+      <strong>방향 판정은 이미 세션의 <code>attach</code>로 내려갔고</strong> 전용 타입 둘
+      (<code>StrokeDirectionResolver</code>·<code>StrokeEntry</code>)은 삭제됐다.
+      <strong>그런데 라우팅 반복문만 ViewModel에 남았다.</strong>
+      <em>“세션은 길찾기를 못 해서”가 아니다</em> — 세션도 틈을 메울 때 <code>attach</code> 안에서
+      길찾기를 직접 부른다. 코드에서 읽히는 사실은 하나뿐이다:
+      <strong>반복문 안에 <code>generation</code> 검사가 끼어 있고, 그 값은 ViewModel의
+      <code>private</code> 프로퍼티라 세션이 볼 수 없다.</strong>
+      <strong>왜 안 따라 내려갔는지는 커밋에도 설계 문서에도 적혀 있지 않다.</strong>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>구간 하나를 세션에 건네면 <strong>청크 1은 끝</strong>이다. 붙이는 판단은 전부 청크 2다.
+        <span class="aside">배치 이야기(반복문이 ViewModel에 있는 게 맞나)는 근거가 없어 판정을 안 한다 — 몰라도 이 파트는 넘어간다.</span></p>
+    </div>
+
+    <div class="later">
+      <strong>곁가지 — 손을 뗀 뒤 0.3초.</strong> 손을 떼도 계산이 바로 시작되지 않는다.
+      0.3초를 기다렸다가 <em>“그 사이 새 획이 왔나”</em>를 보고, 왔으면 <strong>앞 획을 버린다</strong>(디바운스).
+      요청 수를 아끼려고 MVP2에서 넣었다(<code>21fe11b</code>).
+      <strong>그때는 버려지는 것이 없었다</strong> — 획이 배열(<code>drawnStrokes</code>)에 먼저 담기고
+      디바운스는 <em>계산만</em> 미뤘기 때문이다. 지금은 그 배열이 없어서(<code>47e3dbf</code>)
+      걸리면 획이 그대로 사라진다. 대신 <strong>걸릴 일 자체가 거의 없어졌다</strong> —
+      도입 당시엔 문턱 없는 드래그 제스처였는데 지금은 꾹 누르기가 <strong>0.25초</strong>를 먹어
+      남는 창이 <strong>0.05초</strong>다.
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음</strong> — 파트 6 「어려운 것 조립 — 그린 선」.
-    조각 16개를 <em>왜 하나씩 차례로</em> 부르는지, 도중에 모드를 바꾸거나 지우면 이미 나간 요청이
-    어떻게 되는지를 본다. 파트 4에서 이름만 적어둔 <code>recomputeGeneration</code>이 여기서 열린다.
+    <strong>다음</strong> — 파트 7 「뷰에 꽂는다 — 제스처 두 개」.
+    손가락이 만든 화면 좌표가 어떻게 위경도가 되어 ViewModel까지 오는지, 그리고 그 제스처가
+    지도 자체의 이동·확대와 어떻게 안 부딪히는지를 본다. 파트 6이 <em>“무엇을 받아야 하는지”</em>를
+    정했으니, 파트 7은 그것을 <strong>어떻게 만들어 넘기는지</strong>다.
   </div>
 
 </div>
