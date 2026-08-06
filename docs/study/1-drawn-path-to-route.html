@@ -226,6 +226,13 @@
     padding-bottom: .4rem; border-bottom: 1px solid var(--rule);
   }
 
+  /* 구간 안의 소제목 (.concept 안의 h4와는 별개) */
+  .pbody > h4 {
+    font-size: .97rem; font-weight: 800; letter-spacing: -.005em;
+    color: var(--deep);
+    margin: 1.8rem 0 .6rem;
+  }
+
   /* ── 이 파트를 끝내면 (능력 선언) ──────── */
   .goal {
     border: 2px solid var(--accent);
@@ -604,8 +611,12 @@
             ViewModel의 값(<code>var</code>)과 비교해 <strong>다르면 안 쓴다</strong>.
             표시 하나로 안 되는 이유는 <strong>계산이 동시에 여러 개 떠 있어서</strong>다 —
             누가 무효인지 가려야 한다. <strong>“버린다”에 지우는 동작은 없다</strong>(넘기는 자리에 못 가서 사라짐) ·
-            올리는 곳은 <strong>네 상황</strong>, 비교는 <code>await</code> 직후 <strong>7곳</strong>,
+            올리는 곳은 <strong>네 상황</strong>, 비교는 <strong>7곳</strong>,
             <strong>복사본은 기다리는 쪽에만</strong> 있다(<code>clear</code>·모드 전환은 올리기만) ·
+            ⚠️ <strong>7곳은 조각 라우팅 쪽에만 있다</strong> — <code>session.attach</code>도
+            <code>await</code>인데 그 뒤에는 비교가 없고, <code>attach</code>는 안에서 길찾기를
+            또 부를 수 있어 <strong>그 창에 지우기가 떨어지면 세그먼트 하나가 살아남는다</strong>
+            (기존 테스트는 이 창을 지나가지 않는다) ·
             붙여 그은 <strong>첫 점은 길찾기 전에 기존 끝점으로 바꿔친다</strong> — 안 하면 도로 스냅으로 더 멀어져
             <strong>“먼 경우” 취급</strong>을 받고 요청이 1건 는다 · 구간 하나를 세션에 건네면 <strong>청크 1은 끝</strong></div>
         </div>
@@ -3292,11 +3303,31 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
 
     <p>
       올리는 자리는 <strong>네 상황</strong>(코드에는 다섯 줄 — 모드 전환이 양쪽 분기에 하나씩)이고,
-      비교하는 자리는 <strong>일곱 곳</strong>(탭 3 · 그리기 4)으로 전부
-      <code>await</code> 직후다. <strong>되돌리기·다시하기는 올리지 않는다</strong> —
-      의도인지 누락인지는 코드·문서에 근거가 없다.
+      비교하는 자리는 <strong>일곱 곳</strong>(탭 3 · 그리기 4)이다.
+      <strong>되돌리기·다시하기는 올리지 않는다</strong> — 의도인지 누락인지는 코드·문서에 근거가 없다.
       <strong>화면 그리는 코드에는 이 비교가 한 군데도 없다.</strong>
     </p>
+
+    <div class="concept">
+      <h4>💡 그런데 가드가 없는 <code>await</code>가 하나 있다 — 세션에 건네는 그 줄</h4>
+      <p>
+        일곱 곳은 <strong>조각 라우팅 쪽에만</strong> 있다.
+        <strong><code>session.attach</code>도 <code>await</code>인데 그 뒤에는 비교가 없다</strong>
+        (탭·그리기 양쪽 모두). 그리고 <strong><code>attach</code>는 안에서 길찾기를 또 부를 수 있다</strong> —
+        틈을 메워야 할 때가 그렇고, 그런 <code>await</code>가 세 군데 있다.
+      </p>
+      <p>
+        그래서 <strong>그 창에 지우기가 떨어지면 결과가 달라진다.</strong>
+        <code>attach</code>는 들어올 때 잡아둔 코스로 계산을 마치고 <strong>구간을 붙인다</strong> —
+        비운 코스에 <strong>세그먼트 하나가 살아남는다.</strong>
+      </p>
+      <p>
+        <strong>기존 테스트는 이 창을 지나가지 않는다.</strong>
+        <code>testClear_duringInFlightStroke_discardsStaleCourse</code>는 코스가 <strong>없는</strong>
+        상태로 시작해서 <code>attach</code>가 <strong>기다리지 않고 바로 붙이는 경로</strong>로 빠지고,
+        지우기도 <strong>가드가 있는 구간</strong>에 떨어진다. (판정과 처방은 백로그로 보냈다.)
+      </p>
+    </div>
 
     <div class="takeaway">
       <span class="tag">이 구간에서 알고 갈 것</span>
