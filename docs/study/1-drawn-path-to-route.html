@@ -1389,13 +1389,11 @@ extension CoursePlanningServiceProtocol {
       <p>
         <strong>거꾸로 “길을 못 찾음”은 빼지 않았다.</strong> 이것도 같은 두 지점으로 다시 물으면
         답이 같은 확정 실패라 재시도가 무의미하고, 게다가 그 헛된 요청이 <strong>“너무 많이
-        물어봄”을 예외로 뺀 바로 그 카운터를 올린다.</strong> 케이스가 이미 구분돼 있으니 조건
-        한 줄이면 뺄 수 있었는데 안 뺐다.
+        물어봄”을 예외로 뺀 바로 그 카운터를 올린다.</strong>
       </p>
       <p>
         다만 손해가 눈에 안 띌 만큼 작다 — “길을 못 찾음”이 실제로 터지는 조건이 좁고
         (파트 1 ④ 참고), 무엇보다 <strong>이 코드가 애초에 실행되지 않는다</strong>(바로 아래 ⑤).
-        백로그에 적어두었다.
       </p>
     </div>
 
@@ -2016,8 +2014,8 @@ private extension CourseCoordinate {
     <p>
       수명은 <strong>앱 전체</strong>다. <code>DependencyContainer</code>가 앱을 켤 때 이 구현체를
       하나 만들고 그것이 끝까지 살아 있어, 화면을 나갔다 들어와도 캐시가 남는다.
-      <strong>상한은 없다</strong> — 쌓이기만 한다. 지금 규모에서는 문제가 안 되지만
-      <strong>자라는 것을 막는 장치가 하나도 없다</strong>는 것은 사실이라 백로그에 올렸다.
+      <strong>상한은 없다</strong> — 넣기만 하고 지우지 않으며, 최대 개수·용량·유효기간 어느 것도
+      없다. 앱을 끌 때까지 계속 자란다.
     </p>
 
     <div class="concept">
@@ -2047,7 +2045,7 @@ private extension CourseCoordinate {
       </p>
       <p>
         <strong>실제 히트율은 측정된 적이 없다.</strong> 그래서 <em>“지금도 값을 하는가”</em>는
-        지금 상태로는 답할 수 없고 재봐야 안다. 백로그의 상한 항목에 함께 적어두었다.
+        지금 상태로는 답할 수 없다.
       </p>
     </div>
 
@@ -2077,30 +2075,21 @@ private extension CourseCoordinate {
 
     <p>
       <strong>③④에서 본 것이 전부 커버 0이다.</strong> <code>catch</code> 순서도, 스로틀 조건도
-      테스트가 건드리지 않는다. <code>ThrottleDetectionTests</code>는 이름과 달리
-      <strong>스로틀을 감지하는지 확인하지 않는다</strong> — 이미 <code>.throttled</code>라고
-      정해놓고 던지는 스텁을 써서 <em>“재시도를 안 하는가”</em>만 본다.
+      테스트가 건드리지 않는다. 캐시 쪽은 더 구체적으로 말할 수 있다 —
+      <strong>진짜 파일의 <code>round(값, 5)</code>를 <code>3</code>으로 바꿔도 테스트 5건이
+      전부 통과한다.</strong> 복사본은 그대로 5자리이기 때문이다.
     </p>
 
     <p>
-      캐시 쪽은 더 구체적으로 말할 수 있다. <strong>진짜 파일의 <code>round(값, 5)</code>를
-      <code>3</code>으로 바꿔도 테스트 5건이 전부 통과한다.</strong> 복사본은 그대로 5자리이기 때문이다.
+      <strong>구조가 그것만 허용했다.</strong> <code>route</code>가 함수 안에서
+      <code>MKDirections(request:).calculate()</code>를 직접 만들어 부른다. 끼어들 자리가 없어
+      <strong>네트워크 없이 이 함수를 부를 방법이 없고</strong>, 그래서 로직을 베끼는 것 말고는
+      선택지가 없었다. <strong>테스트를 잘못 쓴 것이 아니다.</strong>
     </p>
 
-    <p>
-      <strong>왜 이렇게 됐나 — 테스트를 잘못 쓴 것이 아니다.</strong> <code>route</code>가 함수
-      안에서 <code>MKDirections(request:).calculate()</code>를 직접 만들어 부른다. 끼어들 자리가
-      없어 <strong>네트워크 없이 이 함수를 부를 방법이 없다.</strong> 테스트를 쓰려면 로직을 베끼는
-      것 외에 선택지가 없었다. <strong>TDD를 지켜도 이 결과가 나온다</strong> — 먼저 쓰려는데
-      진짜 파일을 못 부르니 스텁을 만들게 되고, 그 스텁에 로직이 베껴진다.
-      (<code>docs/agent-rules/testing.md</code>에는 외부 API를 직접 부르는 구현체를 어떻게 다룰지에
-      대한 규칙이 아예 없다.)
-    </p>
-
-    <p>
-      그래서 고칠 대상은 테스트가 아니라 <strong>구조</strong>다 — 키 생성·캐시를 별도 타입으로
-      빼거나, 길찾기 계산 호출을 주입받게 하거나. 백로그에 올렸고,
-      <strong>캐시 히트율 측정과 같은 작업</strong>이 된다.
+    <p class="later">
+      어떻게 고칠지는 <code>docs/backlog.md</code>에 있다 —
+      「<code>MapKitCoursePlanningService</code>에 테스트가 없다」 항목.
     </p>
 
     <div class="takeaway">
