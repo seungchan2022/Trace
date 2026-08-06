@@ -471,6 +471,7 @@
     <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 데이터 모양을 정한다">데이터 모양을 정한다</a></li>
     <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 약속을 정한다 · 프로토콜">약속을 정한다 — 프로토콜</a></li>
     <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 약속을 지킨다 · MapKit 구현체">약속을 지킨다 — 구현체</a></li>
+    <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 쉬운 것부터 조립 · 탭 두 번">쉬운 것부터 조립 — 탭</a></li>
   </ol>
 </nav>
 
@@ -493,7 +494,7 @@
       <li class="on"><span class="k">1</span><a href="#p1">필요한 데이터를 추려서 모양을 정한다</a></li>
       <li class="on"><span class="k">2</span><a href="#p2">약속을 정한다 — 프로토콜</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">약속을 지킨다 — MapKit 구현체</a></li>
-      <li><span class="k">4</span><span class="todo">쉬운 것부터 조립 — 탭 두 번</span></li>
+      <li class="on"><span class="k">4</span><a href="#p4">쉬운 것부터 조립 — 탭 두 번</a></li>
       <li><span class="k">5</span><span class="todo">그리기가 부른 도구 — 다운샘플러</span></li>
       <li><span class="k">6</span><span class="todo">어려운 것 조립 — 그린 선</span></li>
       <li><span class="k">7</span><span class="todo">뷰에 꽂는다 — 제스처 두 개</span></li>
@@ -552,11 +553,22 @@
             ⚠️ <strong>이 파일에는 테스트가 없다</strong> — 테스트가 로직 <strong>복사본</strong>을 지킨다</div>
         </div>
       </li>
-      <li class="pending">
+      <li>
         <span class="k">4</span>
         <div>
-          <div class="can">화면과 서비스 사이에서 무엇을 책임지고 무엇을 안 할지 정할 수 있다</div>
-          <div class="sum">쉬운 것부터 조립 — 탭 두 번이 구간 하나가 되기까지</div>
+          <div class="can">화면이 준 좌표 하나가 구간 하나가 되기까지, ViewModel이 무엇을 들고 있고
+            무엇을 넘기는지 정할 수 있다</div>
+          <div class="sum"><strong>좌표는 전부 ViewModel에 있다</strong> — 화면은 저장하지 않고
+            매번 읽어서 다시 그린다(그래서 <strong>값이 바뀌는 시점 = 화면이 바뀌는 시점</strong>) ·
+            길찾기가 준 것은 <strong>쓸 수 있는 최소 조건</strong>(점 2개)만 확인하고,
+            <strong>구간 하나로 다시 만들어</strong> 세션에 건네면 청크 1은 끝 · ⚠️ <code>route()</code>는 <strong>구간 1개짜리
+            코스</strong>를 돌려줘서 호출부가 매번 벗긴다 — MVP1의 평평한 <code>PlannedCourse</code>가
+            MVP5에서 구간 목록이 될 때 <strong>반환 타입만 안 따라간 흔적</strong>(백로그 등록) ·
+            어댑터가 붙이는 <code>.tapped</code>는 <strong>출처를 뜻하지 않는다</strong>(그리기가 불러도
+            <code>.tapped</code>가 온다) · 실패는 둘로만 갈라져 <strong>스로틀이 뭉개진다</strong> ·
+            <strong>코스가 이미 있으면 탭 한 번</strong>으로 가까운 끝에서 이어지고, <strong>핀을 눌렀는지는
+            화면이 픽셀로 재서</strong>(24px) <code>.start</code>·<code>.end</code>·<code>.merged</code> 값
+            하나만 넘긴다 — <strong>무엇을 할지는 여전히 ViewModel</strong></div>
         </div>
       </li>
       <li class="pending">
@@ -955,7 +967,7 @@ flowchart TD
       화면에 아무것도 안 보이는 단계지만, 그 숫자와 선을 담을 타입이 여기서 정해진다.
     </p>
 
-    <h3>① 지점 — 지도 위 한 곳</h3>
+    <h3>① 지점 — 지도 위 한 곳 <code>CourseCoordinate</code></h3>
 
     <p>
       애플에는 이미 위도·경도를 담는 타입이 있다(<code>CLLocationCoordinate2D</code>, CoreLocation 소속).
@@ -993,7 +1005,7 @@ flowchart TD
       옮겨 담는 것뿐이다.
     </p>
 
-    <h3>② 구간 — 길 한 토막</h3>
+    <h3>② 구간 — 길 한 토막 <code>CourseSegment</code></h3>
 
     <p>
       여기서 가장 헷갈리는 것이 <strong>"점"이라는 말이 두 가지를 가리킨다</strong>는 점이다.
@@ -1054,7 +1066,7 @@ flowchart TD
       </p>
     </div>
 
-    <h3>③ 코스 — 구간들의 목록</h3>
+    <h3>③ 코스 — 구간들의 목록 <code>PlannedCourse</code></h3>
 
     <p>
       구간이 쌓이면 코스가 된다. 코스가 들고 있는 것은 <strong>구간 목록 하나뿐</strong>이고,
@@ -1089,7 +1101,7 @@ flowchart TD
       </p>
     </div>
 
-    <h3>④ 실패 — 세 가지</h3>
+    <h3>④ 실패 — 세 가지 <code>CoursePlanningError</code></h3>
 
     <div class="tablewrap">
       <table>
@@ -1610,7 +1622,7 @@ extension CoursePlanningServiceProtocol {
     </div>
   </details>
 
-  <details class="part" id="p3" open>
+  <details class="part" id="p3">
     <summary>
       <span class="part-tag">파트 3 / 7</span>
       <span class="ptitle">약속을 지킨다 — MapKit 구현체</span>
@@ -2126,10 +2138,378 @@ private extension CourseCoordinate {
     </div>
   </details>
 
+  <details class="part" id="p4" open>
+    <summary>
+      <span class="part-tag">파트 4 / 7</span>
+      <span class="ptitle">쉬운 것부터 조립 — 탭 두 번</span>
+    </summary>
+    <div class="pbody">
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      파트 1·2·3에서 따로 만든 것이 <strong>처음으로 한 줄에 꿰인다</strong> —
+      탭 두 번이 구간 하나가 되어 세션에 들어가기까지.
+    </div>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>화면이 준 좌표 하나가 구간 하나가 되기까지,
+        ViewModel이 무엇을 들고 있고 무엇을 넘기는지 정할 수 있다.</p>
+    </div>
+
+    <p>
+      <strong>사용자 장면으로는 어디인가</strong> — <em>"출발점을 톡, 도착점을 톡, 로딩, 선"</em>(①②③④)이다.
+      화면에서 제일 처음 겪는 장면인데 만드는 순서로는 네 번째다.
+    </p>
+
+    <p>
+      <strong>왜 그리기가 아니라 탭이 먼저인가.</strong> 탭은 길찾기를 <strong>딱 한 번</strong> 부른다.
+      그리기는 한 획에 열몇 번 부르고, 그래서 필요한 장치가 더 많다. 여기서 기본형을 보고 나면
+      파트 6은 <strong>"무엇이 더 붙었나"</strong>만 보면 된다.
+    </p>
+
+    <h3>① 첫 탭은 어디에 머무는가</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — <em>"화면에 보이니까 화면이 갖고 있다"</em>는 생각은 자연스럽지만
+      이 코드에서는 틀리다. 여기를 잘못 잡으면 나머지가 전부 어긋난다.
+    </p>
+
+    <p>
+      핀 목록을 만드는 곳은 <code>CoursePlannerPage+MapPinsComponent.swift</code>의 <code>mapPins</code>인데,
+      <strong>저장 프로퍼티가 아니라 계산 프로퍼티</strong>다. 안에서 읽는 것이 전부
+      <code>viewModel.</code>로 시작한다 — 코스가 있으면 출발·도착 핀, <code>pendingTapStart</code>가
+      있으면 "출발" 핀, <code>pendingTapMarker</code>가 있으면 회색 "확인 중" 마커.
+      <strong>확정된 좌표는 화면에 없다.</strong> 그릴 때마다 ViewModel을 읽어 핀 배열을 새로 만든다.
+    </p>
+
+    <div class="fix">
+      <strong>⚠️ "화면은 좌표를 아예 안 들고 있다"까지 가면 틀린다</strong>
+      <span class="fixtag">(2026-08-06 검토에서 정정)</span> —
+      <code>MapViewRepresentable</code>의 Coordinator는 <strong>그리는 중의 좌표</strong>
+      (<code>currentStrokeCoords</code>)와 <strong>판별 창 동안의 탭 좌표</strong>
+      (<code>pendingCoordinate</code>)를 실제로 들고 있다.
+      <strong>다만 둘 다 "아직 확정 전"이고, 확정되는 순간 ViewModel로 넘기고 자기는 비운다.</strong>
+      즉 경계는 <em>"화면은 아무것도 안 갖는다"</em>가 아니라
+      <strong>"확정된 것은 화면에 남지 않는다"</strong>이다. 그 잠깐의 보관은 파트 6·7에서 다룬다.
+    </div>
+
+    <p>
+      그래서 <strong>마커가 보인다는 것은 화면이 기억하고 있다는 뜻이 아니라</strong>,
+      ViewModel의 <code>pendingTapStart</code>가 비어 있지 않다는 뜻이다. 방향이 한쪽이다.
+    </p>
+
+    <pre class="code">탭 발생  →  ViewModel에 좌표 저장  →  화면이 그 값을 읽어 핀을 그림</pre>
+
+    <p>
+      거꾸로 가는 화살표는 없다. <strong>화면이 좌표를 들고 있다가 나중에 ViewModel에 건네는 경로가 없다.</strong>
+      만약 그랬다면 두 번째 탭이 왔을 때 ViewModel은 출발점을 모르고, 같은 사실이 두 군데에 살게 되어
+      모드 전환·실패·되돌리기마다 둘을 맞춰야 한다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 값이 바뀌는 시점이 곧 화면이 바뀌는 시점이다</h4>
+      <p>
+        이걸 화면으로 드러낸 버그가 있었다. 예전에는 임시 마커를 그릴 때
+        <strong><code>pendingTapStart</code>가 비었는지로</strong> 출발·도착 스타일을 골랐다.
+        그런데 탭 처리는 길찾기를 부르기 <strong>전에</strong> <code>pendingTapStart</code>를 비운다.
+        그래서 라우팅이 도는 동안 이미 비어 있었고, <strong>확정 직후 라벨이 짧게 뒤바뀌어 보였다</strong>
+        (2026-07-05 실기기 확인).
+      </p>
+      <p>
+        지금은 임시 마커를 <strong>회색 "확인 중"이라는 중립 스타일</strong>로 바꿔서,
+        출발·도착을 구분할 필요 자체를 없앴다. <strong>버그를 고친 게 아니라 성립하지 않게 만든 것</strong>이다.
+      </p>
+    </div>
+
+    <p>
+      그래서 <strong>처음 탭했을 때 실제로 뜨는 것은 둘</strong>이다 — 손을 뗀 직후 잠깐 회색 점선 원
+      "확인 중"(<code>pendingTapMarker</code>), 그다음 초록 러너 "출발" 핀(<code>pendingTapStart</code>).
+      <strong>둘 다 ViewModel에 있다.</strong> 앞의 회색 마커가 <em>무엇을 기다리는 중인지</em>는
+      제스처 이야기라 <strong>파트 7</strong>에서 다룬다.
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>화면에 보이는 것과 그것을 들고 있는 곳은 다르다. 좌표는 전부 ViewModel에 있고,
+        화면은 매번 읽어서 다시 그린다.</p>
+    </div>
+
+    <h3>② 값으로 따라가기 — 탭 두 번</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 타입 이름만으로는 안 잡힌다.
+      <strong>실제로 무엇이 메모리에 앉는지</strong>를 값으로 보면 층이 몇 개인지가 그냥 보인다.
+      아래 좌표는 예시다(강남역 → 역삼역 정도).
+    </p>
+
+    <pre class="code">첫 탭        37.4979, 127.0276          ← 숫자 두 개. 이게 전부다
+둘째 탭      37.5006, 127.0364          ← 또 숫자 두 개
+
+앱이 애플에게 보내는 것 : 이 네 숫자뿐
+
+애플이 돌려주는 것
+   37.4979, 127.0276     ← 출발
+   37.4982, 127.0291     ← 길이 꺾이는 곳
+   37.4991, 127.0330     ← 또 꺾이는 곳
+   37.5006, 127.0364     ← 도착
+   850.0                 ← 거리 (미터, 값 하나)</pre>
+
+    <p>
+      <strong>숫자 쌍 4개 + 숫자 1개.</strong> 그 이상 아무것도 없다.
+      이 한 벌이 <strong>구간</strong>(<code>CourseSegment</code>)이고, 숫자 쌍 하나가
+      <strong>지점</strong>(<code>CourseCoordinate</code>)이다.
+    </p>
+
+    <p>
+      한 번 더 탭하면 또 한 벌이 생긴다. <strong>이 한 벌들이 순서대로 담긴 것이 세션</strong>이고,
+      <strong>그것들을 쭉 이어 붙인 결과가 코스</strong>(<code>PlannedCourse</code>)다.
+    </p>
+
+    <pre class="code">세션    한 벌 ①   쌍 4개 +  850.0
+        한 벌 ②   쌍 6개 + 1200.0      ← 그대로, 순서대로 담아둔다
+
+코스    쌍 9개 + 2050.0                ← 이어붙인 결과 (이음매 한 쌍은 겹쳐서 뺀다)
+        지도에 선으로 그려지고 "2.05 km"가 뜬다</pre>
+
+    <p>
+      <strong>"코스"라고 부르는 게 대단한 게 아니라, 숫자 쌍을 이어놓은 목록 하나</strong>다.
+      그리고 애플은 이보다 훨씬 많이 준다 — 예상 소요 시간, 턴바이턴 안내문, 경로 이름 …
+      <strong>거기서 점 목록과 거리 둘만 골라 담은 것</strong>이 위의 한 벌이다(파트 1의 그 이야기다).
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>지점은 숫자 쌍 하나, 구간은 그 쌍 목록 + 거리 하나, 코스는 구간들을 이어붙인 것.
+        세션은 그 구간들을 순서대로 담아두는 쪽이다.</p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 그런데 <code>route()</code>는 "구간 1개짜리 코스"를 돌려준다</h4>
+      <p>
+        조각 하나를 물어봤는데 <strong>코스(<code>PlannedCourse</code>) 껍데기가 씌워져서</strong> 온다.
+        안에 구간이 딱 하나 든 코스다. 그래서 호출부는 매번 <strong>껍데기를 벗겨</strong>
+        점 목록과 거리를 꺼낸 뒤 <strong>구간으로 다시 만든다.</strong>
+      </p>
+      <pre class="code">받는 것    코스 → [ 구간 1개 ] → 점들     ← 한 겹 더 있다
+필요한 것         구간 1개    → 점들</pre>
+      <p>
+        <strong>처음부터 그랬던 게 아니다.</strong> MVP1(<code>4d6c12b</code>, 2026-06-18)의
+        <code>PlannedCourse</code>는 <strong>평평했다</strong> — 점 목록과 거리가 전부였고
+        <strong>구간이라는 개념 자체가 없었다.</strong> 길찾기 한 번의 답이 곧 코스였으므로
+        <code>route()</code>가 그것을 돌려주는 것이 정확한 이름이었다.
+      </p>
+      <p>
+        MVP5 <code>path-stitching</code>(<code>52ffdc6</code>, 2026-06-27)이 이어붙이기를 넣으면서
+        <code>PlannedCourse</code>를 구간 목록 기반으로 바꿨고, <strong>같은 커밋에서 어댑터가 담는
+        방식만 맞추고 반환 타입은 그대로 뒀다.</strong> 즉 <strong>반환 타입이 구조 변경을 따라가지
+        않고 남은 흔적</strong>이다. 처방은 백로그에 있다(「<code>route()</code>가 "구간 1개짜리 코스"를
+        돌려준다」).
+      </p>
+      <p>
+        <strong>딸려 나오는 사실 하나</strong> — 어댑터는 <strong>호출자가 누구든</strong> 결과를
+        <code>.tapped</code>로 감싸 돌려준다. 그리기 경로가 불러도 <code>.tapped</code>가 온다.
+        <strong>어댑터가 붙이는 라벨은 출처를 뜻하지 않고</strong>, 진짜 출처는 ViewModel이 정한다
+        (탭이면 <code>.tapped</code>, 그리기면 <code>.drawn</code>).
+      </p>
+    </div>
+
+    <h3>③ 받은 것을 어디까지 믿는가</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 길찾기는 <strong>바깥</strong>에서 온다.
+      내가 만들지 않은 것이 들어올 때 어디까지 믿고 어디부터 확인할지를 정하는 자리다.
+    </p>
+
+    <p>
+      확인하는 것은 딱 하나, <strong>돌아온 점이 두 개 이상인가</strong>다.
+      입력은 늘 점 두 개이므로 <strong>검사 대상은 내가 준 것이 아니라 받은 것</strong>이다.
+      두 개가 최소 조건인 이유는 파트 1에서 본 그대로다 — <strong>선이라는 데이터는 없고 점만 있어서</strong>,
+      점이 하나면 이을 상대가 없어 선도 거리도 성립하지 않는다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 점 하나짜리가 실제로 오는지는 확인된 바 없다</h4>
+      <p>
+        이 확인은 <strong>2026-07-01 <code>1f1e71c</code></strong>에 들어왔는데, 그 커밋의
+        <strong>본론은 다른 문제</strong>였다 — 짧은 거리에서 거리 라벨과 핀이 겹치자 MapKit이
+        핀을 자동으로 숨기던 버그다. 이 확인은 그것을 쫓다가 함께 넣은 것이다.
+      </p>
+      <p>
+        커밋이 스스로 <em>"좌표가 2개 미만인 축약된 route 결과가 들어오는 <strong>경계 사례</strong>도
+        guard로 막고 … <strong>방어 코드</strong>를 추가했다"</em>고 적었다.
+        <strong>"이런 걸 봤다"가 아니라 "올 수도 있으니 막아둔다"</strong>이다.
+        MVP1 설계의 엣지케이스 목록에도 없고, <code>history/</code>와 백로그를 훑어도
+        <strong>실제로 겪었다는 보고는 없다</strong> — 나오는 것은 MVP11 설계의
+        <em>"좌표가 2개 미만인 구간(방어적 경계)"</em>처럼 <strong>전부 같은 성격의 방어</strong>다.
+        <strong>테스트는 있지만 스텁이 점 하나를 돌려주게 만든 것</strong>이라, 실제 MapKit이 그런다는
+        증거는 아니다. <strong>정확히 말하면 "안 온다"가 아니라 "온다고 적어둔 기록을 못 찾았다"</strong>이다.
+      </p>
+      <p>
+        <strong>그 이상은 확인하지 않는다.</strong> 두 개 이상인지는 앱이 판정할 수 있지만
+        <em>"이 경로가 맞는 경로인가"</em>는 도로를 아는 쪽만 안다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>바깥에서 온 것은 "쓸 수 있는 최소 조건"만 확인한다. 여기서는 점 두 개 — 그래야 선이 되니까.
+        <span class="aside">곁가지: 이 확인이 실제 사례를 보고 들어온 것인지는 확인된 바 없다.</span></p>
+    </div>
+
+    <h3>④ 세션에 건네면 청크 1은 끝난다</h3>
+
+    <p>
+      확인을 통과하면 점 목록과 거리를 <strong>구간 하나로 만들어</strong> <code>CourseEditSession</code>에
+      건넨다. <strong>ViewModel은 그 구간이 코스의 앞에 갈지 뒤에 갈지, 뒤집힐지 모른다.</strong>
+      그 판단은 전부 세션이 하고 <strong>청크 2</strong>다. 길찾기 서비스를 <strong>같이 넘기는</strong> 것도
+      붙이는 쪽이 길찾기를 더 불러야 할 수 있어서인데, 언제 그런지도 청크 2다.
+    </p>
+
+    <p>
+      성공하면 <code>selectedSegmentIndex</code>를 비운다. 이것은 <strong>지도에서 선택된 구간의
+      순번</strong>이고, 선택되면 그 선이 굵어지고 후광이 붙는다.
+      <strong>구간이 새로 붙으면 번호가 밀리기 때문에</strong> 선택을 푼다 — 3번을 골라놨는데
+      3번이 다른 구간이 되어버린다. 테스트 두 개가 이 짝을 지킨다:
+      <code>testAttachPrepend_clearsSelectedSegmentIndex</code>(앞에 끼면 푼다)와
+      <code>testFailedAttach_doesNotResetSelectedSegmentIndex</code>(<strong>실패했으면 안 푼다</strong> —
+      코스가 안 바뀌었으니까).
+    </p>
+
+    <p>
+      실패는 <strong>두 갈래</strong>다 — <em>"도보 경로를 찾을 수 없습니다."</em>와
+      <em>"경로를 계산할 수 없습니다."</em> 파트 1에서 실패를 <strong>셋</strong>으로 나눴는데
+      <strong>탭 경로는 "너무 많이 물어봄"을 따로 잡지 않는다.</strong> 그래서 요청이 몰려 거부당해도
+      아래쪽 문구가 뜬다(백로그에 있다).
+    </p>
+
+    <div class="later">
+      <strong>이름만 적어두는 것 — <code>recomputeGeneration</code>.</strong>
+      길찾기 답이 늦게 올 수 있어서, 도착했을 때 <em>"아직 맞는 답인가"</em>를 확인하고 아니면 버리는
+      장치가 ViewModel에 있다. <strong>왜 필요한지는 파트 6에서 다룬다</strong> — 탭은 요청이 한 번뿐이라
+      문제가 잘 안 보이고, 그리기는 한 획에 16번이라 거기서는 안 볼 수가 없다.
+      (3분 복습의 파트 6 능력 선언이 원래 이것이다.)
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>길찾기가 준 것을 구간 하나로 만들어 세션에 건네면 청크 1의 일은 끝난다.
+        어디에 붙일지는 세션이 정한다.</p>
+    </div>
+
+    <h3>⑤ 탭이 늘 두 번은 아니다</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 지금까지는 <em>"탭 두 번 = 구간 하나"</em>로만 봤다.
+      그런데 <strong>코스가 이미 있으면 한 번만 눌러도 이어진다.</strong> 실사용에서는 이쪽이 훨씬 흔하다
+      (장면 ⑩⑪⑫). 손가락이 지도에 닿으면 <strong>두 경우</strong>가 있고, <strong>가는 길이 완전히 다르다.</strong>
+    </p>
+
+    <p>
+      <strong>(가) 빈 곳을 눌렀을 때 — 전부 ViewModel이 한다.</strong> 위도·경도 계산이라 화면이 낄 일이 없다.
+    </p>
+
+    <pre class="code">기존 코스   출발  37.4979, 127.0276
+            도착  37.5006, 127.0364
+
+새로 톡     37.5030, 127.0400
+
+   새 점 ↔ 출발  =  1100m
+   새 점 ↔ 도착  =   350m      ← 가깝다
+
+→ 도착점에서 새 점까지 길찾기. 탭 한 번으로 끝.</pre>
+
+    <p>
+      <strong>하는 일은 거리 두 개를 재서 작은 쪽을 고르는 것뿐</strong>이다.
+      그래서 구간 ①에서 본 <em>"저장하고 기다리기"</em>는 <strong>코스가 아직 없을 때만</strong> 일어난다 —
+      코스가 있으면 출발점을 기존 끝에서 가져오면 되니 기다릴 이유가 없다.
+      <strong>두 번 눌러야 하는 것은 맨 처음 한 번뿐이다.</strong>
+    </p>
+
+    <p>
+      <strong>(나) 핀을 눌렀을 때 — 화면이 "어느 핀인지"를 알려준다.</strong>
+      화면이 넘기는 것은 <strong>둘</strong>이고, 핀 위였어도 좌표는 같이 넘어간다.
+    </p>
+
+    <pre class="code">빈 곳을 눌렀다     →   (37.5030, 127.0400) ,  없음
+출발 핀을 눌렀다   →   (37.4979, 127.0276) ,  .start
+
+ViewModel이 보는 순서
+  1. 핀 값이 있나?
+       .start   →  왕복 구간을 붙인다 (도착점 → 출발점 되짚기).  좌표는 안 쓴다
+       .end     →  "이미 도착점입니다"      — 아무것도 안 한다
+       .merged  →  "이미 닫힌 코스입니다"   — 아무것도 안 한다
+  2. 없으면 그때 좌표를 쓴다 → (가)</pre>
+
+    <p>
+      그래서 <strong>같은 자리를 눌러도 결과가 갈린다.</strong> 출발 핀을 정확히 누르면 왕복이 붙고,
+      살짝 빗나가 빈 곳을 누르면 가까운 끝에서 그 점까지 잇는 새 구간이 붙는다.
+      <strong>좌표는 거의 같은데 결과가 완전히 다르다</strong> — 판정 기준이 좌표가 아니라 핀이라서다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 왜 이것만 화면이 하나 — 미터가 아니라 픽셀이라서</h4>
+      <pre class="code">손가락이 닿은 곳      (200, 340)   화면 픽셀
+출발 핀이 그려진 곳    (210, 350)   화면 픽셀
+
+   둘 사이 거리 = 14픽셀
+   기준          = 24픽셀 이내
+   → 출발 핀을 눌렀다</pre>
+      <p>
+        핀이 여럿이면 <strong>24픽셀 안에 든 것 중 제일 가까운 것</strong>을 고른다.
+        <strong>재는 단위가 픽셀</strong>이므로 지도가 얼마나 확대돼 있는지를 알아야 하고,
+        그건 지도만 안다 — ViewModel은 위도·경도만 안다. <strong>같은 두 점이라도 확대하면 화면에서
+        멀어지고 축소하면 겹쳐 보인다.</strong>
+      </p>
+      <p>
+        <strong>그래도 원칙은 안 깨진다.</strong> 화면이 넘기는 것은
+        <code>.start</code>·<code>.end</code>·<code>.merged</code>·<code>.pendingStart</code>·없음
+        <strong>다섯 중 하나뿐</strong>이다. 터치 좌표도 핀 객체도 안 넘긴다 —
+        <strong>ViewModel이 MapKit을 모르는 상태를 유지하려고</strong> 이만큼 좁혔다.
+        무엇을 할지 정하는 것은 여전히 ViewModel이다.
+      </p>
+    </div>
+
+    <div class="concept">
+      <h4>💡 핀은 눌러도 하이라이트되지 않는다</h4>
+      <p>
+        말풍선이 꺼져 있고(<code>canShowCallout = false</code>) 핀 선택 처리도 없다.
+        <strong>눌러도 핀 모양은 그대로</strong>이고, 바뀌는 것은 코스나 안내 문구다.
+        굵어지는 하이라이트(선이 두꺼워지고 후광이 붙는다)는 <strong>선을 골랐을 때</strong>이고
+        그건 <code>selectedSegmentIndex</code> 쪽 이야기다.
+      </p>
+      <p>
+        그리고 <strong>"병합"은 하는 것이 아니라 핀의 종류</strong>다 — 코스가 한 바퀴 돌아
+        출발·도착이 같은 자리가 되면 핀 둘이 하나로 합쳐져 보인다. 병합할지 말지를 고르는 분기가
+        아니라, 이미 그 상태일 때 그 핀을 누르면 안내만 뜨는 것이다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>코스가 이미 있으면 탭 한 번으로 이어진다 — 가까운 쪽 끝을 골라서.
+        핀을 눌렀는지는 화면이 재고, ViewModel은 "어느 핀"이라는 값 하나만 받는다.</p>
+    </div>
+
+    <div class="oneline">
+      <span class="tag">파트 4를 닫으며 — 이 넷만 남으면 된다</span>
+      <p style="font-weight:500; margin-top:.5rem">
+        ① <strong>좌표는 전부 ViewModel에 있다.</strong> 화면은 저장하지 않고 매번 읽어서 다시 그린다.<br>
+        ② <strong>구간은 숫자 쌍 목록 + 거리 하나가 전부다.</strong> 코스는 그 구간들을 이어붙인 것.<br>
+        ③ <strong>길찾기가 준 것은 "점 두 개 이상인가"만 확인</strong>하고, 구간 하나로 다시 만들어
+           세션에 건넨다 — <strong>거기서 청크 1은 끝난다.</strong><br>
+        ④ <strong>화면은 "어느 핀을 눌렀나"만 재서 넘기고</strong>, 무엇을 할지는 ViewModel이 정한다.
+      </p>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음</strong> — 파트 4 「쉬운 것부터 조립 — 탭 두 번」.
-    지금까지 만든 것을 <em>처음으로 이어 붙이는</em> 파트다. 화면과 서비스 사이에서
-    ViewModel이 무엇을 책임지고 무엇을 안 하는지를 본다.
+    <strong>다음</strong> — 파트 5 「그리기가 부른 도구 — 다운샘플러」.
+    손가락이 지나간 점 수백 개를 <em>왜 120m마다 하나로 솎아내는지</em>,
+    그 숫자를 어떻게 정했는지를 본다. 지금까지 중 가장 짧은 파트다.
   </div>
 
 </div>
