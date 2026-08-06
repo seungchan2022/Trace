@@ -530,10 +530,12 @@
             <code>async</code>·<code>throws</code>는 <strong>호출부에 <code>await</code>·<code>try</code>를 강제</strong> ·
             그리기는 <strong>한 획에 요청 16건</strong>이라 디바운스 300ms·캐시로 줄이고, 그래도 넘으면
             <strong>애플이 스로틀로 거부</strong> → 재시도하면 카운터를 더 올리므로 <strong>스로틀만 재시도에서 뺐다</strong> ·
-            ⚠️ 그런데 <strong><code>snappedRoute</code>는 호출되지 않는다</strong> — MVP3에서
-            <strong>새 획을 앞에 붙일지 뒤집을지 판정</strong>해야 해졌는데 기본 구현은 코스 상태를
-            몰라서 못 한다. 그 판정과 라우팅이 통째로 ViewModel로 옮겨갔다
-            <span class="fixtag">(2026-08-05 정정 — 원래 “요청 폭증 때문”이라 적었으나 코드 확인 결과 아님)</span></div>
+            ⚠️ 그런데 <strong><code>snappedRoute</code>는 호출되지 않는다</strong> — MVP3 설계 §4가
+            <strong>스로틀을 줄이려고 증분 계산으로 갈아타면서</strong> <em>“기본 구현은 유지하되
+            ViewModel 레벨에서 증분 호출로 전환”</em>이라 정했다. <strong>지우기로 한 적이 없어 요구사항만 남고 죽었다.</strong>
+            방향 판정(§2, 새 획을 앞에 붙일지 뒤집을지)은 <strong>별개 항목</strong>이었고 기본 구현은
+            코스 상태를 몰라 못 하므로, 그 판정과 라우팅이 통째로 ViewModel로 갔다
+            <span class="fixtag">(2026-08-06 재정정 — 08-05에 “동기는 스로틀이 아니라 방향”이라 적었으나 설계 문서 확인 결과 아님)</span></div>
         </div>
       </li>
       <li>
@@ -1417,12 +1419,21 @@ extension CoursePlanningServiceProtocol {
     </p>
 
     <div class="concept">
-      <h4>💡 왜 기본 구현을 버렸나 — 붙일 위치와 방향을 정할 수 없었다</h4>
+      <h4>💡 왜 기본 구현을 안 쓰게 됐나 — 설계가 증분 호출로 전환했다</h4>
 
       <div class="fix">
-        ⚠️ <strong>2026-08-05 정정.</strong> 이 절은 원래 <em>“전체 재계산이 캐시를 비껴가 요청이
-        폭증했다”</em>고 썼다. <strong>코드를 확인한 결과 틀렸다</strong>(파트 3 진행 중 사용자
-        질문에서 드러남). 아래가 바로잡은 내용이고, 무엇이 어떻게 틀렸는지는 이 절 끝에 적었다.
+        ⚠️ <strong>이 절은 두 번 고쳤다. 지금 것이 1차 근거로 확정된 판이다(2026-08-06).</strong>
+        <br>
+        ①<strong>2026-08-05</strong> — 원래 <em>“전체 재계산이 캐시를 비껴가 요청이 폭증했다”</em>고
+        썼던 것을 지웠다. 캐시를 비껴간다는 <strong>메커니즘이 틀렸고</strong>, 이건 실측으로 확인했다
+        (이 절 끝). <strong>여기까지는 맞았다.</strong> 그런데 거기서 한 발 더 나가
+        <em>“증분으로 간 근본 동기는 스로틀이 아니라 방향이다”</em>로 <strong>동기까지 바꿔 썼고,
+        그게 지나쳤다.</strong>
+        <br>
+        ②<strong>2026-08-06</strong> — <strong>MVP3 설계 문서를 찾았다.</strong> 없는 줄 알고
+        정황 근거로 추론했던 것인데, 아카이빙된 MVP 문서는 <code>docs/superpowers/specs/</code>가
+        아니라 <code>history/</code>로 옮겨간다(<code>d667456</code>). 문서가 동기를 직접 적어 두었고,
+        <strong>①의 동기 부분은 틀렸다.</strong>
       </div>
 
       <p>
@@ -1438,39 +1449,59 @@ extension CoursePlanningServiceProtocol {
 나온 지점들을 전부 다시 라우팅한다</pre>
 
       <p>
-        <strong>문제는 “그린 순서대로”다.</strong> 합치는 코드가
-        <code>drawnStrokes.flatMap</code>이라 <strong>그은 순서 외의 배치를 표현할 자리가 없다.</strong>
-        그런데 사용자는 <strong>기존 코스 앞쪽에 이어 그리기도 하고, 거꾸로 긋기도 한다.</strong>
-        그러면 새 획을 <strong>앞에 붙이거나(prepend) 좌표를 뒤집어야</strong> 하는데, 순서대로
-        합치는 방식으로는 그 판단을 넣을 데가 없다.
-      </p>
-      <p>
-        이건 추론이 아니라 <strong>실기기에서 실제로 나온 피드백</strong>이다 —
-        <code>docs/backlog.md</code>의 MVP2 항목 <em>“비연속 구간 그리기 시 이상한 결과”</em>가
-        그것이고, <strong>MVP3에서 방향 감지 + 증분 계산으로 닫혔다</strong>고 기록돼 있다.
+        MVP3은 이 방식을 갈아엎었다. 설계 문서가
+        <code>history/mvp3/2026-06-24-mvp3-ux-throttle-design.md</code>에 남아 있고,
+        <strong>거기에 항목이 다섯 세워져 있다.</strong> 지금 보는 것과 얽힌 것은 둘이다.
       </p>
 
-      <div class="fix">
-        <strong>다만 기록에는 이유가 둘 적혀 있다.</strong> 같은 작업이 닫은 MVP2 피드백이
-        <em>“비연속 구간 그리기 시 이상한 결과”</em>와 <em>“스로틀 한계 측정 + 모니터링”</em>
-        <strong>둘</strong>이고, <code>project-decisions.md</code>에도 <em>“MVP3에서 증분 계산으로
-        해결”</em>이 스로틀 항목 아래에 적혀 있다. <strong>그런데 아래 실측을 보면 증분이 요청을
-        줄이지 않는다</strong>(7건 → 8건). 그래서 이 노트는 <strong>기록 둘 중 방향 쪽이 근본
-        동기</strong>이고 스로틀 완화는 함께 적힌 것으로 본다. 확정 근거가 될 MVP3 설계 문서는
-        저장소에 남아 있지 않아, <strong>여기까지가 근거로 말할 수 있는 전부다.</strong>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>설계 문서 항목</th><th>제목</th><th>무엇을 고치려는 것인가</th></tr></thead>
+          <tbody>
+            <tr><td>§2</td><td>비연속 구간 그리기 — 자동 방향 감지</td><td>새 획을 앞에 붙일지 뒤에 붙일지 뒤집을지</td></tr>
+            <tr><td>§4</td><td><strong>스로틀 완화 — 증분 계산</strong></td><td>라우팅 <strong>요청 수</strong></td></tr>
+          </tbody>
+        </table>
       </div>
+
       <p>
-        MVP3에서 <strong>증분 계산</strong>으로 바꿨다 — 새 획 하나만 솎아내고, 기존 코스와의
-        <strong>연결 1건</strong>만 따로 계산한다. 같은 커밋(<code>705d095</code>)에
-        <strong><code>StrokeDirectionResolver</code></strong>가 함께 들어왔다.
-        새 획을 <code>append</code>할지 <code>prepend</code>할지 <code>initial</code>인지를
-        판정하는 것이고, <strong>이 판정을 넣을 자리를 만드는 것이 이 변경의 목적</strong>이다.
+        <strong>증분으로 간 동기는 §4에 그대로 적혀 있다.</strong> 제목이 “스로틀 완화”이고
+        문제 진술이 이렇다 — <em>“스트로크가 추가될 때마다 전체 포인트를 <code>flatMap</code> →
+        <code>snappedRoute</code>로 N-1번 라우팅 요청. 스트로크가 늘어날수록 호출이 누적되어
+        60초당 50요청 한계에 도달한다.”</em>
+      </p>
+      <p>
+        <strong>방향 감지(§2)는 별개 항목이었다.</strong> 실기기에서 나온 MVP2 피드백
+        <em>“비연속 구간 그리기 시 이상한 결과”</em>가 재료다. 둘이 한 커밋에 같이 들어온 것은
+        <strong>원인과 결과여서가 아니라 건드리는 코드가 같아서</strong>이고, 문서의 마일스톤 표가
+        그 말을 그대로 쓴다 — <em>“항목 2+4는 같은 파이프라인이라 통합”</em>. 실행 순서도
+        문서를 따라갔다.
+      </p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>커밋</th><th>시각</th><th>내용</th></tr></thead>
+          <tbody>
+            <tr><td><code>d61c57d</code></td><td>06-25 00:38</td><td>§2 — <code>StrokeEntry</code> + <code>StrokeDirectionResolver</code>(도메인 타입 + 테스트 4개)</td></tr>
+            <tr><td><code>4e7a23b</code></td><td>06-25 00:52</td><td>§5 — 스로틀 감지 및 재시도 우회</td></tr>
+            <tr><td><code>705d095</code></td><td>06-25 01:02</td><td>§4 — <code>recomputeSnappedCourse</code> → 증분 파이프라인</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <strong>증분 계산</strong>은 새 획 하나만 솎아내고, 기존 코스와의 <strong>연결 1건</strong>만
+        따로 계산한다. 그리고 <strong>여기가 ⑤의 답이다</strong> — §4가 기본 구현의 처분을
+        직접 정해 두었다: <em>“기존 <code>snappedRoute</code> 프로토콜 기본 구현은 <strong>유지하되</strong>,
+        ViewModel 레벨에서 증분 호출로 전환.”</em> 즉 <strong>지우기로 한 적이 없다.</strong>
+        쓰지 않기로만 정했고 요구사항은 프로토콜에 남았다. 죽은 코드가 된 경위가 이것이다.
       </p>
 
       <div class="fix">
-        <strong>무엇이 틀렸었나 — 캐시는 제 역할을 하고 있었다.</strong>
-        원래 이 절은 <em>“합친 전체를 다시 솎아내면 솎아낸 지점 자리가 매번 달라져 캐시를
-        비껴가고, 획이 쌓일수록 요청이 누적해서 늘어난다”</em>고 주장했다.
+        <strong>그런데 §4의 문제 진술은 실측과 어긋난다 — 캐시가 받치고 있었다.</strong>
+        §4는 <em>“N-1번 요청이 누적된다”</em>까지만 세고 <strong>캐시를 계산에 넣지 않았다.</strong>
+        (이 노트의 예전 판은 거기서 한 발 더 나가 <em>“솎아낸 지점 자리가 매번 달라져 캐시를
+        비껴간다”</em>고까지 썼는데, <strong>그건 설계 문서도 한 적 없는 주장이고 코드로도 틀렸다.</strong>)
         당시 솎아내기 코드는 판정 기준이 <strong>“직전에 채택한 점에서 120m 이상 떨어졌나”</strong>
         하나뿐이라 <strong>앞에서부터 순서대로 돌고, 뒤에 무엇이 붙든 앞쪽 채택점은 그대로다.</strong>
         그래서 앞 획에서 이미 물어본 지점 쌍이 캐시에서 그대로 나온다.
@@ -1496,8 +1527,19 @@ extension CoursePlanningServiceProtocol {
         (캐시 자체는 파트 3 ⑤에서 다룬다). 히트 <em>건수</em>는 획 길이에 따라 달라지지만,
         <strong>앞쪽 채택점이 보존된다는 것은 알고리즘 구조라 획 모양과 무관하다.</strong>
       </div>
+
       <p>
-        <strong><code>snappedRoute</code>로는 그것을 못 한다.</strong> 이유가 둘이고,
+        <strong>여기서 갈라 봐야 할 것이 있다 — “왜 그렇게 했나”와 “그게 맞았나”는 다른 질문이다.</strong>
+        설계 문서는 스로틀을 줄이려고 증분으로 갔다고 적었고, <strong>그게 동기다.</strong> 실측이
+        반증하는 것은 동기가 아니라 <strong>그 동기가 딛고 선 전제</strong>다 — 캐시를 계산에 넣으면
+        요청이 줄지 않는다. <strong>동기는 기록으로 확인하고, 전제는 코드로 확인한다.</strong>
+        둘을 같은 것으로 놓으면 <em>“요청이 안 줄었으니 동기가 저게 아니었겠지”</em>로 미끄러지는데,
+        이 노트가 2026-08-05에 실제로 그렇게 미끄러졌다.
+      </p>
+      <p>
+        <strong>그래서 증분 전환은 결과적으로 §2 쪽에서 값을 했다.</strong> 방향 판정을 넣을 자리가
+        생겼기 때문이다. 그리고 그 판정을
+        <strong><code>snappedRoute</code>로는 할 수 없다.</strong> 이유가 둘이고,
         <strong>①이 더 근본이다.</strong>
         ①<strong>판단에 필요한 정보를 모른다</strong> — 새 획을 코스 앞에 붙일지 뒤에 붙일지,
         뒤집어야 하는지는 <strong>지금 코스가 어떤 상태인지</strong>를 알아야 정하는데,
@@ -1505,6 +1547,16 @@ extension CoursePlanningServiceProtocol {
         ②<strong>결과를 적을 자리도 없다</strong> — 설령 알아냈다 해도
         <em>“이 획은 앞에 붙이고 뒤집어라”</em>를 넘길 파라미터가 없다.
       </p>
+
+      <div class="fix">
+        ⚠️ <strong><code>StrokeDirectionResolver</code>와 <code>StrokeEntry</code>는 지금 코드에 없다</strong>
+        — 이름으로 찾으면 아무것도 안 나온다. <code>47e3dbf</code>(2026-07-01)가 지웠다.
+        <strong>기능이 없어진 게 아니라 옮겨갔다.</strong> 그 커밋이 그리기를
+        <em>“획 하나 = 세그먼트 하나”</em>로 통일하면서, 세그먼트를 붙일 때 이미 하고 있던
+        <strong>4방향 판단을 그대로 쓰게 됐고</strong> 획 전용 타입 둘과 누적 버퍼가 필요 없어졌다.
+        지금 그 판단이 사는 곳은 <code>CourseEditSession.attach</code>다 —
+        <strong>바로 아래 💡가 “더 맞아 보이는 자리”로 지목하는 그 타입이다.</strong>
+      </div>
     </div>
 
     <div class="concept">
@@ -1961,19 +2013,29 @@ private extension CourseCoordinate {
     </p>
 
     <div class="concept">
-      <h4>💡 캐시는 MVP3 증분 전환과 인과관계가 없다</h4>
+      <h4>💡 캐시와 MVP3 증분 전환 — 설계가 캐시를 계산에 넣지 않았다</h4>
+
+      <div class="fix">
+        ⚠️ <strong>이 상자는 2026-08-06에 다시 썼다.</strong> 직전 판은
+        <em>“증분으로 간 이유는 방향이고 캐시는 그 이야기에 등장하지 않는다”</em>고 했는데,
+        <strong>MVP3 설계 문서를 찾고 나서 틀린 것으로 확인됐다</strong>(파트 2 정정 상자 참고).
+      </div>
+
       <p>
-        파트 2 ⑤가 원래 이 둘을 연결했는데 <strong>그 연결이 틀려서 2026-08-05에 지웠다.</strong>
-        증분으로 간 이유는 <strong>방향</strong>(새 획을 앞에 붙일지 뒤집을지)이었고, 캐시는 그
-        이야기에 등장하지 않는다.
+        <strong>캐시는 이 이야기의 한복판에 있다.</strong> 설계 문서 §4가 증분으로 간 이유로 든 것이
+        <strong>라우팅 요청 수</strong>인데, 요청 수를 줄이고 있던 것이 바로 이 캐시다. 그런데
+        <strong>§4의 문제 진술은 캐시를 세지 않았다</strong> — <em>“N-1번 요청이 누적된다”</em>까지만
+        보고 그중 몇 건이 캐시에서 나오는지는 계산에 없다. 실측하면 옛 방식이 오히려 한 건 적다
+        (7건 대 8건). <strong>인과가 없는 게 아니라, 설계가 캐시를 빠뜨린 채 인과를 세운 것이다.</strong>
       </p>
       <p>
         <strong>캐시가 하는 일은 부르는 쪽이 무엇이든 똑같다</strong> — 같은 두 지점을 또 물으면
         저장된 값을 준다. 다만 <strong>얼마나 자주 맞는지는 부르는 쪽에 따라 달라진다.</strong>
         전체 재계산(MVP2)은 앞부분이 매번 그대로 다시 나와 자주 맞았고(실측: 지점 쌍 14건 중
         <strong>7건 히트</strong> — 파트 2 정정 상자 참고), 증분(MVP3~)은 새로 그은 부분만
-        물으므로 덜 맞는다. <strong>인과는 없고 빈도만 영향받는다</strong> — 캐시는
-        없어진 것이 아니라 역할이 줄었다.
+        물으므로 덜 맞는다. 즉 <strong>증분 전환이 캐시를 없앤 것이 아니라 덜 맞게 만들었다</strong> —
+        요청을 줄이려던 변경이 <strong>요청을 줄이던 장치의 효율을 깎은 셈</strong>이고, 실측의
+        7건 대 8건이 그 결과다.
       </p>
       <p>
         <strong>실제 히트율은 측정된 적이 없다.</strong> 그래서 <em>“지금도 값을 하는가”</em>는
