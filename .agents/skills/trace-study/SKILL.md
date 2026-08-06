@@ -132,7 +132,7 @@ description: Trace의 기능 하나를 코드·테스트·MVP 문서 근거로 �
 |---|---|
 | **코드** | 짧은 Domain 파일(평균 33줄)은 **통째로**. 큰 파일(`MapViewRepresentable` 688줄 등)은 **해당 함수만** |
 | **테스트** | `grep "func test"`로 **이름만**. 본문은 안 읽는다 — 이름이 곧 "무엇을 보장하는가"다. 세션당 5분 |
-| **MVP 문서** | `docs/roadmap.md`로 어느 MVP인지 먼저 거른 뒤 **design·kickoff만** 연다. plan·checklist는 재료가 아니다 |
+| **MVP 문서** | `docs/roadmap.md`로 어느 MVP인지 먼저 거른 뒤 **design·kickoff만** 연다. plan·checklist는 재료가 아니다. ⚠️ **아카이빙된 MVP 문서는 `history/mvp{N}/`에 있다** — `docs/superpowers/specs/`에는 진행 중인 것만 남는다. **거기만 보고 "설계 문서 없음"으로 판정하지 말 것**(2026-08-05에 그 오판으로 파트 2의 동기를 추론으로 채웠고 다음 날 뒤집혔다) |
 
 ## [2] 문서 ↔ 코드 불일치 검사 (생략 금지)
 
