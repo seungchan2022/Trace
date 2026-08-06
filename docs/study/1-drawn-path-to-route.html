@@ -472,6 +472,7 @@
     <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 약속을 정한다 · 프로토콜">약속을 정한다 — 프로토콜</a></li>
     <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 약속을 지킨다 · MapKit 구현체">약속을 지킨다 — 구현체</a></li>
     <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 쉬운 것부터 조립 · 탭 두 번">쉬운 것부터 조립 — 탭</a></li>
+    <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — 그리기가 부른 도구 · 다운샘플러">그리기가 부른 도구 — 다운샘플러</a></li>
   </ol>
 </nav>
 
@@ -495,7 +496,7 @@
       <li class="on"><span class="k">2</span><a href="#p2">약속을 정한다 — 프로토콜</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">약속을 지킨다 — MapKit 구현체</a></li>
       <li class="on"><span class="k">4</span><a href="#p4">쉬운 것부터 조립 — 탭 두 번</a></li>
-      <li><span class="k">5</span><span class="todo">그리기가 부른 도구 — 다운샘플러</span></li>
+      <li class="on"><span class="k">5</span><a href="#p5">그리기가 부른 도구 — 다운샘플러</a></li>
       <li><span class="k">6</span><span class="todo">어려운 것 조립 — 그린 선</span></li>
       <li><span class="k">7</span><span class="todo">뷰에 꽂는다 — 제스처 두 개</span></li>
     </ol>
@@ -571,11 +572,21 @@
             하나만 넘긴다 — <strong>무엇을 할지는 여전히 ViewModel</strong></div>
         </div>
       </li>
-      <li class="pending">
+      <li>
         <span class="k">5</span>
         <div>
           <div class="can">점 사이 최소 간격을 바꾸면 무엇이 좋아지고 무엇이 깨지는지 판정할 수 있다</div>
-          <div class="sum">그리기가 부른 도구 — 점을 솎아내는 다운샘플러</div>
+          <div class="sum"><strong>원시 점은 손가락 궤적을 일정 주기로 찍은 표본</strong>이라
+            <strong>개수가 획 길이가 아니라 손 속도에 끌려다닌다</strong>(천천히 그으면 많고 빨리 그으면 적다) ·
+            그래서 <strong>솎아내지 않으면 요청 수를 앱이 통제할 수 없다</strong> ·
+            다운샘플러는 <strong>좌표를 만들지 않고</strong> 원본 점 중 <strong>누적거리 120m마다 하나</strong>를
+            고를 뿐(시작·끝은 항상) — <strong>통과하면 입력 개수의 흔적이 사라진다</strong>
+            (실측: 199개→3개 · 52개→5개) · <strong>재는 것은 자로 잰 거리가 아니라 따라 걸어온 거리</strong>다.
+            직선거리로 재던 시절 <strong>반지름 55m 원(둘레 346m)이 지름 110m &lt; 120m라 통째로 솎여</strong>
+            0.01km로 붕괴했고 MVP4가 누적거리로 교체 · <strong>120m는 만들기 전에 재고 정한 값</strong>
+            (60m로 잘게 나누면 오히려 충실도가 나빠지고 실패 8건) · 탭과 그리기는 <strong>같은 길찾기</strong>를
+            쓰고 다른 것은 <strong>조각 수뿐</strong>(1 대 16), 이어붙이기 문제는 그리기에만 생긴다 ·
+            ⚠️ 테스트 6줄은 <strong>모양 붕괴는 잡지만 요청 실패는 못 잡는다</strong></div>
         </div>
       </li>
       <li class="pending">
@@ -2138,7 +2149,7 @@ private extension CourseCoordinate {
     </div>
   </details>
 
-  <details class="part" id="p4" open>
+  <details class="part" id="p4">
     <summary>
       <span class="part-tag">파트 4 / 7</span>
       <span class="ptitle">쉬운 것부터 조립 — 탭 두 번</span>
@@ -2506,10 +2517,504 @@ ViewModel이 보는 순서
     </div>
   </details>
 
+  <details class="part" id="p5" open>
+    <summary>
+      <span class="part-tag">파트 5 / 7</span>
+      <span class="ptitle">그리기가 부른 도구 — 다운샘플러</span>
+    </summary>
+    <div class="pbody">
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      <strong>그리기가 탭과 갈리는 첫 지점.</strong> 손가락이 만든 점을 그대로 쓸 수 없어서
+      <strong>솎아내는 부품 하나가 더 생긴다</strong>.
+    </div>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>점 사이 최소 간격을 바꾸면 무엇이 좋아지고 무엇이 깨지는지 판정할 수 있다.</p>
+    </div>
+
+    <p>
+      <strong>사용자 장면으로는 어디인가</strong> — <em>손가락으로 지도를 긋고 선이 나오는</em> 장면이다.
+      다만 이 파트가 다루는 것은 <strong>화면에 아무것도 안 보이는 구간</strong>이다.
+      손을 뗀 뒤 길찾기를 부르기 <strong>직전</strong>, 코드 안에서만 일어난다.
+    </p>
+
+    <h3>들어가며 — 한 획을 그으면 순서대로 일어나는 일</h3>
+
+    <p>
+      파트 5는 아래 <strong>3번 한 줄</strong>만 다룬다. 나머지는 그 한 줄이 어디에 놓이는지
+      보여주려고 깔아둔 것이고, 조립(5~8)은 <strong>파트 6</strong>이다.
+    </p>
+
+    <ol>
+      <li>손가락으로 지도를 긋는다. 떼는 순간 <strong>원시 좌표 한 뭉치</strong>(<code>rawStroke</code>)가 손에 들어온다.</li>
+      <li>이 뭉치는 화면이 찍어준 것이라 촘촘하다.</li>
+      <li><strong>뭉치를 그대로 쓰지 않는다.</strong> <code>DrawnPathSampler</code>에 넣어 <strong>120m마다 하나만 남기고 버린다.</strong></li>
+      <li>경복궁 앞 ㄷ자 우회 1.9km 획 기준 — 남는 점 <strong>17개</strong>(2026-06-20 실측).</li>
+      <li>남은 17개를 앞에서부터 <strong>이웃끼리 짝짓는다</strong> → 조각 <strong>16개</strong>.</li>
+      <li>조각마다 길찾기를 <strong>하나씩 차례로</strong> 부른다 → 요청 <strong>16건</strong>, 약 1.1초.</li>
+      <li>돌아온 16개를 이어 붙여 <strong>구간 하나</strong>(<code>CourseSegment</code>)로 만든다.</li>
+      <li>그 구간을 세션(<code>CourseEditSession</code>)에 건넨다. 어디에 붙일지는 <strong>세션이 정한다.</strong></li>
+      <li>화면에는 선 하나가 그려진다. 눈에는 한 획이지만 <strong>안에서는 16번 물어본 결과</strong>다.</li>
+    </ol>
+
+    <div class="concept">
+      <h4>💡 점 n개는 왜 조각 n−1개가 되나</h4>
+      <p>
+        점을 <strong>두 개씩 나눠 담는 것이 아니라 이웃끼리 잇기</strong> 때문이다.
+        점 다섯 개를 <code>A B C D E</code>라 하면 조각은 <code>A→B</code>, <code>B→C</code>,
+        <code>C→D</code>, <code>D→E</code> 넷이다 — <strong><code>B</code>는 1번 조각의 끝이면서
+        2번 조각의 시작</strong>이라 점 하나가 두 조각에 겹쳐 쓰인다.
+      </p>
+      <p>
+        나눠 담으면(<code>A→B</code>, <code>C→D</code>) <strong><code>B</code>와 <code>C</code> 사이가
+        비어 선이 토막 난다.</strong> 이어져야 하니 겹쳐 잇고, 그래서 조각은 늘 점보다 하나 적다.
+      </p>
+      <p>
+        <strong>겹쳐 쓰는 대가로 이어 붙일 때 중복 처리가 필요하다.</strong> 첫 조각만 통째로 넣고
+        <strong>두 번째부터는 맨 앞 점 하나를 뺀다</strong>. 같은 처리가 코드에 네 군데 있다 —
+        ViewModel(조각→획) · <code>CourseEditSession</code>(구간→구간) ·
+        <code>PlannedCourse</code>(구간들→좌표 한 줄, 주석이 <em>"세그먼트 사이 첫 좌표 중복 제거"</em>) ·
+        파트 3에서 본 죽은 <code>snappedRoute</code>.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>한 획은 통째로 길찾기에 가지 않는다. <strong>점으로 솎아내고, 이웃끼리 짝지어 조각으로
+        쪼개서, 조각마다 따로 묻는다.</strong></p>
+    </div>
+
+    <h3>① 탭과 그리기는 어디서 갈리나</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 파트 4에서 탭을 다 봤는데 <strong>왜 부품이 하나 더
+      필요한지</strong>를 먼저 세워야, 다운샘플러가 <em>"있어도 되고 없어도 되는 것"</em>으로 읽히지 않는다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th></th><th>점</th><th>조각</th><th>길찾기</th><th>결과</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>탭</strong></td><td>2개</td><td>1개</td><td><strong>1번</strong></td><td>구간 1개</td></tr>
+          <tr><td><strong>그리기</strong></td><td>17개</td><td>16개</td><td><strong>16번</strong></td><td>구간 1개</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>구조는 똑같고 조각 개수만 다르다.</strong> 파트 3에서 본 <code>route(from:to:)</code>
+      하나로 둘 다 처리된다 — 그리기 전용 길찾기 같은 것은 없고, <strong>같은 것을 16번 부를 뿐</strong>이다.
+    </p>
+
+    <p>
+      <strong>탭이 점 2개인 이유도 같은 자리에서 나온다.</strong> 탭은 사용자가 직접 두 점을 찍으니
+      <strong>솎아낼 것이 없어서 다운샘플러를 아예 거치지 않는다.</strong> 그리기만 이 부품이 필요한 이유가 그것이다.
+    </p>
+
+    <p>
+      그리고 <strong>이어 붙이기라는 문제 자체가 그리기에만 있다.</strong> 탭은 조각이 하나라
+      <strong>이을 상대가 없고</strong>, 그 조각이 곧 구간이다.
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>탭과 그리기는 <strong>같은 길찾기</strong>를 쓴다. 다른 것은 <strong>몇 조각으로 나눠
+        묻느냐</strong>뿐이고, 이어 붙이기는 그리기에만 생긴다.</p>
+    </div>
+
+    <h3>② 원시 점은 무엇인가 — 손가락 궤적의 표본</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 솎아낼 대상이 무엇인지 모르면 <em>"왜 솎아야 하는지"</em>도
+      안 선다. 특히 <strong>원이나 곡선을 그렸을 때 데이터가 어떻게 생기는지</strong>가 여기서 정해진다.
+    </p>
+
+    <p>
+      그리기는 <code>UILongPressGestureRecognizer</code>로 받는다. 손가락이 움직이는 동안
+      <strong>iOS가 계속 콜백을 보내고, 그때마다 점 하나씩 쌓는다.</strong> 각 콜백이 하는 일은
+      <strong>지금 손가락이 화면 어디인지 묻고, 그 화면 위치를 위경도로 바꿔 배열에 넣는 것</strong>이다.
+      손을 떼는 순간 그 배열이 통째로 넘어가고, 그것이 <code>rawStroke</code>다.
+    </p>
+
+    <pre>
+손가락 화면 위치        지도가 변환            배열에 저장
+(x: 210, y: 388)  →  (37.4979, 127.0276)  →  rawStroke</pre>
+
+    <p>
+      화면 좌표는 <strong>지금 지도가 어디를 얼마나 확대해 보여주는지에 따라 매번 다른 위경도가
+      된다.</strong> 같은 화면 자리를 눌러도 지도를 옮기면 다른 곳이 되므로 <strong>찍는 즉시
+      변환해서 넣는다.</strong>
+    </p>
+
+    <div class="concept">
+      <h4>💡 "모든 점"이라는 것은 없다</h4>
+      <p>
+        손가락이 지나간 자리는 <strong>끊김 없이 이어진 선</strong>이지만, iOS가 그 위치를 아는 것은
+        <strong>띄엄띄엄</strong>이다. 화면이 손가락을 <strong>정해진 주기로만 읽는다.</strong>
+        읽는 사이사이에도 손가락은 움직이지만 <strong>그 순간들은 기록되지 않는다.</strong>
+      </p>
+      <pre>
+실제 손가락이 지나간 자리:  ━━━━━━━━━━━━━━━━━
+iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
+      <p>
+        그래서 두 설명이 <strong>둘 다 맞다</strong> — <strong>주기적으로 읽는다</strong>(시간에 비례해
+        쌓인다)와 <strong>안 움직였으면 안 보낸다</strong>(손가락을 멈추면 같은 자리가 중복으로 안 쌓인다).
+      </p>
+      <p>
+        <strong>여기서 이 파트의 핵심이 나온다.</strong> 읽는 주기는 일정한데 그 사이 손가락이 더
+        멀리 갔거나 덜 갔으므로 —
+      </p>
+      <pre>
+같은 A → B 거리
+
+천천히 (10초)   ● ● ● ● ● ● ● ● ● ● ● ●   점 많음
+빠르게 (2초)    ●    ●    ●    ●          점 적음</pre>
+      <p>
+        <strong>원시 점 개수는 획의 길이로 정해지지 않는다. 사용자가 얼마나 천천히 그었느냐로
+        정해진다.</strong> 앱 입장에서는 <strong>몇 개가 올지 미리 알 수 없다</strong> — 같은 코스를
+        그려도 어떤 날은 적게, 어떤 날은 몇 배로 온다.
+      </p>
+    </div>
+
+    <p>
+      <strong>이 코드는 사용자가 원을 그리는지 직선을 그리는지 모른다.</strong> 모양을 판단하는
+      자리가 없고 <strong>손가락 위치를 주기마다 기록할 뿐</strong>이다. 곡선이라고 다른 데이터가
+      나오는 것이 아니라, <strong>점이 촘촘히 찍혀서 이어놓으면 곡선처럼 보이는 것</strong>이다.
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>원시 점은 손가락 궤적을 <strong>일정 주기로 찍어낸 표본</strong>이다. 궤적 전체도 아니고,
+        모양 정보도 없다. <strong>개수는 손 속도에 끌려다닌다.</strong></p>
+    </div>
+
+    <h3>③ 다운샘플링 — 개념과 이 프로젝트에서의 자리</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 이 부품의 이름이 곧 개념이다. 개념을 모르고 동작만 보면
+      <em>"120m마다 자른다"</em>는 오해가 남는데, <strong>자르는 것이 아니다.</strong>
+    </p>
+
+    <div class="concept">
+      <h4>💡 다운샘플링이란</h4>
+      <p>
+        <strong>촘촘하게 기록된 표본에서 일부만 골라내 성기게 만드는 것</strong>이다.
+        이름 그대로 샘플(표본)을 다운(줄임)한다. 두 가지 성질이 따라온다.
+      </p>
+      <p>
+        <strong>① 골라내는 것이지 새로 만드는 것이 아니다.</strong> 남은 표본은 전부 원본에 있던 것
+        그대로다. <strong>② 버린 만큼 정보가 사라진다.</strong> 그래서 다운샘플링에는 늘 같은 질문이
+        붙는다 — <strong>"얼마나 줄여야 원본을 알아볼 수 있나."</strong>
+      </p>
+    </div>
+
+    <pre>
+손가락 궤적          ━━━━━━━━━━━━━━  (연속, 기록 불가)
+       ↓ iOS가 주기로 찍음
+원시 점 (표본 1차)   ● ● ● ● ● ● ● ●  ← 이미 표본이다
+       ↓ 120m마다 골라냄  ← 다운샘플링
+남은 점 (표본 2차)   ●       ●       ●</pre>
+
+    <p>
+      <strong>원시 점 자체가 이미 궤적의 표본이다.</strong> 다운샘플러는 그것을 <strong>한 번 더</strong>
+      줄인다. 그래서 이 부품 이름이 <code>DrawnPathSampler</code>(그린 경로 표본기)다.
+    </p>
+
+    <p>
+      <strong>위경도를 120m 단위로 쪼개는 일은 없다.</strong> 새 위치를 계산하지 않는다.
+      원본 점이 <strong>이미 각자 위경도를 갖고 있고</strong>, 다운샘플러는 그중 어느 것을 남길지만
+      고른다. 그래서 <em>"화면에 표현할 위경도를 어떻게 정하나"</em>라는 문제가 생기지 않는다.
+      <strong>120m는 고르는 기준일 뿐 좌표를 만드는 데 쓰이지 않는다.</strong>
+    </p>
+
+    <p>
+      고르는 규칙은 세 줄이고, 파일은 <strong>25줄</strong>짜리 하나다. 길찾기도 안 부르고 지도도
+      모르고 화면도 모른다 — <strong>점 목록을 받아 점 목록을 돌려주는 것이 전부</strong>다.
+    </p>
+
+    <ol>
+      <li><strong>첫 점은 무조건 남긴다.</strong></li>
+      <li><strong>앞에서부터 훑으며 지나온 거리를 더해간다. 120m를 넘으면 그 점을 남기고, 더하던 거리를 0으로 되돌린다.</strong></li>
+      <li><strong>마지막 점은 무조건 남긴다</strong>(이미 남아 있지 않다면).</li>
+    </ol>
+
+    <p>점 8개가 들어왔고 점 사이가 각각 40m라면 이렇게 흐른다.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>점</th><th>지나온 거리</th><th>판정</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>—</td><td><strong>남김</strong> (첫 점)</td></tr>
+          <tr><td>2</td><td>40m</td><td>버림</td></tr>
+          <tr><td>3</td><td>80m</td><td>버림</td></tr>
+          <tr><td>4</td><td><strong>120m</strong></td><td><strong>남김</strong> → 거리 0으로 되돌림</td></tr>
+          <tr><td>5</td><td>40m</td><td>버림</td></tr>
+          <tr><td>6</td><td>80m</td><td>버림</td></tr>
+          <tr><td>7</td><td><strong>120m</strong></td><td><strong>남김</strong> → 거리 0으로 되돌림</td></tr>
+          <tr><td>8</td><td>40m</td><td><strong>남김</strong> (마지막 점)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>8개가 4개가 됐고, 남은 4개는 원래 있던 점 그대로다.</strong>
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>다운샘플러는 <strong>좌표를 만들지 않는다.</strong> 원본 점 중 <strong>어느 것을 남길지만</strong>
+        고르고, 시작과 끝은 항상 남긴다.
+        <span class="aside">곁가지: 두 위경도가 몇 미터 떨어졌는지 구하는 공식(Haversine)은 이 학습 범위 밖이다.
+        위치만 알아두면 된다 — <code>CourseCoordinate.distanceMeters(to:)</code>, 다운샘플러와 같은 커밋에 같이 들어왔다.</span></p>
+    </div>
+
+    <h3>④ 왜 있나 — 최적화가 아니라 성립 조건</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 이 부품을 <em>"빠르게 하려고 넣은 것"</em>으로 읽으면
+      <strong>빼도 되는 부품</strong>으로 보인다. 실제로는 <strong>빼면 기능이 완성되지 않는다.</strong>
+    </p>
+
+    <p>
+      답은 <strong>2026-06-20 실측 표</strong>에 있다. 1.9km 획을 간격만 바꿔가며 이어붙여 본 결과다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>간격</th><th>점 / 조각</th><th>시간</th><th>충실도(avg/max 우회비)</th><th>실패</th></tr></thead>
+        <tbody>
+          <tr><td>직선 A→B</td><td>2 / 1</td><td>0.2s</td><td>내 모양 무시(직선으로 질러감)</td><td>0</td></tr>
+          <tr><td>250m(성김)</td><td>9 / 8</td><td>0.8s</td><td>1.18 / 1.65 (모양 재현)</td><td>0</td></tr>
+          <tr><td><strong>120m(중간)</strong></td><td><strong>17 / 16</strong></td><td><strong>1.1s</strong></td><td><strong>1.12 / 1.80 (가장 충실)</strong></td><td><strong>0</strong></td></tr>
+          <tr><td>60m(촘촘)</td><td>34 / 33</td><td>1.9s</td><td>1.34 / 5.71 (들쭉날쭉)</td><td><strong>8</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>60m 행이 핵심이다.</strong> 원시 점을 보낸 것도 아니고 간격을 절반으로 줄였을 뿐인데
+      <strong>33개 중 8개가 실패했다.</strong> 그리고 <strong>느려진 것이 문제가 아니다</strong> —
+      1.9초는 기다릴 만하다. <strong>조각 하나가 답을 못 받으면 선이 거기서 끊긴다.</strong>
+      화면에 나오는 것은 "느린 선"이 아니라 <strong>구멍 난 선</strong>이다.
+    </p>
+
+    <p>
+      <strong>시간 열도 같이 읽으면 하나가 더 보인다.</strong> 조각 8개는 0.8초, 16개는 1.1초,
+      33개는 1.9초다. 조각 수만큼 시간이 쌓이는 것은 <strong>16번을 한꺼번에 부르지 않고 하나씩
+      차례로 부르기 때문</strong>이다(그 이유는 파트 6).
+    </p>
+
+    <p>
+      <strong>잘게 나눌수록 좋아지는 것도 아니다.</strong> 60m는 충실도까지 나빠졌다(max 우회비 5.71) —
+      조각이 짧아지니 길찾기가 그 안에서 <strong>블록을 우회</strong>해서다. 실험이 찾은 것은
+      정답 하나가 아니라 <strong>약 100–150m라는 범위</strong>였고, 120m는 그 안의 값이다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 이 값은 부품을 만들기 <em>전에</em> 정해졌다</h4>
+      <p>
+        순서가 흔한 것과 반대다. <strong>만들고 나서 튜닝한 것이 아니라, 모르는 것을 먼저 재고
+        그 답 위에 만들었다.</strong>
+      </p>
+      <pre>
+흔한 순서    만든다 → 느리다·깨진다 → 튜닝한다
+이 프로젝트  모르는 걸 적는다 → 잰다 → 값을 정한다 → 만든다</pre>
+      <p>
+        이 실측은 <strong>production 코드 0줄</strong>인 상태에서 <code>/tmp</code> 스크립트로 돌렸다
+        (그래서 저장소에 실험 코드는 없고 <strong>결과만 남았다</strong>). 설계 문서가 이유를 적어뒀다 —
+        <em>"이미 단일 <code>MKDirections</code>는 한국에서 동작함을 실측했지만, 이 기능이 의존하는 것은
+        <strong>여러 구간 이어붙이기</strong>라 <strong>별개의 미검증 가정</strong>"</em>이고,
+        <em>"실패하면 제공자(Valhalla)로 점프 … 결과가 스펙을 재형성할 수 있으므로 1순위"</em>였다.
+        <strong>결과가 나빴으면 MapKit을 버릴 작정이었다.</strong>
+      </p>
+      <p>
+        <strong>다만 세 값(250·120·60)을 왜 그 값으로 골랐는지는 기록에 없다.</strong>
+        표에 붙은 라벨(성김·중간·촘촘)만 있다. 값을 맞히려던 실험이 아니라
+        <strong>세 방향을 찍어 어느 쪽이 나빠지는지 본 실험</strong>이라는 것이 결론의 형태로 드러날 뿐이다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>다운샘플러는 속도를 위한 부품이 아니다. <strong>안 솎으면 요청이 늘어 선이 끊기므로</strong>
+        있는 것이다. 120m는 감이 아니라 <strong>만들기 전에 재보고 나온 값</strong>이다.
+        <span class="aside">곁가지: 실험 설계(스파이크가 무엇이고 어떻게 돌렸는지)는 몰라도 이 파트는 넘어간다.
+        필요한 것은 <strong>"120m는 재보고 나온 값"</strong> 한 줄이다.</span></p>
+    </div>
+
+    <h3>⑤ 무엇으로 재나 — 직선거리로 재면 원이 무너진다</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 규칙 2번의 <em>"지나온 거리"</em>가 이 부품에서 <strong>깨졌다가
+      고쳐진 부분</strong>이다. 재는 방법이 두 가지인데 처음에 틀린 쪽을 골랐다.
+    </p>
+
+    <p>
+      <strong>① 직선거리</strong> — 마지막으로 남긴 점에서 지금 점까지 <strong>자로 잰 거리</strong><br>
+      <strong>② 누적거리</strong> — 마지막으로 남긴 점부터 <strong>획을 따라 걸어온 거리</strong>
+    </p>
+
+    <p><strong>직선 획에서는 둘이 거의 같아 차이가 안 보인다.</strong> 원에서 갈린다.</p>
+
+    <pre>
+        ● ● ●
+      ●       ●       자로 재면:   최대 110m (지름)
+     ●         ●      따라 걸으면: 346m (둘레)
+      ●       ●
+        ● ● ●
+        ↑시작</pre>
+
+    <p>
+      반지름 55m짜리 원은 <strong>둘레가 346m</strong>라 점이 두어 개는 남아야 정상이다. 그런데
+      <strong>직선거리로 재면 하나도 안 남는다.</strong> 원 위 어느 점을 잡아도 시작점에서 자로 잰
+      거리가 <strong>최대 110m</strong>(지름)라 <strong>120m를 한 번도 못 넘기 때문</strong>이다.
+    </p>
+
+    <p>
+      남는 것은 규칙 1·3번이 지키는 시작점과 끝점 둘뿐인데, <strong>원이라 그 둘이 거의 같은
+      자리</strong>다. 조각 하나, 그리고 화면에 <strong>0.01km</strong>가 떴다. 사용자는 346m를 그렸는데.
+    </p>
+
+    <p>
+      <strong>계산 대상이 다르다는 것이 요점이다.</strong> 직선거리는 <em>"시작점 ↔ 지금 점"</em>
+      한 쌍만 보고, 누적거리는 <em>"점1↔점2, 점2↔점3, 점3↔점4…"</em>를 전부 더한다.
+      <strong>원이라 시작점으로 돌아와도 이웃 간 거리는 계속 쌓인다.</strong>
+      346m 원에서 120m마다 하나씩 남으면 점 3~4개가 되어 모양이 살아난다.
+    </p>
+
+    <div class="concept">
+      <h4>💡 누적거리는 고르는 데만 쓰고 버린다</h4>
+      <p>
+        <strong>화면에 뜨는 거리는 누적거리가 아니다.</strong> 다운샘플러는 점을 고르고 나면
+        누적거리를 <strong>버린다</strong> — 돌려주는 것은 점 목록뿐이고 거리는 딸려 가지 않는다.
+      </p>
+      <p>
+        화면 거리는 <strong>조각마다 길찾기가 돌려준 거리를 더한 값</strong>이다. 도로를 따라간
+        거리라 우리가 잰 누적거리보다 보통 길다.
+      </p>
+      <p>
+        <strong>0.01km도 이 자리다.</strong> 점이 둘만 남아 길찾기를 한 번 불렀고,
+        <strong><code>MKDirections</code>가 "거의 같은 자리 두 곳"을 받아 0.01km라고 답한 것</strong>이다.
+        우리 계산이 0.01km였던 것이 아니다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>솎아낼 때는 <strong>자로 잰 거리가 아니라 따라 걸어온 거리</strong>로 잰다. 안 그러면
+        되돌아오는 획이 통째로 사라진다. 그리고 그 누적거리는 <strong>고르는 데만 쓰고 버린다.</strong></p>
+    </div>
+
+    <h3>⑥ 무엇을 보장하나 — 테스트 6줄</h3>
+
+    <p>
+      <strong>이걸 왜 여나</strong> — 이 파트의 능력 선언이 <em>"간격을 바꾸면 무엇이 깨지는지
+      판정할 수 있다"</em>이고, <strong>그 답의 절반이 테스트 목록</strong>이다. 이름 하나하나가
+      <strong>이 부품이 무엇을 보장하는가</strong>라서 코드를 안 읽어도 책임 범위가 보인다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>테스트 이름</th><th>보장하는 것</th><th>언제 생겼나</th></tr></thead>
+        <tbody>
+          <tr><td><code>testEmptyReturnsEmpty</code></td><td>빈 입력이 와도 안 터진다</td><td>MVP1</td></tr>
+          <tr><td><code>testSinglePointPreserved</code></td><td>점 하나면 그 하나를 그대로</td><td>MVP1</td></tr>
+          <tr><td><code>testEndpointsAlwaysPreservedEvenIfClose</code></td><td><strong>가까워도 시작·끝은 남긴다</strong></td><td>MVP1</td></tr>
+          <tr><td><code>testDownsamplesByMinSpacing</code></td><td>간격대로 솎아낸다</td><td>MVP1</td></tr>
+          <tr><td><code>testLoopStrokeNotCollapsedToTwoPoints</code></td><td><strong>원형 획이 두 점으로 안 무너진다</strong></td><td><strong>MVP4</strong></td></tr>
+          <tr><td><code>testCumulativeDistancePreservesStrokeOrder</code></td><td><strong>누적거리가 획 순서를 지킨다</strong></td><td><strong>MVP4</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>위 4개와 아래 2개의 출신이 다르다.</strong> MVP1 4개는 만들 때 같이 쓴 것이고,
+      <strong>MVP4 2개는 버그를 잡고 나서 추가한 것</strong>이라 <strong>이름이 곧 그때 깨졌던 증상</strong>이다.
+      원형 획 이야기를 몰라도 <code>NotCollapsedToTwoPoints</code>를 보면
+      <em>"두 점으로 무너진 적이 있구나"</em>가 읽힌다.
+    </p>
+
+    <p>
+      <strong>그리고 이 6줄이 못 잡는 것이 있다.</strong> 간격을 60m로 줄인다고 하면 —
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>바꿨을 때 생기는 일</th><th>테스트가 잡나</th></tr></thead>
+        <tbody>
+          <tr><td>시작·끝이 사라진다</td><td><strong>잡는다</strong></td></tr>
+          <tr><td>원형 획이 무너진다</td><td><strong>잡는다</strong></td></tr>
+          <tr><td>점 순서가 뒤집힌다</td><td><strong>잡는다</strong></td></tr>
+          <tr><td>요청이 33건이 되어 8건 실패한다</td><td><strong>못 잡는다</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>마지막 줄이 요점이다.</strong> 실측이 잡아낸 그 실패는 <strong>네트워크에서 나는 일이라
+      단위 테스트 밖</strong>이다. <strong>테스트를 다 통과시켜 놓고도 실기기에서 선이 끊길 수 있다.</strong>
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>테스트 6줄은 <strong>모양이 깨지는 것</strong>을 지킨다. <strong>요청이 많아 실패하는 것</strong>은
+        안 지킨다 — 간격을 건드릴 때 실측이 여전히 필요한 이유다.</p>
+    </div>
+
+    <h3>닫으며 — 이 부품의 절반은 기획, 절반은 사고</h3>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>어떻게 됐나</th></tr></thead>
+        <tbody>
+          <tr><td><strong>존재 자체</strong></td><td>기획대로 — 만들기 전에 재고 120m를 정한 뒤 <strong>그 MVP의 Task 1</strong>로 만들었다</td></tr>
+          <tr><td><strong>재는 방법</strong></td><td>깨져서 고쳤다 — 직선거리 → <strong>누적거리</strong>(MVP4)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">2026-08-06 실측 · 미측정으로 남은 것</span>
+      <p>
+        <strong>소개 2 도식의 "점 수백 개"는 근거 없이 적힌 숫자다.</strong> 2026-06-20 실험은
+        <strong>손가락으로 긋지 않았다</strong> — 좌표 10~15개를 코드에 적어 넣고 돌린 것이라,
+        <strong>다운샘플러 뒤쪽</strong>(점 목록을 이어붙이면 모양이 나오나)만 실험했다.
+        <strong>손가락이 원시 점을 몇 개 만드는지는 잰 적이 없다.</strong>
+      </p>
+      <p>
+        시뮬레이터 자동 제스처로 재보려 했으나 <strong>실패했다</strong> — 자동 도구가
+        <em>"몇 번에 나눠 움직일지"</em>를 직접 정해 보내서, 나온 개수가 그 값에 그대로 끌렸다
+        (200 지정 → 199개 / 50 지정 → 52개). <strong>이 방법으로는 못 잰다.</strong>
+      </p>
+      <p>
+        <strong>대신 다운샘플러의 효과가 실측됐다.</strong> 원시 점 <strong>199개 → 3개</strong>(짧은 획),
+        <strong>52개 → 5개</strong>(긴 획). <strong>원시 점이 4배 많은 쪽이 솎은 뒤에는 더 적다</strong> —
+        획이 짧아서다. <strong>솎은 뒤 개수는 입력 개수와 무관하게 획의 길이로만 정해지고</strong>,
+        그래서 길찾기 요청 수가 <strong>사용자 손 속도에 끌려다니지 않는다.</strong>
+        199개를 그대로 보냈다면 조각 198개였을 것이다.
+      </p>
+    </div>
+
+    <div class="takeaway">
+      <span class="tag">파트 5에서 들고 갈 것</span>
+      <p>다운샘플러는 점 목록을 받아 <strong>누적거리 120m마다 하나씩</strong> 골라낸 목록을 돌려준다.
+        시작과 끝은 항상 남긴다. <strong>이 부품이 요청 수를 획의 길이에 묶어두기 때문에</strong>
+        그리기가 성립한다.</p>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음</strong> — 파트 5 「그리기가 부른 도구 — 다운샘플러」.
-    손가락이 지나간 점 수백 개를 <em>왜 120m마다 하나로 솎아내는지</em>,
-    그 숫자를 어떻게 정했는지를 본다. 지금까지 중 가장 짧은 파트다.
+    <strong>다음</strong> — 파트 6 「어려운 것 조립 — 그린 선」.
+    조각 16개를 <em>왜 하나씩 차례로</em> 부르는지, 도중에 모드를 바꾸거나 지우면 이미 나간 요청이
+    어떻게 되는지를 본다. 파트 4에서 이름만 적어둔 <code>recomputeGeneration</code>이 여기서 열린다.
   </div>
 
 </div>
