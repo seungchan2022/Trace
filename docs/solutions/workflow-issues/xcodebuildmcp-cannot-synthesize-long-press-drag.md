@@ -9,7 +9,8 @@ severity: medium
 applies_when:
   - "그리기 제스처처럼 '누른 채 일정 시간 유지한 뒤 이동'하는 UIKit 제스처(UILongPressGestureRecognizer + 이동)의 동작 자체를 시뮬레이터 UI 자동화로 검증하려 할 때"
   - "XcodeBuildMCP의 drag/swipe/touch/long_press 툴로 '터치다운 유지 → 임계값 경과 후 이동'을 하나의 연속 터치로 합성하려 시도할 때"
-tags: [xcodebuildmcp, simulator, ui-automation, long-press, gesture, touch-synthesis, real-device-qa, computer-use, macos-permissions]
+  - "computer-use MCP로 시뮬레이터를 조작하려 할 때 — 권한, 멀티 모니터/Space, 좌표계 함정이 여기 정리돼 있다"
+tags: [xcodebuildmcp, simulator, ui-automation, long-press, gesture, touch-synthesis, real-device-qa, computer-use, macos-permissions, multi-display]
 ---
 
 # XcodeBuildMCP는 홀드 후 이동(롱프레스-드래그) 제스처를 합성하지 못한다
@@ -41,13 +42,24 @@ MVP16 draw-gesture 마일스톤(`history/mvp16/2026-07-21-draw-gesture.md` Task 
    시뮬레이터로 확실히 검증 가능한 인접 동작(예: 이 사이클의 "한 손가락 = 항상 지도 이동")은
    분리해서 별도로 검증하고, 이건 실제 구현 성공/실패를 가리는 진짜 스모크로 취급한다.
 
-## 다른 경로: computer-use MCP (2026-08-07, 검증 진행 중)
+## 다른 경로: computer-use MCP로 합성 성공 (2026-08-07 검증 완료)
 
-computer-use MCP는 macOS 마우스 이벤트를 시뮬레이터 **창**에 직접 보내므로 위에서 막힌
+**computer-use MCP는 이 제스처를 합성한다. 그리기 제스처는 실기기 없이 시뮬레이터로 검증할 수 있다.**
+
+computer-use는 macOS 마우스 이벤트를 시뮬레이터 **창**에 직접 보내므로 위에서 막힌
 `FBSimulatorHIDEvent`를 거치지 않고, `left_mouse_down` · `mouse_move` · `left_mouse_up`을
-따로 부를 수 있어 구조상 "누른 채 이동"이 만들어진다. **제스처가 실제로 인식되는지는 아직
-결론이 나지 않았다** — 아래는 거기에 도달하기까지의 권한 절차이고, 이것만으로도 한 세션이
-통째로 날아간 적이 있다.
+따로 부를 수 있어 "누른 채 이동"이 실제로 만들어진다.
+
+- **첫 시도에 성공했다.** 대기 0.4초 + 중간 `mouse_move` 3개. anti-loop 예비 조정(대기 0.6초,
+  중간점 6개)은 쓰지 않았다.
+- **Simulator의 tier는 `full`이다** — `list_granted_applications`로 확인. "개발 도구니까 click
+  tier일 것"이라는 추측은 틀렸다. 클릭도 드래그도 막히지 않는다. 단, `request_access` 응답에는
+  tier가 없고 `list_granted_applications` 응답에만 있으니 그쪽을 봐야 한다.
+- **판정 근거는 두 가지를 같이 본다.** 출발·도착 마커와 도보 스냅 경로선(0.94km)이 그려졌고,
+  **동시에 지도가 전혀 패닝되지 않았다.** 후자가 중요하다 — 롱프레스가 지도 팬 제스처와의
+  중재에서 이겼다는 뜻이고, XcodeBuildMCP `swipe`가 실패했던 지점이 정확히 여기다.
+- 그래서 배치 **직전에** `mcp__XcodeBuildMCP__screenshot`으로 베이스라인을 찍어 둔다. 사후
+  이미지 하나만으로는 "선이 그려짐 / 지도만 움직임 / 아무 일도 안 일어남"을 구분할 수 없다.
 
 ### 권한 함정 — 이것 때문에 두 세션이 막혔다
 
@@ -69,23 +81,80 @@ computer-use MCP는 macOS 마우스 이벤트를 시뮬레이터 **창**에 직�
    같은 파일이다. 목록에 남은 `2.1.215` 같은 버전 번호 항목은 옛 흔적이므로 지우고 `.app` 번들
    하나만 남긴다.
 
-### 검증에 들어갈 때
+### 두 번째 함정: 창을 못 찾는다 (멀티 모니터·Space)
 
-- `request_access`가 성공하면 **응답에 적힌 tier를 그대로 읽어 기록한다.** Simulator가 개발
-  도구 범주라 "click" tier로 잡힐 가능성이 있는데, 범주에서 추론하지 말고 응답을 본다.
-- `computer_batch`는 **각 액션 직전에** 최전면 앱을 검사한다. 배치 전에 조건 없이
-  `open_application("Simulator")`을 부른다 — 중간에 다른 앱이 포커스를 뺏으면 배치가 도중에
-  멈춰 판정 불가능한 부분 결과가 남는다.
+권한을 뚫고 나면 다음 벽은 **시뮬레이터 창이 스크린샷에 안 보이는 것**이다. 실제로 여기서
+왕복을 여러 번 썼다.
+
+1. **`open_application("Simulator")`은 창을 현재 모니터로 가져오지 않는다.** 시뮬레이터 창이
+   다른 모니터에 있으면 스크린샷은 그 모니터를 안 찍는다. `switch_display`로 모니터를 옮겨
+   가며 찾고, 끝나면 **`switch_display("auto")`로 돌려놓는 게 가장 잘 맞았다** — auto가
+   최전면 앱이 있는 모니터를 골라 준다.
+2. **허용 목록에 없는 앱이 전체 화면이면 화면이 통째로 비거나 까맣게 나온다.** 컴포지터가
+   그 앱을 걸러내는데 뒤에 배경이 없어서다(Chrome·iPhone 미러링에서 각각 겪었다). 바탕화면이
+   보이거나 새까만 화면이 나오면 "시뮬레이터가 없다"가 아니라 **다른 Space를 보고 있는 것**이다.
+3. **`zoom`은 최근 전체 화면 스크린샷과 다른 모니터를 잡은 적이 있다.** 확대했는데 엉뚱한
+   내용이 나오면 전체 스크린샷을 다시 찍어 기준을 잡고 다시 확대한다.
+4. **`computer_batch`는 각 액션 직전에 최전면 앱을 검사한다.** 배치 전에 조건 없이
+   `open_application("Simulator")`을 부르고, 배치가 오류로 멈추면 **`left_mouse_up`을 즉시
+   호출한다** — 안 그러면 버튼이 눌린 채로 사용자 데스크톱에 남는다.
+
+### 세 번째 함정: Cmd+Q가 사전 조건을 날린다
+
+권한 때문에 Claude Code를 `Cmd+Q`로 껐다 켜면 **플랜에 "이미 끝나 있음"으로 적어 둔 것들이
+같이 사라진다.** 2026-08-07 세션에서 둘 다 실제로 어긋나 있었다.
+
+- **XcodeBuildMCP 세션 defaults가 비어 있다.** `session_show_defaults`로 먼저 확인한다.
+- **시뮬레이터가 종료돼 있을 수 있다.** `xcrun simctl list devices booted`로 확인한다.
+- 이때 **다시 빌드하지 않는다.** 부팅 → 앱 설치 여부 확인 → 실행이면 충분하다:
+  `xcrun simctl boot <UDID>` · `xcrun simctl get_app_container <UDID> <bundleId>` ·
+  `launch_app_sim`.
+
+### 재현 절차 (성공한 그대로)
+
+```
+list_granted_applications          # tier가 "full"인지 확인
+open_application("Simulator")
+screenshot                         # 여기서 읽은 좌표만 쓴다 (아래 좌표계 주의)
+left_click(「그리기」 버튼)          # 모드 전환
+mcp__XcodeBuildMCP__screenshot     # 베이스라인 — 배치 직전에 찍는다
+
+computer_batch([
+  mouse_move       → 지도 위 시작점
+  left_mouse_down
+  wait 0.4                          # 롱프레스 임계값 0.25초보다 크게
+  mouse_move       → 중간점 1
+  mouse_move       → 중간점 2
+  mouse_move       → 끝점
+  left_mouse_up
+  wait 0.3                          # 스트로크 렌더링 대기
+  screenshot
+])
+
+mcp__XcodeBuildMCP__screenshot     # 판정은 이걸로 (창 전체 샷은 선이 잘 안 보인다)
+```
+
+- **중간점을 여러 개 두는 것이 핵심이다.** 한 번에 끝점으로 점프하면 이동 이벤트가 하나뿐이라
+  스트로크가 안 쌓인다.
+- **좌표계를 섞지 않는다.** computer-use 좌표는 최근 전체 화면 스크린샷의 macOS 픽셀이고,
+  `snapshot_ui`/XcodeBuildMCP 좌표는 기기 좌표다. 클릭 좌표는 **반드시** computer-use
+  스크린샷에서 읽는다. `snapshot_ui`는 화면 상태 확인용으로만 쓴다.
+- 모드 전환이 됐는지는 버튼 하이라이트만 보지 말고 **하단 시트 문구**로 확인한다
+  (탭 모드 "지도를 탭해 출발지를 선택하세요" → 그리기 모드 "지도를 꼭 눌러서 경로를 그려보세요").
 
 ## Why This Matters
 
 롱프레스-드래그류 제스처는 UIKit 제스처 중재(gesture arbitration)가 핵심이라 원래도 실기기
 검증이 필요한 영역이지만(`docs/agent-rules/testing.md`의 Real-Device Verification 규칙), 이
-케이스는 한 단계 더 나아가 **시뮬레이터 UI 자동화 자체가 이 제스처 클래스를 원천적으로
-검증할 수 없다**는 것이다. 이걸 모르고 계획 단계에서 "시뮬레이터 스모크로 끝날 것"이라고
-가정하면, 검증 태스크가 도구 한계에 부딪혀 시간을 소모하거나 — 더 나쁘게는 — 실패를 대충
-"스모크 통과"로 뭉뚱그려 보고해 마일스톤의 핵심 동작이 실은 전혀 검증되지 않은 채 "완료"로
-오인될 위험이 있다.
+케이스는 한 단계 더 나아가 **XcodeBuildMCP가 이 제스처 클래스를 원천적으로 합성하지
+못한다**는 것이다. 이걸 모르고 계획 단계에서 "시뮬레이터 스모크로 끝날 것"이라고 가정하면,
+검증 태스크가 도구 한계에 부딪혀 시간을 소모하거나 — 더 나쁘게는 — 실패를 대충 "스모크
+통과"로 뭉뚱그려 보고해 마일스톤의 핵심 동작이 실은 전혀 검증되지 않은 채 "완료"로 오인될
+위험이 있다.
+
+**단, "시뮬레이터로는 불가"가 아니다.** 2026-08-07 검증으로 computer-use MCP가 이 제스처를
+합성한다는 것이 확인됐다(위 절). 도구를 바꾸면 되는 문제이지 플랫폼의 한계가 아니다.
+새 플랜을 짤 때는 이 제스처 클래스를 **computer-use로 검증 가능**한 쪽에 넣는다.
 
 ## When to Apply
 
