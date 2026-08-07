@@ -9,7 +9,7 @@ severity: medium
 applies_when:
   - "그리기 제스처처럼 '누른 채 일정 시간 유지한 뒤 이동'하는 UIKit 제스처(UILongPressGestureRecognizer + 이동)의 동작 자체를 시뮬레이터 UI 자동화로 검증하려 할 때"
   - "XcodeBuildMCP의 drag/swipe/touch/long_press 툴로 '터치다운 유지 → 임계값 경과 후 이동'을 하나의 연속 터치로 합성하려 시도할 때"
-tags: [xcodebuildmcp, simulator, ui-automation, long-press, gesture, touch-synthesis, real-device-qa]
+tags: [xcodebuildmcp, simulator, ui-automation, long-press, gesture, touch-synthesis, real-device-qa, computer-use, macos-permissions]
 ---
 
 # XcodeBuildMCP는 홀드 후 이동(롱프레스-드래그) 제스처를 합성하지 못한다
@@ -40,6 +40,42 @@ MVP16 draw-gesture 마일스톤(`history/mvp16/2026-07-21-draw-gesture.md` Task 
    1회씩만 검증한 뒤 "시뮬레이터 합성 불가"로 결과를 정직하게 기록하고 실기기 QA로 이관한다.
    시뮬레이터로 확실히 검증 가능한 인접 동작(예: 이 사이클의 "한 손가락 = 항상 지도 이동")은
    분리해서 별도로 검증하고, 이건 실제 구현 성공/실패를 가리는 진짜 스모크로 취급한다.
+
+## 다른 경로: computer-use MCP (2026-08-07, 검증 진행 중)
+
+computer-use MCP는 macOS 마우스 이벤트를 시뮬레이터 **창**에 직접 보내므로 위에서 막힌
+`FBSimulatorHIDEvent`를 거치지 않고, `left_mouse_down` · `mouse_move` · `left_mouse_up`을
+따로 부를 수 있어 구조상 "누른 채 이동"이 만들어진다. **제스처가 실제로 인식되는지는 아직
+결론이 나지 않았다** — 아래는 거기에 도달하기까지의 권한 절차이고, 이것만으로도 한 세션이
+통째로 날아간 적이 있다.
+
+### 권한 함정 — 이것 때문에 두 세션이 막혔다
+
+1. **대상은 `~/.local/share/claude/ClaudeCode.app`이다.** Anthropic 데스크톱 앱 「Claude」가
+   아니다. 실행 바이너리는 시스템 설정에 `+`로 추가되지 않으니 `.app` 번들을 추가한다.
+2. **손쉬운 사용과 화면 기록이 둘 다 필요하고, 하나만 켜면 증상이 엉뚱한 곳에서 나온다.**
+   `request_access`는 화면 기록을 먼저 검사한다. 화면 기록만 켜면 `request_access`는 통과하고,
+   정작 `left_mouse_down`이 손쉬운 사용 부족으로 거부된다. **이 거부를 "tier 제한이라 구조적으로
+   불가"로 읽으면 안 된다** — 오류 문구가 tier(`click`/`read`)를 **명시할 때만** 구조적 한계다.
+   권한 실패나 권한 패널이 뜨는 것은 결론이 아니라 고치고 다시 하라는 뜻이고, anti-loop 시도
+   횟수에도 넣지 않는다.
+3. **권한은 프로세스가 시작하는 순간에 잡힌다.** 실행 중에 켜면 그 프로세스는 계속 "없음"으로
+   안다. **창만 닫았다 여는 것으로는 안 된다**(백그라운드 잡 프로세스가 살아남는다). `Cmd+Q`로
+   완전히 종료한 뒤 다시 켠다. 확인법: `ps -p $PPID -o lstart=`가 권한을 켠 시각보다 뒤여야 한다.
+   2026-08-06 세션은 12시간 전에 뜬 프로세스라 권한을 켠 뒤에도 `request_access`가 계속 실패했다.
+4. **버전이 올라가면 재발한다 — 실제로 재발했다.** 2.1.223(2026-08-07)에서 화면 기록 권한이
+   다시 "없음"이 됐다. `ClaudeCode.app/Contents/MacOS/claude`는 `versions/2.1.223`과 **같은
+   inode를 가리키는 하드링크**라, `.app` 번들을 등록하는 것과 버전 바이너리를 등록하는 것은
+   같은 파일이다. 목록에 남은 `2.1.215` 같은 버전 번호 항목은 옛 흔적이므로 지우고 `.app` 번들
+   하나만 남긴다.
+
+### 검증에 들어갈 때
+
+- `request_access`가 성공하면 **응답에 적힌 tier를 그대로 읽어 기록한다.** Simulator가 개발
+  도구 범주라 "click" tier로 잡힐 가능성이 있는데, 범주에서 추론하지 말고 응답을 본다.
+- `computer_batch`는 **각 액션 직전에** 최전면 앱을 검사한다. 배치 전에 조건 없이
+  `open_application("Simulator")`을 부른다 — 중간에 다른 앱이 포커스를 뺏으면 배치가 도중에
+  멈춰 판정 불가능한 부분 결과가 남는다.
 
 ## Why This Matters
 
