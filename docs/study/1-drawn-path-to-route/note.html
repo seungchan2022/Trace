@@ -458,6 +458,34 @@
   }
   .next strong { color: var(--ink); }
 
+  /* ── 파트 머리 구간 표 ─────────────── */
+  .segmap {
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: .95rem 1.2rem 1.05rem; margin: 1.8rem 0 2.2rem;
+    background: var(--surface);
+  }
+  .segmap .tag {
+    display: block; font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .55rem;
+  }
+  .segmap table { border: none; background: transparent; font-size: .93rem; }
+  .segmap td {
+    border-bottom: 1px solid var(--rule); padding: .42rem .5rem .42rem 0;
+    vertical-align: baseline;
+  }
+  .segmap tr:last-child td { border-bottom: none; }
+  .segmap td:first-child {
+    white-space: nowrap; font-weight: 800; width: 4.2rem;
+  }
+  .segmap td:first-child a { color: var(--deep); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .segmap td:first-child a:hover { border-bottom-color: var(--accent); }
+  .segmap td:last-child { color: var(--muted); font-size: .88rem; white-space: nowrap; }
+  .segmap .hint {
+    margin: .7rem 0 0; padding-top: .6rem; border-top: 1px dashed var(--rule);
+    font-size: .89rem; color: var(--muted); line-height: 1.65;
+  }
+
   /* ── 확인 문제 한 덩어리 ───────────── */
   .qa {
     border: 1px solid var(--rule); border-radius: 12px;
@@ -659,7 +687,7 @@
         <span class="k">7</span>
         <div>
           <div class="can">새 제스처를 넣을 때 지도 이동과 안 부딪히는 조건을 정할 수 있다</div>
-          <div class="sum">하는 일은 <strong>①판별 → ②수집</strong> 둘이고, <strong>파트가 되는 이유는 ①</strong>이다
+          <div class="sum">하는 일은 <strong>판별 → 수집</strong> 둘이고, <strong>파트가 되는 이유는 판별</strong>이다
             (②는 화면 좌표를 위경도로 바꿔 담는 몇 줄) · 이동·확대·더블탭 확대는 전부
             <code>MKMapView</code> 것이고 우리는 <strong>얹기만</strong> 했다 — 더블탭에 대해 만든 것은
             확대가 아니라 <strong>“그때 핀을 안 찍는 것”</strong> · <strong>인식기는 “내장이냐 우리 것이냐”를
@@ -3446,17 +3474,31 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
       그리고 이 파트가 하는 일은 <strong>둘</strong>이다. 순서도 이 순서다.
     </p>
 
-<pre class="code">① 판별 — 지금 이 손가락이 경로를 그리려는 것인가, 지도에서 일어나는 일반 액션인가
-② 수집 — 경로용으로 정해졌으면 그 손가락 위치를 <b>지점</b>(CourseCoordinate)으로 모은다</pre>
+<pre class="code"><b>판별</b>  지금 이 손가락이 경로를 그리려는 것인가, 지도에서 일어나는 일반 액션인가
+<b>수집</b>  경로용으로 정해졌으면 그 손가락 위치를 <b>지점</b>(CourseCoordinate)으로 모은다</pre>
 
     <p>
-      <strong>②만 보면 시시하다.</strong> <strong>화면 좌표</strong>(<code>CGPoint</code> — 화면 왼쪽 위 기준 pt)를 <strong>지점</strong>(<code>CourseCoordinate</code> — 파트 1에서 만든 위경도 타입)으로 바꿔 배열에 담는 것이 전부고 코드도 몇 줄이다. <em>이 파트에서 "좌표"라는 말이 두 뜻으로 나오니 그때마다 어느 쪽인지 밝혀 쓴다.</em>
-      <strong>파트가 되는 이유는 ①</strong>이고, ①이 어려운 이유는 <strong>이동·확대·더블탭 확대가
+      <strong>수집만 보면 시시하다.</strong> <strong>화면 좌표</strong>(<code>CGPoint</code> — 화면 왼쪽 위 기준 pt)를 <strong>지점</strong>(<code>CourseCoordinate</code> — 파트 1에서 만든 위경도 타입)으로 바꿔 배열에 담는 것이 전부고 코드도 몇 줄이다. <em>이 파트에서 "좌표"라는 말이 두 뜻으로 나오니 그때마다 어느 쪽인지 밝혀 쓴다.</em>
+      <strong>파트가 되는 이유는 판별</strong>이고, 판별이 어려운 이유는 <strong>이동·확대·더블탭 확대가
       전부 <code>MKMapView</code>에 원래 있는 것</strong>이기 때문이다. 우리는 그것을 끄고 대체한 것이
       아니라 <strong>그 위에 얹었다.</strong>
     </p>
 
-    <h3>① 얹은 것은 셋이고, 모드마다 켜고 끈다</h3>
+    <div class="segmap">
+      <span class="tag">이 파트의 구간 넷</span>
+      <table>
+        <tbody>
+          <tr><td><a href="#p7s1">구간 ①</a></td><td>얹은 것은 셋이고 모드마다 켜고 끈다</td><td><em>무엇이 있는지 센다</em></td></tr>
+          <tr><td><a href="#p7s2">구간 ②</a></td><td>그리기 — 잠금을 언제 거느냐</td><td><em>0.25초 + 10pt</em></td></tr>
+          <tr><td><a href="#p7s3">구간 ③</a></td><td>탭 — 첫 탭만으로는 정체를 모른다</td><td><em>0.35초 + 40pt</em></td></tr>
+          <tr><td><a href="#p7s4">구간 ④</a></td><td>터치 관찰자는 왜 필요했나</td><td><em>왜 인식기가 둘인가</em></td></tr>
+        </tbody>
+      </table>
+      <p class="hint">그리기는 <strong>구간 ② 하나</strong>로 끝나고 탭은 <strong>구간 ③④ 둘</strong>이 필요하다 —
+        그 비대칭이 이 파트의 내용 전부다.</p>
+    </div>
+
+    <h3 id="p7s1">구간 ① — 얹은 것은 셋이고, 모드마다 켜고 끈다</h3>
 
     <p>
       <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 남은 구간 셋이 전부 <em>“이 셋 중 하나”</em>의
@@ -3590,7 +3632,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
 
     <a class="backtop" href="#toc">↑ 목차로</a>
 
-    <h3>② 그리기 — 잠금을 언제 거느냐가 전부였다</h3>
+    <h3 id="p7s2">구간 ② — 그리기: 잠금을 언제 거느냐가 전부였다</h3>
 
     <p>
       <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 그리기 모드에서 손가락 하나가 지도를 밀 수도,
@@ -3784,7 +3826,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
 
     <a class="backtop" href="#toc">↑ 목차로</a>
 
-    <h3>③ 탭 — 첫 탭만으로는 정체를 모른다</h3>
+    <h3 id="p7s3">구간 ③ — 탭: 첫 탭만으로는 정체를 모른다</h3>
 
     <p>
       <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 첫 입력만으로 정체를 알 수 없는 제스처를
@@ -3893,7 +3935,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
 
     <a class="backtop" href="#toc">↑ 목차로</a>
 
-    <h3>④ 터치 관찰자는 왜 필요했나</h3>
+    <h3 id="p7s4">구간 ④ — 터치 관찰자는 왜 필요했나</h3>
 
     <p>
       <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 이미 돌아가고 있는 제스처들을
