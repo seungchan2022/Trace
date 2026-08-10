@@ -1080,12 +1080,24 @@ flowchart TD
         그것을 어떤 모양으로 담을지 정할 수 있다.</p>
     </div>
 
+    <div class="segmap">
+      <span class="tag">이 파트의 구간 넷</span>
+      <table>
+        <tbody>
+          <tr><td><a href="#p1s1">구간 ①</a></td><td>지점 — 지도 위 한 곳</td><td><em>왜 애플 타입을 안 쓰나</em></td></tr>
+          <tr><td><a href="#p1s2">구간 ②</a></td><td>구간 — 길 한 토막</td><td><em>점 목록 + 거리 하나</em></td></tr>
+          <tr><td><a href="#p1s3">구간 ③</a></td><td>코스 — 구간들의 목록</td><td><em>왜 안 뭉개나</em></td></tr>
+          <tr><td><a href="#p1s4">구간 ④</a></td><td>실패 — 세 가지</td><td><em>왜 셋인가</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <p>
       <strong>사용자 장면으로는 어디인가</strong> — 맨 마지막 <em>"거리가 숫자로 뜬다"</em>(④⑨) 자리다.
       화면에 아무것도 안 보이는 단계지만, 그 숫자와 선을 담을 타입이 여기서 정해진다.
     </p>
 
-    <h3>① 지점 — 지도 위 한 곳 <code>CourseCoordinate</code></h3>
+    <h3 id="p1s1">구간 ① — 지점 — 지도 위 한 곳 <code>CourseCoordinate</code></h3>
 
     <p>
       애플에는 이미 위도·경도를 담는 타입이 있다(<code>CLLocationCoordinate2D</code>, CoreLocation 소속).
@@ -1123,7 +1135,7 @@ flowchart TD
       옮겨 담는 것뿐이다.
     </p>
 
-    <h3>② 구간 — 길 한 토막 <code>CourseSegment</code></h3>
+    <h3 id="p1s2">구간 ② — 구간 — 길 한 토막 <code>CourseSegment</code></h3>
 
     <p>
       여기서 가장 헷갈리는 것이 <strong>"점"이라는 말이 두 가지를 가리킨다</strong>는 점이다.
@@ -1184,7 +1196,7 @@ flowchart TD
       </p>
     </div>
 
-    <h3>③ 코스 — 구간들의 목록 <code>PlannedCourse</code></h3>
+    <h3 id="p1s3">구간 ③ — 코스 — 구간들의 목록 <code>PlannedCourse</code></h3>
 
     <p>
       구간이 쌓이면 코스가 된다. 코스가 들고 있는 것은 <strong>구간 목록 하나뿐</strong>이고,
@@ -1219,7 +1231,7 @@ flowchart TD
       </p>
     </div>
 
-    <h3>④ 실패 — 세 가지 <code>CoursePlanningError</code></h3>
+    <h3 id="p1s4">구간 ④ — 실패 — 세 가지 <code>CoursePlanningError</code></h3>
 
     <div class="tablewrap">
       <table>
@@ -1291,6 +1303,19 @@ flowchart TD
         무엇을 기본 구현으로 뺄지</strong> 정할 수 있다.</p>
     </div>
 
+    <div class="segmap">
+      <span class="tag">이 파트의 구간 다섯</span>
+      <table>
+        <tbody>
+          <tr><td><a href="#p2s1">구간 ①</a></td><td>파일 모양과 시그니처</td><td><em>요구사항 둘 + 기본 구현</em></td></tr>
+          <tr><td><a href="#p2s2">구간 ②</a></td><td>route와 snappedRoute의 차이</td><td><em>갈라놓은 기준 한 줄</em></td></tr>
+          <tr><td><a href="#p2s3">구간 ③</a></td><td>요청이 실제로 어떻게 나가나</td><td><em>한 획에 16건</em></td></tr>
+          <tr><td><a href="#p2s4">구간 ④</a></td><td>재시도와, 거기서 빠진 하나</td><td><em>스로틀만 뺀 이유</em></td></tr>
+          <tr><td><a href="#p2s5">구간 ⑤</a></td><td>만들었는데 안 쓰게 된 것</td><td><em>snappedRoute는 죽었다</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <p>
       <strong>사용자 장면으로는 어디인가</strong> — 여전히 <strong>아무 데도 아니다.</strong>
       화면에 보이는 것이 없다. 다만 파트 1과 다른 점이 있다. 여기서 적는
@@ -1316,7 +1341,7 @@ flowchart TD
       </p>
     </div>
 
-    <h3>① 파일 모양과 시그니처</h3>
+    <h3 id="p2s1">구간 ① — 파일 모양과 시그니처</h3>
 
     <p>
       <code>CoursePlanningServiceProtocol.swift</code> 한 파일 안에 블록이 둘 있다.
@@ -1367,7 +1392,7 @@ extension CoursePlanningServiceProtocol {
       <code>import</code>도 <code>Foundation</code> 하나뿐이다.
     </p>
 
-    <h3>② <code>route</code>와 <code>snappedRoute</code>의 차이</h3>
+    <h3 id="p2s2">구간 ② — <code>route</code>와 <code>snappedRoute</code>의 차이</h3>
 
     <div class="tablewrap">
       <table>
@@ -1406,7 +1431,7 @@ extension CoursePlanningServiceProtocol {
       </p>
     </div>
 
-    <h3>③ 요청이 실제로 어떻게 나가나</h3>
+    <h3 id="p2s3">구간 ③ — 요청이 실제로 어떻게 나가나</h3>
 
     <p>
       다음 절부터 <strong>재시도</strong>와 <strong>스로틀</strong>이 나오는데, 그게 왜 문제인지는
@@ -1495,7 +1520,7 @@ extension CoursePlanningServiceProtocol {
       </p>
     </div>
 
-    <h3>④ 재시도와, 거기서 빠진 하나</h3>
+    <h3 id="p2s4">구간 ④ — 재시도와, 거기서 빠진 하나</h3>
 
     <p>
       기본 구현이 하는 일은 넷이다. 지점을 두 개씩 짝지어 <code>route</code>를 반복 호출하고,
@@ -1526,7 +1551,7 @@ extension CoursePlanningServiceProtocol {
       </p>
     </div>
 
-    <h3>⑤ 만들었는데 안 쓰게 된 것 — <code>snappedRoute</code>는 호출되지 않는다</h3>
+    <h3 id="p2s5">구간 ⑤ — 만들었는데 안 쓰게 된 것 — <code>snappedRoute</code>는 호출되지 않는다</h3>
 
     <div class="tablewrap">
       <table>
@@ -1742,6 +1767,19 @@ extension CoursePlanningServiceProtocol {
       <p>길찾기를 다른 회사 것으로 갈아끼울 때 <strong>어디만 고치면 되는지</strong> 정할 수 있다.</p>
     </div>
 
+    <div class="segmap">
+      <span class="tag">이 파트의 구간 다섯</span>
+      <table>
+        <tbody>
+          <tr><td><a href="#p3s1">구간 ①</a></td><td>어디에 있나</td><td><em>바꾸는 건 파일 1개</em></td></tr>
+          <tr><td><a href="#p3s2">구간 ②</a></td><td>번역 1 — 타입</td><td><em>도메인은 MapKit을 모른다</em></td></tr>
+          <tr><td><a href="#p3s3">구간 ③</a></td><td>번역 2 — 에러</td><td><em>catch가 둘인 이유</em></td></tr>
+          <tr><td><a href="#p3s4">구간 ④</a></td><td>스로틀 조건</td><td><em>실기기에서 겪고 늘렸다</em></td></tr>
+          <tr><td><a href="#p3s5">구간 ⑤</a></td><td>캐시</td><td><em>“같은 질문”의 정의</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <p>
       <strong>사용자 장면으로는 어디인가</strong> — 소개 4 표의 셋째 줄,
       <em>“손 그림이 도로 따라가는 선으로 바뀐다”</em>(⑨)다. <strong>처음으로 화면에 나타날 것을
@@ -1764,7 +1802,7 @@ extension CoursePlanningServiceProtocol {
       </p>
     </div>
 
-    <h3>① 어디에 있나 — “유일한 파일”의 범위부터 정확히</h3>
+    <h3 id="p3s1">구간 ① — 어디에 있나 — “유일한 파일”의 범위부터 정확히</h3>
 
     <p>
       경로 자체가 설명이다. <strong>폴더 이름에 제공자 이름이 들어가 있다</strong> —
@@ -1814,7 +1852,7 @@ extension CoursePlanningServiceProtocol {
           “MapKit 쓰는 데 전부”가 되어 틀린다.</span></p>
     </div>
 
-    <h3>② 번역 1 — 타입</h3>
+    <h3 id="p3s2">구간 ② — 번역 1 — 타입</h3>
 
     <p>
       파일 <strong>맨 아래</strong>에 짧은 <code>extension</code>이 둘 있다. 양방향 한 쌍이고,
@@ -1873,7 +1911,7 @@ private extension CourseCoordinate {
           <strong>갈아끼울 때 같이 버려질 코드는 갈아끼울 파일 안에 두는 편이 낫다.</strong></span></p>
     </div>
 
-    <h3>③ 번역 2 — 에러, <code>catch</code>가 둘인 이유</h3>
+    <h3 id="p3s3">구간 ③ — 번역 2 — 에러, <code>catch</code>가 둘인 이유</h3>
 
     <p>
       파트 1에서 실패를 셋으로 정했는데 <strong>애플은 그 셋을 모른다.</strong> 누군가 우리 셋 중
@@ -1952,7 +1990,7 @@ private extension CourseCoordinate {
         타입으로 먼저 가려내지 않으면 우리 것이 애플 것 취급을 받아 뭉개진다.</strong></p>
     </div>
 
-    <h3>④ 스로틀 조건 — 미리 알고 쓴 것이 아니다</h3>
+    <h3 id="p3s4">구간 ④ — 스로틀 조건 — 미리 알고 쓴 것이 아니다</h3>
 
     <p>
       ②의 안쪽에서 하는 판정은 <strong>하나뿐</strong>이다 — <em>“스로틀인가?”</em>
@@ -2025,7 +2063,7 @@ private extension CourseCoordinate {
         <span class="aside">조건 둘이 겹친다는 것과 <code>#if DEBUG</code> 문법 자체는 곁가지다.</span></p>
     </div>
 
-    <h3>⑤ 캐시 — “같은 질문”을 무엇으로 정의했나</h3>
+    <h3 id="p3s5">구간 ⑤ — 캐시 — “같은 질문”을 무엇으로 정의했나</h3>
 
     <p>
       이 파일이 하는 세 번째 일이다. <strong>캐시가 작동하려면 <em>“이 요청이 전에 한 것과
@@ -2215,6 +2253,19 @@ private extension CourseCoordinate {
         ViewModel이 무엇을 들고 있고 무엇을 넘기는지 정할 수 있다.</p>
     </div>
 
+    <div class="segmap">
+      <span class="tag">이 파트의 구간 다섯</span>
+      <table>
+        <tbody>
+          <tr><td><a href="#p4s1">구간 ①</a></td><td>첫 탭은 어디에 머무는가</td><td><em>좌표는 전부 ViewModel</em></td></tr>
+          <tr><td><a href="#p4s2">구간 ②</a></td><td>값으로 따라가기</td><td><em>숫자 쌍 4개 + 거리 하나</em></td></tr>
+          <tr><td><a href="#p4s3">구간 ③</a></td><td>받은 것을 어디까지 믿는가</td><td><em>점 2개만 확인</em></td></tr>
+          <tr><td><a href="#p4s4">구간 ④</a></td><td>세션에 건네면 청크 1은 끝</td><td><em>붙이는 판단은 청크 2</em></td></tr>
+          <tr><td><a href="#p4s5">구간 ⑤</a></td><td>탭이 늘 두 번은 아니다</td><td><em>코스가 있으면 한 번</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <p>
       <strong>사용자 장면으로는 어디인가</strong> — <em>"출발점을 톡, 도착점을 톡, 로딩, 선"</em>(①②③④)이다.
       화면에서 제일 처음 겪는 장면인데 만드는 순서로는 네 번째다.
@@ -2226,7 +2277,7 @@ private extension CourseCoordinate {
       파트 6은 <strong>"무엇이 더 붙었나"</strong>만 보면 된다.
     </p>
 
-    <h3>① 첫 탭은 어디에 머무는가</h3>
+    <h3 id="p4s1">구간 ① — 첫 탭은 어디에 머무는가</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — <em>"화면에 보이니까 화면이 갖고 있다"</em>는 생각은 자연스럽지만
@@ -2293,7 +2344,7 @@ private extension CourseCoordinate {
         화면은 매번 읽어서 다시 그린다.</p>
     </div>
 
-    <h3>② 값으로 따라가기 — 탭 두 번</h3>
+    <h3 id="p4s2">구간 ② — 값으로 따라가기 — 탭 두 번</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 타입 이름만으로는 안 잡힌다.
@@ -2372,7 +2423,7 @@ private extension CourseCoordinate {
       </p>
     </div>
 
-    <h3>③ 받은 것을 어디까지 믿는가</h3>
+    <h3 id="p4s3">구간 ③ — 받은 것을 어디까지 믿는가</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 길찾기는 <strong>바깥</strong>에서 온다.
@@ -2415,7 +2466,7 @@ private extension CourseCoordinate {
         <span class="aside">곁가지: 이 확인이 실제 사례를 보고 들어온 것인지는 확인된 바 없다.</span></p>
     </div>
 
-    <h3>④ 세션에 건네면 청크 1은 끝난다</h3>
+    <h3 id="p4s4">구간 ④ — 세션에 건네면 청크 1은 끝난다</h3>
 
     <p>
       확인을 통과하면 점 목록과 거리를 <strong>구간 하나로 만들어</strong> <code>CourseEditSession</code>에
@@ -2455,7 +2506,7 @@ private extension CourseCoordinate {
         어디에 붙일지는 세션이 정한다.</p>
     </div>
 
-    <h3>⑤ 탭이 늘 두 번은 아니다</h3>
+    <h3 id="p4s5">구간 ⑤ — 탭이 늘 두 번은 아니다</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 지금까지는 <em>"탭 두 번 = 구간 하나"</em>로만 봤다.
@@ -2582,6 +2633,19 @@ ViewModel이 보는 순서
       <p>점 사이 최소 간격을 바꾸면 무엇이 좋아지고 무엇이 깨지는지 판정할 수 있다.</p>
     </div>
 
+    <div class="segmap">
+      <span class="tag">이 파트의 구간 다섯</span>
+      <table>
+        <tbody>
+          <tr><td><a href="#p5s1">구간 ①</a></td><td>탭과 그리기는 어디서 갈리나</td><td><em>조각 수만 다르다</em></td></tr>
+          <tr><td><a href="#p5s2">구간 ②</a></td><td>원시 점은 무엇인가</td><td><em>손 속도에 끌려다닌다</em></td></tr>
+          <tr><td><a href="#p5s3">구간 ③</a></td><td>다운샘플링</td><td><em>고르는 것이지 만드는 게 아니다</em></td></tr>
+          <tr><td><a href="#p5s4">구간 ④</a></td><td>왜 있나</td><td><em>최적화가 아니라 성립 조건</em></td></tr>
+          <tr><td><a href="#p5s5">구간 ⑤</a></td><td>무엇으로 재나</td><td><em>직선거리로 재면 원이 무너진다</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <p>
       <strong>사용자 장면으로는 어디인가</strong> — <em>손가락으로 지도를 긋고 선이 나오는</em> 장면이다.
       다만 이 파트가 다루는 것은 <strong>화면에 아무것도 안 보이는 구간</strong>이다.
@@ -2636,7 +2700,7 @@ ViewModel이 보는 순서
         쪼개서, 조각마다 따로 묻는다.</strong></p>
     </div>
 
-    <h3>① 탭과 그리기는 어디서 갈리나</h3>
+    <h3 id="p5s1">구간 ① — 탭과 그리기는 어디서 갈리나</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 파트 4에서 탭을 다 봤는데 <strong>왜 부품이 하나 더
@@ -2676,7 +2740,7 @@ ViewModel이 보는 순서
         묻느냐</strong>뿐이고, 이어 붙이기는 그리기에만 생긴다.</p>
     </div>
 
-    <h3>② 원시 점은 무엇인가 — 손가락 궤적의 표본</h3>
+    <h3 id="p5s2">구간 ② — 원시 점은 무엇인가 — 손가락 궤적의 표본</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 솎아낼 대상이 무엇인지 모르면 <em>"왜 솎아야 하는지"</em>도
@@ -2742,7 +2806,7 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
         모양 정보도 없다. <strong>개수는 손 속도에 끌려다닌다.</strong></p>
     </div>
 
-    <h3>③ 다운샘플링 — 개념과 이 프로젝트에서의 자리</h3>
+    <h3 id="p5s3">구간 ③ — 다운샘플링 — 개념과 이 프로젝트에서의 자리</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 이 부품의 이름이 곧 개념이다. 개념을 모르고 동작만 보면
@@ -2822,7 +2886,7 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
         위치만 알아두면 된다 — <code>CourseCoordinate.distanceMeters(to:)</code>, 다운샘플러와 같은 커밋에 같이 들어왔다.</span></p>
     </div>
 
-    <h3>④ 왜 있나 — 최적화가 아니라 성립 조건</h3>
+    <h3 id="p5s4">구간 ④ — 왜 있나 — 최적화가 아니라 성립 조건</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 이 부품을 <em>"빠르게 하려고 넣은 것"</em>으로 읽으면
@@ -2903,7 +2967,7 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
         필요한 것은 <strong>"120m는 재보고 나온 값"</strong> 한 줄이다.</span></p>
     </div>
 
-    <h3>⑤ 무엇으로 재나 — 직선거리로 재면 원이 무너진다</h3>
+    <h3 id="p5s5">구간 ⑤ — 무엇으로 재나 — 직선거리로 재면 원이 무너진다</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 규칙 2번의 <em>"지나온 거리"</em>가 이 부품에서 <strong>깨졌다가
@@ -3029,6 +3093,18 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
       <p>사용자가 중간에 손을 바꿨을 때 무엇이 버려져야 하는지 정할 수 있다.</p>
     </div>
 
+    <div class="segmap">
+      <span class="tag">이 파트의 구간 넷</span>
+      <table>
+        <tbody>
+          <tr><td><a href="#p6s1">구간 ①</a></td><td>점 17개가 구간 하나가 되기까지</td><td><em>하나라도 실패하면 통째로 버린다</em></td></tr>
+          <tr><td><a href="#p6s2">구간 ②</a></td><td>16번 도는 동안 딴 걸 누르면</td><td><em>번호를 복사해 두고 비교한다</em></td></tr>
+          <tr><td><a href="#p6s3">구간 ③</a></td><td>붙여 그은 첫 점을 갈아끼운다</td><td><em>손가락 오차를 미리 지운다</em></td></tr>
+          <tr><td><a href="#p6s4">구간 ④</a></td><td>세션에 건네면 청크 1은 끝</td><td><em>여기가 경계선</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <p>
       <strong>사용자 장면으로는 어디인가</strong> — <em>손을 뗀 순간부터 도로 위 선이 나타나기까지</em>다.
       손가락을 따라오던 선이 사라지고 <strong>화면에 로딩밖에 없는 그 잠깐</strong>이 이 파트다.
@@ -3062,7 +3138,7 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
       1번은 돌아온 것을 그냥 쓰면 되는데 16개는 이어 붙여야 한다.
     </p>
 
-    <h3>① 점 17개가 구간 하나가 되기까지</h3>
+    <h3 id="p6s1">구간 ① — 점 17개가 구간 하나가 되기까지</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 파트 5는 <em>점을 골라내는 데서</em> 끝났다. 손에 남은 것은 점
@@ -3145,7 +3221,7 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
         구간 하나로 만든다. <strong>하나라도 실패하면 통째로 버린다.</strong></p>
     </div>
 
-    <h3>② 16번 도는 동안 사용자가 딴 걸 누르면</h3>
+    <h3 id="p6s2">구간 ② — 16번 도는 동안 사용자가 딴 걸 누르면</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 앞의 것이 전부 <strong>시간이 걸리는 일</strong>이었다.
@@ -3304,7 +3380,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
         결과를 쓰기 직전에 번호가 그대로인지 본다.</strong> 바뀌었으면 그 결과는 안 쓴다.</p>
     </div>
 
-    <h3>③ 붙여 그은 첫 점을 갈아끼운다</h3>
+    <h3 id="p6s3">구간 ③ — 붙여 그은 첫 점을 갈아끼운다</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — <strong>손가락으로는 기존 코스의 끝점을 정확히 짚을 수 없다.</strong>
@@ -3382,7 +3458,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
         바꿔치는 것</strong>이 전부고, 안 하면 붙여 그은 것이 <strong>먼 경우 취급</strong>을 받는다.</p>
     </div>
 
-    <h3>④ 세션에 건네면 청크 1은 끝</h3>
+    <h3 id="p6s4">구간 ④ — 세션에 건네면 청크 1은 끝</h3>
 
     <p>
       <strong>이걸 왜 여나</strong> — 여기가 <strong>청크 1의 경계선</strong>이다. 어디까지가 이 학습이고
@@ -3452,6 +3528,20 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
       <p>새 제스처를 넣을 때 지도 이동과 안 부딪히는 조건을 정할 수 있다.</p>
     </div>
 
+    <div class="segmap">
+      <span class="tag">이 파트의 구간 넷</span>
+      <table>
+        <tbody>
+          <tr><td><a href="#p7s1">구간 ①</a></td><td>얹은 것은 셋이고 모드마다 켜고 끈다</td><td><em>무엇이 있는지 센다</em></td></tr>
+          <tr><td><a href="#p7s2">구간 ②</a></td><td>그리기 — 잠금을 언제 거느냐</td><td><em>0.25초 + 10pt</em></td></tr>
+          <tr><td><a href="#p7s3">구간 ③</a></td><td>탭 — 첫 탭만으로는 정체를 모른다</td><td><em>0.35초 + 40pt</em></td></tr>
+          <tr><td><a href="#p7s4">구간 ④</a></td><td>터치 관찰자는 왜 필요했나</td><td><em>왜 인식기가 둘인가</em></td></tr>
+        </tbody>
+      </table>
+      <p class="hint">그리기는 <strong>구간 ② 하나</strong>로 끝나고 탭은 <strong>구간 ③④ 둘</strong>이 필요하다 —
+        그 비대칭이 이 파트의 내용 전부다.</p>
+    </div>
+
     <p>
       <strong>사용자 장면으로는 어디인가</strong> — <em>손가락이 화면에 닿는 순간부터 그것이
       좌표가 되어 넘어가기까지</em>다. 파트 1~6이 <strong>넘어간 다음</strong>을 지었고,
@@ -3483,20 +3573,6 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
       전부 <code>MKMapView</code>에 원래 있는 것</strong>이기 때문이다. 우리는 그것을 끄고 대체한 것이
       아니라 <strong>그 위에 얹었다.</strong>
     </p>
-
-    <div class="segmap">
-      <span class="tag">이 파트의 구간 넷</span>
-      <table>
-        <tbody>
-          <tr><td><a href="#p7s1">구간 ①</a></td><td>얹은 것은 셋이고 모드마다 켜고 끈다</td><td><em>무엇이 있는지 센다</em></td></tr>
-          <tr><td><a href="#p7s2">구간 ②</a></td><td>그리기 — 잠금을 언제 거느냐</td><td><em>0.25초 + 10pt</em></td></tr>
-          <tr><td><a href="#p7s3">구간 ③</a></td><td>탭 — 첫 탭만으로는 정체를 모른다</td><td><em>0.35초 + 40pt</em></td></tr>
-          <tr><td><a href="#p7s4">구간 ④</a></td><td>터치 관찰자는 왜 필요했나</td><td><em>왜 인식기가 둘인가</em></td></tr>
-        </tbody>
-      </table>
-      <p class="hint">그리기는 <strong>구간 ② 하나</strong>로 끝나고 탭은 <strong>구간 ③④ 둘</strong>이 필요하다 —
-        그 비대칭이 이 파트의 내용 전부다.</p>
-    </div>
 
     <h3 id="p7s1">구간 ① — 얹은 것은 셋이고, 모드마다 켜고 끈다</h3>
 
