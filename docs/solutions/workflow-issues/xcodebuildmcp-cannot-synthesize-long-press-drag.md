@@ -10,6 +10,8 @@ applies_when:
   - "그리기 제스처처럼 '누른 채 일정 시간 유지한 뒤 이동'하는 UIKit 제스처(UILongPressGestureRecognizer + 이동)의 동작 자체를 시뮬레이터 UI 자동화로 검증하려 할 때"
   - "XcodeBuildMCP의 drag/swipe/touch/long_press 툴로 '터치다운 유지 → 임계값 경과 후 이동'을 하나의 연속 터치로 합성하려 시도할 때"
   - "computer-use MCP로 시뮬레이터를 조작하려 할 때 — 권한, 멀티 모니터/Space, 좌표계 함정이 여기 정리돼 있다"
+  - "시뮬레이터에서 두 손가락 제스처(핀치·회전·멀티터치)를 자동화하려 할 때 — 되는지 여부와 그 이유가 여기 있다"
+  - "어떤 제스처를 시뮬레이터로 검증할 수 있고 어떤 것은 실기기나 유닛 테스트로 가야 하는지 계획 단계에서 나눌 때"
 tags: [xcodebuildmcp, simulator, ui-automation, long-press, gesture, touch-synthesis, real-device-qa, computer-use, macos-permissions, multi-display]
 ---
 
@@ -144,9 +146,11 @@ computer-use로 옮긴다고 풀린다는 근거가 없다"* 고 적었다. **�
 ### 제스처가 어느 뷰에 걸려 있는지 코드로 먼저 확인한다
 
 **시트 드래그를 두 번 헛쳤다.** 눈으로 "시트니까 아무 데나 잡으면 되겠지" 하고 헤더의 거리
-텍스트를 끌었는데 아무 일도 없었다. `sheetDragGesture`는 **그래버 핸들에만** 붙어 있다
-(`CoursePlannerPage+BottomSheetComponent.swift:50`). 헤더에는 배경의 `onTapGesture {}`가
-탭을 흡수할 뿐이다.
+텍스트를 끌었는데 아무 일도 없었다. **`collapsed` 상태에서 `sheetDragGesture`가 붙어 있는 곳은
+그래버 핸들뿐이다**(`CoursePlannerPage+BottomSheetComponent.swift:50`). 헤더에는 배경의
+`onTapGesture {}`가 탭을 흡수할 뿐이다. (같은 파일 171행에도 `.gesture(sheetDragGesture)`가
+있지만 그건 `expandedSheetBody` 안이라 `sheetDetent != .collapsed`일 때만 렌더된다 — 즉
+**어느 뷰에 걸려 있느냐가 상태에 따라 달라진다.**)
 
 - **화면을 보고 좌표를 찍기 전에 `.gesture(...)`가 어느 뷰에 붙었는지 grep한다.** 히트 영역이
   생각보다 훨씬 좁은 경우가 많다(그래버는 `frame(height: 5)` + `padding(.vertical, 10)`).
