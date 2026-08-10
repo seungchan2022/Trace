@@ -1,6 +1,7 @@
 ---
-title: "XcodeBuildMCP는 홀드 후 이동(롱프레스-드래그) 제스처를 합성하지 못한다"
+title: "시뮬레이터 제스처 자동화 — 한 손가락은 전부 되고 두 손가락은 안 된다 (XcodeBuildMCP는 롱프레스-드래그부터 막힌다)"
 date: 2026-07-21
+updated: 2026-08-10
 category: workflow-issues
 module: QA workflow / Gesture verification
 problem_type: workflow_issue
@@ -15,7 +16,14 @@ applies_when:
 tags: [xcodebuildmcp, simulator, ui-automation, long-press, gesture, touch-synthesis, real-device-qa, computer-use, macos-permissions, multi-display]
 ---
 
-# XcodeBuildMCP는 홀드 후 이동(롱프레스-드래그) 제스처를 합성하지 못한다
+# 시뮬레이터 제스처 자동화 — 한 손가락은 전부 되고 두 손가락은 안 된다
+
+> **파일명이 `xcodebuildmcp-cannot-synthesize-...`인 것은 이 문서가 2026-07-21에 그 한계만
+> 기록하며 시작했기 때문이다.** 지금은 **시뮬레이터 제스처 자동화 전반의 레퍼런스**다.
+> 옛 링크(`history/`, `roadmap.md`)를 살리려고 이름을 그대로 뒀다.
+>
+> **결론만 필요하면 「다른 경로」 절의 표 두 개를 본다.** 대부분은 "된다"이고,
+> 안 되는 것은 **두 손가락뿐**이다.
 
 ## Context
 

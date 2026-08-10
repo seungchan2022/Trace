@@ -1,5 +1,21 @@
 # computer-use로 롱프레스-드래그를 합성할 수 있는가 (도구 검증)
 
+> ## ✅ 종료 (2026-08-10) — 이 플랜은 끝났다. 다시 실행하지 말 것.
+>
+> **결과: 된다. 그리고 범위가 원래 계획보다 넓어졌다.**
+>
+> - **한 손가락 일곱 개 전부 성공** — 롱프레스-드래그 · 싱글탭 · 더블탭 · 원핑거 줌 ·
+>   끝점 이어 그리기 · 바텀시트 끌기 · 리스트 인계.
+> - **두 손가락은 만들 수 없다** — 핀치줌으로 다섯 가지 방법을 시도해 전부 실패.
+>   드래그 계열 툴에 modifier 파라미터가 없는 것이 원인.
+> - **결과·재현 절차·판정 설계는 전부**
+>   `docs/solutions/workflow-issues/xcodebuildmcp-cannot-synthesize-long-press-drag.md`에 있다.
+>   `docs/agent-rules/testing.md`의 "UI and Simulator Checks"에서도 그리로 연결해 뒀다.
+>
+> ⚠️ **이 플랜의 아래 본문에는 틀린 서술이 남아 있다** — 착수 시점의 추측이라 그대로 둔다.
+> 특히 "⚠️ 이건 추론이다"(11-17행)와 tier 걱정(50-51행)은 검증으로 해소됐다
+> (tier는 `full`이었다). **판단 근거로 쓰지 말고 위 solutions 문서를 볼 것.**
+
 > **For agentic workers:** 이것은 학습(`trace-study`)이 아니라 **도구 검증**이다. 결과가 어느 쪽이든
 > `docs/solutions/workflow-issues/`에 기록하고 끝낸다. 앱 코드는 건드리지 않는다.
 

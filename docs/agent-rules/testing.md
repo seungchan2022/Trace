@@ -126,6 +126,7 @@ SwiftLint is configured by `.swiftlint.yml`.
   안에서 세 번 반복된 뒤 확정한 규칙. 정적 접근성 트리 스냅샷으로 안 잡히는 애니메이션/전환
   버그는 위 "UI 테스트 실패 원인 파악 순서"의 개별 하위 뷰 실측 기법을 쓴다.
 - Use simulator verification for navigation, visible UI, gestures, permissions, and lifecycle behavior.
+- **제스처를 시뮬레이터로 검증하기 전에 `docs/solutions/workflow-issues/xcodebuildmcp-cannot-synthesize-long-press-drag.md`를 먼저 읽는다.** 뭐가 되고 뭐가 안 되는지가 실측으로 정리돼 있다 — **경계선은 손가락 개수다.** 한 손가락(탭·더블탭·롱프레스-드래그·원핑거 줌·시트 드래그)은 computer-use MCP로 전부 합성되고, **두 손가락(핀치·회전·멀티터치)은 만들 수 없다**(드래그 계열에 modifier 파라미터가 없어서다. 다섯 가지 방법으로 확인). XcodeBuildMCP 단독으로는 "누른 채 이동"부터 막히므로 제스처 합성은 computer-use 쪽을 쓴다. **추측으로 "시뮬레이터로는 안 될 것"이라 접지 말고 그 문서의 표를 볼 것** — 이 판단을 틀리게 해서 두 사이클을 날린 적이 있다.
 - Use XCUITest or ViewInspector for UI tests.
 - Use `ios-debugger-agent` and XcodeBuildMCP-backed workflows for simulator build/run/debug tasks — **not for running the test suite**; see Simulator Discipline above for why.
 
