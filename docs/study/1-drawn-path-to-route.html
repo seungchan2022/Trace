@@ -3372,7 +3372,8 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
       그대로 보내면 “붙여 그었는데 안 붙은” 결과가 나온다. 그걸 막는 처리가 길찾기 앞에 하나 있다.
     </p>
 
-    <p><strong>어디에 놓이나</strong> — 다운샘플러 다음, 길찾기 전이다. <strong>점 17개 중 맨 앞 하나만</strong> 손댄다.</p>
+    <p><strong>어디에 놓이나</strong> — 다운샘플러(<code>DrawnPathSampler</code>, 파트 5) 다음,
+      길찾기 전이다. <strong>점 17개 중 맨 앞 하나만</strong> 손댄다.</p>
 
 <pre class="code">
 손 뗌  →  다운샘플러  →  [ ③ ]  →  길찾기 16번  →  세션
@@ -3535,10 +3536,10 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     </p>
 
 <pre class="code">① 판별 — 지금 이 손가락이 경로를 그리려는 것인가, 지도에서 일어나는 일반 액션인가
-② 수집 — 경로용으로 정해졌으면 그 손가락 위치를 좌표로 모은다</pre>
+② 수집 — 경로용으로 정해졌으면 그 손가락 위치를 <b>지점</b>(CourseCoordinate)으로 모은다</pre>
 
     <p>
-      <strong>②만 보면 시시하다.</strong> 화면 좌표를 위경도로 바꿔 배열에 담는 것이 전부고 코드도 몇 줄이다.
+      <strong>②만 보면 시시하다.</strong> <strong>화면 좌표</strong>(<code>CGPoint</code> — 화면 왼쪽 위 기준 pt)를 <strong>지점</strong>(<code>CourseCoordinate</code> — 파트 1에서 만든 위경도 타입)으로 바꿔 배열에 담는 것이 전부고 코드도 몇 줄이다. <em>이 파트에서 "좌표"라는 말이 두 뜻으로 나오니 그때마다 어느 쪽인지 밝혀 쓴다.</em>
       <strong>파트가 되는 이유는 ①</strong>이고, ①이 어려운 이유는 <strong>이동·확대·더블탭 확대가
       전부 <code>MKMapView</code>에 원래 있는 것</strong>이기 때문이다. 우리는 그것을 끄고 대체한 것이
       아니라 <strong>그 위에 얹었다.</strong>
@@ -3791,9 +3792,13 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     </p>
 
     <p>
-      수집이 하는 일은 짧다. 매번 손가락의 화면 좌표를 받아 <code>mapView.convert(_:toCoordinateFrom:)</code>로
-      위경도로 바꿔 배열에 쌓고, 손을 떼면 그 배열을 <code>onStrokeEnded</code>로 넘긴다.
-      <strong>그 배열이 파트 5가 받았던 원시 점 뭉치(<code>rawStroke</code>)다.</strong> 청크 1의 왼쪽 끝이 여기서 닫힌다. <em>개수는 파트 5가 “이 방법으로는 못 잰다”로 닫아뒀으므로 여기서도 숫자를 적지 않는다.</em>
+      수집이 하는 일은 짧다. 매번 손가락의 <strong>화면 좌표</strong>(<code>CGPoint</code>)를 받아
+      <code>mapView.convert(_:toCoordinateFrom:)</code>로 위경도로 바꾸고, 그것을
+      <strong>지점</strong>(<code>CourseCoordinate</code>)으로 만들어 배열에 쌓는다. 손을 떼면 그 배열
+      <code>[CourseCoordinate]</code>을 <code>onStrokeEnded</code>로 넘긴다.
+      <strong>그 배열이 파트 5가 받았던 원시 점 뭉치(<code>rawStroke</code>)다.</strong>
+      청크 1의 왼쪽 끝이 여기서 닫힌다.
+      <em>개수는 파트 5가 “이 방법으로는 못 잰다”로 닫아뒀으므로 여기서도 숫자를 적지 않는다.</em>
     </p>
 
     <p>
@@ -4307,6 +4312,50 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
         <code>SnappedRouteTests</code> <strong>4개 전부</strong> + <code>ThrottleDetectionTests</code>의
         <strong>2개 중 1개</strong>(<code>testRouteWithRetryDoesNotRetryOnThrottle</code>)로 <strong>5건</strong>이다.
         <strong>두 곳의 "5건"은 우연히 같은 숫자이고 서로 다른 집합이다.</strong>
+      </p>
+    </div>
+
+    <h3>2026-08-10 — 병기 점검 (한국어 이름 ↔ 코드 이름)</h3>
+
+    <p>
+      <strong>이 노트에 전례가 있어서 따로 훑었다.</strong> 파트 1이 타입을 <em>지점·구간·코스</em>라는
+      한국어 이름으로만 설명했고 파트 4가 코드 이름으로만 말해서, 코드를 대조하며 읽던 중에
+      실제로 막혔다. 그래서 <strong>「파트가 바뀌면 다시 이어준다」</strong>가 규칙이 됐는데,
+      그 규칙은 파트 4 시점에 생겼으므로 <strong>앞 파트들은 규칙 이전에 쓰였다.</strong>
+      타입 아홉 개의 등장 위치를 파트별로 뽑아 대조했다.
+    </p>
+
+    <div class="fix">
+      <span class="fixtag">⑦ 파트 7이 파트 1의 타입 이름을 한 번도 안 썼다 — 규칙이 있는데 오늘 어겼다</span>
+      <p>
+        파트 7 본문에 <code>CourseCoordinate</code>·<code>CourseSegment</code>·<code>PlannedCourse</code>가
+        <strong>한 번도 안 나온다.</strong> 그러면서 <em>“좌표로 모은다”</em>·<em>“위경도로 바꿔 배열에 담는다”</em>를
+        계속 말한다. <strong>파트 4에서 터진 것과 정확히 같은 형태다.</strong>
+      </p>
+      <p>
+        게다가 파트 7은 <strong>“좌표”를 두 뜻으로 쓴다</strong> — 화면 좌표(<code>CGPoint</code>)와
+        위경도(<code>CourseCoordinate</code>). 구분을 안 해줘서 같은 단어가 문단마다 다른 것을 가리켰다.
+        수집 정의와 설명 문단에 <strong>둘을 갈라 병기</strong>했고, 넘기는 것이
+        <code>[CourseCoordinate]</code>라는 것도 밝혔다.
+      </p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">⑧ 파트 6의 다운샘플러</span>
+      <p>
+        파트 5에서 병기한 <code>DrawnPathSampler</code>를 파트 6이 <em>“다운샘플러”</em>로만 불렀다.
+        첫 등장에 병기를 되살렸다.
+      </p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">기계 판정과 실제가 달랐던 것 — 고치지 않은 자리</span>
+      <p>
+        파트 6의 <em>“코스”</em>·<em>“지점”</em>도 한국어만 쓴 것으로 걸렸지만 <strong>고치지 않았다.</strong>
+        그 자리들은 타입이 아니라 <strong>일상어</strong>로 쓰였다 —
+        <em>“기존 코스의 끝점”</em>(화면에 그려진 경로 상태), <em>“도로 위 같은 지점”</em>(위치).
+        여기에 <code>PlannedCourse</code>·<code>CourseCoordinate</code>를 붙이면 <strong>오히려 틀린다.</strong>
+        <strong>병기 규칙은 그 말이 실제로 그 타입을 가리킬 때만 적용된다.</strong>
       </p>
     </div>
 
