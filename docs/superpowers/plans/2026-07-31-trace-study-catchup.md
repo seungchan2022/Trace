@@ -69,7 +69,7 @@
         **재현 절차·판정 설계·권한 함정·좌표계 주의는 전부**
         `docs/solutions/workflow-issues/xcodebuildmcp-cannot-synthesize-long-press-drag.md`에
         있다 — **파트 7 실측 전에 그 문서를 먼저 읽을 것.** 다시 추론하거나 재검증하지 말 것.
-        🔴 **파트 7에서 「이어 그리기」를 설명할 때 주의** — 하단 시트는 "탭해서 이어 그리기"라고
+        ⚠️ **파트 7에서 「이어 그리기」를 설명할 때 주의** — 하단 시트는 "탭해서 이어 그리기"라고
         하지만 **탭이 아니다.** 그리기 모드에서는 탭 GR이 꺼지고(`MapViewRepresentable.swift:340-341`),
         실제로는 `handleDraw:549-550`의 `strokeStartPinRole` — **끝점 핀 위에서 롱프레스를 시작**하는
         것이다. 코드와 실측 양쪽으로 확인했다. 문구를 그대로 믿고 설명하면 틀린다.
