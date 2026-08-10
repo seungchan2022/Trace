@@ -481,6 +481,7 @@
     <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 쉬운 것부터 조립 · 탭 두 번">쉬운 것부터 조립 — 탭</a></li>
     <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — 그리기가 부른 도구 · 다운샘플러">그리기가 부른 도구 — 다운샘플러</a></li>
     <li><span class="k"><i class="kf">6</i><i class="ks">6</i></span><a href="#p6" data-target="p6" title="파트 6 — 어려운 것 조립 · 그린 선">어려운 것 조립 — 그린 선</a></li>
+    <li><span class="k"><i class="kf">7</i><i class="ks">7</i></span><a href="#p7" data-target="p7" title="파트 7 — 뷰에 꽂는다 · 제스처 세 개">뷰에 꽂는다 — 제스처 세 개</a></li>
   </ol>
 </nav>
 
@@ -506,7 +507,7 @@
       <li class="on"><span class="k">4</span><a href="#p4">쉬운 것부터 조립 — 탭 두 번</a></li>
       <li class="on"><span class="k">5</span><a href="#p5">그리기가 부른 도구 — 다운샘플러</a></li>
       <li class="on"><span class="k">6</span><a href="#p6">어려운 것 조립 — 그린 선</a></li>
-      <li><span class="k">7</span><span class="todo">뷰에 꽂는다 — 제스처 두 개</span></li>
+      <li class="on"><span class="k">7</span><a href="#p7">뷰에 꽂는다 — 제스처 세 개</a></li>
     </ol>
   </nav>
 
@@ -621,15 +622,27 @@
             <strong>“먼 경우” 취급</strong>을 받고 요청이 1건 는다 · 구간 하나를 세션에 건네면 <strong>청크 1은 끝</strong></div>
         </div>
       </li>
-      <li class="pending">
+      <li>
         <span class="k">7</span>
         <div>
           <div class="can">새 제스처를 넣을 때 지도 이동과 안 부딪히는 조건을 정할 수 있다</div>
-          <div class="sum">뷰에 꽂는다 — 탭과 그리기가 한 지도에서 공존하는 법</div>
-          <div class="sum"><strong>여기서 답할 질문(2026-08-04):</strong> MapKit이 원래 주는
-            제스처는 무엇이고 우리가 얹은 것은 무엇인가 · 더블탭 확대, 탭하고 손 안 뗀 채
-            위아래로 확대 같은 기본 동작과 어떻게 안 부딪히게 했나 · 탭하면 마커가 저절로
-            생기나, 아니면 직접 만든 것인가</div>
+          <div class="sum">하는 일은 <strong>①판별 → ②수집</strong> 둘이고, <strong>파트가 되는 이유는 ①</strong>이다
+            (②는 화면 좌표를 위경도로 바꿔 담는 몇 줄) · 이동·확대·더블탭 확대는 전부
+            <code>MKMapView</code> 것이고 우리는 <strong>얹기만</strong> 했다 — 더블탭에 대해 만든 것은
+            확대가 아니라 <strong>“그때 핀을 안 찍는 것”</strong> · <strong>인식기는 “내장이냐 우리 것이냐”를
+            가려주지 않는다</strong>, 각자 <em>“이게 내 동작인가”</em>만 묻고 <strong>판별은 여럿이 경쟁한 결과</strong>이며
+            승자는 UIKit이 정한다(우리가 만지는 것은 경쟁 조건뿐) · 얹은 것은 <strong>셋</strong>
+            (롱프레스 <code>drawGR</code> · 탭 <code>tapGR</code> · 터치 관찰자)이고 모드마다 켜고 꺼서
+            <strong>그리기 1개 / 탭 2개</strong>가 된다 — 이 비대칭이 파트의 전부 ·
+            그리기는 <strong>0.25초(성립) + 10pt(탈락)</strong>로 갈리고, <strong>인식 전에만</strong> 이동 제한이 걸린다 ·
+            잠금은 <code>isScrollEnabled</code>(<code>MKMapView</code>의 프로퍼티)를 <strong>인식된 순간부터 손 뗄 때까지만</strong> 내린다 ·
+            <code>handleDraw</code> <strong>안에 판별 로직은 없다</strong>(불렸다는 것 자체가 확정) —
+            갈래는 판별이 아니라 <strong>한 획의 시작·중간·끝</strong> · 롱프레스는 인식 뒤에도 계속 불려
+            <strong>인식기 하나로 궤적까지</strong> 받는다(<code>require(toFail:)</code> 회피) ·
+            <strong>원래는 모드에 들어가면 지도가 통째로 얼었다</strong> — 지도 옮기려다 선이 그어지는 문제로
+            MVP16이 <strong>잠금을 모드에서 한 획으로</strong> 옮겼고 커스텀 두 손가락 팬이 삭제됐다 ·
+            ⚠️ 손가락 둘 이상이면 획을 버리는 경로는 <strong>미검증</strong>(두 손가락 입력을 만들 수 없다)
+            <br><strong>구간 ③④ 진행 중</strong> — 탭 판별 창과 원시 터치 관찰이 남았다</div>
         </div>
       </li>
     </ol>
@@ -3043,7 +3056,7 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
     </div>
   </details>
 
-  <details class="part" id="p6" open>
+  <details class="part" id="p6">
     <summary>
       <span class="part-tag">파트 6 / 7</span>
       <span class="ptitle">어려운 것 조립 — 그린 선</span>
@@ -3464,11 +3477,363 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     </div>
   </details>
 
+  <details class="part" id="p7" open>
+    <summary>
+      <span class="part-tag">파트 7 / 7</span>
+      <span class="ptitle">뷰에 꽂는다 — 제스처 세 개</span>
+    </summary>
+    <div class="pbody">
+
+    <div class="oneline">
+      <span class="tag">이 파트 한 줄</span>
+      <strong>해당 모드에서 각 손가락 입력이 경로를 그리기 위한 것인지 지도 액션인지 구분하고,
+      경로용이면 그것을 점 데이터로 변환한다.</strong>
+    </div>
+
+    <div class="goal">
+      <span class="tag">이 파트를 끝내면</span>
+      <p>새 제스처를 넣을 때 지도 이동과 안 부딪히는 조건을 정할 수 있다.</p>
+    </div>
+
+    <p>
+      <strong>사용자 장면으로는 어디인가</strong> — <em>손가락이 화면에 닿는 순간부터 그것이
+      좌표가 되어 넘어가기까지</em>다. 파트 1~6이 <strong>넘어간 다음</strong>을 지었고,
+      파트 7이 <strong>넘어가기 전</strong>을 채운다.
+    </p>
+
+    <p>
+      청크 좌표로 보면 이렇다. 파트 5는 <em>“점 200개를 받았다”</em>로 시작했는데
+      <strong>그 200개가 어디서 왔는지는 아직 한 번도 안 봤다.</strong> 파트 7이 그 왼쪽 끝을 채우면
+      청크 1이 닫힌다.
+    </p>
+
+<pre class="code">파트 7   손가락 ─┬─ 그리기: 한 획   → 점 200개   <span class="c">← 만들어서 넘긴다</span>
+                └─ 탭:     한 번 톡 → 점 1개
+
+파트 5   점 200개 → 솎아서 17개                   <span class="c">← 나눈다</span>
+파트 6   17개 → 조각 16개 → 구간 1개              <span class="c">← 조립한다</span></pre>
+
+    <p>
+      그리고 이 파트가 하는 일은 <strong>둘</strong>이다. 순서도 이 순서다.
+    </p>
+
+<pre class="code">① 판별 — 지금 이 손가락이 경로를 그리려는 것인가, 지도에서 일어나는 일반 액션인가
+② 수집 — 경로용으로 정해졌으면 그 손가락 위치를 좌표로 모은다</pre>
+
+    <p>
+      <strong>②만 보면 시시하다.</strong> 화면 좌표를 위경도로 바꿔 배열에 담는 것이 전부고 코드도 몇 줄이다.
+      <strong>파트가 되는 이유는 ①</strong>이고, ①이 어려운 이유는 <strong>이동·확대·더블탭 확대가
+      전부 <code>MKMapView</code>에 원래 있는 것</strong>이기 때문이다. 우리는 그것을 끄고 대체한 것이
+      아니라 <strong>그 위에 얹었다.</strong>
+    </p>
+
+    <h3>① 얹은 것은 셋이고, 모드마다 켜고 끈다</h3>
+
+    <p>
+      <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 남은 구간 셋이 전부 <em>“이 셋 중 하나”</em>의
+      이야기다. 몇 개가 있는지를 먼저 못 박지 않으면 구간 ③에서
+      <em>“탭인데 왜 인식기가 둘이냐”</em>가 풀리지 않는다.
+    </p>
+
+    <p>
+      먼저 <strong>눈에 보이는 것</strong>부터. 지도를 한 손가락으로 미는 것, 두 손가락으로 벌려
+      확대하는 것, 두 번 톡톡 쳐서 확대하는 것 — <strong>이것은 우리가 만든 것이 아니다.</strong>
+      <code>MKMapView</code>가 이미 갖고 있다. 근거는 <strong>우리 코드에 없다는 것</strong>이다.
+      등록한 탭 인식기(<code>tapGR</code>)는 <code>numberOfTapsRequired</code>를 손대지 않아
+      기본값 1탭이고(<code>:213</code>), 프로젝트 전체에 두 번 탭을 세는 인식기도 핀치 인식기도 없다.
+      그런데 시뮬레이터에서 더블탭하면 실제로 확대된다(2026-08-10 실측).
+    </p>
+
+    <p>
+      그렇다고 더블탭에 대해 우리가 한 것이 <strong>없지는 않다.</strong> 다만 만든 것이
+      <em>확대</em>가 아니라 <strong>“그때 핀을 안 찍는 것”</strong>이다. 그대로 두면
+      확대되면서 핀도 하나 찍힌다 — 실제로 그 버그가 있었고 MVP10에서 고쳤다(구간 ③④).
+    </p>
+
+    <aside class="concept">
+      <h4>💡 인식기(<code>UIGestureRecognizer</code>)란 무엇인가</h4>
+      <p>
+        <strong>뷰에 붙이는 객체다.</strong> 우리가 만들어 <code>mapView.addGestureRecognizer(…)</code>로
+        지도에 붙여두면, 그때부터 UIKit이 <strong>그 지도에 닿는 모든 터치를 이 객체에게도 보내준다.</strong>
+      </p>
+      <p>
+        그리고 그 객체가 하는 판단은 <strong>딱 하나</strong>다 —
+        <em>“지금 들어온 이 터치가, 내가 담당하는 그 동작인가.”</em>
+        <strong>자기 것만 본다. 옆에 누가 있는지 모른다.</strong>
+      </p>
+      <p>
+        그래서 흔한 오해가 하나 있다 — <strong>인식기가 “내장 제스처냐 우리 것이냐”를 가려주지 않는다.</strong>
+        그런 것을 아는 인식기는 없다. 지금 지도 위에서는 롱프레스가 <em>“0.25초 눌렸나”</em>,
+        탭이 <em>“톡 치고 뗐나”</em>, 내장 팬이 <em>“움직였나”</em>, 내장 더블탭이 <em>“톡톡 두 번 쳤나”</em>를
+        각자 묻는다. <strong>넷이 같은 터치를 동시에 본다.</strong>
+      </p>
+      <p>
+        <strong>따라서 판별은 인식기 하나의 일이 아니라 여럿이 경쟁한 결과이고, 승자는 UIKit이 정한다.</strong>
+        우리가 만질 수 있는 것은 <strong>경쟁 조건뿐</strong>이다 — <code>0.25초</code>·<code>10pt</code> 같은
+        숫자가 전부 그 조정이다.
+      </p>
+      <p>
+        인식기는 <strong>두 종류</strong>다. 탭처럼 <strong>한 번 부르고 끝나는 것</strong>과,
+        롱프레스처럼 <strong>인식된 뒤에도 손가락이 움직이는 내내 계속 부르는 것</strong>.
+        이 차이가 구간 ②에서 값을 한다.
+      </p>
+    </aside>
+
+    <p>지도 위에 우리가 얹은 것은 셋이다(<code>MapViewRepresentable.makeUIView:200-231</code>).</p>
+
+    <div class="roster">
+      <div class="card">
+        <div class="nm">롱프레스 인식기 · <code>drawGR</code></div>
+        <div class="ro"><code>UILongPressGestureRecognizer</code>. 0.25초 누르고 있으면 인식되고,
+          그 뒤 손가락이 움직이는 동안 계속 부른다.</div>
+      </div>
+      <div class="card">
+        <div class="nm">탭 인식기 · <code>tapGR</code></div>
+        <div class="ro"><code>UITapGestureRecognizer</code>. 톡 치면 한 번 부른다.</div>
+      </div>
+      <div class="card hero">
+        <div class="nm">터치 관찰자 · <code>TouchObserverGestureRecognizer</code></div>
+        <div class="ro"><code>UIGestureRecognizer</code>를 직접 상속했다.
+          <strong>아무것도 인식하지 않는다.</strong> 원시 터치가 내려앉는 것만 들여다본다.
+          인식기인데 인식을 안 하는 이 물건이 왜 필요했는지가 <strong>구간 ④</strong>다.</div>
+      </div>
+    </div>
+
+    <p>
+      <strong>셋이 동시에 살아 있지는 않다.</strong> 모드가 바뀔 때마다 켜고 끈다
+      (<code>updateUIView:332-343</code>).
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th></th><th>롱프레스 <code>drawGR</code></th><th>탭 <code>tapGR</code></th><th>터치 관찰자</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>그리기 모드</strong></td><td>켜짐</td><td>꺼짐</td><td>꺼짐</td></tr>
+          <tr><td><strong>탭 모드</strong></td><td>꺼짐</td><td>켜짐</td><td>켜짐</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      세어 보면 <strong>그리기 모드에서 켜진 것은 1개, 탭 모드에서 켜진 것은 2개</strong>다.
+      탭 인식기 자체는 하나지만 <strong>그것만으로는 탭이 제대로 돌아가지 않아서</strong> 터치 관찰자가
+      옆에 같이 켜져 있어야 한다. <strong>이 비대칭이 파트 7의 실제 내용 전부다</strong> —
+      구간 ②가 왼쪽(1개), 구간 ③④가 오른쪽(2개)이다.
+    </p>
+
+    <p class="later">
+      <strong>곁가지</strong> — 같은 자리에서 지도의 회전(<code>isRotateEnabled</code>)과
+      기울이기(<code>isPitchEnabled</code>)도 그리기 모드에서만 꺼둔다(<code>:337-338</code>).
+      둘 다 두 손가락 동작이라 그리기와 섞일 일이 없게 한 것이다. 몰라도 이 파트는 넘어간다.
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>지도의 이동·확대는 <code>MKMapView</code> 것이고, 우리는 인식기 셋을 얹었다.
+        인식기는 각자 <em>“이게 내 동작인가”</em>만 묻고, 판별은 그 경쟁의 결과다.</p>
+      <span class="aside">그리기는 인식기 하나로 끝나고 탭은 둘이 필요하다 — 그 이유가 이 파트의 정점이다.</span>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+
+    <h3>② 그리기 — 잠금을 언제 거느냐가 전부였다</h3>
+
+    <p>
+      <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 그리기 모드에서 손가락 하나가 지도를 밀 수도,
+      선을 그을 수도 있다. <strong>그 갈림을 만드는 조건이 무엇이고 값을 어디에 둘지</strong>를
+      직접 정할 수 있게 된다.
+    </p>
+
+    <p>가르는 것은 <strong>숫자 두 개</strong>이고, 둘의 성격이 다르다.</p>
+
+<pre class="code">홀드 시간   drawPressDuration      0.25초  → minimumPressDuration   <span class="c">성립 조건</span>
+허용 이동량 drawAllowableMovement  10pt    → allowableMovement      <span class="c">탈락 조건</span></pre>
+
+    <p>
+      손가락이 닿고 나서 <strong>0.25초가 되기 전에 10pt보다 많이 움직이면</strong> 롱프레스 인식기는
+      <em>“내 것 아니다”</em>로 실패하고 내장 팬이 이겨 지도가 밀린다. 반대로 거의 안 움직인 채
+      <strong>0.25초를 버티면</strong> 롱프레스가 인식된다. 코드 주석이 이 둘을 그대로 말한다
+      (<code>MapViewRepresentable.swift:180-182</code>) —
+      <em>“이 값이 ‘빠르게 훑기 = 이동 / 꾹 누르기 = 그리기’를 가르는 실제 분기점이다.”</em>
+    </p>
+
+    <p>손가락을 따라가 보면 이렇게 갈린다.</p>
+
+<pre class="code"><span class="c">갈래 A — 지도를 밀려는 손짓</span>
+0.00초  손가락 닿음                넷 다 “모르겠다”
+0.05초  8pt 이동                   아직 10pt 이내 → 아무도 안 이김
+0.08초  17pt 이동   ← 여기서 갈린다  10pt 초과 → 롱프레스 즉시 실패, 내장 팬이 이김
+0.60초  아직 누르고 있음            소용없다. 이미 진 승부다
+
+<span class="c">갈래 B — 그리려는 손짓</span>
+0.00초  손가락 닿음                넷 다 “모르겠다”
+0.10초  2pt 이동                   10pt 이내 → 아직 안 갈림
+0.25초  4pt 이동    ← 여기서 갈린다  버텼다 → 롱프레스 인식. 지도 잠기고 수집 시작
+0.90초  300pt 이동                 전부 선이 된다</pre>
+
+    <p>
+      갈래 A에서 <strong>0.08초에 실패가 확정되면 그 뒤로 아무리 오래 붙들고 있어도 그리기로
+      돌아오지 않는다.</strong> 0.25초가 이미 지났는데도 그렇다. 반대로 갈래 B에서
+      <strong>인식된 뒤에는 이동 제한이 사라진다</strong> — 10pt는 <strong>인식 전에만</strong> 걸리는
+      조건이라서, 인식되고 나면 손가락이 화면을 가로질러도 실패하지 않는다. 그것이 그리기니까.
+    </p>
+
+    <p>
+      <strong>10pt는 아주 작다.</strong> 아이폰 화면 가로가 약 390pt이니 <strong>화면 폭의 1/40</strong>이다.
+      그래서 사실상 <em>“멈춰 있어야 그리기다”</em>라는 뜻이고, 조금이라도 끌기 시작하면 지도 이동으로 본다.
+    </p>
+
+    <h4>인식된 순간부터 손 뗄 때까지만 지도를 잠근다</h4>
+
+    <p>
+      롱프레스가 인식되는 그 순간 지도 이동을 끈다(<code>isScrollEnabled = false</code>, <code>:548</code>).
+      그리는 동안 손가락이 계속 움직이는데 지도까지 따라 움직이면 선이 엉망이 되기 때문이다.
+      손을 떼면 곧바로 되살린다(<code>:568</code>).
+    </p>
+
+    <p>
+      <code>isScrollEnabled</code>는 <strong>우리가 만든 것이 아니라 <code>MKMapView</code>의 프로퍼티</strong>다.
+      같은 계열로 <code>isZoomEnabled</code>·<code>isRotateEnabled</code>·<code>isPitchEnabled</code>가 있다.
+      기능을 새로 만드는 것이 아니라 <strong>이미 있는 것을 켜고 끄는 스위치</strong>이고, 여기서
+      파트 7의 그림이 한 칸 더 채워진다 — <strong>우리가 지도에 할 수 있는 일은 얹기와 끄기 둘뿐이다.</strong>
+      지도의 팬 인식기를 직접 붙잡거나 고쳐 쓸 수는 없다.
+    </p>
+
+    <p class="seen">
+      <strong>실측</strong> — 시뮬레이터에서 롱프레스-드래그로 <strong>0.94km 선이 그어지는 동안 지도는
+      한 번도 안 움직였다</strong>(2026-08-10). 절차는
+      <code>docs/solutions/workflow-issues/xcodebuildmcp-cannot-synthesize-long-press-drag.md</code>에 있다.
+    </p>
+
+    <p>
+      다만 UIKit 프로퍼티는 <strong>끄는 시점과 켜는 시점을 우리가 직접 짚어야 한다.</strong>
+      켜는 줄을 빠뜨리면 지도가 영영 안 움직이므로, 그리기 모드로 들어갈 때마다
+      <code>isScrollEnabled = true</code>로 한 번 초기화하는 안전망이 따로 있다(<code>:336</code>).
+    </p>
+
+    <h4>그리기는 인식기 하나로 끝난다</h4>
+
+    <p>
+      <strong>판별과 수집은 서로 다른 것이 한다.</strong> 인식기(<code>drawGR</code>)가 판별하고,
+      통과하면 함수(<code>handleDraw</code>)를 부르고, 그때부터 함수가 수집한다.
+      <strong><code>handleDraw</code> 안에 판별 로직은 없다</strong> — 이 함수가 불렸다는 사실 자체가
+      <em>“그리기로 확정됐다”</em>는 뜻이고, 지도 이동으로 판정되면 아예 안 불린다.
+      <strong>문지기가 함수 안이 아니라 함수 바깥에 있다.</strong>
+    </p>
+
+    <p>
+      그럼 <code>handleDraw</code>는 무엇으로 갈래를 나누나. 판별이 아니라
+      <strong>한 획의 진행 단계</strong>다 — 인식기가 매번 자기 상태를 같이 넘겨준다.
+    </p>
+
+<pre class="code">.began       방금 인식됨    지도 잠그고, 핀 히트 확인하고, 첫 점 담기
+.changed     움직이는 중     점 계속 담기
+.ended       손 뗌          마지막 점 담고, 지도 풀고, 배열을 넘긴다
+.cancelled   취소됨         같은 정리를 하되 넘기지 않는다</pre>
+
+    <p>
+      그리고 <strong>인식기를 하나만 붙여도 되는 이유</strong>가 롱프레스의 성질이다. 롱프레스는
+      <em>“인식됐다”</em>를 한 번 알리고 끝나지 않고 <strong>그 뒤로 손가락이 움직일 때마다 계속
+      <code>handleDraw</code>를 부른다</strong>(한 획에 수백 번). 그래서 <em>“0.25초 버텼나”</em>를 판정한
+      바로 그 인식기가 <strong>그 뒤의 궤적까지 그대로 물어다 준다.</strong>
+    </p>
+
+    <p>
+      만약 그렇지 않았다면 궤적을 받아올 인식기를 하나 더 붙여야 했고, 그러면 둘 사이에
+      <em>“넌 쟤가 실패해야만 이겨라”</em>(<code>require(toFail:)</code>) 같은 규칙이 필요해진다.
+      MVP16 설계 문서가 이것을 채택 이유로 못 박아 뒀다
+      (<code>history/mvp16/2026-07-21-draw-gesture.md:7</code>) — <em>“인식기 하나로 ‘꾹 누르기 + 드래그’를
+      모두 처리할 수 있다(추가 인식기 불필요 → <code>require(toFail:)</code> 함정 회피).”</em>
+      <strong>그 함정이 구간 ④에서 다시 나온다.</strong>
+    </p>
+
+    <p>
+      수집이 하는 일은 짧다. 매번 손가락의 화면 좌표를 받아 <code>mapView.convert(_:toCoordinateFrom:)</code>로
+      위경도로 바꿔 배열에 쌓고, 손을 떼면 그 배열을 <code>onStrokeEnded</code>로 넘긴다.
+      <strong>그 배열이 파트 5가 받았던 점 200개다.</strong> 청크 1의 왼쪽 끝이 여기서 닫힌다.
+    </p>
+
+    <p>
+      함수 안에서 걸러내는 것이 딱 하나 있다(<code>:531-539</code>) — <strong>손가락이 둘 이상이면</strong>
+      그리던 것을 통째로 버리고 지도 잠금을 풀고 빠져나간다. 그리는 도중에 손가락을 하나 더 얹으면
+      <em>확대하려는 것</em>으로 보고 획을 포기한다. <strong>인식기가 못 걸러주는 것을 함수 안에서 막는
+      유일한 자리다.</strong> 다만 <strong>이 경로는 아직 검증된 적이 없다</strong> — 자동화 도구로
+      두 손가락 입력 자체를 만들 수 없어(2026-08-10 실측) 코드에 그렇게 적혀 있다는 것만 확인됐다.
+    </p>
+
+    <h4>원래는 이렇지 않았다 — 잠금의 주인이 바뀌었다</h4>
+
+    <p>
+      지금 코드만 열어보면 <code>0.25초</code>와 <code>10pt</code>가 그냥 거기 있어서
+      <strong>처음부터 그렇게 설계된 것처럼 보인다. 아니다.</strong>
+    </p>
+
+    <p>
+      예전에는 <strong>그리기 모드에 들어가는 순간 지도가 통째로 얼었다</strong>
+      (<code>isScrollEnabled = false</code>를 모드 경계에서 걸었다). 그래서
+      <strong>그리기 모드에서는 한 손가락이 곧 그리기</strong>였고, 0.25초도 10pt도 없었으며,
+      인식기도 롱프레스가 아니라 <strong>즉시 인식되는 팬</strong>(<code>UIPanGestureRecognizer</code>)이었다.
+      대면 바로 그어졌다.
+    </p>
+
+    <p>
+      한 손가락이 그리기에 묶였으니 <strong>지도를 옮길 손가락이 없다.</strong> 그래서 MVP4에서
+      <strong>커스텀 두 손가락 팬</strong>(<code>handleTwoFingerPan</code>)을 직접 만들어 붙였다.
+      직접 만들었다는 것이 중요하다 — <code>setRegion</code>으로 팬을 손수 재구현한 코드라
+      <strong>관성도 감속도 없었다.</strong>
+    </p>
+
+    <p>
+      무너진 지점은 실사용이다. 코스를 좀 그리다가 <strong>다음에 어디로 이어갈지 보려고 지도를 옮기는데</strong>,
+      무심코 한 손가락으로 밀면 <strong>선이 그어진다.</strong> MVP16 플랜이 이 문제를 목표 문장에 그대로
+      적어뒀다(<code>:5</code>) — <em>“다음 그릴 곳을 찾으려 지도를 옮길 때 원치 않는 선이 그려지는
+      실사용 문제를 없앤다.”</em>
+    </p>
+
+    <p>
+      <strong>고친 방식이 인상적이다. 조건을 더 붙인 것이 아니라 지도를 잠그는 시점을 옮겼다.</strong>
+    </p>
+
+<pre class="code">예전   잠금을 정하는 것 = 모드      그리기 켤 때 잠기고, 끌 때 풀린다
+지금   잠금을 정하는 것 = 한 획     획이 시작될 때 잠기고, 손 떼면 풀린다</pre>
+
+    <p>이 한 번의 이동으로 따라온 결과가 셋이다.</p>
+
+    <div class="steps">
+      <div class="st"><div class="n">1</div><div class="t">그리기 모드에서도 <b>한 손가락으로 지도를 밀 수 있게</b> 됐다 — 원래 불편이 사라졌다.</div></div>
+      <div class="st"><div class="n">2</div><div class="t">그러자 <b>“그럼 언제 그리기냐”</b>를 정할 기준이 필요해졌고, 그것이 <b>0.25초 + 10pt</b>다.</div></div>
+      <div class="st"><div class="n">3</div><div class="t">커스텀 두 손가락 팬이 <b>존재 이유를 잃고</b> 같은 마일스톤에서 삭제됐다(<code>831b8e6</code>). 내장 팬이 돌아오면서 <b>관성과 감속이 공짜로 따라왔다.</b></div></div>
+    </div>
+
+    <p>
+      <strong>저 화살표 자리가 코드에 안 남는다.</strong> 지금 코드에는 MVP16의 결과만 있고
+      <em>왜 이렇게 됐는지</em>는 설계 문서와 커밋에만 있다. 이것을 알면
+      <code>0.25초</code>를 만졌을 때 무슨 일이 생길지 판단이 된다 — 그 숫자는 임의로 정한 값이 아니라
+      <strong>“한 손가락을 지도에 돌려주기로 한 결정”의 대가</strong>라서, 값을 줄이는 것은 그 결정을
+      되돌리는 쪽으로 미는 일이다. 몰랐다면 <em>“반응이 굼뜨니 0.1초로 줄이자”</em>로 갔을 것이고,
+      그러면 MVP4가 겪은 문제가 그대로 돌아온다.
+    </p>
+
+    <div class="takeaway">
+      <span class="tag">이 구간에서 알고 갈 것</span>
+      <p>잠금을 정하는 것을 <strong>모드에서 한 획으로</strong> 옮긴 것 하나가 전부였고,
+        <code>0.25초</code>·<code>10pt</code>는 그 결과로 필요해진 기준이다.</p>
+      <span class="aside">그리고 그리기는 롱프레스 인식기 하나로 판별부터 궤적 수집까지 다 된다 —
+        탭은 그것이 안 된다는 것이 다음 구간이다. 곁가지: 두 값은 실기기 튜닝 대상으로 잡혀 있었지만
+        <strong>한 번도 안 바뀌었다</strong>(커밋 이력 확인). 몰라도 넘어간다.</span>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음</strong> — 파트 7 「뷰에 꽂는다 — 제스처 두 개」.
-    손가락이 만든 화면 좌표가 어떻게 위경도가 되어 ViewModel까지 오는지, 그리고 그 제스처가
-    지도 자체의 이동·확대와 어떻게 안 부딪히는지를 본다. 파트 6이 <em>“무엇을 받아야 하는지”</em>를
-    정했으니, 파트 7은 그것을 <strong>어떻게 만들어 넘기는지</strong>다.
+    <strong>파트 7 진행 중</strong> — 구간 ①②까지 왔고 <strong>③④가 남았다.</strong>
+    ③은 <em>탭 — 첫 탭만으로는 정체를 모른다</em>(판별 창 0.35초와 회색 마커의 정체),
+    ④는 <em>왜 원시 터치까지 봐야 했나</em>(표준적인 방법 둘을 기각한 이유)다.
+    그 뒤 팩트체크 → 확인 문제로 청크 1이 닫힌다.
   </div>
 
 </div>
