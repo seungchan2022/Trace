@@ -514,7 +514,6 @@
     <li><span class="k"><i class="kf">7</i><i class="ks">7</i></span><a href="#p7" data-target="p7" title="파트 7 — 뷰에 꽂는다 · 제스처 세 개">뷰에 꽂는다 — 제스처 세 개</a></li>
     <li><span class="k"><i class="kf">경로</i><i class="ks">경</i></span><a href="#where" data-target="where" title="어디를 열면 되나 — 파일 경로">어디를 열면 되나</a></li>
     <li><span class="k"><i class="kf">이력</i><i class="ks">이</i></span><a href="#why" data-target="why" title="왜 이렇게 됐나 — 기각된 것 · 깨져서 고친 것">왜 이렇게 됐나</a></li>
-    <li><span class="k"><i class="kf">검증</i><i class="ks">검</i></span><a href="#factcheck" data-target="factcheck" title="팩트체크 수정 내역">팩트체크 수정 내역</a></li>
     <li><span class="k"><i class="kf">문제</i><i class="ks">문</i></span><a href="#quiz" data-target="quiz" title="확인 문제 기록">확인 문제 기록</a></li>
   </ol>
 </nav>
@@ -544,7 +543,6 @@
       <li class="on"><span class="k">7</span><a href="#p7">뷰에 꽂는다 — 제스처 세 개</a></li>
       <li class="on"><span class="k">끝</span><a href="#where">어디를 열면 되나 — 파일 경로</a></li>
       <li class="on"><span class="k">끝</span><a href="#why">왜 이렇게 됐나 — 기각된 것 · 고친 것</a></li>
-      <li class="on"><span class="k">끝</span><a href="#factcheck">팩트체크 수정 내역</a></li>
       <li class="on"><span class="k">끝</span><a href="#quiz">확인 문제 기록</a></li>
     </ol>
   </nav>
@@ -583,8 +581,7 @@
             <strong>스로틀을 줄이려고 증분 계산으로 갈아타면서</strong> <em>“기본 구현은 유지하되
             ViewModel 레벨에서 증분 호출로 전환”</em>이라 정했다. <strong>지우기로 한 적이 없어 요구사항만 남고 죽었다.</strong>
             방향 판정(§2, 새 획을 앞에 붙일지 뒤집을지)은 <strong>별개 항목</strong>이었고 기본 구현은
-            코스 상태를 몰라 못 하므로, 그 판정과 라우팅이 통째로 ViewModel로 갔다
-            <span class="fixtag">(2026-08-06 재정정 — 08-05에 “동기는 스로틀이 아니라 방향”이라 적었으나 설계 문서 확인 결과 아님)</span></div>
+            코스 상태를 몰라 못 하므로, 그 판정과 라우팅이 통째로 ViewModel로 갔다</div>
         </div>
       </li>
       <li>
@@ -597,8 +594,7 @@
             도메인은 끝까지 MapKit을 모른다) · <strong>에러</strong>(<code>catch</code>가 둘,
             <strong>타입으로</strong> 먼저 가려내지 않으면 우리가 던진 것이 뭉개진다) ·
             <strong>캐시</strong>(“같은 질문”은 거리가 아니라 <strong>5자리 눈금의 같은 칸</strong>) ·
-            스로틀 조건은 <strong>실기기에서 겪고 늘린 것</strong>이라 갈아끼우면 버려진다 ·
-            ⚠️ <strong>이 파일에는 테스트가 없다</strong> — 테스트가 로직 <strong>복사본</strong>을 지킨다</div>
+            스로틀 조건은 <strong>실기기에서 겪고 늘린 것</strong>이라 갈아끼우면 버려진다 ·</div>
         </div>
       </li>
       <li>
@@ -632,8 +628,7 @@
             직선거리로 재던 시절 <strong>반지름 55m 원(둘레 346m)이 지름 110m &lt; 120m라 통째로 솎여</strong>
             0.01km로 붕괴했고 MVP4가 누적거리로 교체 · <strong>120m는 만들기 전에 재고 정한 값</strong>
             (60m로 잘게 나누면 오히려 충실도가 나빠지고 실패 8건) · 탭과 그리기는 <strong>같은 길찾기</strong>를
-            쓰고 다른 것은 <strong>조각 수뿐</strong>(1 대 16), 이어붙이기 문제는 그리기에만 생긴다 ·
-            ⚠️ 테스트 6줄은 <strong>모양 붕괴는 잡지만 요청 실패는 못 잡는다</strong></div>
+            쓰고 다른 것은 <strong>조각 수뿐</strong>(1 대 16), 이어붙이기 문제는 그리기에만 생긴다 ·</div>
         </div>
       </li>
       <li>
@@ -682,7 +677,7 @@
             ⚠️ 손가락 둘 이상이면 획을 버리는 경로는 <strong>미검증</strong>(두 손가락 입력을 만들 수 없다) ·
             <strong>탭은 손을 뗀 뒤에야 갈린다</strong>(싱글탭·더블탭·원핑거 줌이 첫 탭까지 완전히 같다) —
             그래서 즉시 확정을 <strong>0.35초 + 40pt 보류</strong>로 바꿨고, <strong>회색 마커는 그 기다림</strong>이다
-            (⚠️ 마커 0.1초 지연은 깜빡임을 <strong>없애는 게 아니라 줄인다</strong> — 주석의 “아예 안 보인다”는 과장) ·
+            
             기다리기로 한 대가로 <strong>좌표와 핀 히트는 보류 시점에 계산해 동봉</strong>한다(그사이 지도가 움직여도 제자리) ·
             <strong>탭 인식기는 손을 “떼야” 불린다</strong> → 원핑거 줌은 두 번째 손가락을 안 떼서 <strong>침묵</strong> →
             아무도 취소를 안 알려줘 <strong>확대되면서 핀도 찍혔다</strong> · 그래서 <strong>닿기만 해도 알리는</strong>
@@ -1210,8 +1205,7 @@ flowchart TD
     </div>
 
     <p>
-      ⚠️ <strong>①은 생각보다 좁다</strong>(2026-08-04 정정 — 원래 "강 건너편처럼 걸어갈 길이
-      아예 없을 때"라고 썼는데 코드와 달랐다). 어댑터에서 ①이 나오는 자리는 <strong>요청이
+      ⚠️ <strong>①은 생각보다 좁다.</strong> 어댑터에서 ①이 나오는 자리는 <strong>요청이
       성공한 뒤 경로 목록이 비어 있을 때</strong> 하나뿐이다. MapKit이 <em>에러를 던지면</em> —
       그게 "길이 없다"는 에러라도 — 스로틀 판정만 거친 뒤 <strong>전부 ③으로 간다.</strong>
       그래서 "강 건너편" 상황이 ①인지 ③인지는 코드만으로 확정할 수 없다.
@@ -1525,21 +1519,6 @@ extension CoursePlanningServiceProtocol {
 
     <div class="concept">
       <h4>💡 왜 기본 구현을 안 쓰게 됐나 — 설계가 증분 호출로 전환했다</h4>
-
-      <div class="fix">
-        ⚠️ <strong>이 절은 두 번 고쳤다. 지금 것이 1차 근거로 확정된 판이다(2026-08-06).</strong>
-        <br>
-        ①<strong>2026-08-05</strong> — 원래 <em>“전체 재계산이 캐시를 비껴가 요청이 폭증했다”</em>고
-        썼던 것을 지웠다. 캐시를 비껴간다는 <strong>메커니즘이 틀렸고</strong>, 이건 실측으로 확인했다
-        (이 절 끝). <strong>여기까지는 맞았다.</strong> 그런데 거기서 한 발 더 나가
-        <em>“증분으로 간 근본 동기는 스로틀이 아니라 방향이다”</em>로 <strong>동기까지 바꿔 썼고,
-        그게 지나쳤다.</strong>
-        <br>
-        ②<strong>2026-08-06</strong> — <strong>MVP3 설계 문서를 찾았다.</strong> 없는 줄 알고
-        정황 근거로 추론했던 것인데, 아카이빙된 MVP 문서는 <code>docs/superpowers/specs/</code>가
-        아니라 <code>history/</code>로 옮겨간다(<code>d667456</code>). 문서가 동기를 직접 적어 두었고,
-        <strong>①의 동기 부분은 틀렸다.</strong>
-      </div>
 
       <p>
         MVP2까지의 코드는 획을 새로 그을 때마다 <strong>지금까지 그은 모든 획의 점을 한 덩어리로
@@ -1934,10 +1913,8 @@ private extension CourseCoordinate {
         <em>“경로를 계산할 수 없습니다.”</em>로 다르다.
       </p>
       <p>
-        ⚠️ <strong>그런데 그 셋이 화면까지 온전히 오지 않는다.</strong> 확인해 보니 탭 경로와 그리기
-        경로가 <strong>서로 다른 하나씩을 빠뜨리고 있다</strong> — 탭은 <code>routeNotFound</code>만
-        따로 잡고 스로틀을 안 잡으며, 그리기는 정반대다. 그래서 <strong>그리기로 스로틀에 걸린 직후
-        탭을 하면 이유를 못 듣는다.</strong> <code>docs/backlog.md</code>에 올렸다.
+        <strong>다만 이 파일이 셋으로 갈라놔도 화면까지 셋이 다 오지는 않는다</strong> —
+        탭 경로와 그리기 경로가 서로 다른 하나씩을 빠뜨린다(처방은 백로그).
       </p>
     </div>
 
@@ -2163,48 +2140,6 @@ private extension CourseCoordinate {
         <span class="aside">키를 숫자 쌍이 아니라 문자열로 만든 것은 구현 선택일 뿐 곁가지다.</span></p>
     </div>
 
-    <h3>⚠️ 발견 — 이 파일에는 테스트가 하나도 없다</h3>
-
-    <p>
-      ①~⑤에서 본 일 셋이 실제로 그렇게 동작한다고 무엇이 보장하는지 확인하려다 나온 것이다.
-    </p>
-
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>확인한 것</th><th>결과</th></tr></thead>
-        <tbody>
-          <tr><td><code>MapKitCoursePlanningService</code>를 참조하는 <strong>테스트 파일</strong></td><td><strong>0개</strong></td></tr>
-          <tr><td><code>RouteCacheTests</code> 3건이 테스트하는 것</td><td><code>SpyMapKitService</code> — <strong>캐시 로직을 그대로 베낀 복사본</strong></td></tr>
-          <tr><td><code>ThrottleDetectionTests</code> 2건이 테스트하는 것</td><td><code>ThrottleStubService</code> — 무조건 <code>.throttled</code>를 던지는 스텁</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p>
-      <strong>③④에서 본 것이 전부 커버 0이다.</strong> <code>catch</code> 순서도, 스로틀 조건도
-      테스트가 건드리지 않는다. 캐시 쪽은 더 구체적으로 말할 수 있다 —
-      <strong>진짜 파일의 <code>round(값, 5)</code>를 <code>3</code>으로 바꿔도 테스트 5건이
-      전부 통과한다.</strong> 복사본은 그대로 5자리이기 때문이다.
-    </p>
-
-    <p>
-      <strong>구조가 그것만 허용했다.</strong> <code>route</code>가 함수 안에서
-      <code>MKDirections(request:).calculate()</code>를 직접 만들어 부른다. 끼어들 자리가 없어
-      <strong>네트워크 없이 이 함수를 부를 방법이 없고</strong>, 그래서 로직을 베끼는 것 말고는
-      선택지가 없었다. <strong>테스트를 잘못 쓴 것이 아니다.</strong>
-    </p>
-
-    <p class="later">
-      어떻게 고칠지는 <code>docs/backlog.md</code>에 있다 —
-      「<code>MapKitCoursePlanningService</code>에 테스트가 없다」 항목.
-    </p>
-
-    <div class="takeaway">
-      <span class="tag">발견에서 알고 갈 것</span>
-      <p><strong>“테스트가 있다”와 “그 코드가 테스트된다”는 다르다.</strong>
-        여기서는 테스트가 진짜 파일이 아니라 그 <strong>복사본</strong>을 지키고 있다.</p>
-    </div>
-
     <h3>닫으며 — 갈아끼울 때 실제로 고치는 것</h3>
 
     <p>
@@ -2280,7 +2215,7 @@ private extension CourseCoordinate {
 
     <div class="fix">
       <strong>⚠️ "화면은 좌표를 아예 안 들고 있다"까지 가면 틀린다</strong>
-      <span class="fixtag">(2026-08-06 검토에서 정정)</span> —
+      —
       <code>MapViewRepresentable</code>의 Coordinator는 <strong>그리는 중의 좌표</strong>
       (<code>currentStrokeCoords</code>)와 <strong>판별 창 동안의 탭 좌표</strong>
       (<code>pendingCoordinate</code>)를 실제로 들고 있다.
@@ -3001,62 +2936,6 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
       <span class="tag">이 구간에서 알고 갈 것</span>
       <p>솎아낼 때는 <strong>자로 잰 거리가 아니라 따라 걸어온 거리</strong>로 잰다. 안 그러면
         되돌아오는 획이 통째로 사라진다. 그리고 그 누적거리는 <strong>고르는 데만 쓰고 버린다.</strong></p>
-    </div>
-
-    <h3>⑥ 무엇을 보장하나 — 테스트 6줄</h3>
-
-    <p>
-      <strong>이걸 왜 여나</strong> — 이 파트의 능력 선언이 <em>"간격을 바꾸면 무엇이 깨지는지
-      판정할 수 있다"</em>이고, <strong>그 답의 절반이 테스트 목록</strong>이다. 이름 하나하나가
-      <strong>이 부품이 무엇을 보장하는가</strong>라서 코드를 안 읽어도 책임 범위가 보인다.
-    </p>
-
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>테스트 이름</th><th>보장하는 것</th><th>언제 생겼나</th></tr></thead>
-        <tbody>
-          <tr><td><code>testEmptyReturnsEmpty</code></td><td>빈 입력이 와도 안 터진다</td><td>MVP1</td></tr>
-          <tr><td><code>testSinglePointPreserved</code></td><td>점 하나면 그 하나를 그대로</td><td>MVP1</td></tr>
-          <tr><td><code>testEndpointsAlwaysPreservedEvenIfClose</code></td><td><strong>가까워도 시작·끝은 남긴다</strong></td><td>MVP1</td></tr>
-          <tr><td><code>testDownsamplesByMinSpacing</code></td><td>간격대로 솎아낸다</td><td>MVP1</td></tr>
-          <tr><td><code>testLoopStrokeNotCollapsedToTwoPoints</code></td><td><strong>원형 획이 두 점으로 안 무너진다</strong></td><td><strong>MVP4</strong></td></tr>
-          <tr><td><code>testCumulativeDistancePreservesStrokeOrder</code></td><td><strong>누적거리가 획 순서를 지킨다</strong></td><td><strong>MVP4</strong></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p>
-      <strong>위 4개와 아래 2개의 출신이 다르다.</strong> MVP1 4개는 만들 때 같이 쓴 것이고,
-      <strong>MVP4 2개는 버그를 잡고 나서 추가한 것</strong>이라 <strong>이름이 곧 그때 깨졌던 증상</strong>이다.
-      원형 획 이야기를 몰라도 <code>NotCollapsedToTwoPoints</code>를 보면
-      <em>"두 점으로 무너진 적이 있구나"</em>가 읽힌다.
-    </p>
-
-    <p>
-      <strong>그리고 이 6줄이 못 잡는 것이 있다.</strong> 간격을 60m로 줄인다고 하면 —
-    </p>
-
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>바꿨을 때 생기는 일</th><th>테스트가 잡나</th></tr></thead>
-        <tbody>
-          <tr><td>시작·끝이 사라진다</td><td><strong>잡는다</strong></td></tr>
-          <tr><td>원형 획이 무너진다</td><td><strong>잡는다</strong></td></tr>
-          <tr><td>점 순서가 뒤집힌다</td><td><strong>잡는다</strong></td></tr>
-          <tr><td>요청이 33건이 되어 8건 실패한다</td><td><strong>못 잡는다</strong></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p>
-      <strong>마지막 줄이 요점이다.</strong> 실측이 잡아낸 그 실패는 <strong>네트워크에서 나는 일이라
-      단위 테스트 밖</strong>이다. <strong>테스트를 다 통과시켜 놓고도 실기기에서 선이 끊길 수 있다.</strong>
-    </p>
-
-    <div class="takeaway">
-      <span class="tag">이 구간에서 알고 갈 것</span>
-      <p>테스트 6줄은 <strong>모양이 깨지는 것</strong>을 지킨다. <strong>요청이 많아 실패하는 것</strong>은
-        안 지킨다 — 간격을 건드릴 때 실측이 여전히 필요한 이유다.</p>
     </div>
 
     <h3>닫으며 — 이 부품의 절반은 기획, 절반은 사고</h3>
@@ -4172,7 +4051,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
 
   <details class="part" id="where">
     <summary>
-      <span class="part-tag">마무리 1 / 4</span>
+      <span class="part-tag">마무리 1 / 3</span>
       <span class="ptitle">어디를 열면 되나 — 파일 경로</span>
     </summary>
     <div class="pbody">
@@ -4208,7 +4087,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
 
   <details class="part" id="why">
     <summary>
-      <span class="part-tag">마무리 2 / 4</span>
+      <span class="part-tag">마무리 2 / 3</span>
       <span class="ptitle">왜 이렇게 됐나 — 기각된 것과 깨져서 고친 것</span>
     </summary>
     <div class="pbody">
@@ -4257,218 +4136,9 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     </div>
   </details>
 
-  <details class="part" id="factcheck" open>
-    <summary>
-      <span class="part-tag">마무리 3 / 4</span>
-      <span class="ptitle">팩트체크 수정 내역</span>
-    </summary>
-    <div class="pbody">
-
-    <div class="fix">
-      <span class="fixtag">범위</span>
-      <p>
-        <strong>2026-08-10 팩트체크는 소개 1~4 · 파트 1~7 · 마무리 절 전체를 대상으로 했다.</strong>
-        먼저 노트가 주장하는 <strong>검증 가능한 사실</strong>(파일 경로 · 줄 수 · 상수 · 개수 ·
-        테스트 이름 · 커밋 해시)을 전부 뽑아 코드와 기계적으로 대조했고, 그다음 해석·논리를 점검했다.
-      </p>
-      <p>
-        ⚠️ <strong>처음에는 파트 7만 대조하고 “나머지는 범위 밖”이라고 적었다.</strong> 사용자가
-        <em>“청크 전체가 끝나고 전체적으로 확인하자고 했지 않아?”</em>로 바로잡았고, 실제로
-        스킬 규칙도 <em>“모든 파트가 끝난 뒤”</em>다. <strong>범위를 혼자 좁힌 것이 잘못이었고,
-        넓히자마자 파트 1·2·5·마무리 절에서 오류 넷이 더 나왔다.</strong>
-      </p>
-    </div>
-
-    <h3>2026-08-10 — 코드 대조 (소개~파트 7 전체)</h3>
-
-    <p><strong>틀려서 고친 것 넷:</strong></p>
-
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>어디</th><th>적혀 있던 것</th><th>실제</th></tr></thead>
-        <tbody>
-          <tr><td>마무리 「어디를 열면 되나」</td><td><code>CoursePlanningError</code>가 <code>Entity/</code>에 있다</td><td><strong>한 단계 위</strong> <code>CoursePlanning/</code> 직하</td></tr>
-          <tr><td>파트 5 ③</td><td><code>DrawnPathSampler</code> <strong>25줄</strong></td><td><strong>24줄</strong></td></tr>
-          <tr><td>파트 2 ⑤</td><td>테스트 스텁 <strong>8개</strong></td><td><strong>9개</strong></td></tr>
-          <tr><td>파트 5 들어가며</td><td>겹침 제거 “네 군데”</td><td>역할은 네 자리가 맞지만 <code>CourseEditSession</code> 안에만 <strong>세 번</strong> — 호출 지점은 여섯</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p><strong>대조해서 맞은 것</strong>(다시 확인하지 않아도 된다):
-      <code>MapKitCoursePlanningService</code> 91줄 · <code>CoursePlannerPageViewModel</code> 클래스 본문
-      <strong>322줄</strong>(린트 경고 실재 확인) · <code>import MapKit</code> 파일 <strong>5개</strong>(길찾기 1 + 화면 4) ·
-      캐시 키 5자리 반올림 · <code>connectionThresholdMeters</code> 20m · <code>pinHit</code> 24pt ·
-      <code>recomputeGeneration</code> 올리기 <strong>5줄</strong> / 비교 <strong>7곳</strong>(탭 3 · 그리기 4) ·
-      <code>attach</code> 안의 길찾기 <code>await</code> <strong>3곳</strong> · 디바운스 <code>:230</code> ·
-      <code>.drawn</code> 재감싸기 <code>:283</code> · <code>canShowCallout = false</code> ·
-      다운샘플러 테스트 <strong>6개 이름 전부</strong> · <code>RouteCacheTests</code> 3건 ·
-      <code>ThrottleDetectionTests</code> 2건 · 파트 4·6이 지목한 테스트 3개 ·
-      <strong>인용한 커밋 해시 13개 전부</strong>(존재·날짜·메시지 일치) ·
-      MVP1 실측표 전 항목(2/1 · 9/8 · 17/16 · 34/33 · 시간 · 우회비 · 실패 8) ·
-      60초당 50요청(MVP3 설계 §4 원문) · 파트 7의 상수·줄 번호·상태 전이 전부.
-    </p>
-
-    <h3>2026-08-10 — 해석 점검 (청크 전체)</h3>
-
-    <div class="fix">
-      <span class="fixtag">⑤ 같은 수가 노트 안에서 세 갈래로 갈려 있었다 — 원시 점 개수</span>
-      <p>
-        파트 5가 <em>"손가락이 원시 점을 몇 개 만드는지는 잰 적이 없다 · 이 방법으로는 못 잰다"</em>고
-        닫아뒀는데, <strong>다른 세 자리가 그 결론을 안 따르고 있었다</strong> —
-        소개 2 도식의 <em>"점 수백 개"</em>, 그 캡션의 <em>"실측 숫자다"</em>(17·16만 실측인데 첫 칸까지
-        보증했다), 파트 7 값 사슬의 <em>"점 200개"</em>. 마지막 것은 자동화 도구에 200을 지정해서 나온
-        199에서 왔는데, <strong>파트 5가 바로 그 방법을 못 쓴다고 판정한 값</strong>이다.
-        셋 다 <strong>미측정</strong>으로 맞췄다. 같은 뿌리의 <em>"수백 번"</em>(<code>handleDraw</code> 호출 수)은
-        먼저 물렸으면서 이 셋이 남아 있었다.
-      </p>
-    </div>
-
-    <div class="fix">
-      <span class="fixtag">⑥ 단위가 파트마다 달랐다 — 픽셀 vs 포인트</span>
-      <p>
-        파트 4가 핀 히트를 <em>"화면이 픽셀로 재서(24px)"</em>로 썼는데 <strong>포인트가 맞다.</strong>
-        코드는 <code>mapView.convert(_:toPointTo:)</code> 결과에 <code>hitRadius: CGFloat = 24</code>를 쓰고,
-        주석도 <em>"화면 24pt 반경으로 판정한다"</em>라고 적어놨다. 파트 6·7은 <code>24pt</code>로 쓰고 있어서
-        <strong>같은 값이 노트 안에서 두 단위로 불렸다.</strong> 3배 화면에서 24pt는 72px이라
-        읽는 쪽이 그 자리에서 막힌다. 파트 4의 여섯 곳을 전부 포인트로 고쳤다.
-      </p>
-    </div>
-
-    <div class="fix">
-      <span class="fixtag">확인했으나 노트가 맞았던 것 — 테스트 5건</span>
-      <p>
-        파트 2 ⑤의 <em>"테스트 5건이 아직 이 경로를 지킨다"</em>가 파트 3의 <em>"테스트 5건"</em>
-        (<code>RouteCacheTests</code> 3 + <code>ThrottleDetectionTests</code> 2)에서 새어 들어온 것 아니냐는
-        의심을 받았다. <strong>실측하니 노트가 맞다</strong> — <code>snappedRoute</code>를 실제로 지나가는 것은
-        <code>SnappedRouteTests</code> <strong>4개 전부</strong> + <code>ThrottleDetectionTests</code>의
-        <strong>2개 중 1개</strong>(<code>testRouteWithRetryDoesNotRetryOnThrottle</code>)로 <strong>5건</strong>이다.
-        <strong>두 곳의 "5건"은 우연히 같은 숫자이고 서로 다른 집합이다.</strong>
-      </p>
-    </div>
-
-    <h3>2026-08-10 — 병기 점검 (한국어 이름 ↔ 코드 이름)</h3>
-
-    <p>
-      <strong>이 노트에 전례가 있어서 따로 훑었다.</strong> 파트 1이 타입을 <em>지점·구간·코스</em>라는
-      한국어 이름으로만 설명했고 파트 4가 코드 이름으로만 말해서, 코드를 대조하며 읽던 중에
-      실제로 막혔다. 그래서 <strong>「파트가 바뀌면 다시 이어준다」</strong>가 규칙이 됐는데,
-      그 규칙은 파트 4 시점에 생겼으므로 <strong>앞 파트들은 규칙 이전에 쓰였다.</strong>
-      타입 아홉 개의 등장 위치를 파트별로 뽑아 대조했다.
-    </p>
-
-    <div class="fix">
-      <span class="fixtag">⑦ 파트 7이 파트 1의 타입 이름을 한 번도 안 썼다 — 규칙이 있는데 오늘 어겼다</span>
-      <p>
-        파트 7 본문에 <code>CourseCoordinate</code>·<code>CourseSegment</code>·<code>PlannedCourse</code>가
-        <strong>한 번도 안 나온다.</strong> 그러면서 <em>“좌표로 모은다”</em>·<em>“위경도로 바꿔 배열에 담는다”</em>를
-        계속 말한다. <strong>파트 4에서 터진 것과 정확히 같은 형태다.</strong>
-      </p>
-      <p>
-        게다가 파트 7은 <strong>“좌표”를 두 뜻으로 쓴다</strong> — 화면 좌표(<code>CGPoint</code>)와
-        위경도(<code>CourseCoordinate</code>). 구분을 안 해줘서 같은 단어가 문단마다 다른 것을 가리켰다.
-        수집 정의와 설명 문단에 <strong>둘을 갈라 병기</strong>했고, 넘기는 것이
-        <code>[CourseCoordinate]</code>라는 것도 밝혔다.
-      </p>
-    </div>
-
-    <div class="fix">
-      <span class="fixtag">⑧ 파트 6의 다운샘플러</span>
-      <p>
-        파트 5에서 병기한 <code>DrawnPathSampler</code>를 파트 6이 <em>“다운샘플러”</em>로만 불렀다.
-        첫 등장에 병기를 되살렸다.
-      </p>
-    </div>
-
-    <div class="fix">
-      <span class="fixtag">기계 판정과 실제가 달랐던 것 — 고치지 않은 자리</span>
-      <p>
-        파트 6의 <em>“코스”</em>·<em>“지점”</em>도 한국어만 쓴 것으로 걸렸지만 <strong>고치지 않았다.</strong>
-        그 자리들은 타입이 아니라 <strong>일상어</strong>로 쓰였다 —
-        <em>“기존 코스의 끝점”</em>(화면에 그려진 경로 상태), <em>“도로 위 같은 지점”</em>(위치).
-        여기에 <code>PlannedCourse</code>·<code>CourseCoordinate</code>를 붙이면 <strong>오히려 틀린다.</strong>
-        <strong>병기 규칙은 그 말이 실제로 그 타입을 가리킬 때만 적용된다.</strong>
-      </p>
-    </div>
-
-    <h4>파트 7 — 해석 오류 넷</h4>
-
-    <h3>2026-08-10 — 파트 7</h3>
-
-    <p><strong>먼저 코드와 대조해 통과한 것</strong>(다시 확인하지 않아도 된다): 인용한 줄 번호 전부 ·
-      상수 넷(<code>0.25</code>·<code>10pt</code>·<code>0.35</code>·<code>40pt</code>·<code>0.1</code>) ·
-      판별기 상태 전이 네 갈래 · <code>pendingCoordinate</code> 동봉 · 관찰자 구조 ·
-      <code>TapClassifier.swift</code>가 70줄이고 <code>import UIKit</code>이 없다는 것.</p>
-
-    <p><strong>고친 것 넷:</strong></p>
-
-    <div class="fix">
-      <span class="fixtag">① 인과를 잘못 적었다 — 두 설정은 아무 일도 하지 않는다</span>
-      <p>
-        <em>“<code>cancelsTouchesInView</code>·<code>delaysTouchesBegan</code>을 꺼서 터치를 삼키거나
-        붙들지 않게 했다”</em>고 썼는데, <strong>애플 문서 확인 결과 둘 다 이 관찰자에서는 효과가 없다.</strong>
-        앞엣것은 <em>“인식이 성립한 뒤에만”</em> 작동하는데 이 관찰자는 성립하지 않고, 뒤엣것은
-        <strong>기본값이 이미 <code>false</code></strong>다. 터치가 지도로 흘러가는 진짜 이유는
-        <strong>판정을 안 한다는 것 하나</strong>다. 두 설정은 <strong>기본값을 못박은 방어</strong>로 고쳐 적었다.
-      </p>
-    </div>
-
-    <div class="fix">
-      <span class="fixtag">② 추론을 실측처럼 적었다</span>
-      <p>
-        <em>“선언하게 만들었다면 손가락을 댈 때마다 지도가 죽는다”</em>고 단정했는데
-        <strong>해본 적이 없다.</strong> 코드 주석이 그 이유를 든다는 것과 지금 구조에서 정상 동작한다는
-        실측만 확인된 상태다. <strong>미검증</strong>으로 표시했다.
-      </p>
-    </div>
-
-    <div class="fix">
-      <span class="fixtag">③ 파트 5가 미측정으로 남긴 수를 파트 7이 단정했다</span>
-      <p>
-        <em>“한 획에 수백 번”</em>이라고 썼는데, <strong>원시 점 개수는 파트 5가 “이 방법으로는 못 잰다”로
-        닫은 값</strong>이다. 단정을 물렸다.
-      </p>
-    </div>
-
-    <div class="fix">
-      <span class="fixtag">④ 기기 수치를 실측 기기와 다르게 적었다</span>
-      <p><em>“화면 가로 약 390pt”</em> → <strong>“400pt 안팎”</strong>으로 물렸다.</p>
-    </div>
-
-    <h3>진행 중 실기기 관찰로 뒤집힌 것 둘</h3>
-
-    <p>
-      팩트체크가 아니라 <strong>설명 도중 사용자가 직접 관찰해 잡은 것</strong>이라 따로 적는다.
-      둘 다 <strong>노트에는 사실만</strong> 남기고 처방은 <code>docs/backlog.md</code>로 보냈다.
-    </p>
-
-    <div class="fix">
-      <span class="fixtag">마커 0.1초 지연</span>
-      <p>
-        코드 주석은 <em>“취소될 제스처에서는 마커가 아예 안 보이게 한다”</em>고 적고 있는데
-        <strong>코드가 그것을 보장하지 않는다.</strong> 두 번째 터치가 0.1초보다 늦으면 깜빡임이 남고,
-        사람의 더블탭 간격이 보통 0.1~0.3초라 <strong>흔한 경우</strong>다.
-        에이전트가 주석을 그대로 옮겨 설명했다가 <em>“이게 지금 나오지 않을때도 있지만, 나올때도 있어”</em>로 정정됐다.
-      </p>
-    </div>
-
-    <div class="fix">
-      <span class="fixtag">핀·경로선 전량 재생성</span>
-      <p>
-        <em>“경로를 추가하면 이전 것들도 다시 그려지는 느낌”</em> — <strong>느낌이 아니라 실제로 그렇다.</strong>
-        <code>updateUIView</code>는 변경분만 고치지 않고 핀도 폴리라인도 <strong>전부 지웠다 다시 만든다.</strong>
-        핀 뷰에 <code>animatesWhenAdded = true</code>가 켜져 있어 <strong>안 바뀐 핀까지 떨어지는 애니메이션을
-        다시 한다.</strong>
-      </p>
-    </div>
-
-    <a class="backtop" href="#toc">↑ 목차로</a>
-    </div>
-  </details>
-
   <details class="part" id="quiz" open>
     <summary>
-      <span class="part-tag">마무리 4 / 4</span>
+      <span class="part-tag">마무리 3 / 3</span>
       <span class="ptitle">확인 문제 기록</span>
     </summary>
     <div class="pbody">
