@@ -1478,7 +1478,7 @@ extension CoursePlanningServiceProtocol {
       <table>
         <thead><tr><th>확인한 것</th><th>결과</th></tr></thead>
         <tbody>
-          <tr><td><code>snappedRoute</code>를 직접 구현한 타입</td><td><strong>0개</strong> (구현체 1 + 테스트 스텁 8, 전부 <code>route</code>만)</td></tr>
+          <tr><td><code>snappedRoute</code>를 직접 구현한 타입</td><td><strong>0개</strong> (앱 구현체 1 + 테스트 스텁 9, 전부 <code>route</code>만)</td></tr>
           <tr><td>앱 코드에서의 호출</td><td><strong>0곳</strong></td></tr>
           <tr><td>호출하는 곳</td><td><code>SnappedRouteTests</code> · <code>ThrottleDetectionTests</code> — <strong>테스트뿐</strong></td></tr>
         </tbody>
@@ -2626,10 +2626,12 @@ ViewModel이 보는 순서
       </p>
       <p>
         <strong>겹쳐 쓰는 대가로 이어 붙일 때 중복 처리가 필요하다.</strong> 첫 조각만 통째로 넣고
-        <strong>두 번째부터는 맨 앞 점 하나를 뺀다</strong>. 같은 처리가 코드에 네 군데 있다 —
+        <strong>두 번째부터는 맨 앞 점 하나를 뺀다</strong>. 같은 처리가 코드의 <strong>네 자리</strong>에 있다 —
         ViewModel(조각→획) · <code>CourseEditSession</code>(구간→구간) ·
         <code>PlannedCourse</code>(구간들→좌표 한 줄, 주석이 <em>"세그먼트 사이 첫 좌표 중복 제거"</em>) ·
         파트 3에서 본 죽은 <code>snappedRoute</code>.
+        (<code>CourseEditSession</code>은 그 안에서 <strong>세 번</strong> 쓴다 — 붙이는 방향마다 하나씩이라
+        <code>dropFirst</code> 호출 지점만 세면 여섯이다.)
       </p>
     </div>
 
@@ -2785,7 +2787,7 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
     </p>
 
     <p>
-      고르는 규칙은 세 줄이고, 파일은 <strong>25줄</strong>짜리 하나다. 길찾기도 안 부르고 지도도
+      고르는 규칙은 세 줄이고, 파일은 <strong>24줄</strong>짜리 하나다. 길찾기도 안 부르고 지도도
       모르고 화면도 모른다 — <strong>점 목록을 받아 점 목록을 돌려주는 것이 전부</strong>다.
     </p>
 
@@ -4143,7 +4145,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
       <table>
         <thead><tr><th>파트</th><th>파일</th><th>무엇이 있나</th></tr></thead>
         <tbody>
-          <tr><td><span class="pt">1</span></td><td><code>Trace/Domain/CoursePlanning/Entity/</code></td><td><code>CourseCoordinate</code> · <code>CourseSegment</code> · <code>PlannedCourse</code> · <code>CoursePlanningError</code></td></tr>
+          <tr><td><span class="pt">1</span></td><td><code>Trace/Domain/CoursePlanning/Entity/</code><br><code>Trace/Domain/CoursePlanning/</code></td><td><code>CourseCoordinate</code> · <code>CourseSegment</code> · <code>PlannedCourse</code><br>⚠️ <code>CoursePlanningError</code>는 <code>Entity/</code>가 아니라 <strong>한 단계 위</strong>에 있다</td></tr>
           <tr><td><span class="pt">2</span></td><td><code>Trace/Domain/CoursePlanning/Protocol/CoursePlanningServiceProtocol.swift</code></td><td>요구사항 <code>route</code> · 기본 구현 <code>snappedRoute</code>(죽어 있다)</td></tr>
           <tr><td><span class="pt">3</span></td><td><code>Trace/Infrastructure/CoursePlanning/MapKit/MapKitCoursePlanningService.swift</code></td><td>타입·에러 변환 · 캐시 · 스로틀 판정. <strong>테스트 없음</strong></td></tr>
           <tr><td><span class="pt">4·6</span></td><td><code>Trace/Pages/CoursePlannerPage/CoursePlannerPageViewModel.swift</code></td><td>탭 조립 · 그리기 조립 · <code>recomputeGeneration</code> 가드</td></tr>
@@ -4225,14 +4227,51 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     <div class="pbody">
 
     <div class="fix">
-      <span class="fixtag">범위 — 반드시 읽을 것</span>
+      <span class="fixtag">범위</span>
       <p>
-        <strong>2026-08-10 팩트체크가 대조한 것은 파트 7뿐이다.</strong> 파트 1~6은 앞 세션 산물이라
-        이번 범위 밖이고, 각자 그 세션의 팩트체크를 거쳤다(본문 곳곳의
-        <span class="fixtag">정정</span> 표시가 그 흔적이다).
-        <strong>이 노트 전체가 한 번에 검증된 것으로 읽지 말 것.</strong>
+        <strong>2026-08-10 팩트체크는 소개 1~4 · 파트 1~7 · 마무리 절 전체를 대상으로 했다.</strong>
+        먼저 노트가 주장하는 <strong>검증 가능한 사실</strong>(파일 경로 · 줄 수 · 상수 · 개수 ·
+        테스트 이름 · 커밋 해시)을 전부 뽑아 코드와 기계적으로 대조했고, 그다음 해석·논리를 점검했다.
+      </p>
+      <p>
+        ⚠️ <strong>처음에는 파트 7만 대조하고 “나머지는 범위 밖”이라고 적었다.</strong> 사용자가
+        <em>“청크 전체가 끝나고 전체적으로 확인하자고 했지 않아?”</em>로 바로잡았고, 실제로
+        스킬 규칙도 <em>“모든 파트가 끝난 뒤”</em>다. <strong>범위를 혼자 좁힌 것이 잘못이었고,
+        넓히자마자 파트 1·2·5·마무리 절에서 오류 넷이 더 나왔다.</strong>
       </p>
     </div>
+
+    <h3>2026-08-10 — 코드 대조 (소개~파트 7 전체)</h3>
+
+    <p><strong>틀려서 고친 것 넷:</strong></p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>어디</th><th>적혀 있던 것</th><th>실제</th></tr></thead>
+        <tbody>
+          <tr><td>마무리 「어디를 열면 되나」</td><td><code>CoursePlanningError</code>가 <code>Entity/</code>에 있다</td><td><strong>한 단계 위</strong> <code>CoursePlanning/</code> 직하</td></tr>
+          <tr><td>파트 5 ③</td><td><code>DrawnPathSampler</code> <strong>25줄</strong></td><td><strong>24줄</strong></td></tr>
+          <tr><td>파트 2 ⑤</td><td>테스트 스텁 <strong>8개</strong></td><td><strong>9개</strong></td></tr>
+          <tr><td>파트 5 들어가며</td><td>겹침 제거 “네 군데”</td><td>역할은 네 자리가 맞지만 <code>CourseEditSession</code> 안에만 <strong>세 번</strong> — 호출 지점은 여섯</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>대조해서 맞은 것</strong>(다시 확인하지 않아도 된다):
+      <code>MapKitCoursePlanningService</code> 91줄 · <code>CoursePlannerPageViewModel</code> 클래스 본문
+      <strong>322줄</strong>(린트 경고 실재 확인) · <code>import MapKit</code> 파일 <strong>5개</strong>(길찾기 1 + 화면 4) ·
+      캐시 키 5자리 반올림 · <code>connectionThresholdMeters</code> 20m · <code>pinHit</code> 24pt ·
+      <code>recomputeGeneration</code> 올리기 <strong>5줄</strong> / 비교 <strong>7곳</strong>(탭 3 · 그리기 4) ·
+      <code>attach</code> 안의 길찾기 <code>await</code> <strong>3곳</strong> · 디바운스 <code>:230</code> ·
+      <code>.drawn</code> 재감싸기 <code>:283</code> · <code>canShowCallout = false</code> ·
+      다운샘플러 테스트 <strong>6개 이름 전부</strong> · <code>RouteCacheTests</code> 3건 ·
+      <code>ThrottleDetectionTests</code> 2건 · 파트 4·6이 지목한 테스트 3개 ·
+      <strong>인용한 커밋 해시 13개 전부</strong>(존재·날짜·메시지 일치) ·
+      MVP1 실측표 전 항목(2/1 · 9/8 · 17/16 · 34/33 · 시간 · 우회비 · 실패 8) ·
+      60초당 50요청(MVP3 설계 §4 원문) · 파트 7의 상수·줄 번호·상태 전이 전부.
+    </p>
+
+    <h3>2026-08-10 — 해석 점검 (파트 7)</h3>
 
     <h3>2026-08-10 — 파트 7</h3>
 
