@@ -482,6 +482,9 @@
     <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — 그리기가 부른 도구 · 다운샘플러">그리기가 부른 도구 — 다운샘플러</a></li>
     <li><span class="k"><i class="kf">6</i><i class="ks">6</i></span><a href="#p6" data-target="p6" title="파트 6 — 어려운 것 조립 · 그린 선">어려운 것 조립 — 그린 선</a></li>
     <li><span class="k"><i class="kf">7</i><i class="ks">7</i></span><a href="#p7" data-target="p7" title="파트 7 — 뷰에 꽂는다 · 제스처 세 개">뷰에 꽂는다 — 제스처 세 개</a></li>
+    <li><span class="k"><i class="kf">경로</i><i class="ks">경</i></span><a href="#where" data-target="where" title="어디를 열면 되나 — 파일 경로">어디를 열면 되나</a></li>
+    <li><span class="k"><i class="kf">이력</i><i class="ks">이</i></span><a href="#why" data-target="why" title="왜 이렇게 됐나 — 기각된 것 · 깨져서 고친 것">왜 이렇게 됐나</a></li>
+    <li><span class="k"><i class="kf">검증</i><i class="ks">검</i></span><a href="#factcheck" data-target="factcheck" title="팩트체크 수정 내역">팩트체크 수정 내역</a></li>
   </ol>
 </nav>
 
@@ -508,6 +511,9 @@
       <li class="on"><span class="k">5</span><a href="#p5">그리기가 부른 도구 — 다운샘플러</a></li>
       <li class="on"><span class="k">6</span><a href="#p6">어려운 것 조립 — 그린 선</a></li>
       <li class="on"><span class="k">7</span><a href="#p7">뷰에 꽂는다 — 제스처 세 개</a></li>
+      <li class="on"><span class="k">끝</span><a href="#where">어디를 열면 되나 — 파일 경로</a></li>
+      <li class="on"><span class="k">끝</span><a href="#why">왜 이렇게 됐나 — 기각된 것 · 고친 것</a></li>
+      <li class="on"><span class="k">끝</span><a href="#factcheck">팩트체크 수정 내역</a></li>
     </ol>
   </nav>
 
@@ -3712,7 +3718,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     </p>
 
     <p>
-      <strong>10pt는 아주 작다.</strong> 아이폰 화면 가로가 약 390pt이니 <strong>화면 폭의 1/40</strong>이다.
+      <strong>10pt는 아주 작다.</strong> 아이폰 화면 가로가 400pt 안팎이니 <strong>화면 폭의 1/40쯤</strong>이다.
       그래서 사실상 <em>“멈춰 있어야 그리기다”</em>라는 뜻이고, 조금이라도 끌기 시작하면 지도 이동으로 본다.
     </p>
 
@@ -3767,7 +3773,8 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     <p>
       그리고 <strong>인식기를 하나만 붙여도 되는 이유</strong>가 롱프레스의 성질이다. 롱프레스는
       <em>“인식됐다”</em>를 한 번 알리고 끝나지 않고 <strong>그 뒤로 손가락이 움직일 때마다 계속
-      <code>handleDraw</code>를 부른다</strong>(한 획에 수백 번). 그래서 <em>“0.25초 버텼나”</em>를 판정한
+      <code>handleDraw</code>를 부른다</strong>(한 획에 여러 번 — <strong>몇 번인지는 파트 5가
+      미측정으로 남긴 그 수치</strong>라 여기서도 단정하지 않는다). 그래서 <em>“0.25초 버텼나”</em>를 판정한
       바로 그 인식기가 <strong>그 뒤의 궤적까지 그대로 물어다 준다.</strong>
     </p>
 
@@ -4031,17 +4038,25 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
         안 되니 당연한 규칙이다.
       </p>
       <p>
-        그런데 터치 관찰자는 <strong>손가락이 닿을 때마다 반응한다.</strong> 이것이 보통 인식기처럼
-        선언하도록 만들어졌다면 <strong>손가락을 댈 때마다 지도의 팬·확대가 취소된다.</strong>
-        결과는 <strong>지도가 아무 반응도 안 하는 것</strong>이다.
+        그런데 터치 관찰자는 <strong>손가락이 닿을 때마다 반응한다.</strong> 코드 주석이 드는 이유가
+        이것이다 — <em>“절대 인식 상태로 전이하지 않으므로 네이티브 줌을 포함한 다른 인식기를
+        방해하지 않는다.”</em> <strong>그래서 판정하는 코드를 아예 안 넣었다.</strong> 선언하는 코드가
+        없으니 이길 수가 없고 <strong>아무도 지지 않는다.</strong> “인식기인데 인식을 안 한다”는 것은
+        기능이 빠진 것이 아니라 <strong>이기면 안 되는 물건이라 일부러 그렇게 만든 것</strong>이다.
       </p>
       <p>
-        그래서 <strong>판정하는 코드를 아예 안 넣었다.</strong> 선언하는 코드가 없으니 이길 수가 없고,
-        <strong>아무도 지지 않는다.</strong> “인식기인데 인식을 안 한다”는 것은 기능이 빠진 것이 아니라
-        <strong>이기면 안 되는 물건이라 일부러 그렇게 만든 것</strong>이다.
-        같은 목적으로 <code>cancelsTouchesInView</code>·<code>delaysTouchesBegan</code>을 꺼서
-        터치를 삼키거나 붙들지 않게 했고, 지도의 다른 인식기와 <strong>동시에 인식돼도 좋다</strong>고
-        명시했다(<code>shouldRecognizeSimultaneouslyWith</code>).
+        ⚠️ <strong>“선언하게 만들었다면 지도가 죽었을 것”은 추론이고 해보지 않았다.</strong>
+        확인된 것은 주석이 이 이유를 든다는 것과, 지금 구조에서 확대·이동이 정상 동작한다는 실측뿐이다.
+        반대 방향(선언하게 바꿔서 지도가 실제로 멈추는지)은 <strong>미검증</strong>이다.
+      </p>
+      <p>
+        <strong>터치가 지도로 그대로 흘러가는 이유도 이 비-인식 하나다.</strong> 함께 꺼둔
+        <code>cancelsTouchesInView</code>·<code>delaysTouchesBegan</code>은 <strong>실제로는 아무 일도
+        하지 않는다</strong> — 애플 문서 기준 앞엣것은 <em>“인식이 성립한 뒤에만”</em> 작동하고
+        (이 관찰자는 성립하지 않는다), 뒤엣것은 <strong>기본값이 이미 <code>false</code></strong>다.
+        <strong>기본값에 기대지 않고 못박아 둔 방어</strong>로 읽는 것이 맞다.
+        지도의 다른 인식기와 <strong>동시에 인식돼도 좋다</strong>는 명시
+        (<code>shouldRecognizeSimultaneouslyWith</code>)도 같은 성격이다.
       </p>
     </div>
 
@@ -4115,11 +4130,187 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     </div>
   </details>
 
+  <details class="part" id="where">
+    <summary>
+      <span class="part-tag">마무리 1 / 4</span>
+      <span class="ptitle">어디를 열면 되나 — 파일 경로</span>
+    </summary>
+    <div class="pbody">
+
+    <p>잊었을 때 <strong>10분 안에 복원하기 위한 절</strong>이다. 파트 번호는 만드는 순서다.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>파트</th><th>파일</th><th>무엇이 있나</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pt">1</span></td><td><code>Trace/Domain/CoursePlanning/Entity/</code></td><td><code>CourseCoordinate</code> · <code>CourseSegment</code> · <code>PlannedCourse</code> · <code>CoursePlanningError</code></td></tr>
+          <tr><td><span class="pt">2</span></td><td><code>Trace/Domain/CoursePlanning/Protocol/CoursePlanningServiceProtocol.swift</code></td><td>요구사항 <code>route</code> · 기본 구현 <code>snappedRoute</code>(죽어 있다)</td></tr>
+          <tr><td><span class="pt">3</span></td><td><code>Trace/Infrastructure/CoursePlanning/MapKit/MapKitCoursePlanningService.swift</code></td><td>타입·에러 변환 · 캐시 · 스로틀 판정. <strong>테스트 없음</strong></td></tr>
+          <tr><td><span class="pt">4·6</span></td><td><code>Trace/Pages/CoursePlannerPage/CoursePlannerPageViewModel.swift</code></td><td>탭 조립 · 그리기 조립 · <code>recomputeGeneration</code> 가드</td></tr>
+          <tr><td><span class="pt">5</span></td><td><code>Trace/Domain/CoursePlanning/DrawnPathSampler.swift</code></td><td>누적거리 120m 다운샘플링</td></tr>
+          <tr><td><span class="pt">7</span></td><td><code>Trace/Pages/CoursePlannerPage/MapViewRepresentable.swift</code></td><td>인식기 셋 등록(<code>:200-231</code>) · 모드 전환(<code>:332-343</code>) · <code>handleDraw</code>(<code>:528</code>) · <code>handleTap</code>(<code>:591</code>) · <code>TouchObserverGestureRecognizer</code>(<code>:681</code>)</td></tr>
+          <tr><td><span class="pt">7</span></td><td><code>Trace/Pages/CoursePlannerPage/TapClassifier.swift</code></td><td>0.35초·40pt 판정 상태 머신(70줄, <code>import UIKit</code> 없음)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>설계 문서</strong>는 <code>history/mvp{N}/</code>에 있다 — 파트 5·6은 MVP3·4,
+      파트 7의 탭 판별은 <strong>MVP10</strong>(<code>2026-07-04-gesture-consistency-design.md</code>),
+      그리기 롱프레스 전환은 <strong>MVP16</strong>(<code>2026-07-21-draw-gesture.md</code>)이다.
+      제스처를 <strong>시뮬레이터로 검증하는 방법</strong>은
+      <code>docs/solutions/workflow-issues/xcodebuildmcp-cannot-synthesize-long-press-drag.md</code>.
+    </p>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+    </div>
+  </details>
+
+  <details class="part" id="why">
+    <summary>
+      <span class="part-tag">마무리 2 / 4</span>
+      <span class="ptitle">왜 이렇게 됐나 — 기각된 것과 깨져서 고친 것</span>
+    </summary>
+    <div class="pbody">
+
+    <p><strong>코드에 안 남는 절반</strong>이다. 지금 코드만 보면 알 수 없는 것들.</p>
+
+    <h3>기각된 것</h3>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>후보</th><th>왜 안 갔나</th></tr></thead>
+        <tbody>
+          <tr><td><strong>맵매칭 제공자</strong></td><td>한국 보행용 API가 사실상 없다(2026-06-20 조사). 대신 길찾기를 여러 번 부르는 것으로 대체 — 구간이 서로를 모르는 대가가 따라왔다. <strong>미래 옵션으로 살아 있다</strong></td></tr>
+          <tr><td><strong>60m 다운샘플링</strong></td><td>잘게 나누면 좋아질 줄 알았는데 <strong>실측에서 충실도가 나빠지고 실패 8건</strong>. 120m로 정함</td></tr>
+          <tr><td><strong>직선거리로 점 솎기</strong></td><td>반지름 55m 원이 통째로 솎여 0.01km로 붕괴. MVP4에서 <strong>누적거리</strong>로 교체</td></tr>
+          <tr><td><strong>자동 방향 감지(4쌍 거리 비교)</strong></td><td>왕복에서 판정이 흔들림. MVP9에서 임계값 규칙으로 교체(청크 2 소관)</td></tr>
+          <tr><td><code>require(toFail:)</code></td><td>UIKit 표준 해법이지만 <strong>판별이 끝나야 발화</strong>해서 “첫 탭 종료 즉시 보류” 신호를 <strong>구조적으로 못 낸다</strong>. 게다가 기본 더블탭 판정은 <strong>탭 사이 거리를 안 본다</strong></td></tr>
+          <tr><td><strong>탭 인식기 + 타이머만</strong></td><td>보류 신호는 낼 수 있지만 <strong>원핑거 줌의 두 번째 터치를 못 본다</strong>(탭이 완성되지 않는다). 그래서 원시 터치 관찰로 갔다</td></tr>
+          <tr><td><strong>네이티브 줌 제스처 선택적 비활성화</strong></td><td>신뢰 불가로 기각(MVP10 설계)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>깨져서 고친 것</h3>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>증상</th><th>원인</th><th>고친 것</th></tr></thead>
+        <tbody>
+          <tr><td>원형 코스가 0.01km로 붕괴</td><td>직선거리로 재서 원의 지름(110m)이 120m 미만</td><td>누적거리로 교체(MVP4)</td></tr>
+          <tr><td>더블탭 확대에 핀이 찍힘</td><td>첫 탭까지 싱글탭과 완전히 같다</td><td>0.35초 + 40pt 보류(MVP10)</td></tr>
+          <tr><td>회색 마커가 깜빡임</td><td>취소되면서 마커가 떴다 사라짐</td><td>표시를 0.1초 지연(2026-07-05 실기기 QA). <strong>⚠️ 완전 해결은 아니다 — 백로그</strong></td></tr>
+          <tr><td>임시 마커가 “도착”으로 잘못 뜸</td><td>길찾기 전에 <code>pendingTapStart</code>를 비워서</td><td>회색 “확인 중” 중립 스타일로 교체</td></tr>
+          <tr><td>지도 옮기려다 선이 그어짐</td><td>그리기 모드 진입 시 지도를 통째로 잠금 → 한 손가락 = 그리기</td><td><strong>잠금을 모드에서 한 획으로</strong> 옮김. 롱프레스 0.25초 + 10pt(MVP16). 커스텀 두 손가락 팬은 존재 이유를 잃고 삭제(<code>831b8e6</code>)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="later">
+      <strong>고친 것이 코드를 늘리지 않은 사례</strong> — MVP16은 조건을 더 붙인 게 아니라
+      <strong>잠금 시점 하나를 옮겼고</strong>, 그 결과 손수 만든 두 손가락 팬이 필요 없어져
+      <strong>코드가 줄면서 관성·감속이 공짜로 돌아왔다.</strong>
+    </p>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+    </div>
+  </details>
+
+  <details class="part" id="factcheck" open>
+    <summary>
+      <span class="part-tag">마무리 3 / 4</span>
+      <span class="ptitle">팩트체크 수정 내역</span>
+    </summary>
+    <div class="pbody">
+
+    <div class="fix">
+      <span class="fixtag">범위 — 반드시 읽을 것</span>
+      <p>
+        <strong>2026-08-10 팩트체크가 대조한 것은 파트 7뿐이다.</strong> 파트 1~6은 앞 세션 산물이라
+        이번 범위 밖이고, 각자 그 세션의 팩트체크를 거쳤다(본문 곳곳의
+        <span class="fixtag">정정</span> 표시가 그 흔적이다).
+        <strong>이 노트 전체가 한 번에 검증된 것으로 읽지 말 것.</strong>
+      </p>
+    </div>
+
+    <h3>2026-08-10 — 파트 7</h3>
+
+    <p><strong>먼저 코드와 대조해 통과한 것</strong>(다시 확인하지 않아도 된다): 인용한 줄 번호 전부 ·
+      상수 넷(<code>0.25</code>·<code>10pt</code>·<code>0.35</code>·<code>40pt</code>·<code>0.1</code>) ·
+      판별기 상태 전이 네 갈래 · <code>pendingCoordinate</code> 동봉 · 관찰자 구조 ·
+      <code>TapClassifier.swift</code>가 70줄이고 <code>import UIKit</code>이 없다는 것.</p>
+
+    <p><strong>고친 것 넷:</strong></p>
+
+    <div class="fix">
+      <span class="fixtag">① 인과를 잘못 적었다 — 두 설정은 아무 일도 하지 않는다</span>
+      <p>
+        <em>“<code>cancelsTouchesInView</code>·<code>delaysTouchesBegan</code>을 꺼서 터치를 삼키거나
+        붙들지 않게 했다”</em>고 썼는데, <strong>애플 문서 확인 결과 둘 다 이 관찰자에서는 효과가 없다.</strong>
+        앞엣것은 <em>“인식이 성립한 뒤에만”</em> 작동하는데 이 관찰자는 성립하지 않고, 뒤엣것은
+        <strong>기본값이 이미 <code>false</code></strong>다. 터치가 지도로 흘러가는 진짜 이유는
+        <strong>판정을 안 한다는 것 하나</strong>다. 두 설정은 <strong>기본값을 못박은 방어</strong>로 고쳐 적었다.
+      </p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">② 추론을 실측처럼 적었다</span>
+      <p>
+        <em>“선언하게 만들었다면 손가락을 댈 때마다 지도가 죽는다”</em>고 단정했는데
+        <strong>해본 적이 없다.</strong> 코드 주석이 그 이유를 든다는 것과 지금 구조에서 정상 동작한다는
+        실측만 확인된 상태다. <strong>미검증</strong>으로 표시했다.
+      </p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">③ 파트 5가 미측정으로 남긴 수를 파트 7이 단정했다</span>
+      <p>
+        <em>“한 획에 수백 번”</em>이라고 썼는데, <strong>원시 점 개수는 파트 5가 “이 방법으로는 못 잰다”로
+        닫은 값</strong>이다. 단정을 물렸다.
+      </p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">④ 기기 수치를 실측 기기와 다르게 적었다</span>
+      <p><em>“화면 가로 약 390pt”</em> → <strong>“400pt 안팎”</strong>으로 물렸다.</p>
+    </div>
+
+    <h3>진행 중 실기기 관찰로 뒤집힌 것 둘</h3>
+
+    <p>
+      팩트체크가 아니라 <strong>설명 도중 사용자가 직접 관찰해 잡은 것</strong>이라 따로 적는다.
+      둘 다 <strong>노트에는 사실만</strong> 남기고 처방은 <code>docs/backlog.md</code>로 보냈다.
+    </p>
+
+    <div class="fix">
+      <span class="fixtag">마커 0.1초 지연</span>
+      <p>
+        코드 주석은 <em>“취소될 제스처에서는 마커가 아예 안 보이게 한다”</em>고 적고 있는데
+        <strong>코드가 그것을 보장하지 않는다.</strong> 두 번째 터치가 0.1초보다 늦으면 깜빡임이 남고,
+        사람의 더블탭 간격이 보통 0.1~0.3초라 <strong>흔한 경우</strong>다.
+        에이전트가 주석을 그대로 옮겨 설명했다가 <em>“이게 지금 나오지 않을때도 있지만, 나올때도 있어”</em>로 정정됐다.
+      </p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">핀·경로선 전량 재생성</span>
+      <p>
+        <em>“경로를 추가하면 이전 것들도 다시 그려지는 느낌”</em> — <strong>느낌이 아니라 실제로 그렇다.</strong>
+        <code>updateUIView</code>는 변경분만 고치지 않고 핀도 폴리라인도 <strong>전부 지웠다 다시 만든다.</strong>
+        핀 뷰에 <code>animatesWhenAdded = true</code>가 켜져 있어 <strong>안 바뀐 핀까지 떨어지는 애니메이션을
+        다시 한다.</strong>
+      </p>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+    </div>
+  </details>
+
   <div class="next">
-    <strong>파트 7까지 끝</strong> — 청크 1의 일곱 파트가 다 채워졌다.
-    남은 것은 <strong>팩트체크 → 확인 문제 → 마지막 절 넷</strong>(어디를 열면 되나 ·
-    왜 이렇게 됐나 · 팩트체크 수정 내역 · 확인 문제 기록)이다.
-    그다음 청크 2 <em>「구간을 이어붙이고 재는 법」</em>으로 넘어간다.
+    <strong>다음</strong> — 확인 문제를 풀고 그 기록을 이 아래 절에 남기면 청크 1이 닫힌다.
+    그다음은 청크 2 <em>「구간을 이어붙이고 재는 법」</em> — 여기서 만든 <strong>구간 하나</strong>가
+    코스의 어디에 어떤 방향으로 붙는지를 다룬다.
   </div>
 
 </div>
