@@ -458,6 +458,36 @@
   }
   .next strong { color: var(--ink); }
 
+  /* ── 확인 문제 한 덩어리 ───────────── */
+  .qa {
+    border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1.1rem 1.25rem; margin: 1.6rem 0;
+    background: #fff;
+  }
+  .qa > .qhead {
+    display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline;
+    padding-bottom: .6rem; margin-bottom: .85rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .qa .qn {
+    font-size: .82rem; font-weight: 800; letter-spacing: .02em;
+    color: #fff; background: var(--deep);
+    padding: .2rem .6rem; border-radius: 5px;
+  }
+  .qa .qres {
+    font-size: .84rem; font-weight: 700; color: var(--deep);
+  }
+  .qa .qsrc { font-size: .82rem; color: var(--muted); margin-left: auto; }
+  .qa p { font-size: .95rem; line-height: 1.72; }
+  .qa .why {
+    margin-top: .9rem; padding-top: .8rem;
+    border-top: 1px dashed var(--rule);
+  }
+  .qa .why .lb {
+    display: block; font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .35rem;
+  }
+
   @media (max-width: 480px) {
     body { font-size: 16px; }
     .wrap { padding: 2.2rem 1.1rem 4rem; }
@@ -4449,82 +4479,206 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
       나중에 다시 읽을 때 <strong>무엇을 확인한 것인지</strong>가 복원돼야 하기 때문이다.
     </p>
 
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th></th><th>물어본 것</th><th>고른 답</th><th>정답</th></tr></thead>
-        <tbody>
-          <tr><td><span class="pt">1</span></td><td>코스를 구간 목록 대신 <strong>점 한 줄로 뭉개면</strong> 무엇이 깨지나 <em>(파트 1)</em></td><td>B</td><td><strong>B</strong> ✅</td></tr>
-          <tr><td><span class="pt">2</span></td><td>네이버의 <strong>일괄 요청 이점</strong>을 살리려면 무엇을 해야 하나 <em>(파트 2)</em></td><td>B</td><td><strong>B</strong> ✅</td></tr>
-          <tr><td><span class="pt">3</span></td><td><code>catch let error as CoursePlanningError</code>를 <strong>지우면</strong> 무엇이 달라지나 <em>(파트 3)</em></td><td>B</td><td><strong>B</strong> ✅</td></tr>
-          <tr><td><span class="pt">4</span></td><td>첫 탭 좌표를 <strong>화면이 들고 있다가</strong> 나중에 넘기면 무엇이 깨지나 <em>(파트 4)</em></td><td>A</td><td><strong>A</strong> ✅</td></tr>
-          <tr><td><span class="pt">5</span></td><td>다운샘플러 간격을 <strong>120m → 60m</strong>로 줄이면 실기기에서 무슨 일이 나나 <em>(파트 5)</em></td><td>C</td><td><strong>C</strong> ✅</td></tr>
-          <tr><td><span class="pt">6</span></td><td>조각 중간 실패 시 <strong>성공분만 붙이면</strong> 무엇이 문제인가 <em>(파트 6)</em></td><td>A</td><td><strong>A</strong> ✅</td></tr>
-          <tr><td><span class="pt">7</span></td><td><strong>터치 관찰자를 지우면</strong> 무엇이 깨지나 <em>(파트 7)</em></td><td>C</td><td><strong>C</strong> ✅</td></tr>
-        </tbody>
-      </table>
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 1</span><span class="qres">고른 답 B · 정답 B ✅</span><span class="qsrc">파트 1</span></div>
+      <p>
+        지금 코스(<code>PlannedCourse</code>)는 구간(<code>CourseSegment</code>) 목록을 들고 있고,
+        구간마다 점 목록과 거리가 따로 들어 있다. 어떤 개발자가 <strong>구간 경계를 없애고</strong>
+        점 15개를 한 줄로 이어붙인 목록 + 총 거리 1320m로 바꿨다.
+        화면에 그려지는 선도 같고 거리도 똑같이 뜬다. <strong>무엇이 깨질까?</strong>
+      </p>
+<pre class="code">A. 거리 계산이 틀려진다 — 구간별 거리를 더할 수 없게 되므로
+<b>B. 되돌리기가 안 된다 — "방금 그은 것만 지워줘"를 할 수 없으므로</b>   <span class="c">← 고른 답 · 정답</span>
+C. 지도에 선을 그릴 수 없다 — 폴리라인을 만들려면 구간 단위가 필요하므로
+D. 길찾기 요청이 늘어난다 — 뭉친 점을 매번 다시 쪼개서 물어봐야 하므로</pre>
+      <div class="why"><span class="lb">왜 그게 답인가</span>
+        <p>
+          점을 한 줄로 뭉개면 15개 중 <strong>어디부터가 방금 그은 것인지</strong>를 되찾을 수 없다.
+          사용자 표현이 정확했다 — <em>“어디 구간을 빼야 할지에 대한 기준이나 묶음이 없어져서.”</em>
+          딸린 사실 하나: 되돌리기가 빼는 “방금 넣은 것”은 <strong>배열의 뒤가 아닐 수도 있다</strong>
+          (출발점 쪽에 붙였으면 앞에 있다). 그래서 코드는 배열 위치와 별개로 <strong>넣은 순서를 따로 기억한다.</strong>
+        </p>
+        <p>
+          <em>나머지가 틀린 이유 — <strong>A</strong> 총 거리는 뭉쳐도 보관되니 안 틀린다.
+          <strong>C</strong> 폴리라인은 점 목록만으로 그려진다(오히려 뭉치면 그리기는 쉬워진다).
+          <strong>D</strong> 요청 수는 다운샘플러와 조각 수가 정하는 것이라 저장 구조와 무관하다.</em>
+        </p>
+      </div>
     </div>
 
-    <h3>왜 그게 답인가 — 문제별 해설</h3>
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 2</span><span class="qres">고른 답 B · 정답 B ✅</span><span class="qsrc">파트 2</span></div>
+      <p>
+        길찾기 제공자로 네이버를 하나 더 붙인다. 네이버 API에는 애플에 없는 기능이 있다 —
+        <strong>지점을 여러 개 한 번에 받아 경로 하나를 만들어준다.</strong> 두 점씩 잘라 16번 부를 필요 없이
+        한 번이면 끝난다. <code>snappedRoute(through:)</code>가 하는 일이 정확히 그것이고, 지금은
+        <code>extension</code>의 기본 구현이 <code>route</code>를 N−1번 반복 호출해 처리한다.
+        <strong>네이버의 그 이점을 살리려면?</strong>
+      </p>
+<pre class="code">A. extension의 snappedRoute 기본 구현 안에 제공자별 분기를 넣는다
+<b>B. 네이버 어댑터에서 snappedRoute를 직접 구현한다 — 기본 구현 대신 그것이 쓰인다</b>   <span class="c">← 고른 답 · 정답</span>
+C. 할 수 없다. 기본 구현은 extension에 있어서 구현체가 갈아끼울 수 없다
+D. 프로토콜에 요구사항을 하나 더 추가해야 한다 (예: bulkRoute)</pre>
+      <div class="why"><span class="lb">왜 그게 답인가</span>
+        <p>
+          <strong>단, 그 우선이 성립하는 조건이 있다</strong> — <code>snappedRoute</code>가
+          <strong>요구사항으로도 선언돼 있어야 한다.</strong> 프로토콜에 두 번 나오는 이유가 이것이다.
+          요구사항 선언을 빼고 <code>extension</code>에만 두면 <strong>정적 디스패치</strong>가 되어,
+          호출부가 프로토콜 타입으로 들고 있는 한 어댑터 구현이 <strong>무시된다.</strong>
+          우리 코드가 정확히 그 조건이다 — ViewModel도 세션도
+          <code>CoursePlanningServiceProtocol</code> 타입으로 받는다. 그랬다면 <strong>C가 정답이 된다.</strong>
+        </p>
+        <p>
+          <em><strong>A</strong>가 특히 위험하다 — 기본 구현에 제공자별 분기를 넣으면
+          <strong>도메인이 제공자를 알게 되어</strong> 파트 2가 세운 기준을 정면으로 깬다.</em>
+        </p>
+        <p class="later">
+          <strong>사용자가 낸 대안도 성립한다</strong> — 기본 구현을 아예 애플 구현체로 옮기는 것.
+          대가는 <strong>새 제공자마다 N−1 반복문을 각자 다시 짜야 한다</strong>는 것이고,
+          제공자가 늘어날수록 손해가 커진다.
+        </p>
+      </div>
+    </div>
 
-    <p>
-      <strong>1 · 되돌리기가 안 된다.</strong> 점을 한 줄로 뭉개면 15개 중
-      <strong>어디부터가 방금 그은 것인지</strong>를 되찾을 수 없다. 사용자 표현이 정확했다 —
-      <em>“어디 구간을 빼야 할지에 대한 기준이나 묶음이 없어져서.”</em> 딸린 사실 하나: 되돌리기가 빼는
-      “방금 넣은 것”은 <strong>배열의 뒤가 아닐 수도 있다</strong>(출발점 쪽에 붙였으면 앞에 있다).
-      그래서 코드는 배열 위치와 별개로 <strong>넣은 순서를 따로 기억한다</strong>.
-      <em>거리는 뭉쳐도 보관되고, 폴리라인은 점 목록만으로 그려지며, 요청 수는 저장 구조와 무관하다.</em>
-    </p>
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 3</span><span class="qres">고른 답 B · 정답 B ✅</span><span class="qsrc">파트 3</span></div>
+      <p>
+        <code>MapKitCoursePlanningService.route</code>는 <code>catch</code>가 둘이다 —
+        ①<code>catch let error as CoursePlanningError { throw error }</code>,
+        ②<code>catch { …애플 에러를 번역… }</code>.
+        어떤 개발자가 <strong>①을 통째로 지웠다</strong>(<em>“어차피 다시 던지는 것뿐인데”</em>).
+        빌드도 되고 앱도 켜진다. <strong>애플이 “경로 0건”으로 답하는 곳을 찍으면 무엇이 달라질까?</strong>
+      </p>
+<pre class="code">A. 아무것도 안 바뀐다 — ①은 그냥 다시 던지는 것뿐이라 있으나 없으나 같다
+<b>B. 안내가 "도보 경로를 찾을 수 없습니다" → "경로를 계산할 수 없습니다"로 바뀐다</b>   <span class="c">← 고른 답 · 정답</span>
+C. 앱이 죽는다 — 잡히지 않은 에러가 위로 올라가서
+D. 스로틀 안내("요청이 많아 잠시 후...")가 안 뜨게 된다</pre>
+      <div class="why"><span class="lb">왜 그게 답인가</span>
+        <p>
+          우리가 던진 <code>.routeNotFound</code>가 ②에 잡혀 <code>.requestFailed</code>로 뭉개진다.
+          <strong>파트 1에서 셋으로 나눈 것이 여기서 둘로 줄어든다.</strong> 사용자 표현 —
+          <em>“우리가 특정 에러에 대해서는 이렇게 처리하자고 정한 부분이 제대로 전달이 안 된다.”</em>
+        </p>
+        <p>
+          짚고 간 것: ①이 가르는 기준은 <strong>“길을 못 찾음이냐”가 아니라
+          <code>CoursePlanningError</code> 타입이냐</strong>다. 지금은 우리가 여기서 던지는 도메인 에러가
+          하나뿐이라 결과가 같아 보일 뿐이고, <strong>나중에 하나 더 던지면 그것도 같이 뭉개진다.</strong>
+        </p>
+        <p>
+          <em><strong>D</strong>가 틀린 이유가 이 구분과 닿는다 — 스로틀은 <strong>애플이 던진 에러</strong>라
+          ②에서 번역되므로 ①과 무관하고, 안내는 그대로 뜬다. <strong>C</strong>는 ②가 모든 것을 받으므로 안 죽는다.</em>
+        </p>
+      </div>
+    </div>
 
-    <p>
-      <strong>2 · 네이버 어댑터에서 <code>snappedRoute</code>를 직접 구현한다.</strong> 그러면 기본 구현 대신
-      그것이 쓰인다. <strong>단, 그 우선이 성립하는 조건이 있다</strong> — <code>snappedRoute</code>가
-      <strong>요구사항으로도 선언돼 있어야 한다.</strong> 프로토콜에 두 번 나오는 이유가 이것이다.
-      요구사항 선언을 빼고 <code>extension</code>에만 두면 <strong>정적 디스패치</strong>가 되어,
-      호출부가 프로토콜 타입으로 들고 있는 한(우리 코드가 그렇다 — ViewModel·세션 모두
-      <code>CoursePlanningServiceProtocol</code>로 받는다) 어댑터 구현이 <strong>무시된다.</strong>
-      <em>기본 구현에 제공자별 분기를 넣는 것(A)은 도메인이 제공자를 알게 되므로 파트 2의 기준을 정면으로 깬다.</em>
-    </p>
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 4</span><span class="qres">고른 답 A · 정답 A ✅</span><span class="qsrc">파트 4</span></div>
+      <p>
+        코스가 없을 때 지도를 톡 치면 그 좌표가 <strong>ViewModel에 저장되고</strong> 화면이 그것을 읽어
+        임시 마커를 그린다. 어떤 개발자가 <strong>첫 탭 좌표를 화면(<code>Coordinator</code>)이 들고 있다가,
+        둘째 탭 때 두 점을 한꺼번에 ViewModel에 넘기도록</strong> 바꿨다
+        (<em>“다 모인 뒤에 한 번만 넘기면 깔끔하지 않나”</em>). 길찾기 결과는 똑같다. <strong>무엇이 깨질까?</strong>
+      </p>
+<pre class="code"><b>A. 첫 탭 뒤에 뜨던 임시 마커가 안 뜬다</b>   <span class="c">← 고른 답 · 정답</span>
+B. 아무것도 안 깨진다 — 두 점만 모이면 결과가 같으므로
+C. 길찾기 요청이 두 배가 된다
+D. 되돌리기가 안 된다</pre>
+      <div class="why"><span class="lb">왜 그게 답인가</span>
+        <p>
+          핀을 만드는 <code>mapPins</code>는 <code>viewModel.</code>을 읽는 계산 프로퍼티이고,
+          <strong>다시 그리라는 신호는 <code>@Observable</code>이 보낸다.</strong>
+          <code>Coordinator</code>는 UIKit 객체라 거기 값이 바뀌어도 <strong>SwiftUI가 모른다</strong> —
+          값은 있는데 신호가 없어 아무도 다시 계산하지 않는다.
+          사용자 질문이 이 지점을 정확히 짚었다 — <em>“화면이 들고 있어도 표현이 되는 건가?”</em>
+        </p>
+        <p>
+          딸린 손해: 같은 사실이 두 군데에 살면 <strong>모드 전환·실패·되돌리기마다 둘을 맞춰야 한다.</strong>
+          지금은 한 군데만 비우면 끝난다.
+        </p>
+      </div>
+    </div>
 
-    <p>
-      <strong>3 · 안내 문구가 바뀐다.</strong> 우리가 던진 <code>.routeNotFound</code>가 아래 <code>catch</code>에
-      잡혀 <code>.requestFailed</code>로 뭉개진다. <strong>파트 1에서 셋으로 나눈 것이 여기서 둘로 줄어든다.</strong>
-      사용자 표현 — <em>“우리가 특정 에러에 대해서는 이렇게 처리하자고 정한 부분이 제대로 전달이 안 된다.”</em>
-      짚고 간 것: 그 <code>catch</code>가 가르는 기준은 “길을 못 찾음이냐”가 아니라
-      <strong><code>CoursePlanningError</code> 타입이냐</strong>다. 지금은 우리가 던지는 도메인 에러가 하나뿐이라
-      결과가 같아 보일 뿐이다. <em>스로틀은 애플이 던진 에러라 아래 <code>catch</code>에서 번역되므로 영향이 없다.</em>
-    </p>
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 5</span><span class="qres">고른 답 C · 정답 C ✅</span><span class="qsrc">파트 5</span></div>
+      <p>
+        <code>DrawnPathSampler</code>의 간격을 <strong>120m → 60m로 줄였다</strong>
+        (<em>“더 촘촘하면 그린 모양을 더 잘 따라가겠지”</em>). <strong>단위 테스트 6개는 전부 통과한다.</strong>
+        실기기에서는 무엇이 일어날까?
+      </p>
+<pre class="code">A. 아무 변화 없다 — 테스트가 다 통과했으므로 동작도 같다
+B. 선이 더 매끄러워진다 — 점이 촘촘해지니 모양이 더 정확해진다
+<b>C. 선이 중간중간 끊긴다 — 조각이 두 배로 늘어 요청이 몰리고 일부가 실패한다</b>   <span class="c">← 고른 답 · 정답</span>
+D. 거리가 두 배로 계산된다 — 조각이 두 배가 되므로</pre>
+      <div class="why"><span class="lb">왜 그게 답인가</span>
+        <p>
+          조각이 16 → 33으로 늘어 요청이 몰리고 실측에서 <strong>8건이 실패</strong>했다.
+          그리고 이 문제의 요점은 <strong>단위 테스트 6개가 전부 통과한다</strong>는 것이다 —
+          모양 붕괴는 잡지만 <strong>요청 실패는 네트워크에서 나는 일이라 테스트 밖</strong>이다.
+        </p>
+        <p>
+          <strong>D를 헷갈린 것이 좋은 지점이었다.</strong> 거리는 두 배가 되지 않는다 —
+          조각이 2배면 조각 하나의 거리가 절반이라 <strong>합은 그대로</strong>다
+          (<code>16 × 120 ≈ 33 × 60 ≈ 1,900m</code>). 다만 짧은 조각일수록 길찾기가 블록을 우회해
+          <strong>max 우회비가 1.80 → 5.71</strong>로 뛰므로 <em>조금</em> 늘 수는 있고,
+          그건 “두 배”가 아니라 <strong>모양이 나빠진 결과</strong>다.
+          사용자 정리: <em>“계산할 양이 늘어난 거지, 전체 거리는 달라지지 않는다.”</em>
+        </p>
+      </div>
+    </div>
 
-    <p>
-      <strong>4 · 임시 마커가 안 뜬다.</strong> 핀을 만드는 <code>mapPins</code>는 <code>viewModel.</code>을 읽는
-      계산 프로퍼티이고, <strong>다시 그리라는 신호는 <code>@Observable</code>이 보낸다.</strong>
-      <code>Coordinator</code>는 UIKit 객체라 거기 값이 바뀌어도 <strong>SwiftUI가 모른다</strong> —
-      값은 있는데 신호가 없어 아무도 다시 계산하지 않는다.
-      딸린 손해: 같은 사실이 두 군데에 살면 모드 전환·실패·되돌리기마다 <strong>둘을 맞춰야 한다.</strong>
-    </p>
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 6</span><span class="qres">고른 답 A · 정답 A ✅</span><span class="qsrc">파트 6 · 교체본</span></div>
+      <p>
+        한 획은 조각 16개로 나눠 길찾기를 하나씩 차례로 부른다. 지금은 <strong>중간에 하나라도 실패하면
+        통째로 버린다</strong> — 1~6번이 성공해 좌표가 쌓여 있어도 7번이 실패하면 버리고 함수를 끝낸다.
+        어떤 개발자가 <strong>“1~6번 성공분은 살려서 붙이자”</strong>로 바꿨다. <strong>무엇이 문제가 될까?</strong>
+      </p>
+<pre class="code"><b>A. 사용자가 그은 것보다 짧은 구간이 정상 구간처럼 붙고, 그 거리가 총 거리에 합산된다</b>   <span class="c">← 고른 답 · 정답</span>
+B. 거리가 0으로 계산된다
+C. 되돌리기가 아예 안 된다
+D. 길찾기 요청 수가 늘어난다</pre>
+      <div class="why"><span class="lb">왜 그게 답인가</span>
+        <p>
+          코스에 들어가고 나면 <strong>“실패해서 잘린 것”이라는 표시가 어디에도 없다.</strong>
+          구간 목록에 한 칸을 차지하고 총 거리에도 합산된다 — 1.9km를 그렸는데 코스는 0.7km가 늘었다고 말한다.
+          그래서 지금 코드는 <strong>반쪽짜리를 아예 안 만든다.</strong> 에러 문구만 띄우고
+          앞서 그려둔 코스는 그대로 두며, 잃는 것은 방금 그은 획 하나뿐이다.
+        </p>
+        <p>
+          <em><strong>B</strong> 거리는 성공한 조각들의 실제 거리 합이라 0이 아니다.
+          <strong>C</strong> 되돌리기는 세션 쪽 일이라 무관하다.
+          <strong>D</strong> 요청은 실패 지점에서 멈추니 오히려 안 는다.</em>
+        </p>
+      </div>
+    </div>
 
-    <p>
-      <strong>5 · 선이 중간중간 끊긴다.</strong> 조각이 16 → 33으로 늘어 요청이 몰리고
-      실측에서 <strong>8건이 실패</strong>했다. <strong>거리는 두 배가 되지 않는다</strong>(D가 아닌 이유) —
-      조각이 2배면 조각 하나의 거리가 절반이라 <strong>합은 그대로</strong>다. 다만 짧은 조각일수록
-      길찾기가 블록을 우회해 <strong>max 우회비가 1.80 → 5.71</strong>로 뛰므로 <em>조금</em> 늘 수는 있고,
-      그건 “두 배”가 아니라 <strong>모양이 나빠진 결과</strong>다.
-      그리고 이 문제의 요점은 <strong>단위 테스트 6개가 전부 통과한다</strong>는 것이다 —
-      요청 실패는 네트워크에서 나는 일이라 테스트 밖이다.
-    </p>
-
-    <p>
-      <strong>6 · 짧은 구간이 정상 구간처럼 붙는다.</strong> 코스에 들어가고 나면
-      <strong>“실패해서 잘린 것”이라는 표시가 어디에도 없다.</strong> 구간 목록에 한 칸을 차지하고
-      총 거리에도 합산된다. 그래서 지금 코드는 <strong>반쪽짜리를 아예 안 만든다</strong> — 에러 문구만 띄우고
-      앞서 그려둔 코스는 그대로 둔다. 잃는 것은 방금 그은 획 하나뿐이다.
-    </p>
-
-    <p>
-      <strong>7 · 원핑거 줌에 핀이 찍힌다.</strong> 사용자 표현이 이 파트의 핵심 문장이었다 —
-      <em>“탭 제스처는 손가락을 떼야 인식을 하기 때문에.”</em> <strong>더블탭은 <code>tapGR</code> 하나로도 잡힌다</strong>
-      (두 번째 탭이 완성되므로). 못 잡는 것은 <strong>탭으로 완성되지 않는 두 번째 터치</strong>뿐이고,
-      터치 관찰자는 딱 그 하나를 메우려고 만든 물건이다.
-    </p>
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 7</span><span class="qres">고른 답 C · 정답 C ✅</span><span class="qsrc">파트 7</span></div>
+      <p>
+        탭 모드에서 톡 치면 핀이 찍히는데 더블탭 확대도 첫 동작이 같은 톡이라, 그대로 두면
+        확대하면서 핀도 찍힌다. 그래서 <strong>0.35초를 기다렸다가</strong> 두 번째 손가락이 왔는지 보고 정하고,
+        그 기다림을 위해 인식기가 둘이다(<code>tapGR</code> + 터치 관찰자).
+        어떤 개발자가 <strong>터치 관찰자를 지웠다</strong> — <code>tapGR</code> 하나만 두고 타이머는 그대로.
+        <strong>무엇이 깨질까?</strong>
+      </p>
+<pre class="code">A. 아무것도 안 깨진다 — 탭 인식기가 두 번째 탭도 알려주므로
+B. 더블탭 확대에 핀이 다시 찍힌다
+<b>C. 원핑거 줌(톡 치고 다시 누른 채 위아래로 끌기)에 핀이 찍힌다</b>   <span class="c">← 고른 답 · 정답</span>
+D. 싱글탭에도 핀이 안 찍히게 된다</pre>
+      <div class="why"><span class="lb">왜 그게 답인가</span>
+        <p>
+          사용자 표현이 이 파트의 핵심 문장이었다 —
+          <em>“탭 제스처는 손가락을 떼야 인식을 하기 때문에.”</em>
+        </p>
+<pre class="code">더블탭       두 번째 손가락을 댔다 뗀다   →  tapGR이 또 발화한다   →  취소할 수 있다  ✅
+원핑거 줌    두 번째 손가락을 대고 끈다   →  tapGR이 영영 침묵     →  아무도 안 알려준다  ❌</pre>
+        <p>
+          <strong>더블탭은 <code>tapGR</code> 하나로도 잡힌다</strong>(두 번째 탭이 완성되므로) — 그래서 B가 아니다.
+          못 잡는 것은 <strong>탭으로 완성되지 않는 두 번째 터치</strong>뿐이고,
+          터치 관찰자는 딱 그 하나를 메우려고 만든 물건이다.
+        </p>
+      </div>
+    </div>
 
     <div class="fix">
       <span class="fixtag">⚠️ 출제자가 틀린 것 — 문제 6은 두 번 다시 냈다</span>
