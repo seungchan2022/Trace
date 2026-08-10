@@ -583,7 +583,7 @@
             어댑터가 붙이는 <code>.tapped</code>는 <strong>출처를 뜻하지 않는다</strong>(그리기가 불러도
             <code>.tapped</code>가 온다) · 실패는 둘로만 갈라져 <strong>스로틀이 뭉개진다</strong> ·
             <strong>코스가 이미 있으면 탭 한 번</strong>으로 가까운 끝에서 이어지고, <strong>핀을 눌렀는지는
-            화면이 픽셀로 재서</strong>(24px) <code>.start</code>·<code>.end</code>·<code>.merged</code> 값
+            화면이 포인트로 재서</strong>(24pt) <code>.start</code>·<code>.end</code>·<code>.merged</code> 값
             하나만 넘긴다 — <strong>무엇을 할지는 여전히 ViewModel</strong></div>
         </div>
       </li>
@@ -782,7 +782,7 @@
     <figure>
       <pre class="mermaid">
 flowchart TD
-  A["손가락으로 한 번 그음<br/>점 수백 개"]
+  A["손가락으로 한 번 그음<br/>원시 점 — 개수 미측정"]
   B["점 솎아내기<br/>120m마다 하나 → 17개"]
   C["점 사이마다 길찾기<br/>조각 16개"]
   D["합치기<br/>구간 1개 — 청크 1은 여기서 끝"]
@@ -790,7 +790,7 @@ flowchart TD
   F["지도에 그리기<br/>색 · 겹침 · 라벨 — 청크 3"]
   A --> B --> C --> D --> E --> F
       </pre>
-      <figcaption>1.9km를 한 번에 그었을 때의 실측 숫자다(파트 5에서 그 표를 본다)</figcaption>
+      <figcaption>17·16은 1.9km 획의 2026-06-20 실측이다(파트 5에서 그 표를 본다).<br>맨 왼쪽 <strong>원시 점 개수는 잰 적이 없다</strong> — 손가락이 몇 개를 만드는지는 미측정으로 남아 있다.</figcaption>
     </figure>
 
     <p>
@@ -893,7 +893,7 @@ flowchart TD
         <div class="st"><span class="n">⑧</span><span class="t">잠깐 로딩이 돈다</span></div>
         <div class="st"><span class="n">⑨</span><span class="t">삐뚤빼뚤하던 손 그림이 <b>도로를 따라가는 선</b>으로 바뀌고 거리가 뜬다</span></div>
       </div>
-      <p class="seen">손가락이 지나간 점은 수백 개다. 그걸 다 길찾기에 보낼 수는 없다 —
+      <p class="seen">손가락이 지나간 점은 탭과 비교가 안 되게 많다(정확한 개수는 미측정 — 파트 5). 그걸 다 길찾기에 보낼 수는 없다 —
         이 사실이 이 기능의 거의 모든 설계를 좌우한다.</p>
     </div>
 
@@ -2511,16 +2511,16 @@ ViewModel이 보는 순서
     </p>
 
     <div class="concept">
-      <h4>💡 왜 이것만 화면이 하나 — 미터가 아니라 픽셀이라서</h4>
-      <pre class="code">손가락이 닿은 곳      (200, 340)   화면 픽셀
-출발 핀이 그려진 곳    (210, 350)   화면 픽셀
+      <h4>💡 왜 이것만 화면이 하나 — 미터가 아니라 화면 좌표라서</h4>
+      <pre class="code">손가락이 닿은 곳      (200, 340)   화면 좌표 (pt)
+출발 핀이 그려진 곳    (210, 350)   화면 좌표 (pt)
 
-   둘 사이 거리 = 14픽셀
-   기준          = 24픽셀 이내
+   둘 사이 거리 = 14pt
+   기준          = 24pt 이내
    → 출발 핀을 눌렀다</pre>
       <p>
-        핀이 여럿이면 <strong>24픽셀 안에 든 것 중 제일 가까운 것</strong>을 고른다.
-        <strong>재는 단위가 픽셀</strong>이므로 지도가 얼마나 확대돼 있는지를 알아야 하고,
+        핀이 여럿이면 <strong>24pt 안에 든 것 중 제일 가까운 것</strong>을 고른다.
+        <strong>재는 단위가 화면 좌표(pt)</strong>이므로 지도가 얼마나 확대돼 있는지를 알아야 하고,
         그건 지도만 안다 — ViewModel은 위도·경도만 안다. <strong>같은 두 점이라도 확대하면 화면에서
         멀어지고 축소하면 겹쳐 보인다.</strong>
       </p>
@@ -3042,7 +3042,8 @@ iOS가 읽어서 기록한 것:     ●    ●    ●    ●    ●</pre>
     <div class="fix">
       <span class="fixtag">2026-08-06 실측 · 미측정으로 남은 것</span>
       <p>
-        <strong>소개 2 도식의 "점 수백 개"는 근거 없이 적힌 숫자다.</strong> 2026-06-20 실험은
+        <strong>소개 2 도식에 원래 "점 수백 개"라고 적혀 있었는데 근거 없는 숫자였다</strong>
+        (2026-08-10에 <em>"개수 미측정"</em>으로 고쳤다). 2026-06-20 실험은
         <strong>손가락으로 긋지 않았다</strong> — 좌표 10~15개를 코드에 적어 넣고 돌린 것이라,
         <strong>다운샘플러 뒤쪽</strong>(점 목록을 이어붙이면 모양이 나오나)만 실험했다.
         <strong>손가락이 원시 점을 몇 개 만드는지는 잰 적이 없다.</strong>
@@ -3518,15 +3519,15 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     </p>
 
     <p>
-      청크 좌표로 보면 이렇다. 파트 5는 <em>“점 200개를 받았다”</em>로 시작했는데
+      청크 좌표로 보면 이렇다. 파트 5는 <em>“원시 점 한 뭉치를 받았다”</em>로 시작했는데
       <strong>그 200개가 어디서 왔는지는 아직 한 번도 안 봤다.</strong> 파트 7이 그 왼쪽 끝을 채우면
       청크 1이 닫힌다.
     </p>
 
-<pre class="code">파트 7   손가락 ─┬─ 그리기: 한 획   → 점 200개   <span class="c">← 만들어서 넘긴다</span>
+<pre class="code">파트 7   손가락 ─┬─ 그리기: 한 획   → 원시 점 한 뭉치  <span class="c">← 만들어서 넘긴다</span>
                 └─ 탭:     한 번 톡 → 점 1개
 
-파트 5   점 200개 → 솎아서 17개                   <span class="c">← 나눈다</span>
+파트 5   원시 점 → 솎아서 17개                    <span class="c">← 나눈다</span>
 파트 6   17개 → 조각 16개 → 구간 1개              <span class="c">← 조립한다</span></pre>
 
     <p>
@@ -3792,7 +3793,7 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
     <p>
       수집이 하는 일은 짧다. 매번 손가락의 화면 좌표를 받아 <code>mapView.convert(_:toCoordinateFrom:)</code>로
       위경도로 바꿔 배열에 쌓고, 손을 떼면 그 배열을 <code>onStrokeEnded</code>로 넘긴다.
-      <strong>그 배열이 파트 5가 받았던 점 200개다.</strong> 청크 1의 왼쪽 끝이 여기서 닫힌다.
+      <strong>그 배열이 파트 5가 받았던 원시 점 뭉치(<code>rawStroke</code>)다.</strong> 청크 1의 왼쪽 끝이 여기서 닫힌다. <em>개수는 파트 5가 “이 방법으로는 못 잰다”로 닫아뒀으므로 여기서도 숫자를 적지 않는다.</em>
     </p>
 
     <p>
@@ -4271,7 +4272,45 @@ guard generation == recomputeGeneration else { return }      // ④ 쓰기 직�
       60초당 50요청(MVP3 설계 §4 원문) · 파트 7의 상수·줄 번호·상태 전이 전부.
     </p>
 
-    <h3>2026-08-10 — 해석 점검 (파트 7)</h3>
+    <h3>2026-08-10 — 해석 점검 (청크 전체)</h3>
+
+    <div class="fix">
+      <span class="fixtag">⑤ 같은 수가 노트 안에서 세 갈래로 갈려 있었다 — 원시 점 개수</span>
+      <p>
+        파트 5가 <em>"손가락이 원시 점을 몇 개 만드는지는 잰 적이 없다 · 이 방법으로는 못 잰다"</em>고
+        닫아뒀는데, <strong>다른 세 자리가 그 결론을 안 따르고 있었다</strong> —
+        소개 2 도식의 <em>"점 수백 개"</em>, 그 캡션의 <em>"실측 숫자다"</em>(17·16만 실측인데 첫 칸까지
+        보증했다), 파트 7 값 사슬의 <em>"점 200개"</em>. 마지막 것은 자동화 도구에 200을 지정해서 나온
+        199에서 왔는데, <strong>파트 5가 바로 그 방법을 못 쓴다고 판정한 값</strong>이다.
+        셋 다 <strong>미측정</strong>으로 맞췄다. 같은 뿌리의 <em>"수백 번"</em>(<code>handleDraw</code> 호출 수)은
+        먼저 물렸으면서 이 셋이 남아 있었다.
+      </p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">⑥ 단위가 파트마다 달랐다 — 픽셀 vs 포인트</span>
+      <p>
+        파트 4가 핀 히트를 <em>"화면이 픽셀로 재서(24px)"</em>로 썼는데 <strong>포인트가 맞다.</strong>
+        코드는 <code>mapView.convert(_:toPointTo:)</code> 결과에 <code>hitRadius: CGFloat = 24</code>를 쓰고,
+        주석도 <em>"화면 24pt 반경으로 판정한다"</em>라고 적어놨다. 파트 6·7은 <code>24pt</code>로 쓰고 있어서
+        <strong>같은 값이 노트 안에서 두 단위로 불렸다.</strong> 3배 화면에서 24pt는 72px이라
+        읽는 쪽이 그 자리에서 막힌다. 파트 4의 여섯 곳을 전부 포인트로 고쳤다.
+      </p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">확인했으나 노트가 맞았던 것 — 테스트 5건</span>
+      <p>
+        파트 2 ⑤의 <em>"테스트 5건이 아직 이 경로를 지킨다"</em>가 파트 3의 <em>"테스트 5건"</em>
+        (<code>RouteCacheTests</code> 3 + <code>ThrottleDetectionTests</code> 2)에서 새어 들어온 것 아니냐는
+        의심을 받았다. <strong>실측하니 노트가 맞다</strong> — <code>snappedRoute</code>를 실제로 지나가는 것은
+        <code>SnappedRouteTests</code> <strong>4개 전부</strong> + <code>ThrottleDetectionTests</code>의
+        <strong>2개 중 1개</strong>(<code>testRouteWithRetryDoesNotRetryOnThrottle</code>)로 <strong>5건</strong>이다.
+        <strong>두 곳의 "5건"은 우연히 같은 숫자이고 서로 다른 집합이다.</strong>
+      </p>
+    </div>
+
+    <h4>파트 7 — 해석 오류 넷</h4>
 
     <h3>2026-08-10 — 파트 7</h3>
 
