@@ -604,141 +604,58 @@
 
   <div class="recap" id="recap">
     <h3>3분 복습</h3>
-    <p class="hint">굵은 줄이 <strong>그 파트를 끝내면 할 수 있게 되는 것</strong>이고,
-      그 아래가 <strong>그 파트 요약</strong>이다. 전체를 다시 읽지 말고 <strong>여기서 걸리는
-      줄만</strong> 찾아 그 파트를 연다. 아직 안 한 파트는 요약이 비어 있고, 목록 순서가 곧
-      <strong>만드는 순서</strong>다.</p>
+    <p class="hint"><strong>굵은 줄에서 걸리면 그 파트만 연다.</strong> 굵은 줄이
+      <strong>그 파트를 끝내면 할 수 있게 되는 것</strong>이고, 아래 한 줄이 <strong>그 파트가 하는 일</strong>이다.
+      자세한 것은 여기 안 적는다 — 파트를 열면 <strong>구간 표</strong>가 먼저 나온다.
+      목록 순서가 곧 <strong>만드는 순서</strong>다.</p>
     <ol>
       <li>
         <span class="k">1</span>
         <div>
-          <div class="can">새 기능을 시작할 때 어떤 데이터가 필요한지 추려내고,
-            그것을 어떤 모양으로 담을지 정할 수 있다</div>
-          <div class="sum"><strong>지점</strong>은 애플 타입을 안 쓰고 직접 만든다(값이 아니라
-            소속이 문제라서) · <strong>구간</strong>은 애플이 준 점 목록과 도로 거리 하나 ·
-            <strong>코스</strong>는 구간 목록(뭉개면 되돌리기를 못 한다) ·
-            <strong>실패</strong>는 사용자에게 다르게 안내할 만큼만 셋</div>
+          <div class="can">새 기능을 시작할 때 어떤 데이터가 필요한지 추려내고, 그것을 어떤 모양으로 담을지 정할 수 있다</div>
+          <div class="sum">길찾기도 화면도 아직 없다. 주고받을 타입부터 넷 정한다 — 지점 · 구간 · 코스 · 실패.</div>
         </div>
       </li>
       <li>
         <span class="k">2</span>
         <div>
-          <div class="can">외부에 의존하는 기능을 프로토콜로 들일 때, 무엇을 요구사항으로 두고
-            무엇을 기본 구현으로 뺄지 정할 수 있다</div>
-          <div class="sum">기준은 하나 — <strong>제공자가 바뀌면 이 코드도 바뀌는가.</strong>
-            바뀌는 <code>route</code>는 <strong>요구사항</strong>(채택한 쪽이 구현), 안 바뀌는
-            <code>snappedRoute</code>는 <strong>기본 구현</strong>(<code>extension</code>에 한 번만).
-            <code>snappedRoute</code>는 <code>route</code>를 N−1번 불러 이어붙이는 것이라 제공자와 무관하다 ·
-            <code>async</code>·<code>throws</code>는 <strong>호출부에 <code>await</code>·<code>try</code>를 강제</strong> ·
-            그리기는 <strong>한 획에 요청 16건</strong>이라 디바운스 300ms·캐시로 줄이고, 그래도 넘으면
-            <strong>애플이 스로틀로 거부</strong> → 재시도하면 카운터를 더 올리므로 <strong>스로틀만 재시도에서 뺐다</strong> ·
-            ⚠️ 그런데 <strong><code>snappedRoute</code>는 호출되지 않는다</strong> — MVP3 설계 §4가
-            <strong>스로틀을 줄이려고 증분 계산으로 갈아타면서</strong> <em>“기본 구현은 유지하되
-            ViewModel 레벨에서 증분 호출로 전환”</em>이라 정했다. <strong>지우기로 한 적이 없어 요구사항만 남고 죽었다.</strong>
-            방향 판정(§2, 새 획을 앞에 붙일지 뒤집을지)은 <strong>별개 항목</strong>이었고 기본 구현은
-            코스 상태를 몰라 못 하므로, 그 판정과 라우팅이 통째로 ViewModel로 갔다</div>
+          <div class="can">외부에 의존하는 기능을 프로토콜로 들일 때, 무엇을 요구사항으로 두고 무엇을 기본 구현으로 뺄지 정할 수 있다</div>
+          <div class="sum">파일 하나에 요구사항 둘 + 기본 구현 하나. 갈라놓은 기준은 <em>“제공자가 바뀌면 이 코드도 바뀌는가”</em> 딱 하나다.</div>
         </div>
       </li>
       <li>
         <span class="k">3</span>
         <div>
           <div class="can">길찾기를 다른 회사 것으로 갈아끼울 때 어디만 고치면 되는지 정할 수 있다</div>
-          <div class="sum">갈아끼우는 단위는 <strong>회사가 아니라 기능</strong> — MapKit은 지도(화면 4개)와
-            길찾기(이 파일 1개) 두 가지를 하고, 바꾸는 건 <strong>한쪽뿐</strong>이다 ·
-            구현체가 하는 일은 셋인데 전부 번역이다 — <strong>타입</strong>(<code>private</code> 변환 한 쌍,
-            도메인은 끝까지 MapKit을 모른다) · <strong>에러</strong>(<code>catch</code>가 둘,
-            <strong>타입으로</strong> 먼저 가려내지 않으면 우리가 던진 것이 뭉개진다) ·
-            <strong>캐시</strong>(“같은 질문”은 거리가 아니라 <strong>5자리 눈금의 같은 칸</strong>) ·
-            스로틀 조건은 <strong>실기기에서 겪고 늘린 것</strong>이라 갈아끼우면 버려진다 ·</div>
+          <div class="sum">파일 하나 91줄. 하는 일 셋이 전부 번역이다 — 타입 · 에러 · “같은 질문은 다시 묻지 않기”.</div>
         </div>
       </li>
       <li>
         <span class="k">4</span>
         <div>
-          <div class="can">화면이 준 좌표 하나가 구간 하나가 되기까지, ViewModel이 무엇을 들고 있고
-            무엇을 넘기는지 정할 수 있다</div>
-          <div class="sum"><strong>좌표는 전부 ViewModel에 있다</strong> — 화면은 저장하지 않고
-            매번 읽어서 다시 그린다(그래서 <strong>값이 바뀌는 시점 = 화면이 바뀌는 시점</strong>) ·
-            길찾기가 준 것은 <strong>쓸 수 있는 최소 조건</strong>(점 2개)만 확인하고,
-            <strong>구간 하나로 다시 만들어</strong> 세션에 건네면 청크 1은 끝 · ⚠️ <code>route()</code>는 <strong>구간 1개짜리
-            코스</strong>를 돌려줘서 호출부가 매번 벗긴다 — MVP1의 평평한 <code>PlannedCourse</code>가
-            MVP5에서 구간 목록이 될 때 <strong>반환 타입만 안 따라간 흔적</strong>(백로그 등록) ·
-            어댑터가 붙이는 <code>.tapped</code>는 <strong>출처를 뜻하지 않는다</strong>(그리기가 불러도
-            <code>.tapped</code>가 온다) · 실패는 둘로만 갈라져 <strong>스로틀이 뭉개진다</strong> ·
-            <strong>코스가 이미 있으면 탭 한 번</strong>으로 가까운 끝에서 이어지고, <strong>핀을 눌렀는지는
-            화면이 포인트로 재서</strong>(24pt) <code>.start</code>·<code>.end</code>·<code>.merged</code> 값
-            하나만 넘긴다 — <strong>무엇을 할지는 여전히 ViewModel</strong></div>
+          <div class="can">화면이 준 좌표 하나가 구간 하나가 되기까지, ViewModel이 무엇을 들고 있고 무엇을 넘기는지 정할 수 있다</div>
+          <div class="sum">파트 1·2·3이 따로 만든 것이 처음으로 한 줄에 꿰인다 — 탭 두 번이 구간 하나가 되어 세션에 들어가기까지.</div>
         </div>
       </li>
       <li>
         <span class="k">5</span>
         <div>
           <div class="can">점 사이 최소 간격을 바꾸면 무엇이 좋아지고 무엇이 깨지는지 판정할 수 있다</div>
-          <div class="sum"><strong>원시 점은 손가락 궤적을 일정 주기로 찍은 표본</strong>이라
-            <strong>개수가 획 길이가 아니라 손 속도에 끌려다닌다</strong>(천천히 그으면 많고 빨리 그으면 적다) ·
-            그래서 <strong>솎아내지 않으면 요청 수를 앱이 통제할 수 없다</strong> ·
-            다운샘플러는 <strong>좌표를 만들지 않고</strong> 원본 점 중 <strong>누적거리 120m마다 하나</strong>를
-            고를 뿐(시작·끝은 항상) — <strong>통과하면 입력 개수의 흔적이 사라진다</strong>
-            (실측: 199개→3개 · 52개→5개) · <strong>재는 것은 자로 잰 거리가 아니라 따라 걸어온 거리</strong>다.
-            직선거리로 재던 시절 <strong>반지름 55m 원(둘레 346m)이 지름 110m &lt; 120m라 통째로 솎여</strong>
-            0.01km로 붕괴했고 MVP4가 누적거리로 교체 · <strong>120m는 만들기 전에 재고 정한 값</strong>
-            (60m로 잘게 나누면 오히려 충실도가 나빠지고 실패 8건) · 탭과 그리기는 <strong>같은 길찾기</strong>를
-            쓰고 다른 것은 <strong>조각 수뿐</strong>(1 대 16), 이어붙이기 문제는 그리기에만 생긴다 ·</div>
+          <div class="sum">그리기가 탭과 갈리는 첫 지점. 손가락이 만든 점을 그대로 쓸 수 없어서 솎아내는 부품이 하나 더 생긴다.</div>
         </div>
       </li>
       <li>
         <span class="k">6</span>
         <div>
           <div class="can">사용자가 중간에 손을 바꿨을 때 무엇이 버려져야 하는지 정할 수 있다</div>
-          <div class="sum">파트 4와 <strong>같은 일</strong>이고 조각 수만 다르다(1 대 16) — 새로 생기는 것은
-            <strong>“16번”이 만드는 문제뿐</strong> · 조각은 <strong>하나씩 차례로</strong> 묻고
-            <strong>겹치는 점을 빼고</strong> 이어 붙이며, <strong>중간에 하나만 실패해도 통째로 버린다</strong>
-            (반쪽 구간을 안 만든다) · ⚠️ <strong>조각끼리 맞물렸는지는 검사하지 않는다</strong> —
-            같은 좌표를 양쪽에 보내니 맞을 것이라는 전제인데 <strong>캐시가 그걸 보장하지 않는다</strong>
-            (키가 <code>(출발,도착)</code> 쌍이라 서로 다른 키) · <strong>오래 걸리는 일은 취소하지 못한다</strong> —
-            그래서 <strong>시작할 때 번호를 복사해 두고</strong>(<code>let</code>) 결과를 쓰기 직전에
-            ViewModel의 값(<code>var</code>)과 비교해 <strong>다르면 안 쓴다</strong>.
-            표시 하나로 안 되는 이유는 <strong>계산이 동시에 여러 개 떠 있어서</strong>다 —
-            누가 무효인지 가려야 한다. <strong>“버린다”에 지우는 동작은 없다</strong>(넘기는 자리에 못 가서 사라짐) ·
-            올리는 곳은 <strong>네 상황</strong>, 비교는 <strong>7곳</strong>,
-            <strong>복사본은 기다리는 쪽에만</strong> 있다(<code>clear</code>·모드 전환은 올리기만) ·
-            ⚠️ <strong>7곳은 조각 라우팅 쪽에만 있다</strong> — <code>session.attach</code>도
-            <code>await</code>인데 그 뒤에는 비교가 없고, <code>attach</code>는 안에서 길찾기를
-            또 부를 수 있어 <strong>그 창에 지우기가 떨어지면 세그먼트 하나가 살아남는다</strong>
-            (기존 테스트는 이 창을 지나가지 않는다) ·
-            붙여 그은 <strong>첫 점은 길찾기 전에 기존 끝점으로 바꿔친다</strong> — 안 하면 도로 스냅으로 더 멀어져
-            <strong>“먼 경우” 취급</strong>을 받고 요청이 1건 는다 · 구간 하나를 세션에 건네면 <strong>청크 1은 끝</strong></div>
+          <div class="sum">파트 5가 골라낸 점 17개로 길찾기를 16번 부르고, 돌아온 것을 구간 하나로 합친다.</div>
         </div>
       </li>
       <li>
         <span class="k">7</span>
         <div>
           <div class="can">새 제스처를 넣을 때 지도 이동과 안 부딪히는 조건을 정할 수 있다</div>
-          <div class="sum">하는 일은 <strong>판별 → 수집</strong> 둘이고, <strong>파트가 되는 이유는 판별</strong>이다
-            (②는 화면 좌표를 위경도로 바꿔 담는 몇 줄) · 이동·확대·더블탭 확대는 전부
-            <code>MKMapView</code> 것이고 우리는 <strong>얹기만</strong> 했다 — 더블탭에 대해 만든 것은
-            확대가 아니라 <strong>“그때 핀을 안 찍는 것”</strong> · <strong>인식기는 “내장이냐 우리 것이냐”를
-            가려주지 않는다</strong>, 각자 <em>“이게 내 동작인가”</em>만 묻고 <strong>판별은 여럿이 경쟁한 결과</strong>이며
-            승자는 UIKit이 정한다(우리가 만지는 것은 경쟁 조건뿐) · 얹은 것은 <strong>셋</strong>
-            (롱프레스 <code>drawGR</code> · 탭 <code>tapGR</code> · 터치 관찰자)이고 모드마다 켜고 꺼서
-            <strong>그리기 1개 / 탭 2개</strong>가 된다 — 이 비대칭이 파트의 전부 ·
-            그리기는 <strong>0.25초(성립) + 10pt(탈락)</strong>로 갈리고, <strong>인식 전에만</strong> 이동 제한이 걸린다 ·
-            잠금은 <code>isScrollEnabled</code>(<code>MKMapView</code>의 프로퍼티)를 <strong>인식된 순간부터 손 뗄 때까지만</strong> 내린다 ·
-            <code>handleDraw</code> <strong>안에 판별 로직은 없다</strong>(불렸다는 것 자체가 확정) —
-            갈래는 판별이 아니라 <strong>한 획의 시작·중간·끝</strong> · 롱프레스는 인식 뒤에도 계속 불려
-            <strong>인식기 하나로 궤적까지</strong> 받는다(<code>require(toFail:)</code> 회피) ·
-            <strong>원래는 모드에 들어가면 지도가 통째로 얼었다</strong> — 지도 옮기려다 선이 그어지는 문제로
-            MVP16이 <strong>잠금을 모드에서 한 획으로</strong> 옮겼고 커스텀 두 손가락 팬이 삭제됐다 ·
-            ⚠️ 손가락 둘 이상이면 획을 버리는 경로는 <strong>미검증</strong>(두 손가락 입력을 만들 수 없다) ·
-            <strong>탭은 손을 뗀 뒤에야 갈린다</strong>(싱글탭·더블탭·원핑거 줌이 첫 탭까지 완전히 같다) —
-            그래서 즉시 확정을 <strong>0.35초 + 40pt 보류</strong>로 바꿨고, <strong>회색 마커는 그 기다림</strong>이다
-            
-            기다리기로 한 대가로 <strong>좌표와 핀 히트는 보류 시점에 계산해 동봉</strong>한다(그사이 지도가 움직여도 제자리) ·
-            <strong>탭 인식기는 손을 “떼야” 불린다</strong> → 원핑거 줌은 두 번째 손가락을 안 떼서 <strong>침묵</strong> →
-            아무도 취소를 안 알려줘 <strong>확대되면서 핀도 찍혔다</strong> · 그래서 <strong>닿기만 해도 알리는</strong>
-            터치 관찰자를 만들었고, <strong>판정 코드를 일부러 안 넣었다</strong>(선언하면 지도의 팬·확대가 매번 취소돼 지도가 죽는다) ·
-            판별기의 상태는 <strong>보류 중 / 비어 있음 둘뿐</strong>이고 <strong>탭 인식기가 만들고 관찰자·타이머가 끝낸다</strong> ·
-            첫 터치에서도 관찰자는 불리지만 보류가 없어 아무 일도 안 한다 — <strong>구별은 관찰자가 아니라 판별기가</strong> 한다</div>
+          <div class="sum">손가락 입력이 경로를 그리려는 것인지 지도 액션인지 가리고, 경로용이면 점 데이터로 바꾼다.</div>
         </div>
       </li>
     </ol>
