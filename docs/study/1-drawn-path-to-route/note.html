@@ -627,7 +627,7 @@
         <span class="k">1</span>
         <div>
           <div class="can">새 기능을 시작할 때 어떤 데이터가 필요한지 추려내고, 그것을 어떤 모양으로 담을지 정할 수 있다</div>
-          <div class="sum">길찾기도 화면도 아직 없다. 주고받을 타입부터 넷 정한다 — 지점 · 구간 · 코스 · 실패.</div>
+          <div class="sum">길찾기도 화면도 아직 없다. 무엇을 주고받을지 타입부터 네 개 정한다 — 지점 · 구간 · 코스 · 실패.</div>
           <ul class="keys">
             <li><strong>지점</strong>은 애플 타입을 안 쓰고 직접 만든다 — <strong>값이 아니라 소속</strong>이 문제라서</li>
             <li><strong>구간</strong>은 애플이 준 점 목록 + 도로 거리 하나</li>
@@ -640,7 +640,7 @@
         <span class="k">2</span>
         <div>
           <div class="can">외부에 의존하는 기능을 프로토콜로 들일 때, 무엇을 요구사항으로 두고 무엇을 기본 구현으로 뺄지 정할 수 있다</div>
-          <div class="sum">파일 하나에 요구사항 둘 + 기본 구현 하나.</div>
+          <div class="sum">파일 하나에 요구사항 둘 + 기본 구현 하나. 갈라놓은 기준은 “제공자가 바뀌면 이 코드도 바뀌는가” 딱 하나다.</div>
           <ul class="keys">
             <li>가르는 기준은 하나 — <strong>제공자가 바뀌면 이 코드도 바뀌는가</strong></li>
             <li>바뀌는 <code>route</code>는 <strong>요구사항</strong>, 안 바뀌는 <code>snappedRoute</code>는 <strong>기본 구현</strong></li>
@@ -654,7 +654,7 @@
         <span class="k">3</span>
         <div>
           <div class="can">길찾기를 다른 회사 것으로 갈아끼울 때 어디만 고치면 되는지 정할 수 있다</div>
-          <div class="sum">파일 하나 91줄. 하는 일 셋이 전부 번역이다.</div>
+          <div class="sum">파일 하나 91줄. 하는 일이 셋인데 성격이 같다 — 타입을 번역하고, 에러를 번역하고, 같은 질문은 다시 묻지 않는다.</div>
           <ul class="keys">
             <li>갈아끼우는 단위는 <strong>회사가 아니라 기능</strong> — 길찾기는 이 파일 1개, 지도는 화면 4개</li>
             <li><strong>타입 번역</strong> — <code>private</code> 변환 한 쌍. 도메인은 끝까지 MapKit을 모른다</li>
@@ -668,7 +668,7 @@
         <span class="k">4</span>
         <div>
           <div class="can">화면이 준 좌표 하나가 구간 하나가 되기까지, ViewModel이 무엇을 들고 있고 무엇을 넘기는지 정할 수 있다</div>
-          <div class="sum">파트 1·2·3이 따로 만든 것이 처음으로 한 줄에 꿰인다.</div>
+          <div class="sum">파트 1·2·3에서 따로 만든 것이 처음으로 한 줄에 꿰인다 — 탭 두 번이 구간 하나가 되어 세션에 들어가기까지.</div>
           <ul class="keys">
             <li><strong>좌표는 전부 ViewModel에</strong> — 화면은 저장하지 않고 매번 읽어 다시 그린다</li>
             <li>그래서 <strong>값이 바뀌는 시점 = 화면이 바뀌는 시점</strong></li>
@@ -683,7 +683,7 @@
         <span class="k">5</span>
         <div>
           <div class="can">점 사이 최소 간격을 바꾸면 무엇이 좋아지고 무엇이 깨지는지 판정할 수 있다</div>
-          <div class="sum">그리기가 탭과 갈리는 첫 지점. 솎아내는 부품이 하나 더 생긴다.</div>
+          <div class="sum">그리기가 탭과 갈리는 첫 지점. 손가락이 만든 점을 그대로 쓸 수 없어서 솎아내는 부품 하나가 더 생긴다.</div>
           <ul class="keys">
             <li>탭과 그리기는 <strong>같은 길찾기</strong>를 쓴다 — 다른 것은 조각 수뿐(1 대 16)</li>
             <li>원시 점 개수는 <strong>획 길이가 아니라 손 속도</strong>에 끌려다닌다 — 그래서 앱이 요청 수를 통제 못 한다</li>
@@ -697,7 +697,7 @@
         <span class="k">6</span>
         <div>
           <div class="can">사용자가 중간에 손을 바꿨을 때 무엇이 버려져야 하는지 정할 수 있다</div>
-          <div class="sum">점 17개로 길찾기를 16번 부르고, 돌아온 것을 구간 하나로 합친다.</div>
+          <div class="sum">파트 5가 골라낸 점 17개로 길찾기를 16번 부르고, 돌아온 것을 구간 하나로 합친다.</div>
           <ul class="keys">
             <li>파트 4와 <strong>같은 일</strong>이고 조각 수만 다르다(1 대 16) — 새로 생기는 건 “16번”이 만드는 문제뿐</li>
             <li>조각을 <strong>하나씩 차례로</strong> 묻고 <strong>겹치는 점을 빼고</strong> 잇는다</li>
@@ -712,7 +712,7 @@
         <span class="k">7</span>
         <div>
           <div class="can">새 제스처를 넣을 때 지도 이동과 안 부딪히는 조건을 정할 수 있다</div>
-          <div class="sum">손가락 입력이 경로용인지 지도 액션인지 가리고, 경로용이면 점 데이터로 바꾼다.</div>
+          <div class="sum">해당 모드에서 각 손가락 입력이 경로를 그리기 위한 것인지 지도 액션인지 구분하고, 경로용이면 그것을 점 데이터로 변환한다.</div>
           <ul class="keys">
             <li>이동·확대·더블탭 확대는 전부 <code>MKMapView</code> 것이고 <strong>우리는 얹기만 했다</strong></li>
             <li><strong>인식기는 “내장이냐 우리 것이냐”를 가려주지 않는다</strong> — 각자 “이게 내 동작인가”만 묻고, 판별은 <strong>경쟁의 결과</strong>다</li>
