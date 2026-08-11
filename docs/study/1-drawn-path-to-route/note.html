@@ -58,7 +58,7 @@
     font-size: .88rem; font-weight: 800; letter-spacing: -.005em;
     color: var(--muted); margin-bottom: .8rem;
   }
-  .toc ol { list-style: none; display: flex; flex-direction: column; gap: .38rem; }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .38rem; }
   .toc li {
     font-size: .96rem; color: var(--muted);
     display: flex; gap: .7rem; align-items: baseline;
@@ -126,7 +126,7 @@
     max-height: 82vh; overflow-y: auto;
     font-size: .82rem; line-height: 1.5;
   }
-  .floating-toc ol { list-style: none; display: flex; flex-direction: column; gap: .3rem; }
+  .floating-toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .3rem; }
   .floating-toc li { display: flex; gap: .45rem; align-items: baseline; position: relative; }
   .floating-toc .k {
     font-family: var(--mono); font-size: .78rem; font-weight: 700;
@@ -196,7 +196,7 @@
     border: none; padding: 0;
   }
   .recap .hint { font-size: .88rem; color: var(--muted); margin-bottom: 1rem; }
-  .recap ol { list-style: none; display: flex; flex-direction: column; gap: .85rem; }
+  .recap ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .85rem; }
   .recap li { display: grid; grid-template-columns: 1.5rem 1fr; gap: .55rem; }
   .recap .k {
     font-family: var(--mono); font-size: .92rem; font-weight: 700; color: var(--accent);
@@ -205,12 +205,13 @@
   .recap .sum { font-size: .92rem; color: var(--muted); line-height: 1.6; margin-top: .1rem; }
 
   .recap .keys {
-    list-style: none; margin: .5rem 0 0; padding-top: .5rem;
+    list-style: none; margin: .5rem 0 0; padding: .5rem 0 0;
     border-top: 1px dashed var(--rule);
     display: flex; flex-direction: column; gap: .3rem;
   }
   .recap .keys li {
-    display: block; font-size: .9rem; line-height: 1.6; color: var(--muted);
+    display: block; margin: 0; padding: 0; text-indent: 0;
+    font-size: .9rem; line-height: 1.6; color: var(--muted);
   }
   .recap .keys li::before {
     content: "· "; color: var(--accent); font-weight: 700;
