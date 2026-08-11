@@ -34,7 +34,7 @@
 >
 > 검증: Debug·Release 빌드 · 테스트 383개 · live 컨테이너 스모크(위치 조회 · 도보 경로 195m 계산 ·
 > 달리기 전 구간 · 발화), 크래시 0건.
-> 학습 노트 `docs/study/0-app-architecture.html`도 결과에 맞춰 갱신했다.
+> 학습 노트 `docs/study/0-app-architecture/note.html`도 결과에 맞춰 갱신했다.
 
 <details>
 <summary>착수 시점 기록 (2026-08-04)</summary>
@@ -45,7 +45,7 @@
 > 기준(하나의 사용자 시나리오 완결 · 마일스톤 2~5개)에 미달한다 — 억지로 우산을 씌우면
 > 로드맵이 "MVP인 척하는 잡동사니"를 갖게 된다.
 > 목록·분류: [`2026-08-03-study-chunk-0-cleanup.md`](superpowers/plans/2026-08-03-study-chunk-0-cleanup.md) ·
-> 노트: `docs/study/0-app-architecture.html`
+> 노트: `docs/study/0-app-architecture/note.html`
 
 - 작업 종류: **정비** — 설계 문서 ✕ · 문서 리뷰 ✕ · 최종 브랜치 리뷰 ✕ · 대상 목록·분류 ○ 필수
 

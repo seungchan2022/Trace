@@ -3,7 +3,7 @@
 > **작업 종류: 정비** (`workflow.md` 작업 종류 표). 설계 문서·문서 리뷰·최종 브랜치 리뷰 없음.
 > **이 표가 정비 경로의 1단계**이고 생략 금지 항목이다.
 > 재료: 2026-08-03 학습 청크 0에서 사용자 질문으로 발견한 6건. 원문은 `docs/backlog.md`.
-> 노트: `docs/study/0-app-architecture.html`
+> 노트: `docs/study/0-app-architecture/note.html`
 
 **Goal:** 앱 동작을 바꾸지 않으면서, 학습 중 드러난 잔재와 구멍 5건을 정리한다.
 
@@ -220,7 +220,7 @@ protocol P { func f() async }
 ---
 ## 마친 뒤
 
-- [x] `/trace-study`로 `docs/study/0-app-architecture.html`에 "정비에서 이렇게 바꿨다"를 덧쓴다.
+- [x] `/trace-study`로 `docs/study/0-app-architecture/note.html`에 "정비에서 이렇게 바꿨다"를 덧쓴다.
       노트의 "왜 이렇게 됐나"와 백로그 언급이 지금 상태와 어긋나므로 반드시 갱신한다.
       → **스킬을 거치지 않고 직접 편집했다.** 학습 세션이 아니라 이미 아는 결과를 반영하는
       기계적 수정이라 판단했다. 노트 맨 앞에 "이 학습이 코드를 바꿨다" 요약표를 넣고,
