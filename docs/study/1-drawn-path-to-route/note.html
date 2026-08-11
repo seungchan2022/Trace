@@ -212,6 +212,9 @@
   .recap .keys li {
     display: block; font-size: .9rem; line-height: 1.6; color: var(--muted);
   }
+  .recap .keys li::before {
+    content: "· "; color: var(--accent); font-weight: 700;
+  }
   .recap .keys strong { color: var(--ink); }
   .recap li.pending .can { color: var(--muted); font-weight: 600; }
 
