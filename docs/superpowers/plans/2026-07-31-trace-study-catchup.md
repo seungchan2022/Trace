@@ -34,9 +34,17 @@
 - [x] **1. 손으로 그은 선이 도로 경로가 되는 법** → [`1-drawn-path-to-route/`](../../study/1-drawn-path-to-route/) (2026-08-10 · 소개 4절 + 7파트 + 마무리 절 + 확인 문제 7)
 - [ ] **2. 구간을 이어붙이고 재는 법** → [`2-segment-stitching/`](../../study/2-segment-stitching/)
       · **진행 중 — 소개 3절 + 파트 1/7 완료. 다음은 파트 2 「코스 — 구간 목록이 하나의 선이 되는 법」.**
-      · 🔑 **파트 2를 열기 전에 [`2-segment-stitching/agent-log.md`](../../study/2-segment-stitching/agent-log.md)의
-        「파트 2 착수 메모」를 먼저 읽을 것.** 재료 위치(이미 다 읽었다 — 다시 캐지 말 것) ·
-        이 파트가 답해야 할 질문 셋 · 2026-08-12에 확립한 진행 방식 넷이 거기 있다.
+      · 🔑 **재료는 이미 다 읽었다 — 다시 캐지 말 것.** 파트 2가 쓰는 것은 셋뿐이다:
+        `Domain/CoursePlanning/Entity/PlannedCourse.swift`(16줄) ·
+        `CourseCoordinate+Geo.swift`의 `distanceMeters(to:)`(Haversine) ·
+        `CourseEditSession.connectionThresholdMeters`(20m).
+      · 🔑 **파트 1이 사용자에게 빚진 답이 하나 있다** — *"왜 거리를 좌표에서 계산하지 않고
+        값으로 들고 있나."* 파트 1 구간 ①③에서 **"따로 들고 있다"까지만 말하고 넘겼고
+        사용자가 그 답을 기다리고 있다.** 실마리: 구간 거리는 MapKit이 준 **도로 거리**라
+        좌표로 다시 재면 직선 근사가 되어 값이 달라진다 — `PlannedCourse.distanceMeters`가
+        `reduce`로 **더하기만** 하는 것이 그 귀결이다.
+      · 📌 나머지(답해야 할 질문 셋 전체 · 2026-08-12에 확립한 진행 방식 넷 · 브랜치 처분)는
+        [`agent-log.md`](../../study/2-segment-stitching/agent-log.md)의 「파트 2 착수 메모」에 있다.
       · ✅ **노트 형식(2026-08-11 확정)은 이미 적용해서 만들었다** — 두 층 접기 · 파트 머리 구간 표 ·
         번호 접두어 · 3분 복습. **다시 정하지 말고 파트 1과 같은 골격으로 이어 쓴다.**
       · 🔑 **노트에 넣을 것과 뺄 것의 기준도 그때 정했다** — 규칙은 `SKILL.md`의 `[4] 저장`에 있다
