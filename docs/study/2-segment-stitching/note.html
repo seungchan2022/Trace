@@ -1206,13 +1206,24 @@ reversed()   [D, C, B, A]</pre>
 
           <p>
             파일이 16줄이고, <code>var</code>로 진짜 들고 있는 것은 <strong>구간 목록 하나</strong>다.
-            좌표 한 줄도 총 거리도 <strong>저장돼 있지 않다 — 부를 때마다 목록에서 만들어 낸다.</strong>
+            나머지 둘은 <strong>저장돼 있지 않다 — 부를 때마다 목록에서 만들어 낸다.</strong>
+            만들어 내는 것이 이 둘이다:
           </p>
+
+          <pre class="code">coordinates      [광화문, ⋯, 시청, ⋯, 남대문]   <span class="c">중복을 뺀 좌표 배열 하나</span>
+distanceMeters   2,400m                        <span class="c">구간 거리를 더한 값 하나</span></pre>
 
           <p>
             <strong>데이터가 없다는 뜻이 아니다.</strong> 좌표도 거리도 <strong>구간마다 이미 들고
             있다</strong>(파트 1 구간 ①). 저장돼 있지 않은 것은 <strong>합쳐 놓은 형태</strong> —
-            이어 붙인 좌표 한 줄과 더해 놓은 총합이다.
+            <strong>구간들을 이으면서 중복된 점을 제거한 좌표 배열</strong>과 <strong>구간 거리를
+            더해 놓은 총합</strong>이다.
+          </p>
+
+          <p class="later">
+            <strong>이 좌표 배열로 지도에 선을 그리는 것이 아니다.</strong> 지도는
+            <strong>구간마다 따로</strong> 그린다 — 그래야 구간별로 색을 다르게 칠할 수 있다
+            (<code>MapViewRepresentable.swift:264-279</code>, 청크 3).
           </p>
 
           <p>
