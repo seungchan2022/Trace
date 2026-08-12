@@ -33,18 +33,24 @@
 - [x] **0. 앱 구조** → [`0-app-architecture/`](../../study/0-app-architecture/) (2026-08-03 · 7파트 + 확인 문제 6)
 - [x] **1. 손으로 그은 선이 도로 경로가 되는 법** → [`1-drawn-path-to-route/`](../../study/1-drawn-path-to-route/) (2026-08-10 · 소개 4절 + 7파트 + 마무리 절 + 확인 문제 7)
 - [ ] **2. 구간을 이어붙이고 재는 법** → [`2-segment-stitching/`](../../study/2-segment-stitching/)
-      · **진행 중 — 소개 3절 + 파트 1/7 완료. 다음은 파트 2 「코스 — 구간 목록이 하나의 선이 되는 법」.**
-      · 🔑 **재료는 이미 다 읽었다 — 다시 캐지 말 것.** 파트 2가 쓰는 것은 셋뿐이다:
-        `Domain/CoursePlanning/Entity/PlannedCourse.swift`(16줄) ·
-        `CourseCoordinate+Geo.swift`의 `distanceMeters(to:)`(Haversine) ·
-        `CourseEditSession.connectionThresholdMeters`(20m).
-      · 🔑 **파트 1이 사용자에게 빚진 답이 하나 있다** — *"왜 거리를 좌표에서 계산하지 않고
-        값으로 들고 있나."* 파트 1 구간 ①③에서 **"따로 들고 있다"까지만 말하고 넘겼고
-        사용자가 그 답을 기다리고 있다.** 실마리: 구간 거리는 MapKit이 준 **도로 거리**라
-        좌표로 다시 재면 직선 근사가 되어 값이 달라진다 — `PlannedCourse.distanceMeters`가
-        `reduce`로 **더하기만** 하는 것이 그 귀결이다.
-      · 📌 나머지(답해야 할 질문 셋 전체 · 2026-08-12에 확립한 진행 방식 넷 · 브랜치 처분)는
-        [`agent-log.md`](../../study/2-segment-stitching/agent-log.md)의 「파트 2 착수 메모」에 있다.
+      · **진행 중 — 소개 3절 + 파트 1~2/7 완료. 다음은 파트 3 「두 순서가 갈라진다」.**
+      · 🔴 **파트 2를 닫으면서 미룬 것이 둘 있다 — 노트에 아직 없다.** 채팅에서 꺼냈다가
+        *"이해가 안 된다"*로 막혀 **뒤로 미룬 것**이지 버린 것이 아니다(사용자가 *"원래 보여준
+        이유도 있는 거 아니야"*로 되물었다). ①**좌표 한 줄의 소비처 실측** — 전체를 다 쓰는 곳은
+        전체 왕복(`insertWholeCourseRoundTrip`) 하나뿐이고 나머지는 전부 `first`/`last`다.
+        지도는 아예 안 쓴다(구간마다 따로 폴리라인, `MapViewRepresentable.swift:264-279`).
+        ②**계산 프로퍼티의 대가** — `isClosedCourse`가 한 판정에 `course.coordinates`를
+        **세 번** 부른다(`count`·`first`·`last`, `CoursePlannerPageViewModel.swift:80-82`).
+        **②는 백로그 후보다** — 아직 안 적었다. ①은 사실이라 노트 몫, ②의 처방은 백로그 몫.
+        **파트 3을 열기 전에 사용자에게 낼지 물을 것.**
+      · 🔑 **파트 3 재료 — 아직 안 읽었다.** `CourseEditSession`의 `Entry`(`order`·`placedAtFront`·
+        `anchorID`) · `segments` 계산 프로퍼티 · `load(segments:)` · `undo`/`redo`.
+        파트 2에서 확인해둔 것: `append`는 목록 맨 뒤, `prepend`는 `entries.insert(…, at: 0)`이고
+        **둘 다 `nextOrder`를 하나씩 올린다** — 여기서 두 순서가 갈라진다.
+      · ⚠️ **파트 2에서 세 번 정정했다 — 원인은 「연결」을 확인 안 한 것.** 사실은 매번 코드로
+        확인했는데 *"A가 B를 위해 있다"*는 문장은 확인 없이 썼다. **연결도 사실과 같은 급으로
+        확인할 것.** 특히 **N개를 N개에 나란히 대응시키는 표**를 경계할 것 — 맞아떨어지는 모양
+        자체가 근거처럼 느껴진다. 전문은 `agent-log.md`의 첫 🔴.
       · ✅ **노트 형식(2026-08-11 확정)은 이미 적용해서 만들었다** — 두 층 접기 · 파트 머리 구간 표 ·
         번호 접두어 · 3분 복습. **다시 정하지 말고 파트 1과 같은 골격으로 이어 쓴다.**
       · 🔑 **노트에 넣을 것과 뺄 것의 기준도 그때 정했다** — 규칙은 `SKILL.md`의 `[4] 저장`에 있다

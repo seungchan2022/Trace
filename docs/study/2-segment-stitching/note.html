@@ -574,6 +574,7 @@
     <li><span class="k"><i class="kf">소개</i><i class="ks">소3</i></span><a href="#map" data-target="map" title="소개 3 — 장면 ↔ 맡은 부품">장면 ↔ 맡은 부품</a></li>
     <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
     <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 구간, 이어붙일 재료 하나">구간 — 이어붙일 재료 하나</a></li>
+    <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 코스, 구간 목록에서 코스 정보를 내는 법">코스 — 코스 정보를 내는 법</a></li>
   </ol>
 </nav>
 
@@ -593,7 +594,7 @@
       <li><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
       <li class="on"><span class="k">1</span><a href="#p1">구간 — 이어붙일 재료 하나</a></li>
-      <li class="todo"><span class="k">2</span>코스 — 구간 목록이 하나의 선이 되는 법</li>
+      <li class="on"><span class="k">2</span><a href="#p2">코스 — 구간 목록에서 코스 정보를 내는 법</a></li>
       <li class="todo"><span class="k">3</span>두 순서가 갈라진다</li>
       <li class="todo"><span class="k">4</span>붙일 자리 — 끝점 가까이서 시작할 때</li>
       <li class="todo"><span class="k">5</span>붙일 자리 — 양끝이 다 멀 때</li>
@@ -623,7 +624,21 @@
           </ul>
         </div>
       </li>
-      <li class="pending"><span class="k">2</span><div><div class="can">코스 — 구간 목록이 하나의 선이 되는 법</div></div></li>
+      <li>
+        <span class="k">2</span>
+        <div>
+          <div class="can">구간 목록에서 코스 전체의 정보를 어떻게 낼지 정할 수 있다 — 이음매를 어떻게 처리할지, 거리를 다시 잴지 더할지, 양끝이 만났는지를 무엇으로 판정할지</div>
+          <div class="sum">구간 여러 개가 붙어서 코스가 되었을 때, 그 코스가 어떻게 구성되어 있는가, 그리고 그 코스에 대한 정보를 표현하려면 어떻게 하는가.</div>
+          <ul class="keys">
+            <li>코스가 저장하는 것은 <strong>구간 목록 하나</strong> — 좌표 한 줄도 총 거리도 <strong>그때그때 만들어 낸다</strong></li>
+            <li>이음매에서는 <strong>같은 점이 양쪽 구간에</strong> 있다 — 이을 때 <strong>뒤 구간의 첫 좌표를 버린다</strong></li>
+            <li>버려지는 쪽은 역할이 아니라 <strong>자리</strong>로 정해진다 — <strong>0번만 통째로</strong>, 나머지는 전부 첫 좌표를 버린다</li>
+            <li>좌표 자체는 앞뒤를 모른다 — 출발점·도착점은 <strong>목록의 <code>first</code>·<code>last</code></strong>이고 그 순서는 <strong>붙일 때 이미 정해졌다</strong></li>
+            <li>총 거리는 <strong>구간 거리를 더해서</strong> 낸다 — 좌표로 다시 재면 <strong>점 사이를 질러가 짧아진다</strong></li>
+            <li>닫힌 코스 판정은 <strong>양끝이 20m 이하냐</strong> — <strong>20m 자체에는 근거 기록이 없다</strong></li>
+          </ul>
+        </div>
+      </li>
       <li class="pending"><span class="k">3</span><div><div class="can">두 순서가 갈라진다</div></div></li>
       <li class="pending"><span class="k">4</span><div><div class="can">붙일 자리 — 끝점 가까이서 시작할 때</div></div></li>
       <li class="pending"><span class="k">5</span><div><div class="can">붙일 자리 — 양끝이 다 멀 때</div></div></li>
@@ -694,7 +709,7 @@ flowchart LR
     <div class="tablewrap">
       <table>
         <tr><th>함수</th><th>쓰는 곳</th><th>어느 청크</th></tr>
-        <tr><td><code>distanceMeters(to:)</code></td><td>붙일 자리 판정 · 틈 판정</td><td><strong>청크 2</strong></td></tr>
+        <tr><td><code>distanceMeters(to:)</code></td><td>닫힌 코스 판정 · 붙일 자리 판정 · 틈 판정</td><td><strong>청크 2</strong></td></tr>
         <tr><td><code>distanceMeters(toSegment:_:)</code></td><td><code>OverlapOffsetResolver</code></td><td>청크 3</td></tr>
         <tr><td><code>headingVector(to:)</code></td><td><code>OverlapOffsetResolver</code></td><td>청크 3</td></tr>
         <tr><td><code>offset(rightOfHeading:by:)</code></td><td><code>OverlapOffsetResolver</code></td><td>청크 3</td></tr>
@@ -746,6 +761,14 @@ flowchart LR
       <div class="seen">⑥⑦은 파트 7, ⑧은 파트 3에서 다룬다.</div>
     </div>
 
+    <div class="scene">
+      <div class="who">한 바퀴 닫는다</div>
+      <div class="steps">
+        <div class="st"><span class="n">⑨</span><span class="t">코스가 <b>출발한 자리로 돌아오면</b> 출발 핀과 도착 핀이 <b>「출발/도착」 하나로 합쳐진다</b></span></div>
+      </div>
+      <div class="seen">닫혔는지 <em>판정</em>하는 것은 파트 2, 그 판정으로 <em>붙일 자리를 정하는</em> 것은 파트 4.</div>
+    </div>
+
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
@@ -782,6 +805,11 @@ flowchart LR
           <td><span class="pt">3</span></td>
         </tr>
         <tr>
+          <td>⑨ 닫힌 코스 병합 핀</td>
+          <td><code>isClosedCourse</code> → <code>mapPins</code></td>
+          <td><span class="pt">2</span></td>
+        </tr>
+        <tr>
           <td>(전부) 무엇을 주고받나</td>
           <td><code>CourseSegment</code> · <code>PlannedCourse</code> · 거리 계산</td>
           <td><span class="pt">1</span><span class="pt">2</span></td>
@@ -798,7 +826,7 @@ flowchart LR
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
-  <details class="part" id="p1" open>
+  <details class="part" id="p1">
     <summary>
       <span class="part-tag">파트 1</span>
       <span class="ptitle">구간 — 이어붙일 재료 하나</span>
@@ -832,7 +860,7 @@ flowchart LR
           </tr>
         </table>
         <p class="hint">
-          이 파트는 <strong>화면에 아무것도 안 나온다.</strong> 사용자 장면으로 치면 ①~⑧ 전부의
+          이 파트는 <strong>화면에 아무것도 안 나온다.</strong> 사용자 장면으로 치면 ①~⑨ 전부의
           재료라, 어느 한 장면에 대응되지 않는다.
         </p>
       </div>
@@ -1103,11 +1131,357 @@ reversed()   [D, C, B, A]</pre>
     </div>
   </details>
 
+  <details class="part" id="p2" open>
+    <summary>
+      <span class="part-tag">파트 2</span>
+      <span class="ptitle">코스 — 구간 목록에서 코스 정보를 내는 법</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트 한 줄</span>
+        구간 여러 개가 붙어서 코스가 되었을 때, <strong>그 코스가 어떻게 구성되어 있는가</strong>,
+        그리고 <strong>그 코스에 대한 정보를 표현하려면 어떻게 하는가</strong>.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>구간 목록에서 <strong>코스 전체의 정보를 어떻게 낼지</strong> 정할 수 있다 — 좌표를
+          한 줄로 이을 때 이음매를 어떻게 처리할지, 거리를 다시 잴지 더할지, 양끝이 만났는지를
+          무엇으로 판정할지.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr>
+            <td><a href="#p2s1">구간 ①</a></td>
+            <td>좌표를 한 줄로 잇는 법</td>
+            <td><code>dropFirst</code></td>
+          </tr>
+          <tr>
+            <td><a href="#p2s2">구간 ②</a></td>
+            <td>총 거리를 내는 법</td>
+            <td><code>reduce</code></td>
+          </tr>
+          <tr>
+            <td><a href="#p2s3">구간 ③</a></td>
+            <td>양끝이 만났는지 재는 법</td>
+            <td>20m 판정</td>
+          </tr>
+        </table>
+        <p class="hint">
+          <strong>화면에 나오는 것은 하나뿐이다</strong> — 구간 ③의 판정이 <strong>장면 ⑨</strong>
+          (출발·도착 핀이 「출발/도착」 하나로 합쳐지는 것)로 나타난다. 구간 ①②는
+          코드 안에서만 일어난다.
+        </p>
+      </div>
+
+      <p>
+        <strong>이 파트는 붙이는 일 자체를 다루지 않는다.</strong> 새 구간을 어디에 어떤 방향으로
+        붙일지 정하는 것은 파트 4·5이고, 여기는 <strong>이미 붙어서 목록에 들어와 있는 상태</strong>에서
+        시작한다. 코스가 저장하고 있는 것은 <strong>구간 목록 하나</strong>이고, 좌표 한 줄도
+        총 거리도 <strong>저장돼 있지 않다 — 목록에서 그때그때 만들어 낸다.</strong>
+      </p>
+
+      <pre class="code">struct PlannedCourse: Equatable, Sendable {
+    var segments: [CourseSegment]                <span class="c">// 저장된 것은 이 하나</span>
+
+    var coordinates: [CourseCoordinate] { … }    <span class="c">// 만들어 낸다 — 구간 ①</span>
+    var distanceMeters: Double { … }             <span class="c">// 만들어 낸다 — 구간 ②</span>
+}</pre>
+
+      <p class="later">
+        데이터가 없다는 뜻이 아니다. 좌표도 거리도 <strong>구간마다 이미 들고 있다</strong>(파트 1 구간 ①).
+        저장돼 있지 않은 것은 <strong>합쳐 놓은 형태</strong> — 이어 붙인 좌표 한 줄과 더해 놓은 총합이다.
+        <strong>저장 포맷도 같은 모양이다</strong> — 이름 붙여 저장하는 <code>SavedCourse</code>도
+        구간 목록을 들고 총 거리는 계산으로 낸다. 좌표 한 줄로 눌러서 저장하지 않기 때문에
+        불러오면 구간 경계가 살아 있다(파트 3).
+      </p>
+
+      <details class="seg" id="p2s1">
+        <summary>구간 ① — 좌표를 한 줄로 잇는 법</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 구간 목록을 좌표 한 줄로 이을 때
+            <strong>이음매를 어떻게 처리할지</strong>.
+          </p>
+
+          <h4>1. 그냥 이으면 같은 점이 두 번 나온다</h4>
+
+          <pre class="code">구간 1   [광화문, ⋯, 시청]
+구간 2   [시청,   ⋯, 남대문]
+
+이으면   [광화문, ⋯, 시청, 시청, ⋯, 남대문]
+                       <span class="c">↑     ↑  같은 점이 두 번</span></pre>
+
+          <p>
+            <strong>시청이 양쪽 구간에 다 들어 있어서</strong>다. 파트 1 구간 ②에서 본 것이 이것이다 —
+            <em>앞 구간의 끝과 뒤 구간의 시작이 같은 지점에서 만나야</em> 하나의 코스가 된다.
+            만나야 하니까 그 점이 양쪽에 있어야 하고, 그래서 이으면 겹친다. 구간이 늘수록 같이
+            늘어난다 — 구간 다섯 개면 이음매가 넷이니 중복도 넷이다.
+          </p>
+
+          <h4>2. 그래서 뒤 구간의 첫 좌표를 버린다</h4>
+
+          <pre class="code">var coordinates: [CourseCoordinate] {
+    segments.enumerated().flatMap { i, seg in
+        i == 0 ? seg.coordinates : Array(seg.coordinates.dropFirst())
+    }
+}</pre>
+
+          <p>
+            <strong>0번 구간만 통째로 쓰고, 나머지는 전부 맨 앞 좌표 하나를 버린다.</strong>
+            버리는 쪽이 뒤 구간인 이유는, 그 점이 이미 <strong>앞 구간의 마지막</strong>으로
+            목록에 들어와 있기 때문이다. 같은 지점이라 어느 쪽을 버려도 결과는 같다.
+          </p>
+
+          <h4>3. 버려지는 것은 “새 구간”이 아니라 “0번이 아닌 것”이다</h4>
+
+          <p>
+            여기에 <strong>새 구간이냐 기존 구간이냐를 따지는 판단이 없다.</strong> 목록에서
+            <strong>0번이냐 아니냐</strong>만 본다. 그래서 붙는 자리에 따라 <strong>버려지는 쪽이
+            달라진다.</strong>
+          </p>
+
+          <pre class="code"><span class="c">도착점 쪽에 붙일 때 — append (목록 맨 뒤에 넣는다)</span>
+segments[0]  [광화문, ⋯, 시청]      0번이라 통째로
+segments[1]  [시청,   ⋯, 남대문]    <span class="c">새 구간</span>의 첫 좌표를 버린다
+
+<span class="c">출발점 쪽에 붙일 때 — prepend (목록 0번 자리에 밀어 넣는다)</span>
+segments[0]  [독립문, ⋯, 광화문]    뒤집혀 들어온 새 구간. 0번이라 통째로
+segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>의 첫 좌표를 버린다</pre>
+
+          <p>
+            그래도 <strong>버려지는 좌표는 여전히 그 중복된 점</strong>이다. 출발점 쪽에 붙일 때
+            새 구간은 <strong>뒤집혀서</strong> 들어오므로(파트 1 구간 ②) 새 구간의 끝이 광화문,
+            기존 구간의 시작도 광화문 — 같은 점이 양쪽에 하나씩이다. 구간이 셋 이상이어도 같다.
+            <strong>0번을 뺀 전부가 각자 첫 좌표를 버린다.</strong>
+          </p>
+
+          <h4>4. 출발점·도착점은 여기서 정하지 않는다</h4>
+
+          <p>
+            좌표(<code>CourseCoordinate</code>)가 들고 있는 것은 <strong>위도와 경도뿐</strong>이다.
+            <em>“나는 출발점이다”</em> 같은 표시가 없다. 아는 것은 좌표가 아니라
+            <strong>목록</strong>이다 — 맨 앞이 출발점이고 맨 뒤가 도착점이다.
+          </p>
+
+          <p>
+            그 순서는 <strong>붙일 때 이미 정해졌다.</strong> 어느 구간이 0번이 되느냐는
+            <code>prepend</code>냐 <code>append</code>냐가 정하고(판단은 파트 4·5), 구간 안 좌표가
+            어느 방향이냐는 뒤집기가 정한다(파트 1 구간 ②). <strong>이 구간이 하는 중복 제거는
+            이음매에서만 일어나므로 양끝과는 무관하다</strong> — 중복을 빼든 안 빼든
+            <code>first</code>와 <code>last</code>는 같다.
+          </p>
+
+          <h4>5. 안 버리면 어떻게 되나</h4>
+
+          <p>
+            <strong>눈에 보이는 것은 없다.</strong> 지도에 같은 점을 두 번 찍는 것이라 선 모양이
+            달라지지 않는다. 이건 <em>깨져서 고친 것</em>이 아니라 처음부터 그렇게 만든 것이고,
+            코드에도 의도가 주석 한 줄로 적혀 있다(<code>// 세그먼트 사이 첫 좌표 중복 제거</code>).
+          </p>
+
+          <p>
+            깨지는 것은 <strong>의미 쪽</strong>이다. 좌표 목록은 <em>“이 순서로 지나간다”</em>는
+            뜻인데, 같은 점이 연속으로 두 번 있으면 <strong>그 자리에 한 번 멈춰 섰다</strong>는
+            목록이 된다. 같은 방식이 코드 다른 곳에도 나온다 — 한 획을 조각내어 길찾기를 부른 뒤
+            결과를 이을 때도 뒤 조각의 첫 좌표를 버린다
+            (<code>CoursePlannerPageViewModel.swift:280</code>).
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>구간은 그대로 서로의 점을 들고 있고, <strong>각 구간을 이어서 코스를 만들 때
+              중복된 점을 제거해서</strong> 코스의 좌표 한 줄을 만든다.
+              <span class="aside">버려지는 쪽은 역할이 아니라 <strong>자리</strong>로 정해진다 —
+              0번만 통째로, 나머지는 전부 첫 좌표를 버린다.</span></p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p2s2">
+        <summary>구간 ② — 총 거리를 내는 법</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 코스 총 거리를
+            <strong>좌표로 다시 잴지, 구간 거리를 더할지</strong>.
+          </p>
+
+          <h4>1. 더하기만 한다</h4>
+
+          <pre class="code">var distanceMeters: Double {
+    segments.reduce(0) { $0 + $1.distanceMeters }
+}</pre>
+
+          <p>
+            구간이 각자 들고 있는 거리를 <strong>그냥 더한다.</strong> 구간 ①에서 만든
+            <strong>좌표 한 줄은 쓰지 않는다.</strong> 이 값이 시트에 <code>2.40 km</code>로 찍히는
+            그 값이다(<code>CoursePlannerPageViewModel.swift:75</code>).
+          </p>
+
+          <h4>2. 좌표로 다시 재면 값이 달라진다</h4>
+
+          <p>
+            잴 수는 있다. 좌표 한 줄이 있고 두 좌표 사이 거리를 재는 함수도 있다(구간 ③).
+            그런데 <strong>나오는 값이 다르다.</strong> 두 값의 <strong>출처가 다르기</strong> 때문이다.
+            길찾기 답이 도착하면 앱은 거기서 두 가지를 꺼낸다
+            (<code>MapKitCoursePlanningService.swift:42-46</code>).
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>무엇을 꺼내나</th><th>어디서</th></tr>
+              <tr><td><strong>거리</strong></td><td><code>route.distance</code> — MapKit이 계산한 <strong>도로를 따라간 거리</strong></td></tr>
+              <tr><td><strong>좌표</strong></td><td><code>route.polyline</code> — 그 경로를 <strong>그리기 위한 점들</strong></td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>폴리라인은 도로 모양을 점 몇 개로 줄여 놓은 것</strong>이다. 점들 자체는 도로
+            위에 있다 — 코너에도 점이 있다. 빠지는 것은 <strong>점과 점 사이</strong>다. 그 사이에서
+            도로가 완만하게 휘어 있으면, 직선으로 재는 순간 그 휜 만큼이 사라진다.
+          </p>
+
+          <pre class="code">점 ●        점 ●
+   ╰──╮  ╭──╯      <span class="c">도로는 이렇게 휘어 있는데</span>
+      ╰──╯
+   ●────────●      <span class="c">직선으로 재면 이만큼 — 질러간 만큼 짧아진다</span></pre>
+
+          <p>
+            새 좌표가 생기는 것이 아니라 <strong>있는 점들 사이를 직선으로 재는 것</strong>이다.
+            그래서 차이가 크지는 않지만 <strong>정확하지도 않다.</strong>
+            <strong>MapKit이 이미 정확한 답을 줬는데 다시 재면 더 나쁜 값이 나온다</strong> —
+            이것이 파트 1에서 미뤄둔 답이다. 좌표에서 거리를 뽑아내지 않는 이유가 이것이다.
+          </p>
+
+          <h4>3. 그래서 이음매도 문제가 안 된다</h4>
+
+          <p>
+            구간 ①에서는 이음매의 중복 좌표를 <strong>버려야</strong> 했는데, 거리는 그럴 필요가 없다.
+            구간 1의 거리는 광화문→시청, 구간 2의 거리는 시청→남대문이라
+            <strong>애초에 겹치는 부분이 없다.</strong> 좌표는 <em>“지나간 점들”</em>이라 이음매가
+            겹치고, 거리는 <em>“움직인 양”</em>이라 안 겹친다. 같은 이유로 <strong>뒤집어도 거리는
+            그대로</strong>다(파트 1 구간 ②) — 같은 길을 거꾸로 가도 길이는 같다.
+          </p>
+
+          <p class="later">
+            <strong>좌표가 “그리기 전용”이라는 뜻은 아니다.</strong> 출처가 그리기용 폴리라인일 뿐,
+            앱은 그 점들의 <strong>양끝</strong>도 쓴다 — 코스의 출발점·도착점이 그 목록의
+            <code>first</code>와 <code>last</code>다. 구간 ③이 바로 그것을 쓴다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>코스 거리는 <strong>구간 거리를 더해서</strong> 낸다. 좌표로 다시 재지 않는 이유는,
+              좌표가 <strong>그리기용으로 줄여 놓은 점들</strong>이라 그걸로 재면 점 사이를 질러가
+              실제 도로 거리보다 짧아지기 때문이다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p2s3">
+        <summary>구간 ③ — 양끝이 만났는지 재는 법</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 코스가 <strong>한 바퀴 돌아
+            제자리로 왔는지</strong>를 어떻게 판정할지.
+          </p>
+
+          <h4>1. 어떤 상황인가 — 코스가 고리처럼 닫힌다</h4>
+
+          <pre class="code">        ╭────────╮
+        │        │
+        ╰───●────╯
+            출발/도착</pre>
+
+          <p>
+            러닝 코스에서 흔한 모양이다 — 집에서 출발해 한 바퀴 돌고 집으로 돌아오는 코스.
+            이렇게 되는 길이 둘이다. <strong>직접 그려서</strong> 처음 자리 근처로 돌아오거나,
+            <strong>전체 왕복</strong>(장면 ⑦)으로 코스 전체를 되짚어 붙이거나. 후자는 끝나는 자리가
+            반드시 원래 출발점이라 <strong>항상 닫힌다.</strong>
+          </p>
+
+          <h4>2. 이건 화면에 나온다 — 핀이 둘에서 하나가 된다</h4>
+
+          <p>
+            <strong>파트 2에서 유일하게 눈에 보이는 것</strong>이다(장면 ⑨). 보통은 초록 「출발」과
+            빨강 「도착」 두 개가 붙는데, 닫히면 같은 자리에 겹쳐 찍히므로 앱이
+            <strong>하나로 합쳐서 「출발/도착」</strong>으로 붙인다
+            (<code>CoursePlannerPage+MapPinsComponent.swift:12-20</code>). 딸린 것이 하나 더 있다 —
+            탭 모드의 <em>“출발 핀을 눌러 왕복”</em> 힌트는 <strong>아직 안 닫힌 코스일 때만</strong>
+            뜬다. 이미 닫혔으면 왕복할 이유가 없다.
+          </p>
+
+          <h4>3. 판정은 “같은 점”이 아니라 “20m 이내”다</h4>
+
+          <pre class="code">var isClosedCourse: Bool {
+    …
+    return first.distanceMeters(to: last) &lt;= CourseEditSession.connectionThresholdMeters
+}</pre>
+
+          <p>
+            구간 ①이 만든 좌표 한 줄의 <strong><code>first</code>와 <code>last</code></strong> —
+            코스의 출발점과 도착점이다. 둘 사이 거리를 재서 <strong>20m 이하면 닫힌 코스</strong>로
+            본다. 정확히 같은 좌표인지 보지 <strong>않는</strong> 이유는 그럴 수가 없어서다.
+            손가락이나 탭으로 정확히 같은 지점을 찍는 것은 불가능하고, 찍었다 해도 길찾기가 그
+            좌표를 <strong>가장 가까운 도로 위로 옮긴다</strong> — 출발 때 옮겨간 자리와 도착 때
+            옮겨간 자리가 다를 수 있다. 재는 데 쓰는 <code>distanceMeters(to:)</code>가
+            <strong>이 청크가 쓰는 유일한 지오 함수</strong>다(소개 1의 표).
+          </p>
+
+          <h4>4. 20m는 어디서 온 숫자인가 — 근거 기록이 없다</h4>
+
+          <p>
+            찾아봤고 <strong>없다.</strong> 처음 등장한 곳은 MVP6의 <strong>계획 문서</strong>이고
+            (<code>from.distanceMeters(to: to) &gt; 20</code>이라는 코드 조각), 같은 MVP의
+            <strong>설계 문서에는 이 숫자에 대한 이야기가 한 줄도 없다.</strong> MVP9가 이어붙이기
+            규칙을 다시 짜면서 상수로 승격시켰는데 근거를 <em>“기존 gap 판정과 동일 상수”</em>로
+            적었다 — <strong>앞에 있던 숫자를 그대로 가져왔다</strong>는 뜻이다. 실측한 흔적은
+            어디에도 없다.
+          </p>
+
+          <div class="fix">
+            <strong>⚠️ 실제로 어긋난 적이 있다.</strong> MVP9 실기기 테스트에서 사용자 눈에는
+            출발점에 붙여 그은 것 같았는데 붙지 않았고, 로그를 보니
+            <code>distToStart=51m</code>이었다. 20m 밖이라 <strong>코드는 설계대로 동작한 것</strong>이고,
+            어긋난 것은 <strong>“눈으로 보는 가까움”과 “실거리 20m”</strong>였다. 그때 결론이
+            <em>“단순히 숫자를 올리는 것은 경계 문제를 옆으로 옮길 뿐”</em>이었고
+            <strong>고치지 않고 남겨뒀다.</strong>
+          </div>
+
+          <p class="later">
+            이 판정을 <strong>쓰는</strong> 쪽은 이 파트가 아니다. 붙이는 규칙의 <strong>첫 번째</strong>가
+            <em>“닫힌 코스면 어디에 그었든 무조건 뒤에 붙인다”</em>이고 그것이 파트 4다.
+            여기서는 <strong>답을 내는 데까지</strong>다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>닫힌 코스 판정은 <strong>출발점과 도착점 사이 거리가 20m 이하냐</strong>로 한다.
+              정확히 같은 점을 요구하지 않는 이유는 손가락도 도로 스냅도 정확할 수 없어서다.
+              <span class="aside"><strong>20m 자체에는 근거 기록이 없다.</strong></span></p>
+          </div>
+
+        </div>
+      </details>
+
+      <a class="backtop" href="#toc">↑ 목차로</a>
+
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음은 파트 2 — 코스, 구간 목록이 하나의 선이 되는 법.</strong>
-    구간을 이어 붙였을 때 <strong>좌표가 겹치는 자리를 어떻게 처리하고, 코스 전체 거리를
-    어떻게 내는지</strong>를 본다. 파트 1에서 미룬 <em>“왜 거리를 계산하지 않고 값으로 들고 있나”</em>가
-    거기서 풀린다.
+    <strong>다음은 파트 3 — 두 순서가 갈라진다.</strong>
+    파트 2까지는 <strong>구간 목록의 순서</strong> 하나만 봤다. 그런데 되돌리기가 빼야 할 것은
+    <em>“목록의 마지막”</em>이 아니라 <strong>“방금 붙인 것”</strong>이라, 세션은 순서를
+    <strong>두 벌</strong> 들고 있다. 저장한 코스를 불러오는 것(장면 ⑧)도 거기서 다룬다.
   </div>
 
 </div>
