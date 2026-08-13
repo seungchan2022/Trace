@@ -575,6 +575,7 @@
     <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
     <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 구간, 이어붙일 재료 하나">구간 — 이어붙일 재료 하나</a></li>
     <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 코스, 구간 목록에서 코스 정보를 내는 법">코스 — 코스 정보를 내는 법</a></li>
+    <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 두 순서가 갈라진다">두 순서가 갈라진다</a></li>
   </ol>
 </nav>
 
@@ -595,7 +596,7 @@
       <li><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
       <li class="on"><span class="k">1</span><a href="#p1">구간 — 이어붙일 재료 하나</a></li>
       <li class="on"><span class="k">2</span><a href="#p2">코스 — 구간 목록에서 코스 정보를 내는 법</a></li>
-      <li class="todo"><span class="k">3</span>두 순서가 갈라진다</li>
+      <li class="on"><span class="k">3</span><a href="#p3">두 순서가 갈라진다</a></li>
       <li class="todo"><span class="k">4</span>붙일 자리 — 끝점 가까이서 시작할 때</li>
       <li class="todo"><span class="k">5</span>붙일 자리 — 양끝이 다 멀 때</li>
       <li class="todo"><span class="k">6</span>되돌리기와 앞으로 돌리기</li>
@@ -639,7 +640,21 @@
           </ul>
         </div>
       </li>
-      <li class="pending"><span class="k">3</span><div><div class="can">두 순서가 갈라진다</div></div></li>
+      <li>
+        <span class="k">3</span>
+        <div>
+          <div class="can">목록에 무언가를 쌓을 때 담긴 자리(몇 번째인지)로 충분한지, 담은 차례를 따로 적어둬야 하는지 정할 수 있다</div>
+          <div class="sum">코스는 구간 목록이다. 그런데 앱은 그 목록을 경로 순서로 들고 있어서 “방금 그은 것”을 못 찾는다. 그래서 붙인 차례를 하나 더 달았다.</div>
+          <ul class="keys">
+            <li>목록 위치는 <strong>경로 순서</strong>다 — <strong>앞에 꽂히는 경우</strong>가 있어서 마지막 줄이 방금 그은 것이 아니다</li>
+            <li>그래서 <strong>붙인 차례(<code>order</code>)를 따로 단다</strong> — 앞에 붙이든 뒤에 붙이든 번호는 똑같이 올라간다</li>
+            <li>되돌리기는 <strong>번호가 가장 큰 것</strong>을 뺀다. 번호는 <strong>되돌려도 줄지 않아서</strong> 새것이 언제나 가장 크다</li>
+            <li>번호는 구간이 아니라 <strong>감싼 줄(<code>Entry</code>)</strong>에 붙어 있다 — 구간은 오래 남고 번호는 편집 중에만 쓰는, <strong>수명이 다른 둘</strong>이라서</li>
+            <li>코스를 읽으면 그 순간 <strong>번호를 떼고 구간만</strong> 모아 만들어 준다 — <strong>코스는 <code>Entry</code>를 모른다</strong></li>
+            <li>번호는 <strong>파일에 저장되지 않는다</strong> — 불러올 때 <strong>목록 위치로 새로 매기고</strong>, 그때는 두 순서가 같다</li>
+          </ul>
+        </div>
+      </li>
       <li class="pending"><span class="k">4</span><div><div class="can">붙일 자리 — 끝점 가까이서 시작할 때</div></div></li>
       <li class="pending"><span class="k">5</span><div><div class="can">붙일 자리 — 양끝이 다 멀 때</div></div></li>
       <li class="pending"><span class="k">6</span><div><div class="can">되돌리기와 앞으로 돌리기</div></div></li>
@@ -1131,7 +1146,7 @@ reversed()   [D, C, B, A]</pre>
     </div>
   </details>
 
-  <details class="part" id="p2" open>
+  <details class="part" id="p2">
     <summary>
       <span class="part-tag">파트 2</span>
       <span class="ptitle">코스 — 구간 목록에서 코스 정보를 내는 법</span>
@@ -1521,11 +1536,416 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
     </div>
   </details>
 
+  <details class="part" id="p3" open>
+    <summary>
+      <span class="part-tag">파트 3</span>
+      <span class="ptitle">두 순서가 갈라진다</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트 한 줄</span>
+        코스는 구간 목록이다. 그런데 앱은 그 목록을 <strong>경로 순서</strong>로 들고 있어서
+        <strong>“방금 그은 것”을 못 찾는다.</strong> 그래서 <strong>붙인 차례</strong>를 하나 더 달았다.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>목록에 무언가를 쌓을 때 <strong>담긴 자리(몇 번째인지)로 충분한지, 담은 차례를 따로
+          적어둬야 하는지</strong> 정할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr>
+            <td><a href="#p3s1">구간 ①</a></td>
+            <td>목록 위치로 “방금”을 찾으면 언제 틀리는가</td>
+            <td><code>order</code></td>
+          </tr>
+          <tr>
+            <td><a href="#p3s2">구간 ②</a></td>
+            <td>번호는 어디에 붙어 있나</td>
+            <td><code>Entry</code></td>
+          </tr>
+          <tr>
+            <td><a href="#p3s3">구간 ③</a></td>
+            <td>저장한 코스를 불러오면 번호를 새로 매긴다</td>
+            <td><code>load</code></td>
+          </tr>
+        </table>
+        <p class="hint">
+          <strong>번호 자체는 화면에 안 나온다.</strong> 눈에 보이는 것은
+          <strong>되돌리기(↩︎)를 눌렀을 때 어느 선이 사라지는가</strong>뿐이다 —
+          <strong>장면 ④</strong>. 그 되돌리기를 실제로 동작하게 만드는 것은 <strong>파트 6</strong>이고,
+          이 파트는 그게 가능하려면 <strong>목록을 어떻게 들고 있어야 하는지</strong>를 정한다.
+          장면 ⑧(불러오기)은 구간 ③에서 다룬다.
+        </p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <tr><th></th><th>다룬 것</th></tr>
+          <tr><td>파트 1</td><td><strong>구간 하나</strong> — 좌표 + 거리, 그리고 뒤집기(<code>reversed</code>)</td></tr>
+          <tr><td>파트 2</td><td><strong>구간 목록 → 코스</strong> — 좌표 한 줄 잇기 · 총 거리 · 양끝이 만났는지</td></tr>
+          <tr><td><strong>파트 3</strong></td><td>그 <strong>목록 자체</strong> — 누가 어떤 순서로 들고 있나</td></tr>
+        </table>
+      </div>
+
+      <p>
+        <strong>파트 2까지는 목록이 이미 있다고 치고</strong> 거기서 정보를 뽑아냈다.
+        파트 3은 그 목록을 <strong>쌓아 나가는 쪽</strong>이다.
+      </p>
+
+      <details class="seg" id="p3s1">
+        <summary>구간 ① — 목록의 마지막 줄이 “방금 그은 것”이 아닐 때가 있다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 목록에서 “방금 넣은 것”을
+            <strong>몇 번째 자리인지로 찾으면 언제 틀리는지</strong> 짚을 수 있다.
+          </p>
+
+          <h4>1. 그을 때마다 목록에 한 줄이 쌓인다</h4>
+
+          <p>
+            코스를 만드는 화면이다. 가운데 <strong>지도</strong>, 아래 <strong>구간 목록</strong>,
+            오른쪽에 <strong>되돌리기 버튼(↩︎)</strong>이 있다.
+          </p>
+
+          <p>
+            지도에 한 번 그으면 둘이 동시에 생긴다 — 지도에 <strong>도로를 따라가는 선 하나</strong>,
+            목록에 <strong>줄 하나</strong>다. 그 줄에는 <code>구간 1</code>이라는 이름과 거리,
+            왼쪽에 색 막대가 붙는다. <strong>이 선 하나 = 목록의 한 줄 = 구간(<code>CourseSegment</code>)
+            하나</strong>이고, 파트 1에서 만든 그것이다.
+          </p>
+
+          <h4>2. 뒤로만 이어 그으면 문제가 없다</h4>
+
+          <p>
+            <code>구간 1</code> → <code>구간 2</code> → <code>구간 3</code> 순으로 이어 그은 상태에서
+            ↩︎ 를 누른다. 사라져야 하는 것은 방금 그은 <code>구간 3</code>이고, 그건
+            <strong>목록의 마지막 줄</strong>이다. 마지막 줄을 빼면 끝이다.
+            <strong>이 상태만 있다면 앱은 목록 하나만 들고 있으면 된다.</strong>
+          </p>
+
+          <h4>3. 앞에 붙는 경우가 있다</h4>
+
+          <p>
+            이어 긋는 방향이 항상 뒤쪽인 것은 아니다. <strong>코스의 출발 지점 근처에서 그으면
+            앞쪽으로 붙는다</strong>(장면 ②). 왜 그렇게 정했고 방향은 어떻게 처리하는지는
+            <strong>파트 4·5</strong>다. 여기서 쓰는 것은 <em>그런 경우가 있다</em>는 사실 하나다.
+          </p>
+
+          <p>
+            앞쪽으로 붙으면 새 구간은 목록의 <strong>맨 위</strong>로 들어간다. 목록이 보여주는 것은
+            지도 위 <strong>경로 순서</strong>라서, 출발 쪽에 붙었으면 첫 줄이 되는 것이 맞다.
+            코드로도 그대로다 — 앞에 붙이기(<code>prepend</code>)는 배열의 0번 자리에 밀어 넣는다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>목록</th><th>무엇</th><th>언제 그었나</th></tr>
+              <tr><td><code>구간 1</code></td><td>서울역 → 시청</td><td><strong>방금</strong></td></tr>
+              <tr><td><code>구간 2</code></td><td>시청 → 남대문</td><td>처음</td></tr>
+              <tr><td><code>구간 3</code></td><td>남대문 → 광화문</td><td>두 번째</td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>방금 그은 것이 <code>구간 1</code>로 보인다.</strong> 이 상태에서 ↩︎ 를 눌렀는데
+            마지막 줄을 빼면, 사용자가 한참 전에 그은 광화문 쪽 선이 사라진다.
+          </p>
+
+          <h4>4. 그래서 붙인 차례를 따로 단다</h4>
+
+          <p>
+            목록 위치는 <strong>경로 순서</strong>라서 “방금”을 담지 못한다. 그래서
+            세션(<code>CourseEditSession</code>)은 구간을 붙일 때마다
+            <strong>0부터 하나씩 올라가는 번호</strong>를 같이 단다. 이름이 <code>order</code>다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>목록</th><th>무엇</th><th><code>order</code></th></tr>
+              <tr><td><code>구간 1</code></td><td>서울역 → 시청</td><td><strong>2</strong></td></tr>
+              <tr><td><code>구간 2</code></td><td>시청 → 남대문</td><td>0</td></tr>
+              <tr><td><code>구간 3</code></td><td>남대문 → 광화문</td><td>1</td></tr>
+            </table>
+          </div>
+
+          <p>
+            핵심은 <strong>앞에 붙이기(<code>prepend</code>)도 뒤에 붙이기(<code>append</code>)와
+            똑같이 번호를 올린다</strong>는 것이다. 꽂히는 자리만 다르고 번호를 매기는 방식은 같다.
+            그래서 맨 위에 꽂힌 것이 번호는 가장 크다.
+          </p>
+
+          <p>
+            되돌리기(<code>undo</code>)는 목록 위치를 보지 않는다. <strong>번호가 가장 큰 것</strong>을
+            골라 뺀다.
+          </p>
+
+          <p>
+            번호는 <strong>되돌려도 줄지 않는다.</strong> 위에서 2번을 빼면 목록에 남는 번호는 0과 1인데,
+            다음에 새로 긋는 것은 2가 아니라 <strong>3</strong>을 받는다. 새것이 언제나 가장 큰 번호를
+            갖게 되므로, ↩︎ 를 여러 번 눌러도 <strong>그은 역순으로</strong> 정확히 빠진다.
+          </p>
+
+          <p class="later">
+            목록 줄 왼쪽의 <strong>색 막대</strong>도 이 번호를 쓴다 — 그래서 앞에 꽂아도 기존 구간들
+            색이 안 바뀐다. 색 자체는 청크 3이다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>목록 위치는 <strong>경로 순서</strong>라서 앞에 꽂히는 경우가 있고, 그때 마지막 줄은
+              방금 그은 것이 아니다. 그래서 <strong>붙인 차례(<code>order</code>)를 따로 달고</strong>,
+              되돌리기는 그 번호가 가장 큰 것을 뺀다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p3s2">
+        <summary>구간 ② — 번호는 어디에 붙어 있나</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 편집하는 동안만 필요한 정보를
+            <strong>원래 타입에 넣을지, 감싸는 것을 만들지</strong> 정할 수 있다.
+          </p>
+
+          <h4>1. 세션이 들고 있는 것은 구간 목록이 아니다</h4>
+
+          <p>
+            구간 ①에서 “붙일 때마다 번호를 단다”까지 왔다. 그 번호가 <strong>실제로 어디에 붙어
+            있는지</strong>를 본다. 세션이 들고 있는 배열은 이렇게 생겼다.
+          </p>
+
+          <pre class="code">entries ┌─ [ 번호 2 │ 구간: 서울역→시청  ]
+        ├─ [ 번호 0 │ 구간: 시청→남대문  ]
+        └─ [ 번호 1 │ 구간: 남대문→광화문 ]</pre>
+
+          <p>
+            구간이 <strong>맨몸으로</strong> 들어 있지 않다. 한 줄마다 <strong>번호와 구간이 짝</strong>으로
+            들어 있다. 이 한 줄의 이름이 <strong><code>Entry</code></strong>이고, 줄들을 모은 배열
+            이름이 <strong><code>entries</code></strong>다.
+          </p>
+
+          <h4>2. <code>Entry</code> 한 줄에 무엇이 들어 있나</h4>
+
+          <pre class="code">private struct Entry {
+    let id: UUID                     <span class="c">// 이 줄의 고유 표식 — 어느 줄을 뺄지 지목할 때</span>
+    let order: Int                   <span class="c">// 구간 ①의 그 번호</span>
+    let placedAtFront: Bool          <span class="c">// 파트 6</span>
+    let anchorID: UUID?              <span class="c">// 파트 7</span>
+    let anchorInsertsBefore: Bool    <span class="c">// 파트 7</span>
+    let segment: CourseSegment       <span class="c">// 구간 그 자체 — [점들] + 거리</span>
+}</pre>
+
+          <p>
+            지금 뜻이 서는 것은 <strong><code>segment</code>·<code>order</code>·<code>id</code></strong>
+            셋이다. 나머지 셋은 <strong>앞으로 돌리기와 왕복</strong>이 쓰는 것이라 파트 6·7에서 연다.
+          </p>
+
+          <h4>3. 왜 번호를 구간 안에 안 넣었나</h4>
+
+          <p>
+            구간에 번호를 넣어도 되지 않느냐 — <strong>둘의 수명이 다르다.</strong>
+            <strong>구간은 오래 남는다</strong>(코스에 들어가고 저장 파일로도 나간다).
+            <strong>번호는 지금 편집하는 동안만 쓴다.</strong> 구간에 번호를 넣으면 번호가 쓸모없는
+            자리까지 따라간다.
+          </p>
+
+          <p>
+            그래서 번호를 구간에 넣지 않고, <strong>번호와 구간을 짝지어 담는 줄(<code>Entry</code>)을
+            따로 만들었다.</strong> <code>Entry</code>는 <code>private</code>이라
+            <strong>세션 밖에서는 이 타입이 있는지도 모른다.</strong>
+          </p>
+
+          <h4>4. 화면과 코스는 <code>Entry</code>를 못 본다</h4>
+
+          <p>화면에 <code>2.4km</code>가 뜨는 과정을 따라가면 이렇다.</p>
+
+          <pre class="code">화면 코드가        viewModel.course        를 읽는다
+  → ViewModel이   session.course          를 읽는다
+     → 세션이     entries 에서 구간만 꺼내 새 배열을 만든다
+        → 그걸로  PlannedCourse           를 만들어 반환한다
+           → 화면이 course.distanceMeters 를 읽어 2.4km를 그린다</pre>
+
+          <p>
+            <code>session.course</code>는 저장된 값이 아니라 <strong>계산 프로퍼티</strong>라, 읽을
+            때마다 이 과정이 새로 돈다. 코스가 파트 2에서 구간 목록으로 좌표 한 줄과 총 거리를
+            만들던 것과 <strong>같은 방식</strong>이다.
+          </p>
+
+          <p>
+            그래서 만들어진 코스 안에는 <strong>구간만 있고 번호는 없다.</strong> 번호는
+            <code>entries</code>에 남아 있다. 파트 2에서 본 코스의 모습이 그대로 유지된다.
+          </p>
+
+          <p>
+            <strong>화면이 읽는 것은 둘이고, 둘 다 세션에서 나온다.</strong> 코스에는 번호가 없으니
+            번호가 필요한 쪽은 <strong>따로</strong> 읽는다.
+          </p>
+
+          <pre class="code">세션
+ entries [번호 + 구간]
+    │
+    ├── session.course           →  화면: 구간 목록 · 총 거리 2.4km
+    │      <span class="c">(번호를 뗀 코스)</span>
+    │
+    └── session.segmentColorKeys →  화면: 줄마다 색 막대
+           <span class="c">(번호만 뽑은 목록)</span></pre>
+
+          <p class="later">
+            <strong>화면이 <code>Entry</code>를 직접 보는 것은 아니다.</strong> 세션이
+            <code>Entry</code>에서 필요한 것만 갈라서 내준다 — <strong>구간은 코스로, 번호는 번호
+            목록으로.</strong> 색 자체는 청크 3이다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>세션은 구간을 맨몸으로 담지 않고 <strong>번호와 짝지은 줄(<code>Entry</code>)</strong>로
+              담는다. 번호와 구간은 <strong>수명이 달라서</strong> 그렇다. 밖에서 코스를 읽으면 그 순간
+              <strong>번호를 떼고 구간만</strong> 모아 코스를 만들어 준다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p3s3">
+        <summary>구간 ③ — 저장한 코스를 불러오면 번호를 새로 매긴다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 이미 만들어진 구간 배열을
+            <strong>통째로 받았을 때</strong>, 번호를 무엇을 기준으로 매길지 정할 수 있다.
+          </p>
+
+          <h4>1. 번호를 다는 상황이 둘이다</h4>
+
+          <p>
+            구간 ①②는 <strong>하나씩 붙일 때</strong>만 봤다. 그런데 목록이 채워지는 길이
+            <strong>하나 더</strong> 있다 — 저장해둔 코스를 여는 것이다. 그때는 구간이
+            <strong>한꺼번에 여러 개</strong> 들어온다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th></th><th>언제</th><th>번호를 어떻게</th></tr>
+              <tr>
+                <td>구간 ①②</td>
+                <td><strong>하나씩 붙일 때</strong> — 그을 때마다</td>
+                <td>0, 1, 2… 하나씩 올려 단다</td>
+              </tr>
+              <tr>
+                <td><strong>구간 ③</strong></td>
+                <td><strong>통째로 받을 때</strong> — 저장한 코스를 열 때</td>
+                <td>받은 배열 순서대로 한꺼번에 단다</td>
+              </tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>결과도 다르다.</strong> 하나씩 붙이면 두 순서가 갈라질 수 있는데(구간 ①),
+            통째로 받으면 두 순서가 <strong>같다.</strong> 파트 제목이 「두 순서가 갈라진다」인데
+            이 구간은 <strong>갈라지지 않는 경우</strong>를 본다.
+          </p>
+
+          <h4>2. 불러오는 장면</h4>
+
+          <p>
+            저장해둔 코스 목록에서 하나를 고른다. 지도에 그 코스가 뜨고, 아래 시트에
+            <code>구간 1</code> <code>구간 2</code> <code>구간 3</code>이 채워지고, 이어서 편집할 수 있다.
+            코드로는 이렇게 흘러간다.
+          </p>
+
+          <pre class="code">사용자가 저장 목록에서 코스를 고른다
+  → ViewModel이  session.load(segments: saved.segments)  를 부른다
+     → 세션이 그 구간 배열로 entries 를 새로 만든다</pre>
+
+          <p>
+            <code>load</code>는 <strong>구간 배열 하나를 파라미터로 받는 함수</strong>다.
+            넘어오는 배열은 저장돼 있던 코스의 구간들이다.
+          </p>
+
+          <h4>3. 번호가 안 딸려 온다</h4>
+
+          <p>
+            <code>entries</code>의 한 줄은 <strong>구간 + 번호</strong>다(구간 ②). 그런데
+            <code>load</code>가 받은 것은 <strong>구간뿐</strong>이다.
+          </p>
+
+          <p>
+            저장 쪽을 보면 이유가 나온다. 파일로 저장되는 것은 <strong>코스</strong>이고, 코스가 들고
+            있는 것은 구간 목록뿐이다. 구간에는 [점들] + 거리밖에 없다. 번호는 <code>Entry</code>에
+            붙어 있는데 <code>Entry</code>는 세션 밖으로 안 나간다.
+          </p>
+
+          <pre class="code">저장    entries → <span class="c">(번호 뗀다)</span> → 코스 → 파일
+불러옴  파일 → 구간 배열 → load → entries <span class="c">(번호 새로 단다)</span></pre>
+
+          <p>
+            <strong>번호는 이 왕복에서 살아남지 못한다.</strong> 예전 번호를 되살릴 방법이 없으니
+            남은 선택은 새로 매기는 것뿐이다.
+          </p>
+
+          <h4>4. 목록 위치를 그대로 번호로 준다</h4>
+
+          <p>
+            <code>load</code>는 받은 배열을 앞에서부터 훑으면서 <strong>몇 번째인지를 그대로
+            번호로</strong> 단다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>목록</th><th><code>order</code></th></tr>
+              <tr><td><code>구간 1</code></td><td>0</td></tr>
+              <tr><td><code>구간 2</code></td><td>1</td></tr>
+              <tr><td><code>구간 3</code></td><td>2</td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>두 순서가 같아졌다.</strong> 구간 ①에서 갈라졌던 그 둘이 여기서는 하나다.
+            그래서 이 상태에서 ↩︎ 를 누르면 <strong>목록의 마지막 줄</strong>이 빠진다. 규칙은
+            그대로(번호가 가장 큰 것을 뺀다)인데, 마침 그게 마지막 줄이다.
+          </p>
+
+          <p>
+            어색하지 않은 이유는 불러온 코스에는 <strong>“방금 그은 것”이라는 게 없기</strong> 때문이다.
+            그럴 땐 뒤에서부터 빼는 것이 자연스럽다.
+          </p>
+
+          <h4>5. 새로 그으면 다시 갈라진다</h4>
+
+          <p>
+            불러온 뒤 새로 그으면 그다음 번호(위에서는 3)를 받는다. 그게 <strong>앞쪽에 꽂히면</strong>
+            구간 ①의 갈라짐이 다시 생긴다. 두 순서가 하나인 것은 <strong>불러온 직후 잠깐</strong>이다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>번호는 파일에 저장되지 않으니 <code>load</code>가 <strong>새로 매긴다.</strong>
+              기준은 <strong>받은 배열에서 몇 번째인가</strong>다 — 그래서 불러온 직후에는 두 순서가
+              같고, 앞쪽으로 붙이는 순간 다시 갈라진다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <a class="backtop" href="#toc">↑ 목차로</a>
+
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음은 파트 3 — 두 순서가 갈라진다.</strong>
-    파트 2까지는 <strong>구간 목록의 순서</strong> 하나만 봤다. 그런데 되돌리기가 빼야 할 것은
-    <em>“목록의 마지막”</em>이 아니라 <strong>“방금 붙인 것”</strong>이라, 세션은 순서를
-    <strong>두 벌</strong> 들고 있다. 저장한 코스를 불러오는 것(장면 ⑧)도 거기서 다룬다.
+    <strong>다음은 파트 4 — 붙일 자리: 끝점 가까이서 시작할 때.</strong>
+    파트 3까지는 <strong>붙은 뒤</strong>의 이야기였다 — 이미 목록에 들어온 구간에 번호를 달고
+    되돌릴 준비를 하는 것. 파트 4는 그 앞이다. 새로 그은 구간을 <strong>앞에 붙일지 뒤에 붙일지,
+    뒤집을지</strong>를 무엇으로 정하는가. 구간 ①에서 <em>“앞에 붙는 경우가 있다”</em>로만 두고
+    넘어간 그 판정이 여기서 열린다.
   </div>
 
 </div>
