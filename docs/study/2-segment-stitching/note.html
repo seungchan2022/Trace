@@ -598,7 +598,7 @@
       <li class="on"><span class="k">1</span><a href="#p1">구간 — 이어붙일 재료 하나</a></li>
       <li class="on"><span class="k">2</span><a href="#p2">코스 — 구간 목록에서 코스 정보를 내는 법</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">두 순서가 갈라진다</a></li>
-      <li class="on"><span class="k">4</span><a href="#p4">붙일 자리 — 끝점 가까이서 시작할 때</a> <span class="tocnote">— 구간 ④/⑥까지</span></li>
+      <li class="on"><span class="k">4</span><a href="#p4">붙일 자리 — 끝점 가까이서 시작할 때</a> <span class="tocnote">— 구간 ⑤/⑥까지</span></li>
       <li class="todo"><span class="k">5</span>붙일 자리 — 양끝이 다 멀 때</li>
       <li class="todo"><span class="k">6</span>되돌리기와 앞으로 돌리기</li>
       <li class="todo"><span class="k">7</span>왕복</li>
@@ -667,9 +667,10 @@
             <li><strong>탭은 핀에서 출발하는 구간만</strong> 만들 수 있고, 그리기는 <strong>아무 데서나 출발하는 구간</strong>도 만든다</li>
             <li>그리기도 핀 근처면 <strong>첫 점을 핀 좌표로 바꿔치기</strong>한다 — 길찾기가 도로로 끌어당겨 밀린 좌표가 판정을 깨뜨려서</li>
             <li>갈래를 타기 전에 <strong>세 값</strong>(닫혔나 · 시작점이 도착점 근처인가 · 출발점 근처인가)을 먼저 잰다 — <strong>전부 20m 하나로 재고, 전부 시작점만 본다</strong></li>
+            <li><strong>먼저 걸러지는 것은 닫힌 코스와 도착점 근처</strong> — 더 볼 것이 없어서다. <strong>그대로 뒤에</strong> 붙고, 떨어져 있으면 <strong>메워서 구간 하나로 합친다</strong></li>
             <li>출발점 근처에서 시작한 구간은 <strong>뒤집어서 앞에</strong> — 좌표가 이어지게 하려는 것이고, 뒤집고 나면 <strong>메울 틈이 없다</strong></li>
           </ul>
-          <p class="hint">구간 ④까지. ⑤⑥은 진행하며 채워진다.</p>
+          <p class="hint">구간 ⑤까지. ⑥은 진행하며 채워진다.</p>
         </div>
       </li>
       <li class="pending"><span class="k">5</span><div><div class="can">붙일 자리 — 양끝이 다 멀 때</div></div></li>
@@ -1996,24 +1997,27 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
           </tr>
           <tr>
             <td><a href="#p4s4">구간 ④</a></td>
+            <td>도착점 근처·닫힌 코스 — 그대로 뒤에, 떨어져 있으면 메운다</td>
+            <td>규칙 1·2 · <code>needsGap</code></td>
+          </tr>
+          <tr>
+            <td><a href="#p4s5">구간 ⑤</a></td>
             <td>출발점 근처에서 시작하면, 뒤집어서 앞에</td>
             <td>규칙 3</td>
           </tr>
           <tr>
-            <td>구간 ⑤</td>
+            <td>구간 ⑥</td>
             <td>시작점이 둘 다 멀면 끝점을 한 번 더 본다</td>
             <td>규칙 3′/4′ <em>(진행 예정)</em></td>
           </tr>
-          <tr>
-            <td>구간 ⑥</td>
-            <td>나머지 전부 — 뒤에, 떨어져 있으면 메운다</td>
-            <td>규칙 1·2 · <code>needsGap</code> <em>(진행 예정)</em></td>
-          </tr>
         </table>
         <p class="hint">
-          <strong>화면에서는</strong> 장면 ①(도착 지점 근처에서 이으면 뒤로 붙는다)과
-          <strong>장면 ②</strong>(출발 지점 근처에서 이으면 앞으로 붙고 뒤집힌다)가 여기서 만들어진다.
-          <strong>구간 ⑤는 그리기 모드에서만 일어난다</strong> — 왜 탭이 거기 못 오는지가 구간 ②다.
+          <strong>구간 ④⑤⑥의 순서는 「무엇이 먼저 걸러지는가」다.</strong> 코드 파일의 줄 순서와는
+          다르다 — 파일에서는 ④가 맨 아래 블록이고, 그것은 <strong>위 관문을 다 통과 못 한 것이
+          거기로 떨어지는</strong> 구조 때문이지 나중에 판정한다는 뜻이 아니다.
+          <strong>화면에서는</strong> 장면 ①(도착 지점 근처에서 이으면 뒤로 붙는다)이 구간 ④,
+          <strong>장면 ②</strong>(출발 지점 근처에서 이으면 앞으로 붙고 뒤집힌다)가 구간 ⑤다.
+          <strong>구간 ⑥은 그리기 모드에서만 일어난다</strong> — 왜 탭이 거기 못 오는지가 구간 ②다.
           양끝이 <strong>둘 다</strong> 멀 때는 판정 방식이 달라지고, 그건 <strong>파트 5</strong>다.
         </p>
       </div>
@@ -2309,18 +2313,29 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
 
           <div class="tablewrap">
             <table>
-              <tr><th>어떤 경우인가</th><th>어디서 다루나</th></tr>
-              <tr><td>시작점이 <strong>출발점</strong> 근처</td><td>구간 ④</td></tr>
-              <tr><td>시작점은 둘 다 먼데 <strong>끝점</strong>이 핀 근처</td><td>구간 ⑤</td></tr>
-              <tr><td>시작점이 <strong>도착점</strong> 근처</td><td>구간 ⑥</td></tr>
-              <tr><td><strong>닫힌 코스</strong></td><td>구간 ⑥</td></tr>
-              <tr><td>시작점도 끝점도 전부 멀다</td><td>파트 5</td></tr>
+              <tr><th>먼저 걸러지는 순서</th><th>어떤 경우인가</th><th>어디서</th></tr>
+              <tr><td>1</td><td><strong>닫힌 코스</strong></td><td>구간 ④</td></tr>
+              <tr><td>2</td><td>시작점이 <strong>도착점</strong> 근처</td><td>구간 ④</td></tr>
+              <tr><td>3</td><td>시작점이 <strong>출발점</strong> 근처</td><td>구간 ⑤</td></tr>
+              <tr><td>4</td><td>시작점은 둘 다 먼데 <strong>끝점</strong>이 핀 근처</td><td>구간 ⑥</td></tr>
+              <tr><td>5</td><td>시작점도 끝점도 전부 멀다</td><td>파트 5</td></tr>
             </table>
           </div>
 
+          <p>
+            <strong>위에서 걸리면 아래는 보지 않는다.</strong> 1·2가 먼저인 이유는
+            <strong>더 볼 것이 없기 때문</strong>이다 — 닫힌 코스는 두 핀이 같은 자리라
+            앞뒤를 따질 의미가 없고, 시작점이 도착점 근처면 코스 끝에서 뻗어 나간 것이라
+            뒤에 붙이면 끝난다. 나머지는 전부 <em>“그럼 앞인가? 뒤집어야 하나?”</em>를
+            더 따져야 하는 경우들이다.
+          </p>
+
           <p class="later">
-            코드가 이 다섯을 <strong>어떤 순서로 검사하는지</strong>는 구간 ⑥까지 다 본 뒤에 맞춰본다.
-            각각이 무엇인지 모르는 상태에서 순서만 보면 헷갈린다.
+            <strong>코드 파일의 줄 순서는 이것과 다르다.</strong> 파일에서는 3번(출발점 근처)
+            분기가 맨 위에 있고 1·2번이 맨 아래 블록이다. 위쪽 분기들이 전부
+            <em>“닫히지 않았고 도착점 근처도 아닐 때만”</em>을 조건으로 달고 있어서,
+            1·2에 걸린 것은 위를 다 통과하지 못하고 아래로 떨어진다.
+            <strong>줄 위치가 아니라 조건이 우선순위를 정한다.</strong>
           </p>
 
           <div class="takeaway">
@@ -2334,7 +2349,107 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
       </details>
 
       <details class="seg" id="p4s4">
-        <summary>구간 ④ — 출발점 근처에서 시작하면, 뒤집어서 앞에</summary>
+        <summary>구간 ④ — 도착점 근처에서 시작하면, 그대로 뒤에</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 새 구간을 뒤에 붙일 때
+            <strong>그은 것을 그대로 쓸지, 손볼 것이 있는지</strong> 정할 수 있다.
+          </p>
+
+          <p>
+            구간 ③이 세 값을 쟀다. 여기는 그중 <strong>가장 먼저 걸러지는 둘</strong>이다 —
+            닫힌 코스, 그리고 시작점이 도착점 근처인 경우. <strong>코드에서도 이 둘이 같은 블록</strong>을
+            쓴다.
+          </p>
+
+          <h4>1. 무슨 상황인가 — 가장 흔한 경우다</h4>
+
+          <p>
+            <strong>광화문 → 시청</strong> 코스가 있다. <strong>시청 쪽(도착점)에서 시작해
+            남대문으로</strong> 이어 긋는다. 달릴 때는 <strong>광화문 → 시청 → 남대문</strong>이고,
+            <strong>그은 순서가 이미 그대로</strong>다.
+          </p>
+
+          <pre class="code">   ●━━━━━━━━━● ○━━━━━━━○
+   광화문      시청      남대문
+   └ 기존 코스 ┘ └ 새로 붙인 것 ┘</pre>
+
+          <h4>2. 그래서 뒤집지 않는다</h4>
+
+          <p>
+            새 구간의 좌표는 <strong>시청에서 시작해 남대문으로</strong> 간다. 코스 뒤에 그대로
+            붙이면 좌표 한 줄이 이렇게 된다.
+          </p>
+
+          <pre class="code">   광화문 … 시청 │ 시청 … 남대문
+                 ↑
+            같은 자리에서 만난다</pre>
+
+          <p>
+            <strong>손볼 것이 없다.</strong> 핀에 닿은 쪽이 <strong>이미 새 구간의 앞</strong>이라
+            이음매가 저절로 맞는다.
+          </p>
+
+          <h4>3. 닫힌 코스도 여기로 온다</h4>
+
+          <p>
+            코스가 한 바퀴 돌아 <strong>출발점과 도착점이 붙어 있으면</strong>(20m 이하), 어디서
+            그었든 <strong>무조건 뒤</strong>에 붙인다. <strong>앞이냐 뒤냐를 따질 의미가 없기
+            때문</strong>이다 — 두 핀이 같은 자리에 있으니 <em>“출발점 쪽에 붙인다”</em>와
+            <em>“도착점 쪽에 붙인다”</em>가 같은 말이 된다.
+          </p>
+
+          <p>
+            파트 2에서 <em>“닫힌 코스면 어디에 그었든 무조건 뒤에 붙인다”</em>로 예고했던 그
+            규칙이 이것이다.
+          </p>
+
+          <h4>4. 떨어져 있으면 그 사이를 메운다</h4>
+
+          <p>
+            여기서 <strong>틈이 생길 수 있다.</strong> 닫힌 코스는 시작점이 어디든 이리로 오기
+            때문에, <strong>도착점에서 한참 떨어진 곳</strong>에서 그었을 수 있다.
+          </p>
+
+          <pre class="code">   ●━━━━━━━━━●
+              ✕ ← 20m 넘게 떨어져 있다
+                    ○━━━━━━━○</pre>
+
+          <p>
+            그래서 붙이기 전에 <strong>도착점에서 새 시작점까지 길찾기를 한 번 더 부른다</strong>
+            (<code>needsGap</code>). 그 결과를 새 구간 <strong>앞에 이어 붙인다.</strong>
+            시작점이 도착점 근처인 경우에는 이미 20m 안이라 메울 것이 없다 —
+            <strong>실제로 메우는 것은 닫힌 코스에서 멀리 그었을 때</strong>다.
+          </p>
+
+          <pre class="code">   광화문 … 시청 │ [메운 길] │ … 남대문</pre>
+
+          <h4>5. 메운 것까지 합쳐 구간 하나로 만든다</h4>
+
+          <p>
+            메운 길과 새로 그은 선은 <strong>따로 두 개가 되지 않는다.</strong> 좌표를 이어 붙이고
+            거리를 더해서 <strong>구간 하나</strong>로 만들어 목록에 넣는다(<code>makeMerged</code>).
+          </p>
+
+          <p>
+            <strong>그래서 되돌리기를 한 번 누르면 메운 길까지 통째로 빠진다</strong> — 장면 ④에서
+            <em>“메운 틈까지 같이”</em>라고 했던 것이 이 때문이다. 파트 3에서 본
+            <em>“1 attach = 목록 한 줄”</em>이 여기서 지켜진다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>도착점 근처에서 시작한 것과 <strong>닫힌 코스</strong>는 <strong>그대로 뒤에</strong>
+              붙는다. 떨어져 있으면 <strong>그 사이를 길찾기로 메워 앞에 이어 붙이고</strong>,
+              메운 것까지 <strong>구간 하나로 합쳐서</strong> 넣는다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p4s5">
+        <summary>구간 ⑤ — 출발점 근처에서 시작하면, 뒤집어서 앞에</summary>
         <div class="segbody">
 
           <p class="later">
@@ -2343,8 +2458,10 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
           </p>
 
           <p>
-            구간 ③에서 잰 세 값 중 <strong>「시작점이 출발점 근처」가 참인 경우</strong>다.
-            다섯 경우 중 첫 번째다.
+            <strong>구간 ④는 손볼 것이 없었다</strong> — 그은 그대로 뒤에 붙었다. 여기는
+            <strong>반대쪽 끝에 붙는 경우</strong>이고, 자리가 반대라는 것 하나 때문에
+            <strong>뒤집어야 하는 이유</strong>가 생긴다. 우선순위로는 세 번째 — 앞의 둘에
+            안 걸린 것이 여기로 온다.
           </p>
 
           <h4>1. 무슨 상황인가</h4>
@@ -2425,8 +2542,8 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
   </details>
 
   <div class="next">
-    <strong>다음은 구간 ⑤ — 시작점이 둘 다 멀면, 끝점을 한 번 더 본다.</strong>
-    구간 ④까지는 <strong>시작점이 핀에 걸린 경우</strong>였다. 구간 ⑤는 시작점으로 아무것도 못
+    <strong>다음은 구간 ⑥ — 시작점이 둘 다 멀면, 끝점을 한 번 더 본다.</strong>
+    구간 ⑤까지는 <strong>시작점이 핀에 걸린 경우</strong>였다. 구간 ⑥은 시작점으로 아무것도 못
     잡았을 때다 — <strong>먼 곳에서 시작해 핀 쪽으로</strong> 그은 경우. 이때 그대로 붙이면
     <strong>실제로 그은 먼 지점이 아니라 손 뗀 자리가 코스의 끝</strong>이 되어버린다.
     <strong>탭으로는 만들 수 없는 상황</strong>이라 그리기 전용이다.
