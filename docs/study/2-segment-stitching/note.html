@@ -576,6 +576,7 @@
     <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 구간, 이어붙일 재료 하나">구간 — 이어붙일 재료 하나</a></li>
     <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 코스, 구간 목록에서 코스 정보를 내는 법">코스 — 코스 정보를 내는 법</a></li>
     <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 두 순서가 갈라진다">두 순서가 갈라진다</a></li>
+    <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 붙일 자리: 끝점 가까이서 시작할 때">붙일 자리 — 끝점 가까이서</a></li>
   </ol>
 </nav>
 
@@ -597,7 +598,7 @@
       <li class="on"><span class="k">1</span><a href="#p1">구간 — 이어붙일 재료 하나</a></li>
       <li class="on"><span class="k">2</span><a href="#p2">코스 — 구간 목록에서 코스 정보를 내는 법</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">두 순서가 갈라진다</a></li>
-      <li class="todo"><span class="k">4</span>붙일 자리 — 끝점 가까이서 시작할 때</li>
+      <li class="on"><span class="k">4</span><a href="#p4">붙일 자리 — 끝점 가까이서 시작할 때</a> <span class="tocnote">— 구간 ④/⑥까지</span></li>
       <li class="todo"><span class="k">5</span>붙일 자리 — 양끝이 다 멀 때</li>
       <li class="todo"><span class="k">6</span>되돌리기와 앞으로 돌리기</li>
       <li class="todo"><span class="k">7</span>왕복</li>
@@ -655,7 +656,22 @@
           </ul>
         </div>
       </li>
-      <li class="pending"><span class="k">4</span><div><div class="can">붙일 자리 — 끝점 가까이서 시작할 때</div></div></li>
+      <li>
+        <span class="k">4</span>
+        <div>
+          <div class="can">새로 만든 것을 기존 것에 이어붙일 때 무엇을 재서 자리와 방향을 정할지 정할 수 있다 — 어느 점들을 비교 대상으로 삼을지, “가깝다”의 기준을 어디에 둘지, 어느 경우를 먼저 걸러낼지</div>
+          <div class="sum">새로 만든 구간을 코스의 앞에 붙일지 뒤에 붙일지, 뒤집을지를 정한다. 핀 근처에서 걸리는 경우만 다루고, 양끝이 다 멀 때는 파트 5다.</div>
+          <ul class="keys">
+            <li>판정에 쓰는 것은 <strong>네 점뿐</strong> — 기존 코스의 양끝과 새 구간의 양끝. <strong>중간 모양은 안 본다</strong></li>
+            <li>기존 코스의 양끝은 <strong>좌표 한 줄의 <code>first</code>·<code>last</code></strong> — 저장된 값이 아니라 <strong>부를 때마다 만들어진다</strong></li>
+            <li><strong>탭은 핀에서 출발하는 구간만</strong> 만들 수 있고, 그리기는 <strong>아무 데서나 출발하는 구간</strong>도 만든다</li>
+            <li>그리기도 핀 근처면 <strong>첫 점을 핀 좌표로 바꿔치기</strong>한다 — 길찾기가 도로로 끌어당겨 밀린 좌표가 판정을 깨뜨려서</li>
+            <li>갈래를 타기 전에 <strong>세 값</strong>(닫혔나 · 시작점이 도착점 근처인가 · 출발점 근처인가)을 먼저 잰다 — <strong>전부 20m 하나로 재고, 전부 시작점만 본다</strong></li>
+            <li>출발점 근처에서 시작한 구간은 <strong>뒤집어서 앞에</strong> — 좌표가 이어지게 하려는 것이고, 뒤집고 나면 <strong>메울 틈이 없다</strong></li>
+          </ul>
+          <p class="hint">구간 ④까지. ⑤⑥은 진행하며 채워진다.</p>
+        </div>
+      </li>
       <li class="pending"><span class="k">5</span><div><div class="can">붙일 자리 — 양끝이 다 멀 때</div></div></li>
       <li class="pending"><span class="k">6</span><div><div class="can">되돌리기와 앞으로 돌리기</div></div></li>
       <li class="pending"><span class="k">7</span><div><div class="can">왕복</div></div></li>
@@ -1536,7 +1552,7 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
     </div>
   </details>
 
-  <details class="part" id="p3" open>
+  <details class="part" id="p3">
     <summary>
       <span class="part-tag">파트 3</span>
       <span class="ptitle">두 순서가 갈라진다</span>
@@ -1940,12 +1956,480 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
     </div>
   </details>
 
+  <details class="part" id="p4" open>
+    <summary>
+      <span class="part-tag">파트 4</span>
+      <span class="ptitle">붙일 자리 — 끝점 가까이서 시작할 때</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트 한 줄</span>
+        새로 만든 구간을 코스의 <strong>앞에 붙일지 뒤에 붙일지, 뒤집을지</strong>를 정한다.
+        핀 근처에서 걸리는 경우만 다루고, <strong>양끝이 다 멀 때는 파트 5</strong>다.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>새로 만든 것을 기존 것에 이어붙일 때 <strong>무엇을 재서 자리와 방향을 정할지</strong>
+          정할 수 있다 — 어느 점들을 비교 대상으로 삼을지, <strong>“가깝다”의 기준을 어디에 둘지</strong>,
+          어느 경우를 <strong>먼저 걸러낼지</strong>.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr>
+            <td><a href="#p4s1">구간 ①</a></td>
+            <td>기존 코스의 양끝을 꺼내는 법</td>
+            <td><code>coordinates</code></td>
+          </tr>
+          <tr>
+            <td><a href="#p4s2">구간 ②</a></td>
+            <td>새로 붙일 구간의 양끝은 어떻게 정해지나</td>
+            <td><code>nearestEndpoint</code> · <code>snappedStrokeStart</code></td>
+          </tr>
+          <tr>
+            <td><a href="#p4s3">구간 ③</a></td>
+            <td>“가깝다”는 몇 m인가, 그리고 무엇을 먼저 묻나</td>
+            <td><code>connectionThresholdMeters</code></td>
+          </tr>
+          <tr>
+            <td><a href="#p4s4">구간 ④</a></td>
+            <td>출발점 근처에서 시작하면, 뒤집어서 앞에</td>
+            <td>규칙 3</td>
+          </tr>
+          <tr>
+            <td>구간 ⑤</td>
+            <td>시작점이 둘 다 멀면 끝점을 한 번 더 본다</td>
+            <td>규칙 3′/4′ <em>(진행 예정)</em></td>
+          </tr>
+          <tr>
+            <td>구간 ⑥</td>
+            <td>나머지 전부 — 뒤에, 떨어져 있으면 메운다</td>
+            <td>규칙 1·2 · <code>needsGap</code> <em>(진행 예정)</em></td>
+          </tr>
+        </table>
+        <p class="hint">
+          <strong>화면에서는</strong> 장면 ①(도착 지점 근처에서 이으면 뒤로 붙는다)과
+          <strong>장면 ②</strong>(출발 지점 근처에서 이으면 앞으로 붙고 뒤집힌다)가 여기서 만들어진다.
+          <strong>구간 ⑤는 그리기 모드에서만 일어난다</strong> — 왜 탭이 거기 못 오는지가 구간 ②다.
+          양끝이 <strong>둘 다</strong> 멀 때는 판정 방식이 달라지고, 그건 <strong>파트 5</strong>다.
+        </p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <tr><th></th><th>다룬 것</th></tr>
+          <tr><td>파트 1</td><td><strong>구간 하나</strong> — 좌표 + 거리, 그리고 뒤집기(<code>reversed</code>)</td></tr>
+          <tr><td>파트 2</td><td><strong>구간 목록 → 코스</strong> — 좌표 한 줄 잇기 · 총 거리 · 양끝이 만났는지</td></tr>
+          <tr><td>파트 3</td><td>그 <strong>목록 자체</strong> — 누가 어떤 순서로 들고 있나</td></tr>
+          <tr><td><strong>파트 4</strong></td><td>목록에 <strong>들어가기 직전</strong> — 어디에, 어느 방향으로 넣을 것인가</td></tr>
+        </table>
+      </div>
+
+      <p>
+        파트 3까지는 <strong>붙은 뒤</strong>의 이야기였다. 이미 목록에 들어온 구간에 번호를 달고
+        되돌릴 준비를 하는 것. 파트 4는 <strong>그 앞자리</strong>다. 파트 3 구간 ①에서
+        <em>“앞에 붙는 경우가 있다”</em>로만 두고 넘어간 그 판정이 여기서 열린다.
+      </p>
+
+      <p>
+        탭이든 그리기든 <strong>결국 같은 함수 하나</strong>로 들어간다 —
+        <code>CourseEditSession.attach</code>. 그래서 파트 4는 그 함수 하나를 읽는 파트다.
+        다만 <strong>거기 도착하기 전이 다르다.</strong> 탭이 만든 구간과 그리기가 만든 구간은
+        생김새가 달라서, 같은 <code>attach</code>에 들어가도 <strong>닿는 갈래가 달라진다.</strong>
+        두 모드를 나란히 놓고 보는 이유가 그것이다.
+      </p>
+
+      <details class="seg" id="p4s1">
+        <summary>구간 ① — 기존 코스의 양끝을 꺼내는 법</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 붙일 자리를 정할 때
+            <strong>무엇과 무엇을 비교하는지</strong> 정할 수 있다.
+          </p>
+
+          <h4>1. <code>attach</code>는 시작하자마자 점 네 개를 집는다</h4>
+
+          <p>
+            붙일 자리를 정하려면 비교할 것이 있어야 한다. <code>attach</code>가 함수 첫머리에서 하는
+            일이 <strong>비교할 점 네 개를 손에 쥐는 것</strong>이다 — <strong>기존 코스</strong>에서
+            출발점과 도착점, <strong>새로 붙일 구간</strong>에서 시작점과 끝점.
+          </p>
+
+          <p>
+            그다음 줄부터는 이 네 점 사이의 거리만 본다. <strong>코스 중간이 어떻게 생겼는지는
+            판정에 안 쓰인다.</strong> 구불구불한 골목이든 직선이든, 붙일 자리를 정하는 데는
+            양끝만 들어간다.
+          </p>
+
+          <h4>2. 그 두 점은 파트 2의 좌표 한 줄에서 나온다</h4>
+
+          <p>
+            기존 코스는 <strong>코스(<code>PlannedCourse</code>)</strong> 값이고, 거기서
+            <strong>좌표 한 줄(<code>coordinates</code>)</strong>을 꺼내 <strong>첫 점</strong>과
+            <strong>끝 점</strong>을 집는다.
+          </p>
+
+          <pre class="code">   구간A ━━━ 구간B ━━━ 구간C        구간 목록
+
+           ↓ 한 줄로 잇는다 (파트 2)
+
+   ●━━━━━━━━━━━━━━━━━━━━━━●
+   ↑                        ↑
+   first = 출발점            last = 도착점</pre>
+
+          <p>
+            파트 2 구간 ②에서 <em>“앱은 그 점들의 양끝도 쓴다”</em>고만 하고 넘어갔던 자리가
+            여기다.
+          </p>
+
+          <h4>3. 두 점을 쓰는데, 한 줄을 통째로 만든다</h4>
+
+          <p>
+            여기서 <strong>좌표 한 줄이 저장된 값이 아니라는 것</strong>이 걸린다. 파트 2에서 본 대로
+            그것은 <strong>부를 때마다 구간들의 좌표를 이어붙여 새로 만드는 값</strong>이다.
+            그런데 <code>attach</code>가 쓰는 것은 <strong>첫 점 하나와 끝 점 하나</strong>뿐이다.
+          </p>
+
+          <pre class="code">   ●━━━━━━━━━━━━━━━━━━━━━━●
+   ↑                        ↑
+   쓴다        안 쓴다        쓴다
+              (그런데 만들어진다)</pre>
+
+          <p>
+            게다가 이 줄에서 <strong>좌표 한 줄을 두 번 부른다</strong> — 첫 점 집을 때 한 번,
+            끝 점 집을 때 한 번. <strong>두 번 다 새로 만든다.</strong> 계산 비용은 백로그에 적혀
+            있고, 여기서 알고 갈 것은 <strong>판정에 쓰는 기준점이 어딘가 저장돼 있는 값이
+            아니라는 사실</strong>이다.
+          </p>
+
+          <p class="later">
+            <strong>곁가지</strong> — 코스가 아직 하나도 없으면 비교할 상대가 없으니 그냥 첫 구간으로
+            넣고 끝난다. 몰라도 이 구간은 넘어간다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>붙일 자리는 <strong>네 점 사이 거리</strong>로 정하고, 그중 기존 코스의 두 점은
+              <strong>좌표 한 줄의 첫 점과 끝 점</strong>이다. 그 한 줄은 저장돼 있는 것이 아니라
+              <strong>부를 때마다 만들어진다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p4s2">
+        <summary>구간 ② — 새로 붙일 구간의 양끝은 어떻게 정해지나</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 탭과 그리기가 각각
+            <strong>어떤 구간을 만들어 넘기는지</strong> 정할 수 있다.
+          </p>
+
+          <p>
+            구간 ①이 네 점 중 <strong>기존 코스 쪽 둘</strong>을 봤다. 여기는 <strong>나머지 둘</strong>,
+            새로 붙일 구간 쪽이다. 그리고 이 둘이 <strong>어떻게 정해지는가</strong>에서
+            두 모드가 처음 갈린다.
+          </p>
+
+          <h4>1. 탭 — 시작점을 앱이 먼저 정한다</h4>
+
+          <p>
+            지도를 한 번 누르면 앱은 그 지점부터 길을 찾는 것이 아니다. <strong>먼저 어디서
+            출발할지를 고른다.</strong> 탭한 지점을 기존 출발점·도착점 둘과 각각 재서
+            <strong>가까운 쪽</strong>을 고르고(<code>nearestEndpoint</code>),
+            <strong>그 끝점에서 탭 지점까지</strong> 길을 찾는다. 그 결과가
+            <strong>탭으로 만든 구간(<code>.tapped</code>)</strong>이 된다.
+          </p>
+
+          <pre class="code">   ●━━━━━━━━━●                기존 코스
+   출발       도착
+              ┃  ← 도착점이 더 가깝다 → 여기서 출발
+              ┗━━━━━━✛
+                     탭한 지점
+
+   새 구간:  ○━━━━━━━○
+             ↑        ↑
+        시작점        끝점
+      = 기존 도착점    = 탭한 지점</pre>
+
+          <p>
+            <strong>새 구간의 시작점이 기존 끝점과 같은 지점이 된다.</strong> 두 개의 다른 점이
+            우연히 가까운 것이 아니라, <strong>처음부터 거기서 출발하도록 요청한 것</strong>이다.
+            (길찾기 결과는 도로 위로 끌려가므로 정확히 같은 좌표가 아니라 <strong>몇 m 밀릴 수
+            있다.</strong> 판정에 쓰는 기준이 그 정도 여유를 갖고 있어서 결과는 달라지지 않는다.)
+          </p>
+
+          <h4>2. 그리기 — 시작점이 손가락에서 온다</h4>
+
+          <p>
+            손가락으로 그으면 그 궤적이 그대로 재료다. 점을 솎아내고 조각마다 길을 찾아 이어서
+            <strong>그은 구간(<code>.drawn</code>)</strong>을 만든다(청크 1). 그런데 그 전에
+            <strong>첫 점을 손보는 자리</strong>가 하나 있다(<code>snappedStrokeStart</code>).
+            손가락을 <strong>핀 근처에서</strong> 댔다면 첫 점을 <strong>핀 좌표로 바꿔치기</strong>한다.
+          </p>
+
+          <p>
+            기준은 둘이다. <strong>화면에서 핀 아이콘(24pt) 위를 눌렀나</strong>가 먼저이고,
+            아니면 <strong>실거리 20m 안인가</strong>를 잰다. 둘이 필요한 이유는
+            <strong>줌</strong> 때문이다 — 같은 24pt라도 축소한 상태에서는 실거리로 수백 m이고
+            확대한 상태에서는 몇 m라, 확대했을 때 생기는 구멍을 실거리 20m가 메운다.
+          </p>
+
+          <p>
+            <strong>왜 바꿔치기가 필요한가.</strong> 사용자가 핀 바로 위에서 그어도 길찾기 결과는
+            도로 위로 끌려간다. 그러면 첫 좌표가 핀에서 몇 m 밀리고, 뒤에서 <em>“핀 근처인가”</em>를
+            재는 판정이 <strong>밀린 좌표 때문에 깨질 수 있다.</strong> 그래서 판정에 들어가기 전에
+            핀 좌표로 못박는다.
+          </p>
+
+          <p>
+            핀 근처가 <strong>아니면</strong> 바꿔치기는 없다. 첫 점은 손가락을 댄 그 자리로 남는다.
+          </p>
+
+          <pre class="code">   ●━━━━━━━━━●
+   출발       도착
+               ⌇○━━━━○     핀 근처에서 시작 → 첫 점을 핀 좌표로 교체
+
+   ●━━━━━━━━━●
+   출발       도착
+                        ○━━━━○     둘 다 멀다 → 그대로</pre>
+
+          <h4>3. 같아지는 지점과, 끝까지 남는 차이</h4>
+
+          <p>
+            그리기도 핀 근처에서 시작하면 첫 점이 핀 좌표가 되므로 <strong>핀에서 출발하는 구간</strong>을
+            만들게 된다 — 탭과 같다. <code>attach</code>는 네 점 사이 거리만 보므로,
+            <strong>판정 입장에서는 두 모드가 완전히 같은 갈래로 간다.</strong>
+          </p>
+
+          <p>
+            남는 차이는 <strong>구간의 생김새</strong>다. 탭은 <strong>A와 C만 주고</strong> 길찾기를
+            한 번 부른다 — 그 사이를 어떻게 갈지는 길찾기가 정한다. 그리기는
+            <strong>중간 점까지 사용자가 정한</strong> 다음 조각마다 부른다.
+            <strong>길찾기 횟수가 여러 번인 것은 원인이 아니라 결과</strong>다. 중간 점이 있어서
+            여러 번인 것이다.
+          </p>
+
+          <pre class="code">   그리기 — B를 지나도록 그었다
+                    ╭─────●B
+                   ╱       ╲
+                  ●A        ●C
+
+   탭 — A와 C만 눌렀다
+                  ●A━━━━━━━●C</pre>
+
+          <p>
+            그래서 <strong>탭으로는 위쪽 경로를 만들 수 없다.</strong> B를 지나가라고 말할 방법이
+            없기 때문이다. 다만 <strong>갈림길이 없는 직선 구간이라면 둘의 결과가 사실상 같아진다</strong> —
+            경유지를 지정하든 안 하든 지나는 길이 같다. 두 모드의 차이는
+            <strong>표현할 수 있는 범위</strong>에 있고, 직선에서는 그 범위 차이가 드러나지 않는다.
+          </p>
+
+          <p>
+            <strong>끝까지 남는 차이는 하나다 — 탭은 핀에서 먼 시작점을 만들 수 없다.</strong>
+            사용자가 시작점을 고르는 것이 아니라 앱이 가까운 쪽을 골라주기 때문이다. 그래서
+            <em>“시작점이 두 핀에서 다 멀 때”</em>를 다루는 갈래에는 <strong>그리기만 들어온다.</strong>
+          </p>
+
+          <p class="later">
+            <strong>곁가지</strong> — 두 핀이 서로 아주 가까워서 한 점이 <strong>둘 다에서 20m 안</strong>인
+            경우, 바꿔치기는 <strong>도착점 쪽을 먼저 검사</strong>하므로 출발점이 더 가깝더라도
+            도착점으로 고정된다. 코드가 그렇게 돼 있다는 사실까지가 확인된 것이고,
+            실사용에서 문제가 되는지는 확인하지 않았다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>탭은 <strong>핀에서 출발하는 구간</strong>만 만들 수 있고, 그리기는
+              <strong>핀에서 출발할 수도, 아무 데서나 출발할 수도</strong> 있다. 그래서
+              <code>attach</code>에서 갈리는 갈래가 달라진다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p4s3">
+        <summary>구간 ③ — “가깝다”는 몇 m인가, 그리고 무엇을 먼저 묻나</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 붙일 자리를 정하기 전에
+            <strong>무엇부터 재는지</strong> 정할 수 있다.
+          </p>
+
+          <p>
+            구간 ①이 기존 코스 쪽 두 점, 구간 ②가 새 구간 쪽 두 점을 모았다.
+            <strong>네 점이 다 모였다.</strong> 여기는 그 점들로 <strong>실제로 거리를 재는
+            첫 자리</strong>다.
+          </p>
+
+          <h4>1. 재는 자는 하나뿐이다 — 20m</h4>
+
+          <p>
+            <code>attach</code>가 <em>“가깝다”</em>를 판정할 때 쓰는 값은 하나다 —
+            <code>connectionThresholdMeters</code>, <strong>20m</strong>. 파트 2에서 코스가 닫혔는지
+            판정할 때도 같은 값이었고, 구간 ②에서 그리기 첫 점을 핀으로 바꿔치기할 때도 같은
+            값이었다. <strong>여러 군데서 쓰이지만 정의된 곳은 한 곳</strong>이다.
+            그리고 파트 2에서 확인한 대로 <strong>20m라는 숫자 자체에는 근거 기록이 없다.</strong>
+          </p>
+
+          <h4>2. 갈래를 타기 전에 세 가지를 먼저 잰다</h4>
+
+          <p>
+            분기를 타기 전에 <strong>세 개의 참·거짓을 미리 계산해 둔다.</strong>
+          </p>
+
+          <pre class="code">   ①  코스가 닫혔나          기존 출발점 ↔ 기존 도착점   ≤ 20m ?
+   ②  시작점이 도착점 근처?   새 시작점  ↔ 기존 도착점   ≤ 20m ?
+   ③  시작점이 출발점 근처?   새 시작점  ↔ 기존 출발점   ≤ 20m ?</pre>
+
+          <p>
+            눈여겨볼 것은 <strong>세 물음 모두 새 구간의 끝점을 안 본다</strong>는 점이다. 여기서
+            쓰는 것은 <strong>시작점 하나</strong>뿐이다. 그리고 시작점과 끝점을
+            <strong>비교하는 것도 아니다</strong> — 시작점이 20m 안이면 끝점이 더 가깝든 말든
+            걸린다. 비교가 아니라 <strong>혼자만의 판정</strong>이다.
+          </p>
+
+          <p>
+            구간 ②에서 본 차이가 여기서 값으로 나타난다. <strong>탭은 시작점이 핀 그 자체라
+            ②나 ③ 중 하나가 반드시 참</strong>이다. <strong>“둘 다 거짓”은 그리기만</strong>
+            만들 수 있고, 끝점이 등장하는 것도 그때뿐이다.
+          </p>
+
+          <h4>3. 다섯 경우가 어디서 갈리나</h4>
+
+          <p>
+            이 세 값의 조합으로 <strong>다섯 경우 중 하나</strong>가 정해진다. 하나도 빠지지 않는다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>어떤 경우인가</th><th>어디서 다루나</th></tr>
+              <tr><td>시작점이 <strong>출발점</strong> 근처</td><td>구간 ④</td></tr>
+              <tr><td>시작점은 둘 다 먼데 <strong>끝점</strong>이 핀 근처</td><td>구간 ⑤</td></tr>
+              <tr><td>시작점이 <strong>도착점</strong> 근처</td><td>구간 ⑥</td></tr>
+              <tr><td><strong>닫힌 코스</strong></td><td>구간 ⑥</td></tr>
+              <tr><td>시작점도 끝점도 전부 멀다</td><td>파트 5</td></tr>
+            </table>
+          </div>
+
+          <p class="later">
+            코드가 이 다섯을 <strong>어떤 순서로 검사하는지</strong>는 구간 ⑥까지 다 본 뒤에 맞춰본다.
+            각각이 무엇인지 모르는 상태에서 순서만 보면 헷갈린다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>붙일 자리는 <strong>20m 하나</strong>로 판정하고, 갈래를 타기 전에
+              <strong>세 가지 참·거짓</strong>(닫혔나 · 시작점이 도착점 근처인가 · 출발점 근처인가)을
+              먼저 잰다. <strong>세 물음 다 시작점만 본다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p4s4">
+        <summary>구간 ④ — 출발점 근처에서 시작하면, 뒤집어서 앞에</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 새 구간을 앞에 붙일 때
+            <strong>그은 방향을 그대로 둘지 뒤집을지</strong> 정할 수 있다.
+          </p>
+
+          <p>
+            구간 ③에서 잰 세 값 중 <strong>「시작점이 출발점 근처」가 참인 경우</strong>다.
+            다섯 경우 중 첫 번째다.
+          </p>
+
+          <h4>1. 무슨 상황인가</h4>
+
+          <p>
+            <strong>광화문 → 시청</strong> 코스가 있다. 여기서 <strong>광화문 쪽(출발점)에서
+            시작해 서대문으로</strong> 길을 더 붙인다. 달릴 때는
+            <strong>서대문 → 광화문 → 시청</strong> 순서가 되어야 한다.
+          </p>
+
+          <pre class="code">   ○━━━━━━━○ ●━━━━━━━━━●
+   서대문    광화문      시청
+   └ 새로 붙인 것 ┘ └ 기존 코스 ┘</pre>
+
+          <h4>2. 그대로 붙이면 좌표가 순간이동한다</h4>
+
+          <p>
+            새 구간의 좌표는 <strong>광화문에서 시작해 서대문으로</strong> 간다. 그은 순서가
+            그러니까. 이것을 코스 앞에 <strong>그대로</strong> 붙이면 좌표 한 줄이 이렇게 된다.
+          </p>
+
+          <pre class="code">   광화문 … 서대문 │ 광화문 … 시청
+                   ↑
+              서대문에서 광화문으로 순간이동</pre>
+
+          <p>
+            <strong>이어지지 않는다.</strong> 파트 1에서 뒤집기(<code>reversed()</code>)를 볼 때
+            나온 그 문제다.
+          </p>
+
+          <h4>3. 뒤집으면 이어지고, 메울 것도 없다</h4>
+
+          <p>
+            그래서 새 구간을 <strong>뒤집어서</strong> 앞에 붙인다(<code>prepend</code>).
+          </p>
+
+          <pre class="code">   서대문 … 광화문 │ 광화문 … 시청
+                   ↑
+              같은 자리에서 만난다</pre>
+
+          <p>
+            뒤집었더니 <strong>새 구간의 마지막 좌표가 기존 출발점 근처</strong>가 된다. 원래
+            시작점이 거기였으니까. 그래서 <strong>틈을 메울 필요가 없다.</strong>
+            20m 안에서 시작했다는 것이 곧 <em>“이미 붙어 있다”</em>는 뜻이라, 길찾기를 한 번 더
+            부르지 않는다.
+          </p>
+
+          <h4>4. 탭과 그리기 — 무엇이 뒤집히나</h4>
+
+          <p>
+            <strong>둘 다 뒤집힌다. 뒤집히는 대상이 다르다.</strong> 탭은 길찾기를
+            <em>“광화문 → 탭한 지점”</em> 방향으로 불렀는데 코스에서는
+            <strong>탭한 지점 → 광화문</strong>으로 달린다 — <strong>앱이 길을 찾은 방향</strong>이
+            뒤집힌다. 그리기는 사용자가 <em>광화문에서 서대문으로</em> 그었는데 코스에서는
+            <strong>서대문 → 광화문</strong>으로 달린다 — <strong>손가락이 움직인 방향</strong>이
+            뒤집힌다.
+          </p>
+
+          <p>
+            그래서 <strong>체감이 다르다.</strong> 탭은 애초에 방향을 의식하지 않고 지점만 찍은
+            것이라 뒤집혀도 안 느껴진다. 그리기는 <strong>내가 그은 방향이 반대로 뒤집히는 것</strong>이라
+            눈에 띈다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>출발점 근처에서 시작한 구간은 <strong>뒤집어서 앞에</strong> 붙인다. 뒤집는 이유는
+              <strong>좌표가 이어지게</strong> 하려는 것이고, 뒤집고 나면
+              <strong>끝이 기존 출발점에 닿아 있어서 메울 틈이 없다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
+      <a class="backtop" href="#toc">↑ 목차로</a>
+
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음은 파트 4 — 붙일 자리: 끝점 가까이서 시작할 때.</strong>
-    파트 3까지는 <strong>붙은 뒤</strong>의 이야기였다 — 이미 목록에 들어온 구간에 번호를 달고
-    되돌릴 준비를 하는 것. 파트 4는 그 앞이다. 새로 그은 구간을 <strong>앞에 붙일지 뒤에 붙일지,
-    뒤집을지</strong>를 무엇으로 정하는가. 구간 ①에서 <em>“앞에 붙는 경우가 있다”</em>로만 두고
-    넘어간 그 판정이 여기서 열린다.
+    <strong>다음은 구간 ⑤ — 시작점이 둘 다 멀면, 끝점을 한 번 더 본다.</strong>
+    구간 ④까지는 <strong>시작점이 핀에 걸린 경우</strong>였다. 구간 ⑤는 시작점으로 아무것도 못
+    잡았을 때다 — <strong>먼 곳에서 시작해 핀 쪽으로</strong> 그은 경우. 이때 그대로 붙이면
+    <strong>실제로 그은 먼 지점이 아니라 손 뗀 자리가 코스의 끝</strong>이 되어버린다.
+    <strong>탭으로는 만들 수 없는 상황</strong>이라 그리기 전용이다.
   </div>
 
 </div>
