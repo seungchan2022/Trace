@@ -3351,7 +3351,7 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
             <td><code>undo</code></td>
           </tr>
           <tr>
-            <td>구간 ②</td>
+            <td><a href="#p6s2">구간 ②</a></td>
             <td>앞으로 돌리기 — 자리를 무엇으로 적나</td>
             <td><code>placedAtFront</code></td>
           </tr>
@@ -3561,13 +3561,113 @@ redoStack   [Entry]   <span class="c">맨 뒤만 쓴다 — 붙이는 것도 빼
         </div>
       </details>
 
+      <details class="seg" id="p6s2">
+        <summary>구간 ② — 앞으로 돌리기: 자리를 무엇으로 적나</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 되살릴 때 <strong>자리를 무엇으로
+            적어둘지</strong> 정할 수 있다. 그 결정을 <strong>언제 내려두는지</strong>, 그리고
+            <strong>값 하나로 충분한지</strong>.
+          </p>
+
+          <p>
+            구간 ①에서 되돌리기가 하는 일이 둘이라고 했다 — 빼기와 보관.
+            <strong>앞으로 돌리기도 둘</strong>이다 — 꺼내기와 넣기. 그중 <strong>꺼내기는 이미
+            정해졌다</strong>(스택 맨 뒤에서 꺼낸다). 그래서 이 구간에 남는 것은 <strong>넣을 자리</strong> 하나다.
+          </p>
+
+          <h4>1. 자리는 붙일 때 정해지고, 되살릴 때 그걸 다시 쓴다</h4>
+
+          <p>
+            되살릴 자리를 <strong>되살리는 시점에 판단하지 않는다.</strong> 구간을 처음 붙일 때 이미
+            정해져서 줄(<code>Entry</code>)에 적혀 있고, 되돌리기는 그 값에 손대지 않는다.
+          </p>
+
+          <pre class="code">①  붙일 때 정해진다
+    prepend(구간 B)   →   [ 번호 1   placedAtFront=true   구간 B ]     <span class="c">목록 맨 앞에 끼움</span>
+
+②  되돌리기 — 값은 손대지 않는다
+    목록에서 그 줄을 빼서 스택으로 통째로 옮긴다
+    스택   [ 번호 1   placedAtFront=true   구간 B ]        <span class="c">번호도 참/거짓도 그대로</span>
+
+③  앞으로 돌리기 — 그 값을 보고 넣는다
+    placedAtFront = true   →   목록 맨 앞에 끼움</pre>
+
+          <p>
+            되돌리기는 <strong>줄의 내용을 하나도 고치지 않는다.</strong> 담긴 곳만 목록에서 스택으로
+            바뀐다. 그래서 되살릴 때 새로 판단할 것이 없고, <strong>붙일 때 이미 내려진 결정을 그대로
+            다시 쓴다.</strong>
+          </p>
+
+          <h4>2. 왜 참/거짓 하나로 충분한가 — 들어가는 자리가 둘뿐이라서</h4>
+
+          <p>
+            파트 3·4·5에서 새 구간이 목록에 들어가는 방법을 두 가지만 봤다 —
+            <strong>맨 뒤에 붙이기</strong>(<code>append</code>)와 <strong>맨 앞에 끼우기</strong>(<code>prepend</code>).
+            중간에 끼우는 일은 없었다. 그래서 자리를 적는 데 값 하나면 된다.
+            <code>placedAtFront</code>가 그것이고, <code>prepend</code>로 들어간 줄에만 참이 붙는다.
+          </p>
+
+          <pre class="code">붙일 때
+  append(구간 C)     →   [ …, C ]        placedAtFront = false
+  prepend(구간 B)    →   [ B, … ]        placedAtFront = true
+
+되살릴 때
+  placedAtFront = true     →   맨 앞에 넣는다
+  placedAtFront = false    →   맨 뒤에 붙인다</pre>
+
+          <p>
+            붙일 때 쓴 두 방법이 되살릴 때 <strong>그대로 두 갈래</strong>가 된다. 대칭이라 값 하나로 끝난다.
+          </p>
+
+          <p>
+            실제 코드에는 갈래가 <strong>셋</strong>인데, 맨 위 하나는 <strong>왕복으로 생긴 줄만</strong>
+            타는 갈래다. 그것이 구간 ③이고, 지금 보는 둘이 <strong>탭·그리기로 붙인 모든 줄의 정상 경로</strong>다.
+          </p>
+
+          <h4>3. 번호도 그대로 되찾는다</h4>
+
+          <p>
+            되살릴 때 <strong>번호를 다시 매기지 않는다.</strong> 스택에서 들고 있던 그대로 목록에 돌아간다.
+          </p>
+
+          <pre class="code">스택   [번호 3  구간 D]
+
+앞으로 돌리기
+
+목록   [번호 0] [번호 1] [번호 2] [번호 3  구간 D]      <span class="c">번호 3 그대로</span></pre>
+
+          <p>
+            그래서 되살린 직후 다시 되돌리기를 누르면 <strong>방금 되살린 그것이 다시 빠진다</strong> —
+            번호가 여전히 가장 크기 때문이다.
+          </p>
+
+          <p class="later">
+            곁따라: 되돌리기와 앞으로 돌리기는 끝날 때 <strong>화면이 골라둔 구간 선택을 비운다</strong>
+            (<code>selectedSegmentIndex = nil</code>). 맨 앞에 줄이 들어오면 그 아래 구간들이 한 칸씩
+            밀려서 <strong>골라둔 숫자가 다른 구간을 가리키기 때문</strong>이다. 이 파트에서 더 볼 것은 없다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>되살릴 자리는 <strong>붙일 때 이미 정해져서</strong> 줄에 적혀 있고, 되돌리기는 그 값에
+            손대지 않는다. 들어가는 자리가 <strong>맨 앞 아니면 맨 뒤 둘뿐</strong>이라
+            <strong>참/거짓 하나</strong>(<code>placedAtFront</code>)면 충분하다.
+            <strong>번호도 그대로 되찾는다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
     </div>
   </details>
 
   <div class="next">
-    <strong>다음은 파트 6 구간 ② — 앞으로 돌리기.</strong>
-    되돌린 줄을 되살릴 때 <strong>원래 자리를 무엇으로 적어두는지</strong>를 본다.
-    배열 위치(몇 번째)로 적으면 왜 못 쓰는지, 대신 무엇을 적었는지가 구간 ②다.
+    <strong>다음은 파트 6 구간 ③ — 그 둘로 부족한 하나.</strong>
+    구간 ②에서 자리를 <strong>맨 앞이냐 아니냐</strong> 하나로 적어 끝냈는데,
+    <strong>코스 중간에 들어가는 줄</strong>이 하나 있다. 그 줄은 맨 앞도 맨 뒤도 아니라
+    <strong>다른 줄을 가리켜야</strong> 자리가 재현된다.
   </div>
 
 </div>
