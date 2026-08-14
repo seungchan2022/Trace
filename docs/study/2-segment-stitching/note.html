@@ -3356,8 +3356,8 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
             <td><code>placedAtFront</code></td>
           </tr>
           <tr>
-            <td>구간 ③</td>
-            <td>그 둘로 부족한 하나 — 대상 줄의 이름표</td>
+            <td><a href="#p6s3">구간 ③</a></td>
+            <td>그 둘로 부족한 하나 — <code>placedAtFront</code>가 양쪽 다 거짓인 줄</td>
             <td><code>anchorID</code></td>
           </tr>
           <tr>
@@ -3660,14 +3660,205 @@ redoStack   [Entry]   <span class="c">맨 뒤만 쓴다 — 붙이는 것도 빼
         </div>
       </details>
 
+      <details class="seg" id="p6s3">
+        <summary>구간 ③ — 그 둘로 부족한 하나</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 맨 앞도 맨 뒤도 아닌 자리에
+            들어가는 줄의 자리를 <strong>무엇으로 적어둘지</strong> 정할 수 있다.
+            <strong>몇 번째인지로 적을지, 이웃을 가리켜 적을지.</strong>
+          </p>
+
+          <p>
+            구간 ②는 <em>“들어가는 자리가 맨 앞 아니면 맨 뒤 둘뿐”</em>이라는 전제 위에 섰다.
+            여기서는 <strong>그 전제를 따르지 않는 줄 하나</strong>를 본다.
+          </p>
+
+          <h4>1. 왕복 버튼을 누르면 무슨 일이 일어나나</h4>
+
+          <p>
+            사용자가 구간 하나를 골라 왕복을 누르면 <strong>그 구간을 되짚는 구간이 하나 새로
+            생긴다.</strong> 만드는 방법은 파트 1에서 본 뒤집기(<code>reversed()</code>)다 —
+            좌표 순서만 뒤집고 거리는 그대로 둔 다음, <strong>왕복 구간(<code>.roundTrip</code>)</strong>으로 감싼다.
+          </p>
+
+          <pre class="code">대상 구간 B      X ●━━━━━━━━● Y        800m
+뒤집으면         Y ●━━━━━━━━● X        800m      <span class="c">같은 길, 읽는 방향만 반대</span></pre>
+
+          <p>
+            그리고 그것을 담을 <strong>줄(<code>Entry</code>)</strong>이 만들어져 목록에 끼워진다.
+            이 구간이 볼 것은 <strong>그 줄이 어디에 끼워지고, 무엇이 적히는가</strong>다.
+          </p>
+
+          <h4>2. 어디에 끼우나 — 자유 끝에서만 된다</h4>
+
+          <p>
+            코스는 구간들이 <strong>사슬처럼</strong> 이어져 있다. 가운데 구간은 양옆이 다 물려 있고,
+            <strong>맨 앞 구간과 맨 뒤 구간만 한쪽이 아무것과도 안 물려 있다.</strong> 그 안 물린 쪽을
+            <strong>자유 끝</strong>이라 부른다(MVP11 설계 용어).
+          </p>
+
+          <pre class="code">목록    [ A ] [ B ] [ C ]
+
+코스    ●━━━━A━━━━●━━━━B━━━━●━━━━C━━━━●
+        ↑                              ↑
+     자유 끝                        자유 끝</pre>
+
+          <p>
+            되짚는 구간은 <strong>자유로운 쪽에만</strong> 붙일 수 있다. 물린 쪽에 끼우면 거기서
+            사슬이 끊기기 때문이다.
+          </p>
+
+          <pre class="code">C를 되짚는다  <span class="c">C의 오른쪽이 자유</span>
+    ●━━A━━●━━B━━●━━C━━● ~~~C되짚기~~~●        <span class="c">아무것도 안 끊긴다</span>
+
+B를 되짚으려면?  <span class="c">B는 양쪽이 다 물려 있다</span>
+    ●━━A━━● ~~~B되짚기~~~● ？ ━━B━━●          <span class="c">A와 B 사이를 비집고 들어가 끊긴다</span></pre>
+
+          <p>
+            그래서 <strong>가운데 구간은 왕복 버튼이 꺼져 있다.</strong> 코드는 대상이
+            <strong>목록의 첫 줄이거나 마지막 줄일 때만</strong> 통과시킨다. 줄이 하나뿐이면
+            첫 줄이자 마지막 줄인데, 이때는 <strong>마지막 줄로 취급</strong>한다.
+          </p>
+
+          <h4>3. 줄에 적히는 두 칸</h4>
+
+          <pre class="code">anchorID              <span class="c">누구 옆인가</span>          →  대상 줄의 id
+anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  참이면 앞, 거짓이면 뒤</pre>
+
+          <p>
+            두 번째 칸의 값은 <strong>대상 줄이 목록 어디에 있느냐</strong>로 정해지고, 그 근거가
+            방금 본 자유 끝이다.
+          </p>
+
+          <pre class="code">대상 줄이 목록에서      자유로운 쪽      anchorInsertsBefore
+────────────────────────────────────────────────────────
+맨 뒤 줄                오른쪽           false   <span class="c">대상 줄 뒤</span>
+맨 앞 줄                왼쪽             true    <span class="c">대상 줄 앞</span>
+줄이 하나뿐             뒤쪽으로 취급     false   <span class="c">대상 줄 뒤</span></pre>
+
+          <p>
+            <strong>코스에서의 앞뒤와 목록에서의 앞뒤가 일치한다.</strong> 파트 3에서 본 것 때문이다 —
+            목록 순서가 곧 달리는 순서라, 코스 출발 쪽은 목록 앞이고 도착 쪽은 목록 뒤다.
+          </p>
+
+          <h4>4. 도착 쪽 왕복을 끝까지 따라가면</h4>
+
+          <p><strong>① 왕복을 누른다</strong></p>
+
+          <pre class="code">목록   [ A ] [ B ]                       <span class="c">B를 고른다 — B는 맨 뒤 줄</span>
+코스   출발●━━A━━● X ━━B━━● Y(도착)
+
+만들어지는 줄 R
+   segment              B를 뒤집은 것
+   order                다음 번호
+   placedAtFront        false
+   anchorID             B의 id
+   anchorInsertsBefore  false            <span class="c">B가 맨 뒤 줄이라 「B 뒤」</span>
+
+목록   [ A ] [ B ] [ R ]
+코스   출발●━━A━━● X ━━B━━● Y ~~~R~~~● X(도착)
+                                          <span class="c">Y에서 되짚어 X로 — 도착 핀이 X로 옮겨간다</span></pre>
+
+          <p><strong>② 되돌리기 — 아무것도 판단하지 않는다</strong></p>
+
+          <pre class="code">목록   [ A ] [ B ]
+스택   [ R:  anchorID=B의 id,  insertsBefore=false ]      <span class="c">값을 통째로 들고 간다</span></pre>
+
+          <p><strong>③ 앞으로 돌리기 — 여기서 두 칸을 쓴다.</strong> 먼저 <strong>찾는다.</strong>
+            목록을 앞에서부터 훑으며 각 줄의 <code>id</code>를 적어둔 <code>anchorID</code>와 견준다.</p>
+
+          <pre class="code">목록    [ A ] [ B ]
+         0     1
+
+  0번째 A의 id 와 견준다  →  다르다
+  1번째 B의 id 와 견준다  →  같다   →  1을 받는다</pre>
+
+          <p>그다음 <strong>끼운다.</strong> 받은 번호를 그대로 쓰거나 1을 더해 쓴다.</p>
+
+          <pre class="code">insertsBefore = false  →  1+1 = 2번째 자리
+목록   [ A ] [ B ] [ R ]        <span class="c">원래 자리로 돌아왔다</span></pre>
+
+          <p>
+            앞에 넣는 것은 <strong>대상의 자리를 뺏는 것</strong>이고, 뒤에 넣는 것은
+            <strong>대상 다음 자리</strong>다. <code>+1</code>이 붙는 이유가 이것이다.
+          </p>
+
+          <h4>5. 출발 쪽 왕복은 한 칸만 다르다</h4>
+
+          <pre class="code">목록   [ A ] [ B ]                       <span class="c">A를 고른다 — A는 맨 앞 줄</span>
+       anchorID = A의 id,  insertsBefore = true
+
+목록   [ R ] [ A ] [ B ]                 <span class="c">A 앞에 끼워졌다</span>
+
+되돌리기 → [ A ] [ B ] ,  스택 [ R ]
+
+앞으로 돌리기
+   A를 찾는다      →  0
+   앞이니까 그대로  →  0번째 자리
+목록   [ R ] [ A ] [ B ]</pre>
+
+          <p>
+            <strong>여기서 구간 ②의 방법이 왜 부족한지가 드러난다.</strong> 왕복 줄은
+            <code>placedAtFront</code>가 <strong>두 경우 모두 거짓</strong>으로 만들어진다.
+          </p>
+
+          <pre class="code">                        도착 쪽 왕복      출발 쪽 왕복
+   placedAtFront        false            false        <span class="c">구분이 안 된다</span>
+   anchorInsertsBefore  false            true         <span class="c">여기서만 갈린다</span></pre>
+
+          <p>
+            <code>placedAtFront</code>만 보고 되살리면 출발 쪽에 있던 줄이 <strong>맨 뒤로 간다.</strong>
+            자리만 틀어지는 것이 아니라 이웃과 좌표가 안 맞아 <strong>코스가 끊긴다.</strong>
+          </p>
+
+          <details class="seg">
+            <summary>6. 왜 이웃을 가리키게 됐나 — 원래는 가운데에도 들어갔다</summary>
+            <div class="segbody">
+              <p>
+                지금은 자유 끝에서만 왕복을 걸 수 있지만 <strong>처음 설계는 그렇지 않았다.</strong>
+                MVP11 최초 설계(2026-07-07)의 왕복은 <strong>모든 위치에서 허용</strong>됐고, 대상 구간을
+                역방향+정방향으로 병합하는 방식이었다. 그때는 새 줄이 <strong>진짜로 목록 한가운데</strong>
+                들어갈 수 있었고, 맨 앞·맨 뒤로는 자리를 적을 방법이 없어
+                <strong>이웃을 가리키는 방식이 필요했다.</strong>
+              </p>
+              <p>
+                그 방식은 2026-07-08 실기기 QA에서 거리·연결 문제가 나와 폐기됐다. 지금의 자유 끝 방식으로
+                바뀌면서 <strong>anchor는 그대로 두고 방향 칸 하나만 더했다</strong> — 옛 방식에서는 왕복
+                줄이 언제나 대상 뒤에 붙어서 그 칸이 필요 없었기 때문이다. 계획 문서가 옛 데이터 읽는 법을
+                적으며 그 사정을 그대로 보여준다 — <em>“이 필드가 없는 구버전 blob은 <code>false</code>
+                (= anchor 뒤, 옛 동작과 동일)로 기본 복원된다 — 옛 왕복 엔트리는 항상 append였으므로
+                정확한 값이다.”</em>
+              </p>
+              <p>
+                <strong>그래서 지금 코드에는 「가운데에 들어가던 시절」의 구조가 남아 있다.</strong>
+                자유 끝만 허용된 뒤로는 새 줄이 맨 앞 아니면 맨 뒤에만 들어가므로 다른 방법도 가능해
+                보이는데, <strong>그것이 확인된 적은 없다</strong>(백로그로 보냈다).
+              </p>
+            </div>
+          </details>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>왕복 줄은 <strong>대상 구간을 뒤집어</strong> 만들고, 자리는 <strong>이웃을 가리켜</strong>
+            적는다 — <strong>누구 옆인가</strong>(<code>anchorID</code>)와 <strong>그 줄의 앞이냐 뒤냐</strong>
+            (<code>anchorInsertsBefore</code>). 되살릴 때는 <strong>적어둔 이름표로 그 줄을 찾아</strong>
+            지금 몇 번째인지 알아낸다. <code>placedAtFront</code>는 출발 쪽·도착 쪽에서
+            <strong>똑같이 거짓</strong>이라 이 둘을 구분하지 못한다.</p>
+          </div>
+
+        </div>
+      </details>
+
     </div>
   </details>
 
   <div class="next">
-    <strong>다음은 파트 6 구간 ③ — 그 둘로 부족한 하나.</strong>
-    구간 ②에서 자리를 <strong>맨 앞이냐 아니냐</strong> 하나로 적어 끝냈는데,
-    <strong>코스 중간에 들어가는 줄</strong>이 하나 있다. 그 줄은 맨 앞도 맨 뒤도 아니라
-    <strong>다른 줄을 가리켜야</strong> 자리가 재현된다.
+    <strong>다음은 파트 6 구간 ④ — 복원 스택을 언제 비우나.</strong>
+    구간 ①~③은 <strong>스택에 들어간 줄이 어떻게 돌아오는가</strong>였다. 구간 ④는 그 반대편 —
+    <strong>돌아올 기회를 잃는 자리</strong>를 본다. 비우는 자리가 다섯이고,
+    그중 <strong>비우지 않는 예외가 하나</strong> 있다.
   </div>
 
 </div>
