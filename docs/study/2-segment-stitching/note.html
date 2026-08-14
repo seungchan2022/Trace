@@ -3361,8 +3361,8 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
             <td><code>anchorID</code></td>
           </tr>
           <tr>
-            <td>구간 ④</td>
-            <td>복원 스택을 언제 비우나</td>
+            <td><a href="#p6s4">구간 ④</a></td>
+            <td>복원 스택을 언제 비우나 — 다섯 자리와 예외 하나</td>
             <td>다섯 자리</td>
           </tr>
           <tr>
@@ -3851,14 +3851,137 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
         </div>
       </details>
 
+      <details class="seg" id="p6s4">
+        <summary>구간 ④ — 복원 스택을 언제 비우나</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 되살릴 목록을 <strong>언제
+            비울지</strong> 정할 수 있다. 비우는 줄을 <strong>어디에 둘지</strong>, 그리고
+            <strong>실패한 시도</strong>를 어떻게 다룰지.
+          </p>
+
+          <p>
+            구간 ①~③은 전부 <strong>스택에 들어간 줄이 어떻게 돌아오는가</strong>였다. 여기서는
+            반대편을 본다 — <strong>돌아올 기회를 잃는 자리.</strong>
+          </p>
+
+          <h4>1. 비우는 자리는 다섯이고, 전부 스택 밖에서 목록을 바꾸는 곳이다</h4>
+
+          <p><code>redoStack = []</code>이라고 적힌 줄이 파일 안에 <strong>다섯 군데</strong> 있다.</p>
+
+          <pre class="code">코스를 바꾸는 연산 전부
+   ├─ 되돌리기            목록 → 스택으로 옮긴다        <span class="c">안 비운다</span>
+   ├─ 앞으로 돌리기        스택 → 목록으로 꺼낸다        <span class="c">안 비운다</span>
+   │
+   ├─ 붙이기 (append · prepend)  ┐
+   ├─ 왕복 끼우기                 │  스택 밖에서 목록을 바꾼다   <span class="c">비운다</span>
+   ├─ 불러오기                    │
+   └─ 전부 지우기                 ┘</pre>
+
+          <p>
+            기준은 <strong>스택이 아는 움직임이냐, 모르는 움직임이냐</strong>다. 되돌리기와 앞으로
+            돌리기는 스택을 오가는 것이라 이미 아는 이동이고, 나머지 다섯은 <strong>스택 바깥에서
+            목록을 건드리는 것</strong>이라 그 순간 되돌아갈 길이 갈라진다. <strong>갈래가 생기면 안 간
+            쪽을 버리는 것</strong>이 이 앱의 선택이고, 버리는 자리가 정확히 이 다섯이다.
+          </p>
+
+          <p>
+            그래서 되돌린 상태에서 코스를 실제로 바꾸면 <strong>되돌렸던 것은 그 순간 사라진다.</strong>
+          </p>
+
+          <pre class="code">①  A→B→C→D 를 그렸다
+    목록  [A→B] [B→C] [C→D]        스택 (빈 것)
+
+②  되돌리기
+    목록  [A→B] [B→C]              스택 [C→D]
+
+③  새로 C→E 를 그린다
+    append 가 불린다 → redoStack = []
+    목록  [A→B] [B→C] [C→E]        스택 (빈 것)        <span class="c">C→D 는 여기서 없어진다</span></pre>
+
+          <p>
+            <strong>다섯 말고는 없다.</strong> 목록을 바꾸는 모든 경로가 결국 그 다섯 중 하나를
+            지나기 때문이다. 예를 들어 <strong>전체 왕복</strong>은 목록에 따로 없는데,
+            그것이 <code>append</code>를 그대로 부른다.
+          </p>
+
+          <pre class="code">insertWholeCourseRoundTrip  →  append  →  redoStack = []</pre>
+
+          <h4>2. 붙이기가 실패한 경우는 비우지 않는다</h4>
+
+          <p>
+            예외가 하나 있다. <strong>붙이려고 했는데 안 붙은 경우</strong>다. 파트 5에서 본
+            <strong>틈 메우기가 실패</strong>하면 붙일 구간 자체가 안 만들어진다 — 경로를 못 찾거나,
+            요청이 몰려 막히거나, 네트워크가 안 될 때다.
+          </p>
+
+          <pre class="code">기존 코스 ●━━━━━━━●                        새로 그은 선  ~~~~~~●
+                    └──── 이 사이를 길찾기로 메워야 한다 ────┘
+                                 ↓
+                          길찾기 실패
+                                 ↓
+                    붙일 구간이 안 만들어진다 → 코스는 그대로</pre>
+
+          <p>
+            사용자가 화면에서 겪는 것은 <strong>에러 메시지가 뜨고, 그은 선은 사라지고, 코스는 긋기 전
+            그대로</strong>인 것이다. <strong>화면상 아무 일도 안 일어난 셈</strong>인데 이때 스택을
+            비웠다면 <strong>되살릴 것만 조용히 없어진다.</strong>
+          </p>
+
+          <p>
+            그런데 <strong>이 동작을 만드는 조건 검사가 코드 어디에도 없다.</strong>
+            <em>“성공했으면 비운다”</em>는 <code>if</code>가 없고, <strong>비우는 줄을
+            <code>append</code>·<code>prepend</code> 안에 둔 것만으로</strong> 그렇게 된다.
+            실패한 시도는 그 줄에 닿지 못하기 때문이다.
+          </p>
+
+          <pre class="code">attach 가 불린다
+   │
+   ├─ 어디에 붙일지 판정
+   │
+   ├─ 틈이 있으면 길찾기 호출
+   │      실패하면 여기서 중단  ────────→  append 에 도달하지 않는다
+   │                                        <span class="c">스택은 그대로 남는다</span>
+   └─ append(합친 구간)
+          redoStack = []      <span class="c">비우는 줄은 여기 안에 있다</span></pre>
+
+          <h4>3. 그 예외는 문서 리뷰가 잡아낸 것이다</h4>
+
+          <p>
+            이 배치는 처음부터 그렇게 쓴 것이 아니라 <strong>설계 단계 리뷰에서 지적돼 들어갔다.</strong>
+            MVP9 설계의 리뷰 반영 이력에 한 줄로 남아 있다 —
+            <em>“[P2 adversarial] attach 실패 시 redo 스택 소실 → 성공한 attach만 스택 비움.”</em>
+            그래서 설계 본문에도 결정이 명시돼 있다 — <em>“복원 스택은 ‘entry를 실제로 추가한(성공한)
+            attach’ 또는 clear 시에만 비운다. <strong>attach 진입 시점에 비우면 라우팅 실패만으로
+            되돌린 구간들이 영구 소실된다.</strong>”</em>
+          </p>
+
+          <p>
+            <strong>코드를 읽어서는 이 의도가 안 보인다.</strong> <code>append</code> 안의
+            <code>redoStack = []</code> 한 줄은 그냥 정리 작업처럼 보이고,
+            <em>“왜 하필 여기냐”</em>는 문서에만 있다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p><strong>되돌린 뒤, 스택을 쓰지 않고 코스를 실제로 바꾸면 스택은 사라진다.</strong>
+            되돌리기를 더 하는 것은 여기 안 들어가고, <strong>붙이려다 실패한 것도 안 들어간다.</strong>
+            그 예외는 조건 검사가 아니라 <strong>비우는 줄을 성공 경로 안에 둔 배치</strong>로 만들어졌다.</p>
+          </div>
+
+        </div>
+      </details>
+
     </div>
   </details>
 
   <div class="next">
-    <strong>다음은 파트 6 구간 ④ — 복원 스택을 언제 비우나.</strong>
-    구간 ①~③은 <strong>스택에 들어간 줄이 어떻게 돌아오는가</strong>였다. 구간 ④는 그 반대편 —
-    <strong>돌아올 기회를 잃는 자리</strong>를 본다. 비우는 자리가 다섯이고,
-    그중 <strong>비우지 않는 예외가 하나</strong> 있다.
+    <strong>다음은 파트 6 구간 ⑤ — 초기화만 되살릴 수 없다.</strong>
+    구간 ④에서 스택을 비우는 다섯 자리 중 하나가 <strong>전부 지우기</strong>였다.
+    그런데 이것 하나만 <strong>되살릴 방법이 아예 없다</strong> — 되돌리기는 되살릴 수 있는데
+    전부 지우기는 안 된다. <strong>의도된 비대칭</strong>이고, 두 버튼이 꺼지는 근거가
+    서로 다른 곳에서 나오는 것도 같은 뿌리다.
   </div>
 
 </div>
