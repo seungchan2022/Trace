@@ -697,7 +697,26 @@
           </ul>
         </div>
       </li>
-      <li class="pending"><span class="k">6</span><div><div class="can">되돌리기와 앞으로 돌리기</div></div></li>
+      <li>
+        <span class="k">6</span>
+        <div>
+          <div class="can">되돌린 것을 되살릴 때 무엇을 함께 적어둬야 자리가 재현되는지 정할 수 있다 — 자리를 배열 위치로 적을지 이웃 줄의 이름표로 적을지, 되살릴 목록을 언제 비울지, 그리고 어떤 동작을 되살릴 수 있게 두고 어떤 것은 못 되살리게 둘지</div>
+          <div class="sum">되돌리기(<code>undo</code>)가 무엇을 빼서 어디에 쌓고, 앞으로 돌리기(<code>redo</code>)가 그것을 원래 자리로 되돌려 놓는 법.</div>
+          <ul class="keys">
+            <li>되돌리기는 <strong>번호가 가장 큰 줄(<code>Entry</code>)을 통째로</strong> 뺀다 — <strong>배열 마지막이 아니다</strong></li>
+            <li>뺀 줄은 <strong>복원 스택</strong>에 쌓인다 — 배열 하나를 <strong>맨 뒤만 쓰는</strong> 방식으로 쓴 것이고, <code>Stack</code>이라는 타입은 없다</li>
+            <li><strong>번호는 떼지 않고 다음에 줄 번호도 안 줄어서</strong> 되살려도 겹치지 않는다</li>
+            <li>되살릴 자리는 <strong>붙일 때 이미 정해져</strong> 줄에 적히고, 되돌리기는 그 값에 <strong>손대지 않는다</strong></li>
+            <li>들어가는 자리가 <strong>맨 앞 아니면 맨 뒤 둘뿐</strong>이라 <strong>참/거짓 하나</strong>(<code>placedAtFront</code>)면 된다</li>
+            <li><strong>왕복 줄만 예외</strong> — 그 값이 앞쪽·뒤쪽 <strong>양쪽 다 거짓</strong>이라 <strong>이웃을 가리켜</strong>(<code>anchorID</code>) 적는다</li>
+            <li>자리를 <strong>몇 번째가 아니라 누구 옆</strong>으로 적으면, 목록이 밀려도 <strong>이름표로 찾아낸다</strong></li>
+            <li>스택은 <strong>스택 밖에서 목록을 바꾸는 다섯 자리</strong>에서 버려진다 — 되돌리기·앞으로 돌리기는 스택을 오가는 것이라 안 버린다</li>
+            <li><strong>붙이기가 실패하면 안 버린다</strong> — 조건 검사가 아니라 <strong>비우는 줄을 성공 경로 안에 둔 배치</strong>로 그렇게 된다</li>
+            <li><strong>전부 지우기만 못 되살린다</strong>(의도된 비대칭) — <strong>편집 중인 코스만</strong> 지우고 저장해둔 코스는 남는다</li>
+            <li>두 버튼이 꺼지는 근거가 갈리는 것은 <strong>복원 스택이 세션 안에 감춰져 있어서</strong>다 — 목록은 밖에서 셀 수 있다</li>
+          </ul>
+        </div>
+      </li>
       <li class="pending"><span class="k">7</span><div><div class="can">왕복</div></div></li>
     </ol>
   </div>
@@ -3372,7 +3391,7 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
             <td><code>clear</code></td>
           </tr>
           <tr>
-            <td>마무리</td>
+            <td><a href="#p6end">마무리</a></td>
             <td>두 버튼이 꺼지는 근거가 서로 다른 곳에서 나온다</td>
             <td><code>canRedo</code></td>
           </tr>
@@ -4060,14 +4079,68 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
         </div>
       </details>
 
+      <details class="seg" id="p6end">
+        <summary>마무리 — 두 버튼이 꺼지는 근거가 갈리는 이유</summary>
+        <div class="segbody">
+
+          <h4>같이 꺼지는데 판정은 다른 곳에서 나온다</h4>
+
+          <p>
+            전부 지우기를 누르면 되돌리기 버튼과 앞으로 돌리기 버튼이 <strong>둘 다 꺼진다.</strong>
+            그런데 그 판정이 같은 곳에서 나오지 않는다.
+          </p>
+
+          <pre class="code">되돌리기 버튼        구간 목록이 비어 있지 않으면 켜진다     <span class="c">화면 쪽에서 직접 센다</span>
+앞으로 돌리기 버튼    복원 스택이 비어 있지 않으면 켜진다     <span class="c">세션이 답만 내준다 (canRedo)</span></pre>
+
+          <p>
+            <strong>이유는 볼 수 있느냐 없느냐다.</strong> 구간 목록은 화면이 코스를 그리려고
+            <strong>어차피 읽고 있는 값</strong>이라 밖에서 세면 된다. 반면 <strong>복원 스택은
+            세션 안에 감춰져 있어</strong>(<code>private</code>) 밖에서는 비었는지조차 알 수 없다.
+            그래서 세션이 <em>“되살릴 것이 있느냐”</em> 한 가지만 참/거짓으로 내준다.
+          </p>
+
+          <p>
+            파트 3에서 본 것과 같은 방식이다 — 세션은 줄(<code>Entry</code>)이라는 타입 자체도 감추고,
+            코스를 읽을 때는 번호를 떼고 구간만 모아서 내줬다. <strong>안을 감추고 필요한 답만
+            내주는 것</strong>이 여기서도 그대로다.
+          </p>
+
+          <h4>파트 6에서 정한 것들</h4>
+
+          <p>되돌리기 하나를 만들면서 정해야 했던 것이 다섯이었다.</p>
+
+          <pre class="code">무엇을 빼나            번호가 가장 큰 줄                    <span class="c">구간 ①</span>
+뺀 것을 어디에 두나     복원 스택 — 배열을 스택처럼 쓴다      <span class="c">구간 ①</span>
+되살릴 자리를 뭘로 적나  참/거짓 하나, 부족하면 이웃의 이름표   <span class="c">구간 ②③</span>
+언제 버리나            스택 밖에서 목록을 바꿀 때 (다섯 자리)  <span class="c">구간 ④</span>
+무엇은 못 되살리나      전부 지우기 — 의도된 비대칭           <span class="c">구간 ⑤</span></pre>
+
+          <p>
+            관통하는 것은 하나다 — <strong>되살리기는 「그때의 판단을 다시 하는 것」이 아니라
+            「그때 적어둔 것을 다시 쓰는 것」이다.</strong> 붙일 때 자리가 정해져 줄에 적히고,
+            되돌리기는 그 값에 손대지 않고, 되살릴 때 그대로 쓴다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">파트 6에서 알고 갈 것</span>
+            <p>되돌리기는 <strong>번호가 가장 큰 줄을 통째로</strong> 빼서 스택에 쌓고, 되살릴 때는
+            <strong>붙일 때 적어둔 자리 정보</strong>를 그대로 쓴다. 스택은 <strong>스택 밖에서 목록을
+            바꾸는 순간</strong> 버려지고, <strong>전부 지우기만 되살릴 수 없다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
     </div>
   </details>
 
   <div class="next">
-    <strong>다음은 파트 6 마무리 — 두 버튼이 꺼지는 근거가 갈리는 이유.</strong>
-    되돌리기 버튼과 앞으로 돌리기 버튼이 함께 꺼지는데, <strong>그 판정이 같은 곳에서
-    나오지 않는다.</strong> 파트 6 전체(되돌리기 + 앞으로 돌리기)에 걸리는 이야기라
-    파트를 닫는 자리에 둔다.
+    <strong>다음은 파트 7 — 왕복.</strong> 이 청크의 마지막 파트다.
+    파트 6 구간 ③에서 <strong>재료로만 빌려 썼던 것</strong>이 여기서 본론이 된다 —
+    구간 하나를 골라 되짚는 <strong>구간 왕복</strong>과, 코스 전체를 되짚어 뒤에 붙이는
+    <strong>전체 왕복</strong>. 둘은 이름만 비슷하고 <strong>동작도 제약도 다르다.</strong>
+    파트 6에서 이미 깔아둔 것(자유 끝 · 뒤집기 · 대상 줄의 이름표)은 다시 파지 않는다.
   </div>
 
 </div>
