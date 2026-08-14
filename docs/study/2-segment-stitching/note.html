@@ -578,6 +578,7 @@
     <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 두 순서가 갈라진다">두 순서가 갈라진다</a></li>
     <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 붙일 자리: 끝점 가까이서 시작할 때">붙일 자리 — 끝점 가까이서</a></li>
     <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — 붙일 자리: 양끝이 다 20m 밖일 때">붙일 자리 — 양끝이 다 밖</a></li>
+    <li><span class="k"><i class="kf">6</i><i class="ks">6</i></span><a href="#p6" data-target="p6" title="파트 6 — 되돌리기와 앞으로 돌리기">되돌리기와 앞으로 돌리기</a></li>
   </ol>
 </nav>
 
@@ -601,7 +602,7 @@
       <li class="on"><span class="k">3</span><a href="#p3">두 순서가 갈라진다</a></li>
       <li class="on"><span class="k">4</span><a href="#p4">붙일 자리 — 끝점 가까이서 시작할 때</a></li>
       <li class="on"><span class="k">5</span><a href="#p5">붙일 자리 — 양끝이 다 20m 밖일 때</a></li>
-      <li class="todo"><span class="k">6</span>되돌리기와 앞으로 돌리기</li>
+      <li class="on"><span class="k">6</span><a href="#p6">되돌리기와 앞으로 돌리기</a></li>
       <li class="todo"><span class="k">7</span>왕복</li>
     </ol>
   </nav>
@@ -801,24 +802,25 @@ flowchart LR
       <div class="steps">
         <div class="st"><span class="n">④</span><span class="t"><b>되돌리기</b>를 누르면 방금 붙인 것이 통째로 빠진다 — 메운 틈까지 같이</span></div>
         <div class="st"><span class="n">⑤</span><span class="t"><b>앞으로 돌리기</b>를 누르면 뺀 것이 원래 자리로 돌아온다</span></div>
+        <div class="st"><span class="n">⑥</span><span class="t"><b>초기화</b>를 누르면 전부 지워진다 — <b>이것만은 앞으로 돌리기로 되살릴 수 없다</b></span></div>
       </div>
-      <div class="seen">“방금”이 무엇인지가 생각보다 어렵다 — 파트 3·6.</div>
+      <div class="seen">“방금”이 무엇인지가 생각보다 어렵다 — 파트 3·6. ⑥의 <em>되살릴 수 없음</em>도 정해둔 동작이다.</div>
     </div>
 
     <div class="scene">
       <div class="who">되짚는다 · 불러온다</div>
       <div class="steps">
-        <div class="st"><span class="n">⑥</span><span class="t">구간 하나를 골라 <b>왕복</b>을 누르면 그 구간을 되짚는 구간이 옆에 생긴다</span></div>
-        <div class="st"><span class="n">⑦</span><span class="t"><b>전체 왕복</b>을 누르면 지금까지 그린 코스 전체를 되짚어 뒤에 붙는다</span></div>
-        <div class="st"><span class="n">⑧</span><span class="t">저장한 코스를 <b>불러오면</b> 이어서 편집할 수 있다</span></div>
+        <div class="st"><span class="n">⑦</span><span class="t">구간 하나를 골라 <b>왕복</b>을 누르면 그 구간을 되짚는 구간이 옆에 생긴다</span></div>
+        <div class="st"><span class="n">⑧</span><span class="t"><b>전체 왕복</b>을 누르면 지금까지 그린 코스 전체를 되짚어 뒤에 붙는다</span></div>
+        <div class="st"><span class="n">⑨</span><span class="t">저장한 코스를 <b>불러오면</b> 이어서 편집할 수 있다</span></div>
       </div>
-      <div class="seen">⑥⑦은 파트 7, ⑧은 파트 3에서 다룬다.</div>
+      <div class="seen">⑦⑧은 파트 7, ⑨는 파트 3에서 다룬다.</div>
     </div>
 
     <div class="scene">
       <div class="who">한 바퀴 닫는다</div>
       <div class="steps">
-        <div class="st"><span class="n">⑨</span><span class="t">코스가 <b>출발한 자리로 돌아오면</b> 출발 핀과 도착 핀이 <b>「출발/도착」 하나로 합쳐진다</b></span></div>
+        <div class="st"><span class="n">⑩</span><span class="t">코스가 <b>출발한 자리로 돌아오면</b> 출발 핀과 도착 핀이 <b>「출발/도착」 하나로 합쳐진다</b></span></div>
       </div>
       <div class="seen">닫혔는지 <em>판정</em>하는 것은 파트 2, 그 판정으로 <em>붙일 자리를 정하는</em> 것은 파트 4.</div>
     </div>
@@ -844,22 +846,22 @@ flowchart LR
           <td><span class="pt">4</span><span class="pt">5</span></td>
         </tr>
         <tr>
-          <td>④⑤ 되돌리기</td>
-          <td><code>undo</code> · <code>redo</code> · <code>Entry.order</code></td>
+          <td>④⑤⑥ 되돌리기 · 초기화</td>
+          <td><code>undo</code> · <code>redo</code> · <code>clear</code> · <code>Entry.order</code></td>
           <td><span class="pt">3</span><span class="pt">6</span></td>
         </tr>
         <tr>
-          <td>⑥⑦ 왕복</td>
+          <td>⑦⑧ 왕복</td>
           <td><code>insertRoundTrip</code> · <code>insertWholeCourseRoundTrip</code></td>
           <td><span class="pt">7</span></td>
         </tr>
         <tr>
-          <td>⑧ 불러오기</td>
+          <td>⑨ 불러오기</td>
           <td><code>load(segments:)</code></td>
           <td><span class="pt">3</span></td>
         </tr>
         <tr>
-          <td>⑨ 닫힌 코스 병합 핀</td>
+          <td>⑩ 닫힌 코스 병합 핀</td>
           <td><code>isClosedCourse</code> → <code>mapPins</code></td>
           <td><span class="pt">2</span></td>
         </tr>
@@ -914,7 +916,7 @@ flowchart LR
           </tr>
         </table>
         <p class="hint">
-          이 파트는 <strong>화면에 아무것도 안 나온다.</strong> 사용자 장면으로 치면 ①~⑨ 전부의
+          이 파트는 <strong>화면에 아무것도 안 나온다.</strong> 사용자 장면으로 치면 ①~⑩ 전부의
           재료라, 어느 한 장면에 대응되지 않는다.
         </p>
       </div>
@@ -1230,7 +1232,7 @@ reversed()   [D, C, B, A]</pre>
           </tr>
         </table>
         <p class="hint">
-          <strong>화면에 나오는 것은 하나뿐이다</strong> — 구간 ③의 판정이 <strong>장면 ⑨</strong>
+          <strong>화면에 나오는 것은 하나뿐이다</strong> — 구간 ③의 판정이 <strong>장면 ⑩</strong>
           (출발·도착 핀이 「출발/도착」 하나로 합쳐지는 것)로 나타난다. 구간 ①②는
           코드 안에서만 일어난다.
         </p>
@@ -1502,14 +1504,14 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
           <p>
             러닝 코스에서 흔한 모양이다 — 집에서 출발해 한 바퀴 돌고 집으로 돌아오는 코스.
             이렇게 되는 길이 둘이다. <strong>직접 그려서</strong> 처음 자리 근처로 돌아오거나,
-            <strong>전체 왕복</strong>(장면 ⑦)으로 코스 전체를 되짚어 붙이거나. 후자는 끝나는 자리가
+            <strong>전체 왕복</strong>(장면 ⑧)으로 코스 전체를 되짚어 붙이거나. 후자는 끝나는 자리가
             반드시 원래 출발점이라 <strong>항상 닫힌다.</strong>
           </p>
 
           <h4>2. 이건 화면에 나온다 — 핀이 둘에서 하나가 된다</h4>
 
           <p>
-            <strong>파트 2에서 유일하게 눈에 보이는 것</strong>이다(장면 ⑨). 보통은 초록 「출발」과
+            <strong>파트 2에서 유일하게 눈에 보이는 것</strong>이다(장면 ⑩). 보통은 초록 「출발」과
             빨강 「도착」 두 개가 붙는데, 닫히면 같은 자리에 겹쳐 찍히므로 앱이
             <strong>하나로 합쳐서 「출발/도착」</strong>으로 붙인다
             (<code>CoursePlannerPage+MapPinsComponent.swift:12-20</code>). 딸린 것이 하나 더 있다 —
@@ -1618,7 +1620,7 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
           <strong>되돌리기(↩︎)를 눌렀을 때 어느 선이 사라지는가</strong>뿐이다 —
           <strong>장면 ④</strong>. 그 되돌리기를 실제로 동작하게 만드는 것은 <strong>파트 6</strong>이고,
           이 파트는 그게 가능하려면 <strong>목록을 어떻게 들고 있어야 하는지</strong>를 정한다.
-          장면 ⑧(불러오기)은 구간 ③에서 다룬다.
+          장면 ⑨(불러오기)은 구간 ③에서 다룬다.
         </p>
       </div>
 
@@ -2419,7 +2421,7 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
             광화문에서 출발해 시청·남대문을 지나 <strong>다시 광화문 쪽으로</strong> 돌아왔다고 하자.
             출발 지점과 도착 지점이 20m 안으로 가까워지는 순간, 앱은 이것을
             <strong>닫힌 코스</strong>로 보고 <strong>핀 두 개를 하나로 합쳐</strong> 보여준다
-            (장면 ⑨ · 판정은 파트 2).
+            (장면 ⑩ · 판정은 파트 2).
           </p>
 
           <pre class="code">        ╭─────────╮
@@ -2725,7 +2727,7 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
     </div>
   </details>
 
-  <details class="part" id="p5" open>
+  <details class="part" id="p5">
     <summary>
       <span class="part-tag">파트 5</span>
       <span class="ptitle">붙일 자리 — 양끝이 다 20m 밖일 때</span>
@@ -3315,12 +3317,257 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
     </div>
   </details>
 
+  <details class="part" id="p6" open>
+    <summary>
+      <span class="part-tag">파트 6</span>
+      <span class="ptitle">되돌리기와 앞으로 돌리기</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트 한 줄</span>
+        되돌리기(<code>undo</code>)가 <strong>무엇을 빼서 어디에 쌓고</strong>,
+        앞으로 돌리기(<code>redo</code>)가 그것을 <strong>원래 자리로</strong> 되돌려 놓는 법.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>되돌린 것을 되살릴 때 <strong>무엇을 함께 적어둬야 자리가 재현되는지</strong> 정할 수 있다 —
+          자리를 <strong>배열 위치로 적을지 이웃 줄의 이름표로 적을지</strong>, 되살릴 목록을
+          <strong>언제 비울지</strong>, 그리고 <strong>끝까지 안 쓰이는 갈래를 남겨둘지</strong>.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr>
+            <td><a href="#p6s0">구간 ⓪</a></td>
+            <td>어디까지 왔나 — 파트 3에서 받아 온 것, 그리고 이름 고정</td>
+            <td>연결</td>
+          </tr>
+          <tr>
+            <td><a href="#p6s1">구간 ①</a></td>
+            <td>되돌리기는 무엇을 빼고, 뺀 것을 어디에 두나</td>
+            <td><code>undo</code></td>
+          </tr>
+          <tr>
+            <td>구간 ②</td>
+            <td>앞으로 돌리기 — 자리를 무엇으로 적나</td>
+            <td><code>placedAtFront</code></td>
+          </tr>
+          <tr>
+            <td>구간 ③</td>
+            <td>그 둘로 부족한 하나 — 대상 줄의 이름표</td>
+            <td><code>anchorID</code></td>
+          </tr>
+          <tr>
+            <td>구간 ④</td>
+            <td>복원 스택을 언제 비우나</td>
+            <td>다섯 자리</td>
+          </tr>
+          <tr>
+            <td>구간 ⑤</td>
+            <td>초기화만 되살릴 수 없다</td>
+            <td><code>clear</code></td>
+          </tr>
+          <tr>
+            <td>구간 ⑥</td>
+            <td>남은 갈래 하나는 왜 도달 불가한가</td>
+            <td>증명</td>
+          </tr>
+        </table>
+        <p class="hint">
+          <strong>탭과 그리기가 이 파트에서는 갈리지 않는다.</strong> 파트 4·5에서는 두 모드가
+          서로 다른 갈래로 갔지만, 어느 쪽으로 붙였든 결과는 목록에 <strong>줄 하나</strong>로
+          들어간다. 되돌리기와 앞으로 돌리기는 <strong>그 목록만 본다.</strong>
+        </p>
+      </div>
+
+      <details class="seg" id="p6s0">
+        <summary>구간 ⓪ — 어디까지 왔나, 그리고 이름 고정</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 이 파트가 파트 3에서
+            <strong>무엇을 이어받았는지</strong>, 그리고 <strong>이름이 겹치는 것 둘</strong>을
+            어떻게 가를지 정할 수 있다.
+          </p>
+
+          <h4>1. 파트 3에서 받아 온 것</h4>
+
+          <p>
+            파트 3에서 <strong>배열 순서</strong>(달리는 순서)와 <strong>번호</strong>(<code>order</code>,
+            붙인 순서)가 갈라지는 것을 봤고, 거기서 <strong>되돌리기가 무엇을 빼는지</strong>까지 왔다.
+            구간 A를 먼저 붙이고, B를 코스 앞쪽에, C를 뒤에 붙인 코스를 값으로 놓으면 이렇다.
+          </p>
+
+          <pre class="code">코스   [ B    A    C ]      <span class="c">배열 순서 = 달리는 순서</span>
+번호     1    0    2        <span class="c">order = 붙인 순서</span>
+
+되돌리기 → 배열의 마지막이라서가 아니라, <span class="c">번호가 가장 큰 C를 뺀다</span></pre>
+
+          <p>
+            파트 3이 답한 것은 <strong>무엇을 빼나</strong>였다. 파트 6이 그 위에 얹는 것은
+            <strong>뺀 것이 어디로 돌아오나</strong>다.
+          </p>
+
+          <h4>2. 이름을 먼저 고정한다</h4>
+
+          <p>
+            이 파트는 같은 말이 두 가지를 가리키기 쉬운 자리가 많아, 쓰기 전에 넷을 못박는다.
+            <strong>되돌리기</strong>는 언제나 <code>undo</code>이고, 사용자가 누르는 것은
+            <strong>되돌리기 버튼</strong>으로 따로 부른다. <strong>앞으로 돌리기</strong>는 언제나
+            <code>redo</code>이고, 코스의 앞뒤를 말할 때는 <strong>코스 앞쪽 · 코스 뒤쪽</strong>으로만 쓴다.
+          </p>
+
+          <div class="concept">
+            <h3>💡 <code>anchor</code>가 파트 5와 다른 것을 가리킨다</h3>
+            <p>
+              파트 5의 <code>anchor</code>는 <strong>스트로크 양끝 중 기존 코스에 더 가까운 그 끝점</strong>이었다 —
+              <strong>점</strong>이다. 파트 6에 나오는 <code>anchorID</code>는
+              <strong>목록의 줄 하나를 가리키는 이름표</strong>다 — 점이 아니라 <strong>줄</strong>이다.
+              철자가 같을 뿐 다른 것이라, 이 파트에서는 <strong>대상 줄(<code>anchorID</code>)</strong>로만 부른다.
+              설계 문서와 코드 주석이 쓰는 말이 그것이다.
+            </p>
+          </div>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>파트 3은 <strong>무엇을 빼나</strong>까지였고, 파트 6은 <strong>뺀 것이 어디로 돌아오나</strong>를
+            얹는다. <code>anchor</code>는 파트 5의 그것과 <strong>다른 것</strong>이다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p6s1">
+        <summary>구간 ① — 되돌리기는 무엇을 빼고, 뺀 것을 어디에 두나</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 되돌리기가 <strong>무엇을 근거로</strong>
+            뺄 것을 고를지 정할 수 있다. 배열 위치로 고를지 번호로 고를지, 그리고 뺀 것을
+            <strong>버릴지 들고 있을지</strong>.
+          </p>
+
+          <p>
+            되돌리기 한 번에 일어나는 일이 <strong>둘</strong>이다 — 목록에서 빼는 것, 그리고 뺀 것을
+            어딘가에 두는 것. 파트 3은 앞엣것만 봤고, 여기서 뒤엣것을 얹는다.
+          </p>
+
+          <h4>1. 무엇을 빼나 — 번호가 가장 큰 줄(<code>Entry</code>)</h4>
+
+          <p>
+            목록에 담긴 것은 구간이 아니라 <strong>줄(<code>Entry</code>)</strong>이다. 필드가 여섯인데
+            이 구간에서 쓰는 것은 <strong>번호(<code>order</code>)와 구간(<code>segment</code>) 둘</strong>이라,
+            그림에는 둘만 그린다.
+          </p>
+
+          <pre class="code">private struct Entry {
+    let id: UUID                    <span class="c">이 줄의 이름표</span>
+    let order: Int                  <span class="c">파트 3에서 본 번호</span>
+    let placedAtFront: Bool         <span class="c">구간 ②</span>
+    let anchorID: UUID?             <span class="c">구간 ③</span>
+    let anchorInsertsBefore: Bool   <span class="c">구간 ③</span>
+    let segment: CourseSegment      <span class="c">파트 3에서 본 구간</span>
+}</pre>
+
+          <p>
+            되돌리기가 빼는 것은 <strong>번호가 가장 큰 줄</strong>이다. 배열의 마지막이 아니다.
+            구간 A를 붙이고 B를 <strong>코스 앞쪽</strong>에 붙이면 둘이 갈린다.
+          </p>
+
+          <pre class="code">목록   [ 번호 1   구간 B ]      <span class="c">배열 첫 번째인데 번호가 가장 크다</span>
+       [ 번호 0   구간 A ]      <span class="c">배열 마지막</span>
+
+되돌리기 → B가 빠진다.  A가 아니다.</pre>
+
+          <p>
+            그리고 빠지는 것은 <strong>줄 하나 통째로</strong>다. 그 줄 안의 구간이 이미 여러 겹일 수
+            있기 때문에 이 말이 필요하다.
+          </p>
+
+          <pre class="code">줄(Entry)  [ 번호 2   구간 C ]
+                       └── C 안에는 「멀리 그은 것 + 길찾기로 메운 틈」이
+                           이미 하나로 합쳐져 들어 있다  <span class="c">파트 5</span></pre>
+
+          <p>
+            되돌리기는 그 줄을 빼기만 하고 <strong>안이 몇 겹인지는 알지 않는다.</strong> 그래서 메운 틈까지
+            함께 사라진다 — 장면 ④의 <em>“메운 틈까지 같이”</em>가 코드에서는 이 두 층이다.
+          </p>
+
+          <h4>2. 뺀 것을 어디에 두나 — 배열 하나를 스택처럼 쓴다</h4>
+
+          <p>
+            뺀 줄은 버리지 않고 <strong>복원 스택(<code>redoStack</code>)에 쌓는다.</strong> 이름에 Stack이
+            붙어 있지만 <strong>타입은 그냥 배열</strong>이다. 스택이 되는 것은
+            <strong>쓰는 자리를 한쪽으로 제한한 것</strong>이다 — 붙일 때도 맨 뒤, 뺄 때도 맨 뒤.
+            그래서 마지막에 되돌린 것이 먼저 되살아난다.
+          </p>
+
+          <pre class="code">entries     [Entry]   <span class="c">앞·중간·뒤 어디에나 끼운다</span>
+redoStack   [Entry]   <span class="c">맨 뒤만 쓴다 — 붙이는 것도 빼는 것도 맨 뒤</span></pre>
+
+          <p>
+            되돌리기를 두 번 하면 이렇게 된다. 쌓인 줄이 <strong>자기 번호를 그대로 들고 가는 것</strong>이 요점이다.
+          </p>
+
+          <pre class="code">되돌리기 전    목록  [번호 1  B] [번호 0  A] [번호 2  C]
+              스택  (빈 것)
+
+한 번          목록  [번호 1  B] [번호 0  A]
+              스택  [번호 2  C]
+
+두 번          목록  [번호 0  A]
+              스택  [번호 2  C] [번호 1  B]      <span class="c">B가 맨 뒤 = 먼저 나올 것</span></pre>
+
+          <h4>3. 번호는 되돌려도 이어서 나간다</h4>
+
+          <p>
+            <strong>다음에 줄 번호</strong>(<code>nextOrder</code>)는 되돌려도 줄지 않는다. 그래서 되돌린
+            자리의 번호를 다시 쓰지 않고 이어서 나간다.
+          </p>
+
+          <pre class="code">①  네 개를 붙인 상태
+    목록   [번호 0] [번호 1] [번호 2] [번호 3]
+    스택   (빈 것)                          다음에 줄 번호  4
+
+②  되돌리기 — 번호가 가장 큰 3이 빠진다
+    목록   [번호 0] [번호 1] [번호 2]
+    스택   [번호 3]                         다음에 줄 번호  4   <span class="c">3으로 줄지 않는다</span>
+
+③  새 경로를 그린다
+    목록   [번호 0] [번호 1] [번호 2] [번호 4]   <span class="c">3이 아니라 4</span>
+                                            다음에 줄 번호  5</pre>
+
+          <p>
+            ②에서 <strong>그 값이 4에 그대로 남는 것</strong>이 전부다. MVP9 설계가 이유를 한 줄로 적어뒀다 —
+            <em>“<code>order</code> 값은 보존한다(<code>nextOrder</code>는 undo로 감소하지 않으므로
+            복원 시 충돌 없음).”</em> 스택의 줄이 번호 3을 들고 있는데 다음 번호도 3이면 같은 번호가 둘
+            생기고, 되돌리기가 <em>“번호가 가장 큰 것”</em>으로 고르는 판정이 거기서 깨진다.
+          </p>
+
+          <p>
+            ③에서 <strong>스택에 있던 번호 3이 어떻게 되는지</strong>는 구간 ④에서 본다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>되돌리기는 <strong>번호가 가장 큰 줄(<code>Entry</code>)을 통째로</strong> 빼서
+            <strong>복원 스택에 쌓는다.</strong> 번호는 떼지 않고 <strong>다음에 줄 번호도 줄지 않는다</strong> —
+            그래서 되살려도 번호가 겹치지 않는다.</p>
+          </div>
+
+        </div>
+      </details>
+
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음은 파트 6 — 되돌리기와 앞으로 돌리기.</strong>
-    파트 4·5는 <strong>붙이는 규칙</strong>이었다. 파트 6은 그 반대편이다 — 방금 붙인 것을 빼고,
-    뺀 것을 되돌려 놓는다. 파트 3에서 <em>“번호가 가장 큰 것을 뺀다”</em>까지 봤는데,
-    <strong>뺀 것을 어디에 쌓아두고 어느 자리로 되돌리는지</strong>가 남아 있다.
-    파트 5에서 만든 <strong>합쳐진 구간 하나</strong>가 여기서 통째로 빠지는 것도 그 규칙으로 설명된다.
+    <strong>다음은 파트 6 구간 ② — 앞으로 돌리기.</strong>
+    되돌린 줄을 되살릴 때 <strong>원래 자리를 무엇으로 적어두는지</strong>를 본다.
+    배열 위치(몇 번째)로 적으면 왜 못 쓰는지, 대신 무엇을 적었는지가 구간 ②다.
   </div>
 
 </div>
