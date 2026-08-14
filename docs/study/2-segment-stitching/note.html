@@ -3366,14 +3366,19 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
             <td>다섯 자리</td>
           </tr>
           <tr>
-            <td>구간 ⑤</td>
-            <td>초기화만 되살릴 수 없다</td>
+            <td><a href="#p6s5">구간 ⑤</a></td>
+            <td>초기화만 되살릴 수 없다 — 의도된 비대칭</td>
             <td><code>clear</code></td>
           </tr>
           <tr>
             <td>구간 ⑥</td>
             <td>남은 갈래 하나는 왜 도달 불가한가</td>
             <td>증명</td>
+          </tr>
+          <tr>
+            <td>마무리</td>
+            <td>두 버튼이 꺼지는 근거가 서로 다른 곳에서 나온다</td>
+            <td><code>canRedo</code></td>
           </tr>
         </table>
         <p class="hint">
@@ -3973,15 +3978,92 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
         </div>
       </details>
 
+      <details class="seg" id="p6s5">
+        <summary>구간 ⑤ — 초기화만 되살릴 수 없다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 어떤 동작을 <strong>되살릴 수 있게
+            만들고 어떤 것은 못 되살리게 둘지</strong> 정할 수 있다.
+          </p>
+
+          <p>
+            구간 ④에서 스택을 비우는 다섯 자리를 봤다. 그중 <strong>전부 지우기 하나만 성격이
+            다르다.</strong> 나머지 넷은 코스를 바꾸면서 스택을 버리는데, 이것은
+            <strong>되돌아갈 곳 자체를 없앤다.</strong>
+          </p>
+
+          <h4>1. 지워지는 것은 편집 중인 코스뿐이다</h4>
+
+          <p><em>“다 사라진다”</em>의 범위부터 못박아야 한다. <strong>저장해둔 코스는 안 지워진다.</strong></p>
+
+          <pre class="code">전부 지우기가 건드리는 것        지금 편집 중인 코스 — 구간 목록 · 복원 스택 · 번호
+전부 지우기가 안 건드리는 것      이름 붙여 저장해둔 코스들</pre>
+
+          <p>
+            편집 중인 코스는 세션이 들고 있고, 저장한 코스는 <strong>다른 곳</strong>에 있다.
+            초기화 버튼은 세션만 비우므로, 지운 뒤에도 목록에서 저장한 코스를 다시 불러올 수 있다.
+          </p>
+
+          <h4>2. 셋을 다 비운다 — 번호까지</h4>
+
+          <pre class="code">붙이기로 비울 때
+   목록            [A→B] [B→C] [C→E]        <span class="c">새로 붙인 것이 남는다</span>
+   스택            (빈 것)
+   다음에 줄 번호   4                        <span class="c">그대로 이어간다</span>
+
+전부 지우기로 비울 때
+   목록            (빈 것)                   <span class="c">아무것도 안 남는다</span>
+   스택            (빈 것)
+   다음에 줄 번호   0                        <span class="c">여기도 0으로 돌아간다</span></pre>
+
+          <p>
+            <strong>마지막 줄이 새것이다.</strong> 구간 ①에서 <em>“다음에 줄 번호는 되돌려도 줄지
+            않는다”</em>가 규칙이었는데, <strong>전부 지우기에서만 0으로 돌아간다.</strong> 유일한 예외다.
+          </p>
+
+          <p>
+            그런데 <strong>깨져도 되는 이유가 그 규칙과 같은 곳에서 나온다.</strong> 번호를 안 줄인
+            이유가 <em>“스택에 번호 3을 든 줄이 있는데 다음 번호도 3이면 겹친다”</em>였는데,
+            전부 지우기 뒤에는 <strong>스택에 아무것도 없어서 겹칠 상대가 없다.</strong>
+          </p>
+
+          <h4>3. 그래서 되살릴 수 없고, 그것이 정해진 것이다</h4>
+
+          <pre class="code">되돌리기        목록에서 뺀다  →  스택에 쌓는다     <span class="c">되살릴 수 있다</span>
+전부 지우기      목록도 비운다  →  스택도 비운다     <span class="c">되살릴 수 없다</span></pre>
+
+          <p>
+            <strong>중요한 것은 이게 빠뜨린 것이 아니라는 점이다.</strong> 코드만 보면
+            <em>“redo를 안 만들었네”</em>와 <em>“안 만들기로 했네”</em>가 구분되지 않는데,
+            MVP9 설계의 <strong>「범위 밖」 절</strong>에 그 자리로 적혀 있다 —
+            <em>“clear의 redo 복구 — clear는 redo 대상이 아니다(<strong>의도된 비대칭</strong>).
+            실수 clear 복구 니즈가 확인되면 백로그로.”</em>
+          </p>
+
+          <p>
+            <strong>「범위 밖」에 적혔다는 것 자체가 정보다.</strong> 이번에 안 만든다고 정한 것이고,
+            <strong>다시 볼 조건</strong>(<em>“실수로 눌러 곤란한 일이 실제로 생기면”</em>)까지 함께 적혀 있다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>전부 지우기는 <strong>편집 중인 코스만</strong> 지운다(저장한 코스는 남는다).
+            <strong>목록·스택·번호를 모두 비워서</strong> 되살릴 재료를 남기지 않고,
+            <strong>되돌리기는 되살릴 수 있는데 이것만 못 되살리는 비대칭은 의도된 것</strong>이다.</p>
+          </div>
+
+        </div>
+      </details>
+
     </div>
   </details>
 
   <div class="next">
-    <strong>다음은 파트 6 구간 ⑤ — 초기화만 되살릴 수 없다.</strong>
-    구간 ④에서 스택을 비우는 다섯 자리 중 하나가 <strong>전부 지우기</strong>였다.
-    그런데 이것 하나만 <strong>되살릴 방법이 아예 없다</strong> — 되돌리기는 되살릴 수 있는데
-    전부 지우기는 안 된다. <strong>의도된 비대칭</strong>이고, 두 버튼이 꺼지는 근거가
-    서로 다른 곳에서 나오는 것도 같은 뿌리다.
+    <strong>다음은 파트 6 구간 ⑥ — 남은 갈래 하나는 왜 도달 불가한가.</strong>
+    구간 ③에서 왕복 줄을 되살릴 때 <strong>대상 줄이 이미 돌아와 있어야 한다</strong>고 했다.
+    그 보장이 정말 성립하는지, 그래서 <strong>대상 줄을 못 찾는 갈래</strong>가 실제로
+    일어날 수 있는지를 본다.
   </div>
 
 </div>
