@@ -581,6 +581,7 @@
     <li><span class="k"><i class="kf">6</i><i class="ks">6</i></span><a href="#p6" data-target="p6" title="파트 6 — 되돌리기와 앞으로 돌리기">되돌리기와 앞으로 돌리기</a></li>
     <li><span class="k"><i class="kf">7</i><i class="ks">7</i></span><a href="#p7" data-target="p7" title="파트 7 — 왕복">왕복</a></li>
     <li><span class="k"><i class="kf">마무리</i><i class="ks">끝</i></span><a href="#where" data-target="where" title="마무리 — 어디를 열면 되나 · 왜 이렇게 됐나">어디를 열면 되나</a></li>
+    <li><span class="k"><i class="kf">문제</i><i class="ks">?</i></span><a href="#quiz" data-target="quiz" title="확인 문제 기록">확인 문제 기록</a></li>
   </ol>
 </nav>
 
@@ -1035,8 +1036,28 @@ flowchart LR
             <strong>값으로</strong> 들고 있다.
           </p>
 
+          <div class="concept">
+            <h3>💡 그 거리는 우리가 잰 값이 아니다</h3>
+            <p>
+              길찾기에 물어보면 <strong>답이 둘로</strong> 온다 — <strong>좌표 목록</strong>과
+              <strong>거리</strong>. 구간에 담기는 거리는 그중 뒤엣것, 즉 <strong>도로 모양을 아는
+              쪽이 재서 준 값</strong>이다.
+            </p>
+            <pre class="code">물어본다      "A에서 B까지 걸어서"
+돌아오는 답    좌표 [ p1, p2, … , p12 ]      <span class="c">점 12개</span>
+              거리 412m                     <span class="c">도로를 따라 잰 값</span>
+
+값으로 들고 있으면   412m를 그냥 꺼낸다
+좌표에서 계산하면    p1~p12를 직선으로 이어 잰다 = 395m</pre>
+            <p>
+              좌표는 도로의 모든 점이 아니라 <strong>꺾이는 자리 위주로 듬성듬성</strong> 온다.
+              그래서 점만 보고 다시 재면 <strong>사이를 질러가</strong> 실제보다 짧아진다.
+              굽은 길일수록 더 그렇다. <strong>바뀌는 것은 좌표가 아니라 「거리를 누가 쟀느냐」</strong>다.
+            </p>
+          </div>
+
           <p class="later">
-            왜 계산하지 않고 들고 있는지는 <strong>파트 2</strong>에서 코스 전체 거리를 낼 때 드러난다.
+            이 값이 코스 전체에서 어떻게 쓰이는지는 <strong>파트 2</strong>에서 드러난다.
             지금은 “따로 들고 있다”만 붙들면 된다.
           </p>
 
@@ -5038,6 +5059,155 @@ colorKey         1         0         2      <span class="c">화면이 건네는 
         <strong>활성/비활성</strong>으로 바꿨다. 실행과 버튼 상태를 한 단어로 덮어서 읽는 쪽이
         되물어야 했다.</li>
     </ul>
+  </section>
+
+  <section id="quiz">
+    <div class="part-tag">마무리 4</div>
+    <h2>확인 문제 기록</h2>
+
+    <p>
+      2026-08-15에 푼 여덟 문제. <strong>여덟 다 맞았다.</strong> 문제 2에서 <em>“이해는 했는데
+      왜 그런지 모르겠다”</em>가 나와 <strong>같은 개념으로 하나 더</strong> 냈고(문제 3), 그 자리에서
+      나온 설명은 <strong>파트 1 본문에 💡 박스로 들어갔다.</strong>
+    </p>
+
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 1</span><span class="qres">정답</span><span class="qsrc">파트 7</span></div>
+      <p>구간 패널에 구간이 셋 있고, 각각 붙인 순서 번호가 왼쪽부터 <code>1</code>, <code>0</code>,
+        <code>2</code>다. 코스는 열려 있고 좌표 상한에는 여유가 있다. <strong>왕복 버튼이 활성인 행은?</strong></p>
+      <pre class="code">A  번호가 가장 작은 0번 행 하나
+B  왼쪽 끝(1)과 오른쪽 끝(2) 두 행          <span class="c">← 고른 답 · 정답</span>
+C  번호가 가장 큰 2번 행 하나
+D  셋 다 활성</pre>
+      <div class="why">
+        <span class="lb">왜 그게 답인가</span>
+        <p>판정은 <strong>번호가 아니라 목록에서의 자리</strong>로 한다. 자유 끝은 <em>“코스의 어느 쪽
+          끝인가”</em>라서, 번호 <code>0</code>인 구간이 코스 한가운데 있을 수 있다.</p>
+        <p><strong>A</strong> 번호가 작다고 앞쪽 끝이 아니다 · <strong>C</strong> 앞쪽 끝이 빠졌다 ·
+          <strong>D</strong> 가운데는 되짚으면 코스가 끊긴다.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 2</span><span class="qres">정답 · 근거가 흔들려 한 문제 더</span><span class="qsrc">파트 1</span></div>
+      <p>구간은 좌표 배열과 <strong>거리를 값으로</strong> 들고 있다. 거리를 저장하지 않고
+        <strong>좌표 배열에서 그때그때 계산</strong>하도록 바꾸면 <strong>무엇이 깨지나?</strong></p>
+      <pre class="code">A  뒤집기가 거리를 반대로 계산하게 된다
+B  코스 총 거리가 실제보다 짧아진다            <span class="c">← 고른 답 · 정답</span>
+C  불러올 때 구간의 종류를 잃는다
+D  아무것도 안 깨진다 — 같은 값이 나온다</pre>
+      <div class="why">
+        <span class="lb">왜 그게 답인가</span>
+        <p>구간에 담긴 거리는 <strong>우리가 잰 값이 아니라 길찾기가 도로를 따라 재서 준 값</strong>이다.
+          좌표는 <strong>꺾이는 자리 위주로 듬성듬성</strong> 오므로, 점만 보고 다시 재면
+          <strong>사이를 질러가</strong> 짧아진다.</p>
+        <pre class="code">돌아오는 답    좌표 [ p1, … , p12 ]   거리 412m   <span class="c">도로를 따라 잰 값</span>
+값으로 들고 있으면   412m를 그냥 꺼낸다
+좌표에서 계산하면    p1~p12를 직선으로 이어 잰다 = 395m</pre>
+        <p><strong>고른 답은 맞았지만</strong> <em>“어차피 같은 좌표 배열인데 왜 달라지느냐”</em>가
+          남았다. 갈린 지점은 <strong>지금도 좌표로 거리를 구하고 있다고 본 것</strong>이었다 —
+          앱은 좌표로 거리를 재지 않는다.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 3</span><span class="qres">정답</span><span class="qsrc">파트 2 · 문제 2와 같은 개념</span></div>
+      <p>구간 셋(300m · 400m · 500m)이 이어져 코스가 됐다. 이음매에서는 같은 점이 양쪽 구간에 하나씩
+        있어서 좌표를 이을 때 뒤 구간의 첫 좌표를 버린다. <strong>코스 총 거리는?</strong></p>
+      <pre class="code">A  1,200m — 세 구간의 거리를 그냥 더한다        <span class="c">← 고른 답 · 정답</span>
+B  1,200m보다 조금 작다 — 버린 좌표만큼 빠진다
+C  1,200m보다 조금 크다 — 이어붙인 틈이 더해진다
+D  이어붙인 좌표를 다시 재봐야 안다</pre>
+      <div class="why">
+        <span class="lb">왜 그게 답인가</span>
+        <p>버리는 좌표는 <strong>앞 구간의 마지막 점과 똑같은 점</strong>이라 없애도 잃는 거리가 없다.</p>
+        <p><strong>C</strong> 붙일 때 벌어져 있었다면 그 틈은 <strong>이미 메워져 구간 거리에
+          들어가 있다</strong> · <strong>D</strong> 좌표로 다시 재면 문제 2의 이유로 짧아진다.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 4</span><span class="qres">정답</span><span class="qsrc">파트 3</span></div>
+      <p>되돌리기를 고쳐서 번호를 보지 않고 <strong>목록의 마지막 줄</strong>을 빼도록 만들면
+        <strong>언제 잘못 동작하나?</strong></p>
+      <pre class="code">A  항상 잘못된 것을 뺀다
+B  코스 앞쪽에 구간을 붙인 직후에 잘못 뺀다     <span class="c">← 고른 답 · 정답</span>
+C  저장된 코스를 불러온 뒤에만 잘못 뺀다
+D  잘못 동작하지 않는다</pre>
+      <div class="why">
+        <span class="lb">왜 그게 답인가</span>
+        <p>앞쪽에 붙이면 방금 넣은 것이 <strong>배열 맨 앞</strong>에 온다. 마지막 줄을 빼면 엉뚱한
+          구간이 빠진다.</p>
+        <p><strong>A</strong> 뒤쪽에 붙일 때는 결과가 같다 · <strong>C</strong> 불러온 직후에는
+          두 순서가 같아서 오히려 안전하다.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 5</span><span class="qres">정답</span><span class="qsrc">파트 4</span></div>
+      <p>코스가 <strong>닫혀 있다</strong>(첫 좌표와 끝 좌표가 20m 안). 이 상태에서 새 구간을 그렸다.
+        <strong>어디에 붙나?</strong></p>
+      <pre class="code">A  시작점이 어느 끝에 가까운지 재서 정한다
+B  재지 않고 무조건 코스 뒤쪽에 붙인다          <span class="c">← 고른 답 · 정답</span>
+C  항상 코스 앞쪽에 붙는다
+D  닫힌 코스에는 붙일 수 없다</pre>
+      <div class="why">
+        <span class="lb">왜 그게 답인가</span>
+        <p>양끝이 사실상 같은 점이라 <strong>앞뒤 어느 쪽이든 선 모양이 같다.</strong> 재면 두 거리가
+          거의 같아 <strong>1m 차이로 뒤집히므로</strong>, 아예 재지 않고 뒤로 못박아 그린 순서대로 남긴다.</p>
+        <p><strong>D</strong> 붙기는 붙는다. 막히는 것은 <strong>합쳐진 핀을 탭했을 때</strong>뿐이다.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 6</span><span class="qres">정답</span><span class="qsrc">파트 5</span></div>
+      <p>새 구간의 양끝이 둘 다 기존 코스 양끝에서 20m 밖일 때는 네 거리를 다 재서 최단 하나를 고른다.
+        이 <strong>양끝 비교는 한 번 버려졌다가 되살아났다.</strong> <strong>되살릴 수 있었던 근거는?</strong></p>
+      <pre class="code">A  20m 기준을 더 크게 잡아 위험한 경우가 사라졌다
+B  여유값(마진)을 넣어 뒤집힘을 막았다
+C  위험한 장면이 여기까지 도달하지 못한다        <span class="c">← 고른 답 · 정답</span>
+D  되살린 것이 아니라 계산이 다른 새 방식이다</pre>
+      <div class="why">
+        <span class="lb">왜 그게 답인가</span>
+        <p>비교 방식은 옛것과 <strong>똑같다.</strong> 달라진 것은 <strong>순서</strong>다 — 되짚어 그은
+          획처럼 양끝이 나란히 붙는 장면은 <strong>20m 판정이 먼저 가져간다.</strong></p>
+        <p><strong>B</strong> 마진은 <strong>일부러 안 넣었다</strong> — 여기서는 갈려도 어느 쪽이든
+          비슷하게 괜찮아서다.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 7</span><span class="qres">정답</span><span class="qsrc">파트 7</span></div>
+      <p>구간이 <strong>하나뿐인</strong> 코스에서 그 구간의 왕복 버튼을 누른 뒤,
+        <strong>전체 왕복</strong> 버튼도 눌렀다. <strong>두 번째 버튼이 하는 일은?</strong></p>
+      <pre class="code">A  첫 번째와 같다 — 구간이 하나뿐이라 결과가 같다
+B  그때까지의 코스 전체를 뒤집어 한 구간으로 뒤에 붙인다   <span class="c">← 고른 답 · 정답</span>
+C  이미 왕복한 코스라 비활성이다
+D  방금 붙은 왕복 구간만 다시 뒤집어 붙인다</pre>
+      <div class="why">
+        <span class="lb">왜 그게 답인가</span>
+        <p>전체 왕복의 대상은 언제나 <strong>지금까지의 코스 전체</strong>다. 거리로 보면
+          400m → (구간 왕복) 800m → (전체 왕복) <strong>1,600m</strong>.</p>
+        <p><strong>C</strong> 비활성 조건은 <strong>좌표 상한과 코스 존재</strong>뿐이다 —
+          <em>“이미 왕복했는지”</em>는 보지 않는다.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="qhead"><span class="qn">문제 8</span><span class="qres">정답</span><span class="qsrc">파트 6</span></div>
+      <p>구간을 하나 되돌린 뒤(복원 스택에 하나 쌓임), 새 구간을 그렸는데 <strong>길찾기가 실패해서
+        붙이지 못했다.</strong> <strong>복원 스택은?</strong></p>
+      <pre class="code">A  비워진다 — 그리려 한 순간 되살릴 것이 사라진다
+B  그대로 남는다 — 되살리기가 아직 가능하다      <span class="c">← 고른 답 · 정답</span>
+C  비워지고 되돌리기 버튼도 비활성이 된다
+D  전부 지우기와 같은 취급이라 되살릴 수 없다</pre>
+      <div class="why">
+        <span class="lb">왜 그게 답인가</span>
+        <p>비우는 줄이 <strong>목록에 실제로 넣는 함수 안</strong>에 있어서, 실패하면 그 줄까지 가지
+          못한다. <em>“실패하면 유지한다”</em>는 조건문이 있는 것이 아니라 <strong>배치가 그렇게 되어
+          있는 것</strong>이다. MVP9 설계 리뷰가 잡아 고친 자리이기도 하다.</p>
+      </div>
+    </div>
   </section>
 
 </div>
