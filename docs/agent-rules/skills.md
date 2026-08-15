@@ -1,6 +1,6 @@
 # Skill and Plugin Rules
 
-## Installed Plugins
+## Installed Plugins and External Skills
 
 - Superpowers: planning, TDD, debugging, review, verification workflows
 - Compound Engineering: code review, documentation of reusable learnings, workflow utilities
@@ -9,6 +9,8 @@
 - XcodeBuildMCP: configured globally as `XcodeBuildMCP` for simulator, UI automation, debugging, and logging
 - Playwright MCP: configured globally for browser-backed checks when needed
 - Sequential Thinking MCP: configured globally for structured reasoning support when needed
+- Diagram Design: 학습 노트·일일 회고의 새 도식을 정적 인라인 SVG로 만들 때 사용. 기존 Mermaid는
+  수정할 이유가 생길 때만 교체하며, 아카이빙 절차에는 사용하지 않는다.
 
 **규칙이 요구하는 스킬 호출이 실패하면 그 단계를 건너뛰고 진행하지 않는다.** 멈추고 사용자에게
 알린다 — 어떤 스킬이 왜 실패했는지, 재시작이 필요한지. 실패를 삼키고 넘어가면 "필수"로 적힌

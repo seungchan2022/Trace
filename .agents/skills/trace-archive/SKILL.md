@@ -7,6 +7,8 @@ description: 완료된 Trace MVP의 명세·플랜·회고·로드맵 상태를 
 
 > Codex에서는 `$trace-archive` 또는 `$trace-archive MVP1`, Claude Code에서는 `/trace-archive` 또는 `/trace-archive MVP1`로 호출한다.
 > 목적: 완료된 MVP의 마일스톤 산출물(spec+plan)을 `history/`로 옮기고 회고·인덱스를 갱신한다.
+> 아카이빙은 기존 산출물을 보존·색인하는 절차다. `diagram-design`으로 새 도식을 만들거나 기존
+> 도식을 다시 그리는 범위는 아니다.
 
 ## 전제
 

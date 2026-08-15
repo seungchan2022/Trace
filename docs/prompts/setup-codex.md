@@ -102,19 +102,13 @@ args = ["-y", "@modelcontextprotocol/server-sequential-thinking"]
 enabled = true
 ```
 
-### 4-3. mermaid (선택)
+### 4-3. Diagram Design — 학습·회고 도식
 
-회고의 다이어그램은 **MCP 없이 CDN 임베드로 이미 렌더**되므로 필수 아님.
-서버사이드 검증/PNG 변환을 원하면 mermaid MCP 패키지를 찾아 같은 형식으로 추가
-(패키지명은 직접 확인 — 생태계에 여러 구현 존재).
-
-```toml
-# 예시 (실제 패키지명 확인 후 교체)
-# [mcp_servers.mermaid]
-# command = "npx"
-# args = ["-y", "<mermaid-mcp-package>"]
-# enabled = true
-```
+`diagram-design`은 user scope 외부 스킬이다. `trace-study`와 `daily-retro`가 새 도식에
+사용하므로, 새 머신에서는 Codex의 `skill-installer`로
+`cathrynlavery/diagram-design` 저장소의 `skills/diagram-design`을 설치한다. 설치 뒤에는
+**새 Codex 세션을 열어야** 스킬 목록에 나타난다. 새 도식은 정적 인라인 SVG이며, 기존 Mermaid
+도식은 수정할 이유가 생길 때만 교체한다.
 
 ---
 

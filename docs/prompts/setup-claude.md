@@ -46,6 +46,7 @@ Codex와 같은 능력(기획·플랜·TDD·리뷰·iOS 빌드)을 Claude Code�
 |---|---|---|
 | `superpowers` | 플러그인 (user scope) | `obra/superpowers-marketplace`. Codex와 같은 워크플로(brainstorming/plan/TDD/verify) |
 | `compound-engineering` | 플러그인 (user scope) | `EveryInc/compound-engineering-plugin`. Codex `ce-*`와 **동일 소스** |
+| `diagram-design` | 플러그인 (user scope) | 학습 노트·일일 회고의 새 도식을 정적 인라인 SVG로 작성. 기존 Mermaid는 수정할 때만 교체 |
 | `XcodeBuildMCP` | MCP (project scope, `.mcp.json`) | 시뮬레이터/UI 자동화/디버깅/로깅. `xcodebuild`로 못 덮는 부분 보강 |
 
 재설치/재현이 필요하면:
@@ -55,6 +56,8 @@ claude plugin marketplace add obra/superpowers-marketplace
 claude plugin install superpowers@superpowers-marketplace
 claude plugin marketplace add EveryInc/compound-engineering-plugin
 claude plugin install compound-engineering@compound-engineering-plugin
+claude plugin marketplace add cathrynlavery/diagram-design
+claude plugin install diagram-design@diagram-design
 claude mcp add XcodeBuildMCP -s project \
   -e XCODEBUILDMCP_ENABLED_WORKFLOWS=simulator,ui-automation,debugging,logging \
   -- npx -y xcodebuildmcp@latest mcp

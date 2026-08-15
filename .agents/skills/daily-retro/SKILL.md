@@ -22,8 +22,9 @@ description: 하루 동안의 Trace 작업을 근거 기반 회고로 정리하�
   없으면 그냥 직접 추론한다.
 - **playwright** (있으면): Phase 5에서 생성한 HTML을 `file://` 경로로 열어 스크린샷을 찍고,
   레이아웃/색상/모바일 폭을 육안 검증한 뒤 첨부. 없으면 이 단계는 건너뛴다.
-- **mermaid 다이어그램**: MCP 불필요. 항상 CDN 임베드(`<pre class="mermaid">`)로 브라우저가 렌더한다.
-  mermaid 검증용 MCP가 있다면 임베드 전에 문법만 점검해도 좋다.
+- **`diagram-design`**: 인포그래픽은 정적 인라인 SVG로 만든다. 회고 HTML의 Claude Sunset
+  테마 색·글꼴을 기준으로 넘기며, 별도 HTML·PNG를 만들지 않는다. 기존 Mermaid 도식은 수정할
+  이유가 생길 때만 교체한다.
 
 > 어떤 MCP가 켜져 있는지는 도구의 MCP 설정에서 확인한다 (Codex `~/.codex/config.toml`의 `[mcp_servers.*]`,
 > Claude Code `claude mcp list` 또는 설정). 추가 방법은 `docs/prompts/setup-codex.md` / `setup-claude.md` 참고.
@@ -68,7 +69,8 @@ Phase 1의 **실제 데이터로만** 선택지를 만든다. "오늘 뭐 했나
 
 ## Phase 4 — 인포그래픽
 
-의사결정 흐름도 · 비교표 · 타임라인 · 아키텍처 중 **최소 1개**를 Mermaid로 생성한다.
+의사결정 흐름도 · 비교표 · 타임라인 · 아키텍처 중 **최소 1개**를 `diagram-design`으로 생성해
+정적 인라인 SVG로 넣는다.
 
 ## Phase 5 — HTML (Claude Sunset 테마)
 
@@ -77,16 +79,6 @@ Phase 1의 **실제 데이터로만** 선택지를 만든다. "오늘 뭐 했나
 ```css
 --bg:#FDF6F0; --text:#2D2926; --accent:#D97706; --accent-light:#FEF3C7;
 --heading:#92400E; --border:#E5D5C5; --code-bg:#FFF7ED; --card-bg:#FFFFFF;
-```
-
-Mermaid 임베드(MCP 불필요, 브라우저 렌더):
-
-```html
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: true, theme: 'base' });
-</script>
-<pre class="mermaid">graph TB ...</pre>
 ```
 
 **playwright MCP가 있으면**: 생성한 HTML을 열어 스크린샷을 찍고 레이아웃·색상·폭을 검증한 뒤 보고에 첨부.
