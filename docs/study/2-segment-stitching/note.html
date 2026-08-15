@@ -3738,7 +3738,7 @@ B를 되짚으려면?  <span class="c">B는 양쪽이 다 물려 있다</span>
     ●━━A━━● ~~~B되짚기~~~● ？ ━━B━━●          <span class="c">A와 B 사이를 비집고 들어가 끊긴다</span></pre>
 
           <p>
-            그래서 <strong>가운데 구간은 왕복 버튼이 꺼져 있다.</strong> 코드는 대상이
+            그래서 <strong>가운데 구간은 왕복 버튼이 비활성이다.</strong> 코드는 대상이
             <strong>목록의 첫 줄이거나 마지막 줄일 때만</strong> 통과시킨다. 줄이 하나뿐이면
             첫 줄이자 마지막 줄인데, 이때는 <strong>마지막 줄로 취급</strong>한다.
           </p>
@@ -4087,12 +4087,12 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
           <h4>같이 꺼지는데 판정은 다른 곳에서 나온다</h4>
 
           <p>
-            전부 지우기를 누르면 되돌리기 버튼과 앞으로 돌리기 버튼이 <strong>둘 다 꺼진다.</strong>
+            전부 지우기를 누르면 되돌리기 버튼과 앞으로 돌리기 버튼이 <strong>둘 다 비활성이 된다.</strong>
             그런데 그 판정이 같은 곳에서 나오지 않는다.
           </p>
 
-          <pre class="code">되돌리기 버튼        구간 목록이 비어 있지 않으면 켜진다     <span class="c">화면 쪽에서 직접 센다</span>
-앞으로 돌리기 버튼    복원 스택이 비어 있지 않으면 켜진다     <span class="c">세션이 답만 내준다 (canRedo)</span></pre>
+          <pre class="code">되돌리기 버튼        구간 목록이 비어 있지 않으면 활성이다   <span class="c">화면 쪽에서 직접 센다</span>
+앞으로 돌리기 버튼    복원 스택이 비어 있지 않으면 활성이다   <span class="c">세션이 답만 내준다 (canRedo)</span></pre>
 
           <p>
             <strong>이유는 볼 수 있느냐 없느냐다.</strong> 구간 목록은 화면이 코스를 그리려고
@@ -4151,7 +4151,7 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
 
       <div class="goal">
         <span class="tag">이 파트를 끝내면</span>
-        <p>왕복 두 가지가 각각 <strong>어느 줄에서 켜지고 무엇을 만드는지</strong> 갈라서 말할 수 있고,
+        <p>왕복 두 가지가 각각 <strong>어느 구간에서 활성화되고 무엇을 만드는지</strong> 갈라서 말할 수 있고,
           편집 동작을 새로 붙일 때 <strong>판정을 어느 값으로 할지</strong>(붙인 순서의 번호 ↔
           달리는 순서의 자리)와 <strong>상한을 어디에 둘지</strong> 정할 수 있다.</p>
       </div>
@@ -4165,13 +4165,13 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
             <td>이름</td>
           </tr>
           <tr>
-            <td>구간 ①</td>
-            <td>어느 줄에서 켜지나 — 번호로 찾아 자리로 판정한다</td>
+            <td><a href="#p7s1">구간 ①</a></td>
+            <td>어느 구간에서 활성화되나 — 번호로 찾아 자리로 판정한다</td>
             <td><code>canInsertRoundTrip</code></td>
           </tr>
           <tr>
             <td>구간 ②</td>
-            <td>켜져도 막는 두 상한 — 좌표 2개 · 총 20,000</td>
+            <td>남은 검사 둘 — 좌표 2개와 총 20,000</td>
             <td><code>maxTotalCoordinates</code></td>
           </tr>
           <tr>
@@ -4310,6 +4310,122 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
             <p>화면에서 「왕복」은 넷을 가리키는데, 갈리는 자리는 <strong>길찾기를 부르나</strong>다.
             이 파트가 다루는 둘은 <strong>안 부르고</strong>, 이미 있는 좌표를 뒤집어
             <code>.roundTrip</code> 줄을 만든다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p7s1" open>
+        <summary>구간 ① — 어느 구간에서 활성화되나: 번호로 찾아 자리로 판정한다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 판정을 <strong>붙인 순서의 번호</strong>로
+            할지 <strong>달리는 순서의 자리</strong>로 할지 정할 수 있다.
+          </p>
+
+          <p>
+            구간 ⓪은 넷을 갈라 <em>“이 파트가 다루는 것은 버튼 둘”</em>까지 왔다. 여기서부터는
+            <strong>구간 왕복 하나를 끝까지</strong> 따라간다(전체 왕복은 구간 ④). 첫 질문은 이것이다 —
+            그 버튼은 <strong>모든 구간에서 활성이 아니다.</strong> 어디서 활성화되나.
+          </p>
+
+          <h4>1. 먼저 — 구간 · 줄 · 패널 행은 1:1이다</h4>
+
+          <pre class="code">구간(CourseSegment)   좌표 배열 하나 + 거리 하나            <span class="c">파트 1. 저장되는 것</span>
+   └ 감싼 것
+줄(Entry)             구간 + 번호 + 앞에 꽂혔나 + 대상 줄     <span class="c">편집하는 동안만 필요한 것</span>
+   └ 그대로 한 행
+패널 행(PanelRow)      자리(index) + 번호(colorKey) + 구간   <span class="c">화면에 보이는 것</span></pre>
+
+          <p>
+            <strong>구간 3개 = 줄 3개 = 패널 3행</strong>이고 순서도 같다. 패널은 구간 목록을
+            <strong>그 순서 그대로 한 행씩</strong> 펼친 것이라 개수가 어긋나는 자리가 없다.
+            갈리는 것은 <strong>무엇을 들고 있나</strong>뿐이다 — 구간은 좌표와 거리만 들고,
+            줄은 거기에 편집용 정보를 더 단다. 이유는 파트 3에서 본 그것이다:
+            <strong>수명이 다르다.</strong>
+          </p>
+
+          <h4>2. 화면이 건네는 것은 「번호」다</h4>
+
+          <p>
+            패널의 각 행은 버튼의 활성/비활성을 <code>canInsertRoundTrip(afterColorKey:)</code>로 정하고,
+            누르면 <code>insertRoundTrip(afterColorKey:)</code>를 부른다. 여기서 <code>colorKey</code>는
+            <strong>파트 3의 붙인 순서 번호(<code>order</code>)</strong>다. 즉 화면이 건네는 것은
+            <em>“몇 번째 행”</em>이 아니라 <strong>“몇 번으로 붙은 구간”</strong>이다.
+            목록의 자리는 코스 앞쪽에 새 구간이 꽂히면 <strong>통째로 밀리지만</strong>, 번호는
+            한 번 받으면 안 바뀐다. 그래서 화면이 들고 있기에 안정적인 값이 번호 쪽이다.
+          </p>
+
+          <h4>3. 세션은 그 번호로 「자리」를 찾는다</h4>
+
+          <p>
+            <code>canInsertRoundTrip</code>이 맨 먼저 하는 일은 번호로 줄을 찾는 것이다 —
+            <code>entries.firstIndex(where: { $0.order == order })</code>. 이걸로
+            <strong>달리는 순서의 자리(<code>index</code>)</strong>를 얻는다. 못 찾으면 거기서
+            <strong>비활성</strong>으로 끝나는데, <strong>앱에서 그 일은 일어나지 않는다</strong> —
+            번호는 화면이 목록에서 뽑아 그대로 돌려주는 값이라 항상 있다. 그 갈래가 있는 이유는
+            <code>firstIndex</code>가 <strong>답이 없을 수 있는 함수</strong>라서다. 없을 때 뭘 할지
+            정해둬야 하고, 그 약속을 테스트가 지키고 있다.
+          </p>
+
+          <p>그다음이 자유 끝 판정이다.</p>
+
+          <pre class="code">index == 0  ||  index == entries.count - 1</pre>
+
+          <p>
+            <strong>왜 번호가 아니라 자리로 판정하나.</strong> 자유 끝은 <strong>공간 개념</strong>이기
+            때문이다. 맨 앞·맨 뒤는 <em>“코스의 어느 쪽 끝인가”</em>이지 <em>“몇 번으로 붙었나”</em>가
+            아니다. 파트 3에서 본 값을 그대로 놓으면 바로 보인다.
+          </p>
+
+          <pre class="code">코스   [ B    A    C ]      <span class="c">달리는 순서 = 목록의 자리</span>
+번호     1    0    2        <span class="c">붙인 순서 = colorKey</span>
+
+번호 0인 A는 가장 먼저 붙었는데 지금 코스 한가운데에 있다</pre>
+
+          <p>
+            번호가 가장 작다고 코스 앞쪽 끝인 것이 아니다. <strong>번호만으로는 자유 끝인지
+            알 수 없다.</strong>
+          </p>
+
+          <h4>4. 그래서 패널에서는 이렇게 보인다</h4>
+
+          <pre class="code">패널 행        구간 1    구간 2    구간 3
+                 B         A         C
+colorKey         1         0         2      <span class="c">화면이 건네는 값 (붙인 순서)</span>
+자리(index)      0         1         2      <span class="c">판정에 쓰는 값 (달리는 순서)</span>
+왕복 버튼        활성      비활성     활성    <span class="c">양끝만 활성</span></pre>
+
+          <p>
+            가운데가 비활성인 <strong>이유</strong>는 파트 6에서 이미 깔았다 — 양쪽이 다 다른 구간과
+            물려 있어 그것만 되짚으면 코스가 끊긴다. 여기서 새로 본 것은
+            <strong>코드가 그것을 무엇으로 판정하는가</strong>다. 구간이 하나뿐이면
+            <code>index == 0</code>과 <code>index == count - 1</code>이 <strong>둘 다 참</strong>이라
+            그대로 통과한다(뒤쪽 끝으로 취급하는 것도 파트 6에서 본 것).
+          </p>
+
+          <div class="concept">
+            <h3>💡 앞뒤 계산은 여기서 한 번뿐이고, 그 결과가 값으로 적힌다</h3>
+            <p>
+              누르는 순간 <strong>같은 <code>index</code></strong>로 넣을 자리도 정해진다 —
+              마지막 자리면 그 뒤에, 아니면 그 앞에. 거리도 좌표도 다시 재지 않는다.
+            </p>
+            <pre class="code">isBackMost = (index == entries.count - 1)   <span class="c">인덱스 비교</span>
+넣는 자리   isBackMost ? index + 1 : index     <span class="c">뒤 / 앞</span>
+적어두는 값 anchorInsertsBefore = !isBackMost   <span class="c">그 결과를 줄에 보관</span></pre>
+            <p>
+              파트 6에서 본 그 <code>Bool</code>이 <strong>여기서 계산된 결과</strong>다.
+              되살릴 때는 <strong>다시 계산하지 않고 그 값을 쓴다</strong> — <em>“되살리기는 그때의
+              판단을 다시 하는 것이 아니라, 그때 적어둔 것을 다시 쓰는 것”</em>이 이 자리에서
+              맞물린다.
+            </p>
+          </div>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>화면은 <strong>번호</strong>를 건네고, 세션은 그 번호로 <strong>자리</strong>를 찾아
+            판정한다. <strong>자유 끝은 공간 개념이라 번호로는 판정할 수 없다.</strong></p>
           </div>
 
         </div>
