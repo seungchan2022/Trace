@@ -34,6 +34,40 @@
 - [x] **1. 손으로 그은 선이 도로 경로가 되는 법** → [`1-drawn-path-to-route/`](../../study/1-drawn-path-to-route/) (2026-08-10 · 소개 4절 + 7파트 + 마무리 절 + 확인 문제 7)
 - [x] **2. 구간을 이어붙이고 재는 법** → [`2-segment-stitching/`](../../study/2-segment-stitching/) (2026-08-15 · 소개 3절 + 7파트 + 마무리 4절 + 확인 문제 8)
 - [ ] **3. 지도 위에 표시하는 법** → `docs/study/3-map-rendering/`
+      · 🔑 **착수 메모 (2026-08-15 청크 2 종료 시 작성) — 열기 전에 읽을 것.**
+        **브랜치를 새로 판다** — 청크 2는 `docs/study-chunk-2`에서 했고 **푸시는 사용자 몫**이라
+        아직 안 됐을 수 있다. `main`에서 `docs/study-chunk-3`을 새로 만든다.
+      · 📌 **재료 (실측 줄 수 · 스펙 §3 기준, 경로 확인 완료 2026-08-15):**
+        `MapViewRepresentable.swift` **688줄**(`Trace/Pages/CoursePlannerPage/` 바로 아래 —
+        `UIComponent/`가 아니다) · `OverlapOffsetResolver.swift` 152줄 · `SegmentPalette.swift` 13줄 ·
+        `CoursePlannerPage+MapPinsComponent.swift` 68줄(`UIComponent/`).
+        테스트는 `SegmentPaletteTests` · `OverlapOffsetResolverTests` · `CourseCoordinateGeoTests`.
+        설계 문서는 `history/mvp7/`(구간 패널) · `history/mvp8/`(겹침 오프셋).
+        ⚠️ **688줄짜리는 통째로 읽지 말 것** — `rendererFor`·`viewFor` 등 **해당 함수만**(`SKILL.md` `[1]`).
+      · 📌 **청크 2가 넘긴 연결 고리 — 다시 파지 말고 이어받을 것:**
+        ①**`CourseCoordinate+Geo`의 함수 셋**(`distanceMeters(toSegment:)` · `headingVector` ·
+        `offset`)은 실측상 `OverlapOffsetResolver` 한 곳에서만 쓰인다 — **청크 2가 "이건 청크 3"이라고
+        명시하고 넘겼다**(노트 소개 1). `CourseCoordinateGeoTests` 7개도 전부 이쪽.
+        ②**색은 붙인 순서 번호를 따른다**(`segmentColorKeys`, 파트 3) — 코스 앞쪽에 새 구간이 꽂혀도
+        기존 구간 색이 안 바뀌는 이유가 거기 있다.
+        ③**왕복 구간은 대상 구간과 좌표가 완전히 같다** — 화면에서 두 줄로 보이는 것은 **겹침 오프셋이
+        옮겨 그리는 것**이고, 청크 2 파트 7 구간 ③이 그 사실을 **청크 3 예고로 남겨뒀다.**
+        ④**핀은 좌표 한 줄의 첫/끝 점**이고 20m 안이면 「출발/도착」 하나로 합쳐진다(파트 2).
+      · 📌 **백로그에 이 영역 항목이 여럿 있다**(착수 전에 훑을 것) — 겹침 렌더링 α/β 후보 ·
+        `MapViewRepresentable` 688줄 분해(린트 ③) · 핀·경로선 **전량 교체**로 핀이 매번 다시 떨어지는 것 ·
+        회색 "확인 중" 마커 깜빡임. **학습 중 발견은 백로그로 보내고 코드는 고치지 않는다.**
+      · ⚠️ **진행 방식 — 청크 2에서 값을 치른 것들. 그대로 이어간다:**
+        ①**저장·발행은 승인받고 한다** — 청크 2에서 구간 ①을 안 보여주고 발행했다가 사용자가 잡았다.
+        **구간마다 채팅에 먼저 내고, 승인받고, 저장·발행한다.**
+        ②**용어는 활성/비활성**(「켜진다·꺼진다」 금지, `SKILL.md` 절대 원칙 ②-3). 지도 쪽은
+        「그린다/다시 그린다」처럼 **이미 통용되는 말**을 쓸 것.
+        ③**구간 표를 내기 전에 `(b-3)` 판정 구조 뽑기 → `(b-4)` advisor 검토**(표면 전수 + 배정표를
+        함께 넘긴다). 청크 2 파트 7에서 이 절차가 **한 개념이 두 구간에 걸친 것**을 잡아냈다.
+        ④**확인 문제는 청크 전체에서 파트당 하나씩** 뽑는다 — 청크 2에서 한 파트에 몰렸다가 지적받았다.
+      · 🔑 **노트 형식은 이미 정해져 있다** — 두 층 접기 · 파트 머리 구간 표 · 번호 접두어 · 3분 복습 ·
+        마무리 4절(어디를 열면 되나 · 왜 이렇게 됐나 · 팩트체크 수정 내역 · 확인 문제 기록).
+        **다시 정하지 말고 청크 2와 같은 골격으로 만든다.** 발행은 **새 URL**(청크마다 아티팩트가 다르다) —
+        첫 발행 뒤 URL을 `agent-log.md` 머리에 적어두고, 이후에는 같은 파일 경로로 다시 발행한다.
 - [ ] **4. GPS가 거리·페이스가 되는 법** → `docs/study/4-gps-to-stats/`
 - [ ] **5. 백그라운드에서 계속 도는 법** → `docs/study/5-background-execution/`
 - [ ] **6. 소리 내는 법** → `docs/study/6-audio-coaching/`
