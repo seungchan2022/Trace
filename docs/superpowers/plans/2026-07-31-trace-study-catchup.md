@@ -33,7 +33,13 @@
 - [x] **0. 앱 구조** → [`0-app-architecture/`](../../study/0-app-architecture/) (2026-08-03 · 7파트 + 확인 문제 6)
 - [x] **1. 손으로 그은 선이 도로 경로가 되는 법** → [`1-drawn-path-to-route/`](../../study/1-drawn-path-to-route/) (2026-08-10 · 소개 4절 + 7파트 + 마무리 절 + 확인 문제 7)
 - [x] **2. 구간을 이어붙이고 재는 법** → [`2-segment-stitching/`](../../study/2-segment-stitching/) (2026-08-15 · 소개 3절 + 7파트 + 마무리 4절 + 확인 문제 8)
-- [ ] **3. 지도 위에 표시하는 법** → `docs/study/3-map-rendering/`
+- [ ] **3. 지도 위에 표시하는 법** → [`3-map-rendering/`](../../study/3-map-rendering/)
+      · **진행 중 — 소개 3절 완료(2026-08-15). 다음은 파트 1 「번호가 둘이다 — 색을 정하는 규칙」.**
+        7파트 구성 확정 · 브랜치 `docs/study-chunk-3` · 발행
+        <https://claude.ai/code/artifact/8a7a02b4-6ed3-4214-9436-3291a7886aed>
+      · 📓 **아래 착수 메모는 소화됐다** — 구성 확정 경위·표면 전수 배정·백로그 후보는
+        [`3-map-rendering/agent-log.md`](../../study/3-map-rendering/agent-log.md)에 있다.
+        메모 원문은 청크가 닫힐 때 이 줄과 함께 정리한다.
       · 🔑 **착수 메모 (2026-08-15 청크 2 종료 시 작성) — 열기 전에 읽을 것.**
         **브랜치를 새로 판다** — 청크 2는 `docs/study-chunk-2`에서 했고 **푸시는 사용자 몫**이라
         아직 안 됐을 수 있다. `main`에서 `docs/study-chunk-3`을 새로 만든다.

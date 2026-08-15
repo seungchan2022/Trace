@@ -1,0 +1,925 @@
+<title>Trace 학습 3 — 지도 위에 표시하는 법</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --accent:   #06B6A4;
+    --deep:     #04796E;
+    --ground:   #FAFCFB;
+    --surface:  #EFF6F4;
+    --tint:     #E3F1EE;
+    --rule:     #DAE6E3;
+    --ink:      #0E1817;
+    --muted:    #52625E;
+    --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
+            system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 37rem; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+  p { margin-bottom: 1rem; }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 700; }
+  em { font-style: normal; color: var(--muted); }
+  code {
+    font-family: var(--mono); font-size: .84em;
+    color: var(--deep); word-break: break-word;
+  }
+
+  /* ── 머리말 ───────────────────────── */
+  .kicker {
+    font-size: .85rem; font-weight: 700;
+    letter-spacing: .04em;
+    color: var(--deep); margin-bottom: .5rem;
+  }
+  h1 {
+    font-size: 2.2rem; font-weight: 800; line-height: 1.15;
+    letter-spacing: -.03em; margin-bottom: .5rem;
+    text-wrap: balance;
+  }
+  .sub { color: var(--muted); font-size: .95rem; margin-bottom: 2rem; }
+
+  /* ── 목차 ─────────────────────────── */
+  .toc {
+    border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1rem 1.2rem; margin-bottom: 3rem;
+    background: #fff;
+  }
+  .toc h4 {
+    font-size: .88rem; font-weight: 800; letter-spacing: -.005em;
+    color: var(--muted); margin-bottom: .8rem;
+  }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .38rem; }
+  .toc li {
+    font-size: .96rem; color: var(--muted);
+    display: flex; gap: .7rem; align-items: baseline;
+  }
+  .toc li .k {
+    font-family: var(--mono); font-size: .88rem; font-weight: 600;
+    color: #B9CCC8; min-width: 1.2rem;
+  }
+  .toc h4 .tocnote { font-weight: 500; font-size: .82rem; color: #93A8A4; }
+  .toc a {
+    color: var(--ink); text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .toc a:hover, .toc a:focus-visible {
+    color: var(--deep); border-bottom-color: var(--accent);
+  }
+  .toc .todo { color: #97A9A5; }
+
+  details.part { scroll-margin-top: 1.5rem; }
+  #toc { scroll-margin-top: 1.5rem; }
+
+  /* ── 접히는 파트 ───────────────────── */
+  details.part {
+    border-top: 1px solid var(--rule);
+    margin-top: 0;
+    padding-top: .2rem;
+  }
+  details.part > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.15rem .3rem 1.15rem 2rem;
+    position: relative;
+    border-radius: 8px;
+  }
+  details.part > summary::-webkit-details-marker { display: none; }
+  details.part > summary::before {
+    content: "▸";
+    position: absolute; left: .5rem; top: 1.15rem;
+    color: var(--accent); font-size: 1rem; line-height: 1.5;
+    transition: transform .15s ease;
+  }
+  details.part[open] > summary::before { content: "▾"; }
+  details.part > summary:hover { background: var(--surface); }
+  details.part > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  details.part > summary .part-tag { margin-bottom: .45rem; }
+  details.part > summary .ptitle {
+    display: block;
+    font-size: 1.45rem; font-weight: 800;
+    letter-spacing: -.025em; line-height: 1.25;
+    text-wrap: balance;
+  }
+  details.part:not([open]) > summary .ptitle { color: var(--muted); font-weight: 700; }
+  .pbody { padding: 0 .3rem 1rem; }
+  .pbody > h3:first-child { margin-top: .6rem; }
+
+  /* ── 오른쪽 고정 목차 ──────────────── */
+  .floating-toc {
+    position: fixed; top: 50%; right: 1.2rem;
+    transform: translateY(-50%);
+    z-index: 20;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--rule); border-radius: 10px;
+    padding: .7rem .8rem;
+    max-height: 82vh; overflow-y: auto;
+    font-size: .82rem; line-height: 1.5;
+  }
+  .floating-toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .3rem; }
+  .floating-toc li { display: flex; gap: .45rem; align-items: baseline; position: relative; }
+  .floating-toc .k {
+    font-family: var(--mono); font-size: .78rem; font-weight: 700;
+    color: #B9CCC8; min-width: 1.6rem;
+  }
+  .floating-toc a {
+    color: var(--muted); text-decoration: none;
+    border-bottom: 1px solid transparent;
+    max-width: 11rem; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .floating-toc a:hover { color: var(--deep); border-bottom-color: var(--accent); }
+  .floating-toc li.active .k { color: var(--accent); }
+  .floating-toc li.active a { color: var(--ink); font-weight: 700; }
+  .floating-toc .ft-head {
+    font-size: .74rem; font-weight: 800; color: var(--deep);
+    margin-bottom: .5rem; padding-bottom: .35rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .floating-toc .k i { font-style: normal; }
+  .floating-toc .ks { display: none; }
+
+  /* 좁아지면 본문과 겹치므로 번호만 남긴다 (제목은 마우스 올리면 뜬다) */
+  @media (max-width: 1079px) {
+    .floating-toc { right: .5rem; padding: .55rem .4rem; }
+    .floating-toc .ft-head { display: none; }
+    .floating-toc ol { gap: .45rem; }
+    .floating-toc li { justify-content: center; }
+    /* 링크가 항목 전체를 덮게 해서 동그라미를 눌러도 이동하게 한다 */
+    .floating-toc a {
+      position: absolute; inset: 0; max-width: none;
+      text-indent: -9999px; overflow: hidden;
+      border-bottom: none;
+    }
+    .floating-toc .k {
+      min-width: 0; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.85rem; height: 1.85rem; border-radius: 50%;
+      background: var(--surface); color: var(--muted);
+      font-size: .74rem; font-weight: 700;
+    }
+    .floating-toc .kf { display: none; }
+    .floating-toc .ks { display: inline; }
+    .floating-toc li.active .k { background: var(--accent); color: #fff; }
+    .floating-toc li:hover .k { background: var(--tint); color: var(--deep); }
+    .floating-toc li.active:hover .k { background: var(--accent); color: #fff; }
+  }
+
+  @media (max-width: 700px) { .floating-toc { display: none; } }
+
+  .backtop {
+    display: inline-block; margin-top: 1.8rem;
+    font-size: .86rem; color: var(--muted);
+    text-decoration: none; border-bottom: 1px solid var(--rule);
+  }
+  .backtop:hover, .backtop:focus-visible { color: var(--deep); border-bottom-color: var(--accent); }
+  .toc li.on { color: var(--ink); font-weight: 700; }
+  .toc li.on .k { color: var(--accent); }
+
+  /* ── 3분 복습 / 로드맵 ─────────────── */
+  .recap {
+    border: 2px solid var(--accent); border-radius: 12px;
+    padding: 1.2rem 1.35rem; margin-bottom: 3rem; background: #fff;
+  }
+  .recap h3 {
+    font-size: 1.15rem; font-weight: 800; margin: 0 0 .3rem;
+    border: none; padding: 0;
+  }
+  .recap .hint { font-size: .88rem; color: var(--muted); margin-bottom: 1rem; }
+  .recap ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .85rem; }
+  .recap li { display: grid; grid-template-columns: 1.5rem 1fr; gap: .55rem; }
+  .recap .k {
+    font-family: var(--mono); font-size: .92rem; font-weight: 700; color: var(--accent);
+  }
+  .recap .can { font-weight: 700; font-size: .96rem; line-height: 1.55; }
+  .recap .sum { font-size: .92rem; color: var(--muted); line-height: 1.6; margin-top: .1rem; }
+
+  .recap .keys {
+    list-style: none; margin: .5rem 0 0; padding: .5rem 0 0;
+    border-top: 1px dashed var(--rule);
+    display: flex; flex-direction: column; gap: .3rem;
+  }
+  .recap .keys li {
+    display: block; margin: 0; padding: 0; text-indent: 0;
+    font-size: .9rem; line-height: 1.6; color: var(--muted);
+  }
+  .recap .keys li::before {
+    content: "· "; color: var(--accent); font-weight: 700;
+  }
+  .recap .keys strong { color: var(--ink); }
+  .recap li.pending .can { color: var(--muted); font-weight: 600; }
+
+  /* ── 파트 헤더 ─────────────────────── */
+  .part { margin-top: 3.5rem; }
+  .part-tag {
+    display: inline-block;
+    font-size: .82rem; font-weight: 700; letter-spacing: .02em;
+    color: #fff; background: var(--deep);
+    padding: .26rem .68rem; border-radius: 5px;
+    margin-bottom: .85rem;
+  }
+  h2 {
+    font-size: 1.6rem; font-weight: 800;
+    letter-spacing: -.025em; line-height: 1.25;
+    margin-bottom: 1.1rem;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 1.02rem; font-weight: 800; letter-spacing: -.005em;
+    margin: 2.3rem 0 .8rem;
+    padding-bottom: .4rem; border-bottom: 1px solid var(--rule);
+  }
+
+  /* 구간 안의 소제목 (.concept 안의 h4와는 별개) */
+  .pbody > h4 {
+    font-size: .97rem; font-weight: 800; letter-spacing: -.005em;
+    color: var(--deep);
+    margin: 1.8rem 0 .6rem;
+  }
+
+  /* ── 이 파트를 끝내면 (능력 선언) ──────── */
+  .goal {
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: .9rem 1.2rem;
+    margin-bottom: 1.1rem;
+    background: #fff;
+  }
+  .goal .tag {
+    display: block;
+    font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .3rem;
+  }
+  .goal p { font-size: 1.05rem; font-weight: 700; line-height: 1.6; margin: 0; }
+
+  /* ── 한 줄 요약 (파트 시작) ───────────── */
+  .oneline {
+    background: var(--tint);
+    border-radius: 10px;
+    padding: .95rem 1.2rem;
+    margin-bottom: 1.6rem;
+    font-weight: 700; line-height: 1.65;
+  }
+  .oneline .tag {
+    display: block;
+    font-size: .84rem; font-weight: 800; letter-spacing: .01em;
+    color: var(--deep); margin-bottom: .35rem;
+  }
+
+  /* ── 등장인물 명패 ──────────────────── */
+  .roster { display: flex; flex-direction: column; gap: .5rem; margin: 1.4rem 0; }
+  .card {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 9px; padding: .75rem 1rem;
+    display: grid; grid-template-columns: 1fr; gap: .15rem;
+  }
+  .card .nm {
+    font-family: var(--mono); font-size: .98rem;
+    font-weight: 700; color: var(--deep); letter-spacing: -.01em;
+    margin-bottom: .1rem;
+  }
+  .card .ro { font-size: .93rem; line-height: 1.65; }
+  .card.hero { border-color: var(--accent); border-width: 2px; background: var(--tint); }
+
+  /* ── 개념 박스 ─────────────────────── */
+  .concept {
+    background: #fff; border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 1.1rem 1.3rem; margin: 1.7rem 0;
+  }
+  .concept h4 {
+    font-size: 1.2rem; font-weight: 800; letter-spacing: -.015em;
+    line-height: 1.4; margin-bottom: .75rem;
+  }
+  .concept p { font-size: .95rem; line-height: 1.75; margin-bottom: .75rem; }
+  .concept p:last-child { margin-bottom: 0; }
+
+  /* ── 순서 ─────────────────────────── */
+  .steps { margin: 1.4rem 0; display: flex; flex-direction: column; gap: .9rem; }
+  .st { display: grid; grid-template-columns: 1.9rem 1fr; gap: .6rem; }
+  .st .n {
+    font-family: var(--mono); font-size: 1.05rem;
+    color: var(--accent); font-weight: 700; line-height: 1.65;
+  }
+  .st .t { font-size: .96rem; line-height: 1.7; }
+  .st .t b { font-weight: 700; }
+
+  /* ── 사용자 장면 묶음 ──────────────── */
+  .scene {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.15rem 1.3rem; margin: 1.4rem 0;
+  }
+  .scene .who {
+    font-size: .84rem; font-weight: 800; color: var(--deep);
+    margin-bottom: .2rem;
+  }
+  .scene .steps { margin: .7rem 0 0; }
+  .scene .seen {
+    margin-top: .9rem; padding-top: .8rem;
+    border-top: 1px solid var(--rule);
+    font-size: .89rem; color: var(--muted); line-height: 1.65;
+  }
+
+  /* ── 경계선 ───────────────────────── */
+  .bounds { display: flex; flex-direction: column; gap: .55rem; margin: 1.4rem 0; }
+  .bd {
+    display: grid; grid-template-columns: 4.6rem 1fr; gap: .7rem;
+    align-items: baseline;
+    font-size: .95rem; line-height: 1.7;
+  }
+  .bd .lb {
+    font-size: .8rem; font-weight: 800; text-align: center;
+    padding: .16rem .3rem; border-radius: 5px;
+    background: var(--surface); color: var(--muted);
+  }
+  .bd.here .lb { background: var(--accent); color: #fff; }
+
+  /* ── 도식 ─────────────────────────── */
+  figure {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.3rem .5rem .85rem;
+    margin: 1.8rem 0; overflow-x: auto;
+  }
+  figcaption {
+    font-size: .86rem; font-weight: 600; letter-spacing: -.005em;
+    color: var(--muted);
+    text-align: center; margin-top: .9rem;
+  }
+  pre.mermaid { background: transparent; text-align: center; }
+
+  figure .node rect, figure .node polygon,
+  figure .node circle, figure .node path {
+    fill: #FFFFFF !important;
+    stroke: var(--accent) !important;
+    stroke-width: 1.7px !important;
+  }
+  figure .nodeLabel, figure .nodeLabel p, figure .node .label {
+    color: var(--ink) !important;
+    fill: var(--ink) !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.5 !important;
+  }
+  figure .edgeLabel, figure .edgeLabel * {
+    color: #0E1817 !important;
+    fill: #0E1817 !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.5 !important;
+    background-color: #FFFFFF !important;
+  }
+  figure .edgeLabel rect,
+  figure .edgeLabel .background,
+  figure rect.edgeLabelBackground,
+  figure .edgeLabels rect {
+    fill: #FFFFFF !important;
+    stroke: none !important;
+    opacity: 1 !important;
+  }
+  figure .edgePath path, figure .flowchart-link, figure path.path {
+    stroke: #A3BFBA !important;
+    stroke-width: 1.7px !important;
+  }
+  figure marker path, figure .marker {
+    fill: #A3BFBA !important;
+    stroke: #A3BFBA !important;
+  }
+
+  /* ── 코드 ─────────────────────────── */
+  pre.code {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem 1.15rem; margin: 1.5rem 0;
+    overflow-x: auto; font-family: var(--mono);
+    font-size: .79rem; line-height: 1.7;
+  }
+  pre.code .c { color: var(--accent); }
+
+  /* ── 실측 표 (수치 전용) ─────────────── */
+  .tablewrap { overflow-x: auto; margin: 1.5rem 0; }
+  table {
+    border-collapse: collapse; width: 100%;
+    font-size: .92rem; background: #fff;
+    border: 1px solid var(--rule); border-radius: 10px;
+  }
+  th, td {
+    text-align: left; padding: .65rem .85rem;
+    border-bottom: 1px solid var(--rule); vertical-align: top;
+    line-height: 1.6;
+  }
+  tr:last-child td { border-bottom: none; }
+  th {
+    font-size: .84rem; font-weight: 700;
+    color: var(--muted); background: var(--surface);
+  }
+  td em { font-size: .87rem; }
+  td .pt {
+    display: inline-block; min-width: 1.35rem; text-align: center;
+    font-family: var(--mono); font-weight: 700;
+    color: var(--deep);
+  }
+
+  /* ── 정정 ─────────────────────────── */
+  .fix {
+    margin: 1.1rem 0; padding: .85rem 1rem;
+    background: #fff8ec; border-left: 3px solid #d98c1f;
+    border-radius: 0 8px 8px 0;
+    font-size: .92rem; line-height: 1.72;
+  }
+  .fix strong { color: #8a5510; }
+  .fixtag { color: #8a5510; font-size: .85em; }
+
+  /* ── 구간 마무리 — 알고 갈 것 ─────────── */
+  .takeaway {
+    margin: 1.5rem 0 2rem;
+    padding: .9rem 1.15rem;
+    background: var(--tint);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+  }
+  .takeaway .tag {
+    display: block;
+    font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .3rem;
+  }
+  .takeaway p { font-weight: 700; line-height: 1.7; margin: 0; }
+  .takeaway .aside {
+    display: block; margin-top: .55rem;
+    font-size: .89rem; font-weight: 500; color: var(--muted);
+  }
+
+  /* ── 나중에 ───────────────────────── */
+  .later {
+    font-size: .88rem; color: var(--muted);
+    border-left: 2px solid var(--rule); padding-left: .85rem;
+    margin: 1.2rem 0;
+  }
+
+  .next {
+    margin-top: 3.5rem; padding: 1.2rem 1.3rem;
+    background: var(--surface); border-radius: 12px;
+    font-size: .94rem; color: var(--muted);
+  }
+  .next strong { color: var(--ink); }
+
+  /* ── 접히는 구간 ─────────────────── */
+  details.seg {
+    border: 1px solid var(--rule); border-radius: 10px;
+    margin: .55rem 0; background: #fff;
+  }
+  details.seg > summary {
+    list-style: none; cursor: pointer;
+    padding: .8rem 1rem .8rem 2.1rem; position: relative;
+    font-size: 1.0rem; font-weight: 800; letter-spacing: -.01em;
+    line-height: 1.5; border-radius: 10px;
+  }
+  details.seg > summary::-webkit-details-marker { display: none; }
+  details.seg > summary::before {
+    content: "▸"; position: absolute; left: .8rem; top: .8rem;
+    color: var(--accent); font-size: .95rem; line-height: 1.5;
+  }
+  details.seg[open] > summary::before { content: "▾"; }
+  details.seg > summary:hover { background: var(--surface); }
+  details.seg > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  details.seg[open] > summary {
+    border-bottom: 1px solid var(--rule);
+    border-radius: 10px 10px 0 0;
+  }
+  .segbody { padding: .3rem 1.1rem 1.1rem; }
+  .segbody > *:first-child { margin-top: .8rem; }
+  .segbody > h4:first-child { margin-top: 1rem; }
+
+  /* ── 파트 머리 구간 표 ─────────────── */
+  .segmap {
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: .95rem 1.2rem 1.05rem; margin: 1.8rem 0 2.2rem;
+    background: var(--surface);
+  }
+  .segmap .tag {
+    display: block; font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .55rem;
+  }
+  .segmap table { border: none; background: transparent; font-size: .93rem; }
+  .segmap td {
+    border-bottom: 1px solid var(--rule); padding: .42rem .5rem .42rem 0;
+    vertical-align: baseline;
+  }
+  .segmap tr:last-child td { border-bottom: none; }
+  .segmap td:first-child {
+    white-space: nowrap; font-weight: 800; width: 4.2rem;
+  }
+  .segmap td:first-child a { color: var(--deep); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .segmap td:first-child a:hover { border-bottom-color: var(--accent); }
+  .segmap td:last-child { color: var(--muted); font-size: .88rem; white-space: nowrap; }
+  .segmap .hint {
+    margin: .7rem 0 0; padding-top: .6rem; border-top: 1px dashed var(--rule);
+    font-size: .89rem; color: var(--muted); line-height: 1.65;
+  }
+
+  /* ── 확인 문제 한 덩어리 ───────────── */
+  .qa {
+    border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1.1rem 1.25rem; margin: 1.6rem 0;
+    background: #fff;
+  }
+  .qa > .qhead {
+    display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline;
+    padding-bottom: .6rem; margin-bottom: .85rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .qa .qn {
+    font-size: .82rem; font-weight: 800; letter-spacing: .02em;
+    color: #fff; background: var(--deep);
+    padding: .2rem .6rem; border-radius: 5px;
+  }
+  .qa .qres {
+    font-size: .84rem; font-weight: 700; color: var(--deep);
+  }
+  .qa .qsrc { font-size: .82rem; color: var(--muted); margin-left: auto; }
+  .qa p { font-size: .95rem; line-height: 1.72; }
+  .qa .why {
+    margin-top: .9rem; padding-top: .8rem;
+    border-top: 1px dashed var(--rule);
+  }
+  .qa .why .lb {
+    display: block; font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .35rem;
+  }
+
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .wrap { padding: 2.2rem 1.1rem 4rem; }
+    h1 { font-size: 1.8rem; } h2 { font-size: 1.35rem; }
+    details.part > summary .ptitle { font-size: 1.28rem; }
+    .bd { grid-template-columns: 4.2rem 1fr; }
+  }
+</style>
+
+<nav class="floating-toc" aria-label="파트 바로가기">
+  <div class="ft-head">파트 바로가기</div>
+  <ol>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소1</i></span><a href="#intro" data-target="intro" title="소개 1 — 이 청크가 만드는 것">이 청크가 만드는 것</a></li>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소2</i></span><a href="#scenes" data-target="scenes" title="소개 2 — 사용자가 겪을 장면">사용자가 겪을 장면</a></li>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소3</i></span><a href="#map" data-target="map" title="소개 3 — 장면 ↔ 맡은 부품">장면 ↔ 맡은 부품</a></li>
+    <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="kicker">따라잡기 3 / 9</div>
+  <h1>지도 위에<br>표시하는 법</h1>
+  <p class="sub">
+    좌표가 다 정해진 코스를 <strong>무슨 색으로 · 어느 자리에 · 몇 겹으로 · 언제 다시</strong>
+    그릴지 정하는 층. 만드는 순서로 7파트.
+  </p>
+
+  <nav class="toc" id="toc">
+    <h4>목차 <span class="tocnote">— 소개 3절 완료, 파트 1부터 채우는 중</span></h4>
+    <ol>
+      <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
+      <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
+      <li class="on"><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
+      <li class="todo"><span class="k">1</span>번호가 둘이다 — 색을 정하는 규칙</li>
+      <li class="todo"><span class="k">2</span>지도에 얹는 것을 어떤 타입으로 만드나</li>
+      <li class="todo"><span class="k">3</span>선 하나를 세 겹으로 그린다</li>
+      <li class="todo"><span class="k">4</span>거리 라벨을 어디에 찍나</li>
+      <li class="todo"><span class="k">5</span>핀 목록을 만드는 규칙</li>
+      <li class="todo"><span class="k">6</span>겹치는 선을 비켜 그리기</li>
+      <li class="todo"><span class="k">7</span>언제 다시 그리나</li>
+      <li class="todo"><span class="k">마무리</span>어디를 열면 되나 — 파일 경로</li>
+      <li class="todo"><span class="k">마무리</span>왜 이렇게 됐나 — 버려진 것과 고쳐진 것</li>
+      <li class="todo"><span class="k">마무리</span>팩트체크 수정 내역</li>
+      <li class="todo"><span class="k">마무리</span>확인 문제 기록</li>
+    </ol>
+  </nav>
+
+  <div class="recap" id="recap">
+    <h3>3분 복습</h3>
+    <p class="hint"><strong>굵은 줄에서 걸리면 그 파트만 연다.</strong> 굵은 줄이
+      <strong>그 파트를 끝내면 할 수 있게 되는 것</strong>, 그 아래가 <strong>그 파트가 하는 일</strong>,
+      점선 아래가 <strong>붙들 것</strong>이다 — <strong>파트 안 구간 순서 그대로</strong>라
+      위에서 아래로 읽으면 그 파트를 훑는 것이 된다. 목록 순서는 곧 <strong>만드는 순서</strong>.
+      <em>아직 파트를 안 썼으므로 지금은 능력 선언만 있다 — 파트를 채우면서 같이 자란다.</em></p>
+    <ol>
+      <li class="pending"><span class="k">1</span><div><div class="can">표시 요소에 색을 붙일 때 <strong>배열 위치와 만든 순서 중 어느 번호를 써야 하는지</strong> 정할 수 있다</div></div></li>
+      <li class="pending"><span class="k">2</span><div><div class="can"><strong>오버레이로 둘지 어노테이션으로 둘지, 거기에 무슨 정보를 실어야 하는지</strong> 정할 수 있다</div></div></li>
+      <li class="pending"><span class="k">3</span><div><div class="can">선에 굵기·강조를 더할 때 <strong>레이어를 몇 겹 쌓고 어느 순서로 끼울지</strong> 정할 수 있다</div></div></li>
+      <li class="pending"><span class="k">4</span><div><div class="can">지도 위 라벨의 자리를 <strong>배열 인덱스 기준으로 잡을지 실거리 기준으로 잡을지</strong> 정할 수 있다</div></div></li>
+      <li class="pending"><span class="k">5</span><div><div class="can"><strong>어떤 상태에 핀을 몇 개 낼지, 겹칠 때 무엇을 살릴지</strong> 정할 수 있다</div></div></li>
+      <li class="pending"><span class="k">6</span><div><div class="can"><strong>누가 원래 자리에 남고, 얼마나, 어느 쪽으로 밀지</strong> 정할 수 있다</div></div></li>
+      <li class="pending"><span class="k">7</span><div><div class="can">SwiftUI 값이 바뀔 때 <strong>무엇을 다시 그리고 무엇을 그대로 둘지</strong> 정할 수 있다</div></div></li>
+    </ol>
+  </div>
+
+  <section id="intro">
+    <div class="part-tag">소개 1</div>
+    <h2>이 청크가 만드는 것</h2>
+
+    <div class="oneline">
+      <span class="tag">한 문장</span>
+      좌표가 이미 정해진 코스를 받아, <strong>지도 위의 실제 그림으로 바꾸는 층</strong>을 만든다 —
+      무슨 색으로 · 어느 자리에 · 몇 겹으로 · 언제 다시 그릴지를 정한다.
+    </div>
+
+    <p>
+      청크 2는 <strong>구간을 이어붙여 코스를 만드는 데서 끝났다.</strong> 그 결과는
+      좌표 한 줄과 거리 몇 개다 — <strong>아직 화면에는 아무것도 없다.</strong>
+      그 코스를 <code>MKMapView</code> 위에 얹는 순간부터가 이 청크다.
+    </p>
+
+    <div class="bounds">
+      <div class="bd">
+        <span class="lb">앞</span>
+        <span>손가락·탭이 <strong>구간 하나</strong>가 되는 것 — <em>청크 1</em></span>
+      </div>
+      <div class="bd">
+        <span class="lb">앞</span>
+        <span>그 구간을 <strong>붙이고 · 재고 · 되돌리는</strong> 것 — <em>청크 2</em></span>
+      </div>
+      <div class="bd here">
+        <span class="lb">여기</span>
+        <span>그 코스를 <strong>지도에 그리는</strong> 것 — 색 · 세 겹 선 · 거리 라벨 · 핀 ·
+          겹침 오프셋 · 다시 그리는 조건 — <em>청크 3</em></span>
+      </div>
+      <div class="bd">
+        <span class="lb">밖</span>
+        <span>그리기 중 제스처 잠금과 획 미리보기(<em>청크 1</em>) · 구간 패널의 화면 배치와
+          시트 높이(<em>UI 레이아웃</em>) · 기록 탭의 지도(<em>다른 화면</em>)</span>
+      </div>
+    </div>
+
+    <figure>
+      <pre class="mermaid">
+flowchart LR
+  A["구간 1개<br/>CourseSegment"] --> B["코스<br/>PlannedCourse"]
+  B --> C["표시용 좌표<br/>겹침 오프셋"]
+  C --> D["오버레이 · 어노테이션"]
+  D --> E["MKMapView"]
+  subgraph one["청크 1 · 2"]
+    A
+    B
+  end
+  subgraph two["청크 3 — 여기"]
+    C
+    D
+    E
+  end
+      </pre>
+      <figcaption>코스가 완성된 뒤부터 화면에 픽셀이 찍히기 전까지가 이 청크다</figcaption>
+    </figure>
+
+    <h3>청크 2가 넘긴 것 — 여기서 받는다</h3>
+
+    <p>
+      청크 2가 <strong>“이건 청크 3”이라고 명시하고 넘긴 것</strong>이 넷 있다.
+      다시 파지 않고 그대로 이어받는다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>넘어온 것</th><th>어디서 받나</th></tr>
+        <tr>
+          <td><code>CourseCoordinate+Geo</code>의 함수 셋 —
+            <code>distanceMeters(toSegment:_:)</code> · <code>headingVector(to:)</code> ·
+            <code>offset(rightOfHeading:by:)</code>. 실측상 <code>OverlapOffsetResolver</code>
+            한 곳에서만 쓰인다</td>
+          <td><span class="pt">6</span></td>
+        </tr>
+        <tr>
+          <td>색은 <strong>붙인 순서 번호</strong>(<code>segmentColorKeys</code>)를 따른다 —
+            코스 앞쪽에 새 구간이 꽂혀도 기존 구간 색이 안 바뀌는 이유</td>
+          <td><span class="pt">1</span></td>
+        </tr>
+        <tr>
+          <td>왕복 구간은 대상 구간과 <strong>좌표가 완전히 같다</strong> — 화면에서 두 줄로
+            보이는 것은 <strong>여기가 옮겨 그리는 것</strong></td>
+          <td><span class="pt">6</span></td>
+        </tr>
+        <tr>
+          <td>핀은 좌표 한 줄의 <strong>첫 점과 끝 점</strong>이고, 둘이 20m 안이면
+            「출발/도착」 하나로 합쳐진다</td>
+          <td><span class="pt">5</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <p class="later">
+      테스트도 같이 넘어왔다 — <code>CourseCoordinateGeoTests</code>의 7개는 전부 이 청크 쪽이다.
+      여기에 <code>SegmentPaletteTests</code> 2개와 <code>OverlapOffsetResolverTests</code> 10개가 더 있다.
+    </p>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <section id="scenes">
+    <div class="part-tag">소개 2</div>
+    <h2>이렇게 되게 만들 거다 — 사용자가 겪을 장면</h2>
+
+    <p>
+      아래는 <strong>만들기 전에 “이렇게 되기로” 정한 것</strong>들이다. 뒤 파트는 전부
+      <em>이 목표를 어떻게 이뤘나</em>로 읽으면 된다. 어긋난 지점도 그때 드러난다.
+    </p>
+
+    <div class="scene">
+      <div class="who">코스가 지도에 나타난다</div>
+      <div class="steps">
+        <div class="st"><span class="n">①</span><span class="t">구간을 하나 붙일 때마다 <b>색이 다른 선</b>이 하나씩 늘어난다 — 구간 패널의 색 막대와 같은 색이다</span></div>
+        <div class="st"><span class="n">②</span><span class="t">각 선 한가운데에 <b>그 선과 같은 색</b> 배경의 거리 라벨(“320m”)이 붙는다</span></div>
+        <div class="st"><span class="n">④</span><span class="t">구간 경계마다 <b>흰 점</b>이 찍혀 어디서 끊겼는지 보인다</span></div>
+      </div>
+      <div class="seen">색을 정하는 것은 파트 1, 그릴 것의 타입은 파트 2, 선은 파트 3, 라벨은 파트 4.</div>
+    </div>
+
+    <div class="scene">
+      <div class="who">양 끝이 표시된다</div>
+      <div class="steps">
+        <div class="st"><span class="n">③</span><span class="t">코스 양 끝에 <b>출발</b>(초록·러너)과 <b>도착</b>(빨강·깃발) 핀이 선다. 되짚어 와서 두 끝이 20m 안으로 붙으면 <b>「출발/도착」 핀 하나</b>로 합친다</span></div>
+        <div class="st"><span class="n">⑤</span><span class="t"><em>탭 모드 전용 —</em> 첫 탭을 기다리는 동안 <b>출발 핀</b>이 미리 서고, 탭인지 더블탭인지 가리는 0.35초 동안에는 <b>회색 “확인 중”</b> 마커가 뜬다</span></div>
+      </div>
+      <div class="seen">둘 다 파트 5. 이 청크에서 <b>탭·그리기가 갈리는 곳은 여기뿐</b>이다 — 나머지 표시 경로는 두 모드가 같은 길을 지난다.</div>
+    </div>
+
+    <div class="scene">
+      <div class="who">고르고, 되짚는다</div>
+      <div class="steps">
+        <div class="st"><span class="n">⑥</span><span class="t">구간 패널에서 한 줄을 누르면 그 선이 <b>굵어지고 옅은 초록 후광</b>이 깔리며, <b>카메라가 그 구간에 맞춰 옮겨간다</b></span></div>
+        <div class="st"><span class="n">⑦</span><span class="t">왔던 길을 되짚어 그리면 두 선이 <b>나란히</b> 보인다 — 좌표는 완전히 같은데도. 출발·도착 핀 자리에서는 다시 한 점으로 모인다</span></div>
+      </div>
+      <div class="seen">⑥은 파트 3, ⑦은 파트 6. ⑦의 <em>“좌표가 같은데 두 줄”</em>이 청크 2가 예고해 둔 자리다.</div>
+    </div>
+
+    <h3>정한 것과 어긋난 지점</h3>
+
+    <p>
+      다섯 개가 있고, 성격이 둘로 갈린다 — <strong>고쳐서 뒤집은 것</strong> 하나와
+      <strong>지금도 열려 있는 것</strong> 넷이다.
+    </p>
+
+    <div class="scene">
+      <div class="who">고쳐서 뒤집은 것</div>
+      <div class="steps">
+        <div class="st"><span class="n">1</span><span class="t">색을 <b>「구간 순서」로 주기로 했다가 「만든 순서」로 뒤집었다</b> — 코스 앞쪽에 구간을 꽂으면 기존 구간 색이 전부 밀렸다 (MVP7 → MVP8)</span></div>
+      </div>
+      <div class="seen">파트 1에서 다룬다.</div>
+    </div>
+
+    <div class="scene">
+      <div class="who">지금도 열려 있는 것</div>
+      <div class="steps">
+        <div class="st"><span class="n">2</span><span class="t"><b>줌아웃하면 두 선이 다시 겹쳐 보인다</b> — 비켜 그리는 폭이 실거리 4m 고정이라. 설계 문서가 <em>의도된 한계</em>로 미리 적어뒀다</span></div>
+        <div class="st"><span class="n">3</span><span class="t"><b>카메라 프레이밍이 시트 높이를 안 본다</b> — 맞춰 놓은 구간이 시트 뒤에 가릴 수 있다</span></div>
+        <div class="st"><span class="n">4</span><span class="t"><b>핀이 하나만 바뀌어도 전부 지웠다 다시 떨어진다</b></span></div>
+        <div class="st"><span class="n">5</span><span class="t"><b>회색 “확인 중” 마커가 느린 더블탭에서 깜빡인다</b></span></div>
+      </div>
+      <div class="seen">2는 파트 6, 3은 파트 3, 4는 파트 7, 5는 파트 5에서 각각 그 자리에 나온다. 넷 다 <code>docs/backlog.md</code>에 <code>open</code>으로 있다.</div>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <section id="map">
+    <div class="part-tag">소개 3</div>
+    <h2>장면 ↔ 맡은 부품</h2>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>장면</th><th>맡은 부품</th><th>파트</th></tr>
+        <tr>
+          <td>① 구간마다 다른 색 선</td>
+          <td><code>SegmentPalette</code> · <code>SegmentPolyline</code> ·
+            <code>SegmentCasingPolyline</code> · <code>rendererFor</code></td>
+          <td><span class="pt">1</span><span class="pt">2</span><span class="pt">3</span></td>
+        </tr>
+        <tr>
+          <td>④ 구간 경계 흰 점</td>
+          <td><code>WaypointDotsOverlay</code> · <code>WaypointDotsRenderer</code></td>
+          <td><span class="pt">2</span></td>
+        </tr>
+        <tr>
+          <td>⑥ 선택 강조 + 카메라</td>
+          <td><code>SegmentHaloPolyline</code> · <code>syncHalo</code> ·
+            <code>CoursePlannerPage.onChange</code> → <code>regionFitting</code></td>
+          <td><span class="pt">3</span></td>
+        </tr>
+        <tr>
+          <td>② 거리 라벨</td>
+          <td><code>SegmentDistanceAnnotation(View)</code> · <code>midpointAlongPath</code> ·
+            <code>viewFor</code></td>
+          <td><span class="pt">4</span></td>
+        </tr>
+        <tr>
+          <td>③⑤ 핀 — 출발·도착·병합·대기·확인 중</td>
+          <td><code>mapPins</code> · <code>ColoredPinAnnotation</code> · <code>viewFor</code></td>
+          <td><span class="pt">5</span></td>
+        </tr>
+        <tr>
+          <td>⑦ 겹친 선 갈라 그리기</td>
+          <td><code>OverlapOffsetResolver</code> · <code>CourseCoordinate+Geo</code></td>
+          <td><span class="pt">6</span></td>
+        </tr>
+        <tr>
+          <td><em>(화면에 안 보이는 것)</em> 다시 그리는 조건</td>
+          <td><code>updateUIView</code> · <code>SegmentSnapshot</code></td>
+          <td><span class="pt">7</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <p>
+      <strong>장면 ①의 파트 번호가 셋으로 흩어져 있다.</strong> 사용자가 제일 먼저 보는 것
+      — 색깔 선 하나 — 이 만들 때는 <em>번호 정하기 → 타입 만들기 → 그림으로 바꾸기</em>로
+      세 파트에 걸쳐 있어서다. <strong>만드는 순서와 겪는 순서가 다르다</strong>는 것이 표에
+      그대로 나타난다.
+    </p>
+
+    <p>
+      <code>rendererFor</code>와 <code>viewFor</code>도 여러 파트에 나온다. 헷갈리지 않도록
+      소유권을 정해뒀다 — <strong>구조는 파트 2가 갖고</strong>(둘이 언제 불리는가, 오버레이가
+      왜 자기 정보를 들고 있어야 하는가), <strong>파트 3·4·5는 각자의 분기만</strong> 가져간다.
+    </p>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <div class="next">
+    <strong>다음 — 파트 1 「번호가 둘이다: 색을 정하는 규칙」.</strong>
+    파트를 하나씩 채우면서 이 페이지가 자란다. 링크는 그대로 유지된다.
+  </div>
+
+</div>
+
+<script>
+(function () {
+  function targetOf(hash) {
+    if (!hash || hash.length < 2) return null;
+    try { return document.getElementById(decodeURIComponent(hash.slice(1))); }
+    catch (e) { return null; }
+  }
+  function reveal(el) {
+    if (!el) return;
+    if (el.tagName === 'DETAILS') el.open = true;
+    var d = el.parentElement && el.parentElement.closest ? el.parentElement.closest('details') : null;
+    while (d) { d.open = true; d = d.parentElement ? d.parentElement.closest('details') : null; }
+  }
+
+  // 목차에서 접힌 파트로 점프하면 먼저 펼친다
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    if (a) reveal(targetOf(a.getAttribute('href')));
+  }, true);
+
+  window.addEventListener('hashchange', function () {
+    var el = targetOf(location.hash);
+    if (el) { reveal(el); el.scrollIntoView(); }
+  });
+  if (location.hash) reveal(targetOf(location.hash));
+
+  // 접힌 채로 렌더된 도식이 폭 0으로 깨졌으면 되살린다
+  document.addEventListener('toggle', function (e) {
+    var d = e.target;
+    if (!d || d.tagName !== 'DETAILS' || !d.open) return;
+    d.querySelectorAll('svg').forEach(function (svg) {
+      var mw = svg.style.maxWidth;
+      if (mw && parseFloat(mw) < 40) svg.style.maxWidth = '100%';
+    });
+    window.dispatchEvent(new Event('resize'));
+  }, true);
+
+  // 오른쪽 고정 목차 — 현재 보고 있는 절 표시
+  var links = document.querySelectorAll('.floating-toc a[data-target]');
+  if (!links.length) return;
+  var watched = [];
+  links.forEach(function (a) {
+    var el = document.getElementById(a.getAttribute('data-target'));
+    if (el) watched.push(el);
+  });
+  var active = null;
+  function setActive(id) {
+    if (id === active) return;
+    active = id;
+    links.forEach(function (a) {
+      a.parentElement.classList.toggle('active', a.getAttribute('data-target') === id);
+    });
+  }
+  var io = new IntersectionObserver(function (entries) {
+    var vis = entries.filter(function (x) { return x.isIntersecting; }).map(function (x) { return x.target; });
+    if (!vis.length) return;
+    vis.sort(function (a, b) { return a.getBoundingClientRect().top - b.getBoundingClientRect().top; });
+    setActive(vis[0].id);
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  watched.forEach(function (t) { io.observe(t); });
+  if (watched[0]) setActive(watched[0].id);
+})();
+</script>
