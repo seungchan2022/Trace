@@ -4185,7 +4185,7 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
             <td><code>insertWholeCourseRoundTrip</code></td>
           </tr>
           <tr>
-            <td>구간 ⑤</td>
+            <td><a href="#p7s5">구간 ⑤</a></td>
             <td>왜 이 모양이 됐나 — 폐기된 역+정 병합</td>
             <td>MVP11</td>
           </tr>
@@ -4733,6 +4733,92 @@ colorKey         1         0         2      <span class="c">화면이 건네는 
             <p>전체 왕복은 <strong>코스의 좌표 한 줄을 통째로 뒤집어 맨 뒤에 붙인다.</strong>
             구간 왕복과 갈리는 것은 <strong>자유 끝 검사 하나</strong>뿐이고, 그것도
             <strong>풀어준 것이 아니라 물어볼 것이 없어서</strong>다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p7s5" open>
+        <summary>구간 ⑤ — 왜 이 모양이 됐나: 폐기된 역+정 병합</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 왕복을 <em>“아무 구간에서나”</em>로
+            다시 열면 <strong>무엇이 깨지는지</strong> 정할 수 있다.
+          </p>
+
+          <p>
+            지금까지 본 규칙(자유 끝만 · 역방향만)은 <strong>처음부터 그렇게 설계된 것이 아니다.</strong>
+            하루 만에 뒤집혔다.
+          </p>
+
+          <h4>1. 처음 설계 — 아무 구간에서나, 역+정을 붙여서</h4>
+
+          <p>
+            최초 설계(2026-07-07)는 <strong>어느 구간이든</strong> 왕복시킬 수 있었다. 가운데 구간도 됐다.
+            대신 붙이는 것이 <strong>역방향 + 정방향 둘</strong>이었다.
+          </p>
+
+          <pre class="code">대상 구간 B                   A ─── B ─── C
+누르면 그 자리에 붙는 것        B되짚기(역) + B다시(정)
+결과                         A ─── B ─── [B역 B정] ─── C</pre>
+
+          <p>
+            <strong>가운데에 끼워도 코스가 안 끊긴다.</strong> 되짚어 갔다가 <strong>다시 돌아오니</strong>
+            끝점이 원래 자리로 복귀하기 때문이다. 그래서 자유 끝을 따질 필요가 없었다.
+          </p>
+
+          <h4>2. 실기기에서 깨졌다 — 거리 3배</h4>
+
+          <p>
+            2026-07-08 실기기 QA에서 <strong>거리와 연결 문제</strong>가 나왔다. 대상 구간을
+            <strong>세 번</strong> 지나게 되기 때문이다.
+          </p>
+
+          <pre class="code">원래               B 한 번          1배
+왕복 붙인 뒤        B + B역 + B정    3배      <span class="c">기대한 것은 2배</span></pre>
+
+          <p>
+            원한 것은 <em>“갔다가 돌아온다”</em>(2배)인데 결과는 3배였다. 그리고 끝점이
+            <strong>언제나 원래 자리에 그대로 있어서</strong>, 왕복을 눌러도 <em>“코스가 되짚어졌다”</em>는
+            느낌이 나지 않았다.
+          </p>
+
+          <h4>3. 바뀐 규칙 — 되짚기만, 자유 끝만</h4>
+
+          <p>
+            고친 방향은 <strong>붙이는 것을 절반으로 줄이는 것</strong>이었다. 역방향만 붙인다.
+            그런데 <strong>끝점이 옮겨 가는 것</strong>이 곧 가운데 구간을 못 쓰게 만든다.
+            가운데에서 되짚으면 그 자리에서 코스가 <strong>끊긴다</strong> — 다시 돌아오지 않으니까.
+          </p>
+
+          <pre class="code">역+정 (버림)   아무 데나 가능   거리 3배   끝점 그대로
+역만  (지금)   자유 끝만       거리 2배   끝점 이동</pre>
+
+          <div class="concept">
+            <h3>💡 자유 끝 제한은 원인이 아니라 대가다</h3>
+            <p>
+              순서를 뒤집어 읽기 쉬운 자리다. <em>“가운데가 안 돼서 규칙을 만든 것”</em>이 아니라,
+              <strong>거리를 2배로 맞추려고 정방향을 버렸더니 가운데를 쓸 수 없게 된 것</strong>이다.
+              구간 ①에서 본 그 검사는 <strong>처음부터 있던 규칙이 아니라 이 교환의 결과</strong>다.
+            </p>
+          </div>
+
+          <h4>4. 같은 날 전체 왕복이 생겼다</h4>
+
+          <p>
+            <em>“코스 전체를 되짚고 싶다”</em>는 쓰임은 자유 끝 제한으로 덮이지 않는다. 그래서
+            <strong>같은 수정에서 전체 왕복이 함께 추가됐다.</strong> 둘은 경쟁하는 기능이 아니라
+            <strong>같은 결정에서 갈라져 나온 짝</strong>이다. 그리고 백로그에 따로 있던
+            <em>“되짚어 오기(마지막 구간 역방향 붙이기)”</em> 항목은 <strong>별도 기능을 만들 필요 없이
+            닫혔다</strong> — 고쳐진 왕복이 곧 그 동작이었다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>자유 끝 제한은 <strong>원래 규칙이 아니라 대가</strong>다. 거리를 2배로 맞추려고
+            <strong>정방향을 버리자</strong> 끝점이 옮겨 갔고, 그래서 <strong>가운데 구간을 쓸 수 없게</strong>
+            됐다.</p>
           </div>
 
         </div>
