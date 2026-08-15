@@ -4152,8 +4152,8 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
       <div class="goal">
         <span class="tag">이 파트를 끝내면</span>
         <p>왕복 두 가지가 각각 <strong>어느 구간에서 활성화되고 무엇을 만드는지</strong> 갈라서 말할 수 있고,
-          편집 동작을 새로 붙일 때 <strong>판정을 어느 값으로 할지</strong>(붙인 순서의 번호 ↔
-          달리는 순서의 자리)와 <strong>상한을 어디에 둘지</strong> 정할 수 있다.</p>
+          편집 동작을 새로 붙일 때 <strong>무엇을 보고 판단할지</strong>(언제 붙였는지 ↔ 지금 어디 있는지)와
+          <strong>얼마나 커지면 막을지</strong>를 정할 수 있다.</p>
       </div>
 
       <div class="segmap">
@@ -4170,7 +4170,7 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
             <td><code>canInsertRoundTrip</code></td>
           </tr>
           <tr>
-            <td>구간 ②</td>
+            <td><a href="#p7s2">구간 ②</a></td>
             <td>남은 검사 둘 — 좌표 2개와 총 20,000</td>
             <td><code>maxTotalCoordinates</code></td>
           </tr>
@@ -4320,8 +4320,9 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
         <div class="segbody">
 
           <p class="later">
-            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 판정을 <strong>붙인 순서의 번호</strong>로
-            할지 <strong>달리는 순서의 자리</strong>로 할지 정할 수 있다.
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — <strong>이 버튼을 쓸 수 있는지
+            판단할 때</strong> <strong>언제 붙인 구간인지(번호)</strong>를 봐야 할지,
+            <strong>지금 코스의 어디에 있는지(자리)</strong>를 봐야 할지 정할 수 있다.
           </p>
 
           <p>
@@ -4426,6 +4427,112 @@ colorKey         1         0         2      <span class="c">화면이 건네는 
             <span class="tag">이 구간에서 알고 갈 것</span>
             <p>화면은 <strong>번호</strong>를 건네고, 세션은 그 번호로 <strong>자리</strong>를 찾아
             판정한다. <strong>자유 끝은 공간 개념이라 번호로는 판정할 수 없다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p7s2" open>
+        <summary>구간 ② — 남은 검사 둘: 좌표 2개와 총 20,000</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 코스가 <strong>얼마나 커지면
+            이 버튼을 막을지</strong>, 그리고 그 <strong>막는 일을 화면이 할지 세션이 할지</strong>
+            정할 수 있다.
+          </p>
+
+          <p>
+            구간 ①은 <strong>자유 끝</strong>까지 왔다. 자유 끝인 구간이어도 버튼이 비활성인 경우가
+            <strong>둘 더</strong> 있다.
+          </p>
+
+          <h4>1. 검사는 넷이고, 앞이 막히면 뒤는 보지 않는다</h4>
+
+          <pre class="code">1  번호로 그 구간을 찾는다        못 찾으면 비활성    <span class="c">구간 ①</span>
+2  자유 끝인가                  아니면 비활성      <span class="c">구간 ①</span>
+3  그 구간의 좌표가 2개 이상인가                   <span class="c">여기</span>
+4  붙이고 나서 총 좌표가 20,000 이하인가            <span class="c">여기</span></pre>
+
+          <h4>2. 좌표 2개 — 실제로는 걸리지 않는다</h4>
+
+          <p>
+            되짚으려면 점이 <strong>둘</strong>은 있어야 선이 된다. 점 하나는 위치일 뿐이라 뒤집어도
+            길이가 0이다. 그런데 <strong>앱이 만드는 구간은 전부 점이 2개 이상이다</strong> —
+            길찾기 결과가 2개 미만이면 그 자리에서 <em>“도보 경로를 찾을 수 없습니다”</em>로 막고
+            붙이지 않는다. <strong>그러니 이 검사는 실제로 걸릴 일이 없다.</strong>
+          </p>
+
+          <p>
+            그래도 두는 이유는 하나다. <strong>타입이 그걸 보장해주지 않기 때문이다.</strong>
+            좌표 배열은 빈 배열도, 점 하나짜리도 담을 수 있어서 코드는 <em>“둘 이상일 것”</em>을
+            <strong>가정할 수 없고 확인해야 한다.</strong> 구간 ①의 <em>“없는 번호”</em>와 같은 종류다.
+          </p>
+
+          <h4>3. 총 20,000 — 누르기 전에, 행마다 따로 계산된다</h4>
+
+          <p>
+            패널의 각 행은 <strong>그려질 때</strong> 이 검사를 한 번씩 부른다. 거짓이면 그 행의 버튼은
+            <strong>처음부터 흐리게, 눌리지 않는 상태</strong>로 그려진다. <strong>누르면 문제가 되는
+            것이 아니라 애초에 못 누른다.</strong> 더하는 값이 <strong>그 행의 구간 좌표 수</strong>라서,
+            같은 코스에서도 <strong>앞은 통과하고 뒤는 막힐 수 있다.</strong>
+          </p>
+
+          <pre class="code">코스         [   A   ]  [   B   ]  [   C   ]      <span class="c">총 좌표 수 14,000</span>
+좌표 수        1,200      4,800      8,000
+
+맨 앞  A 왕복   14,000 + 1,200 = 15,200  ≤ 20,000   →  활성
+가운데 B       자유 끝이 아니다                      →  비활성  <span class="c">구간 ①에서 이미 막힘</span>
+맨 뒤  C 왕복   14,000 + 8,000 = 22,000  &gt; 20,000   →  비활성</pre>
+
+          <p>
+            구간을 하나 붙일 때마다 총 좌표 수가 바뀌므로, <strong>그때마다 다시 계산된다.</strong>
+          </p>
+
+          <div class="concept">
+            <h3>💡 이 상한은 왕복에만 걸려 있고, 근거는 적혀 있지 않다</h3>
+            <p>
+              그리기·탭으로 붙일 때는 총 좌표 수를 <strong>아예 세지 않는다</strong>(실측: 이 값을 읽는
+              곳은 구간 왕복과 전체 왕복 둘뿐). 그래서 <strong>그리기만으로 20,000을 넘길 수 있고</strong>,
+              그렇게 되면 그 뒤로는 <strong>왕복 버튼이 전부 비활성</strong>이 된다 — 무엇을 더해도 넘으니까.
+            </p>
+            <p>
+              <strong>왜 20,000인지, 넘으면 무엇이 깨지는지는 어디에도 적혀 있지 않고 재본 적도 없다.</strong>
+              설계 문서에는 값과 <em>“버튼 비활성 가드”</em>라는 용도만 있다. 확인되는 사실은 하나뿐이다 —
+              이 상수는 <strong>왕복을 만든 사이클에서 처음 생겼고, 그 사이클이 만든 두 연산에만 붙었다.</strong>
+            </p>
+          </div>
+
+          <h4>4. 같은 검사를 둘이 부른다 — 하나는 보여주려고, 하나는 지키려고</h4>
+
+          <p>
+            「그 검사」는 위 넷을 묶은 함수 하나(<code>canInsertRoundTrip</code>)이고,
+            <strong>부르는 곳이 둘</strong>이다. 둘이 무엇이 다른지부터 놓으면 이렇다.
+          </p>
+
+          <pre class="code">세션(CourseEditSession)   구간 목록을 실제로 들고 있다     [ A ][ B ][ C ]
+      ↑ 읽는다                   ↓ 바꿔달라고 부른다
+화면(SwiftUI 뷰)          목록을 갖고 있지 않다 — 세션을 읽어서 그릴 뿐</pre>
+
+          <p>
+            <strong>검사 항목은 같다. 같은 함수를 부른다.</strong> 다른 것은 그 답을 어디에 쓰느냐뿐이다.
+            <strong>화면</strong>은 가진 값이 없어 규칙을 어길 수도 없다. 답을 <strong>버튼을 흐리게
+            만드는 데</strong> 쓴다 — 이게 없으면 <em>“눌리는데 아무 일도 안 일어나는 버튼”</em>이 된다.
+            <strong>세션</strong>은 값을 가진 쪽이라 잘못된 요청이 오면 목록이 실제로 망가진다. 그래서
+            <strong>스스로 확인한다</strong> — 이 함수는 화면 말고 다른 곳에서도 부를 수 있어서
+            <strong>화면이 막아줄 것이라고 가정할 수 없다.</strong>
+          </p>
+
+          <p>
+            겸사겸사도 아니다 — 검사는 <strong>참/거짓만</strong> 돌려주므로, 실제로 넣으려면 세션은
+            <strong>번호로 자리를 다시 찾아야</strong> 한다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>자유 끝이어도 <strong>좌표 2개</strong>와 <strong>총 20,000</strong>이 남아 있다.
+            상한은 <strong>왕복에만</strong> 걸려 있고 <strong>근거는 기록돼 있지 않다.</strong>
+            같은 검사를 화면은 <strong>보여주려고</strong>, 세션은 <strong>지키려고</strong> 부른다.</p>
           </div>
 
         </div>
