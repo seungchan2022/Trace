@@ -580,6 +580,7 @@
     <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — 붙일 자리: 양끝이 다 20m 밖일 때">붙일 자리 — 양끝이 다 밖</a></li>
     <li><span class="k"><i class="kf">6</i><i class="ks">6</i></span><a href="#p6" data-target="p6" title="파트 6 — 되돌리기와 앞으로 돌리기">되돌리기와 앞으로 돌리기</a></li>
     <li><span class="k"><i class="kf">7</i><i class="ks">7</i></span><a href="#p7" data-target="p7" title="파트 7 — 왕복">왕복</a></li>
+    <li><span class="k"><i class="kf">마무리</i><i class="ks">끝</i></span><a href="#where" data-target="where" title="마무리 — 어디를 열면 되나 · 왜 이렇게 됐나">어디를 열면 되나</a></li>
   </ol>
 </nav>
 
@@ -718,7 +719,27 @@
           </ul>
         </div>
       </li>
-      <li class="pending"><span class="k">7</span><div><div class="can">왕복</div></div></li>
+      <li>
+        <span class="k">7</span>
+        <div>
+          <div class="can">왕복 두 가지가 각각 어느 구간에서 활성화되고 무엇을 만드는지 갈라서 말할 수 있고, 편집 동작을 새로 붙일 때 무엇을 보고 판단할지(언제 붙였는지 ↔ 지금 어디 있는지)와 얼마나 커지면 막을지를 정할 수 있다</div>
+          <div class="sum">이미 확정된 좌표를 되짚어 코스에 줄 하나를 더 넣는다 — 길찾기를 다시 부르지 않는다.</div>
+          <ul class="keys">
+            <li>화면에서 「왕복」은 <strong>넷</strong>을 가리킨다 — 갈리는 자리는 <strong>길찾기를 부르나</strong>이고, 버튼 둘만 안 부른다</li>
+            <li>앱이 <strong>「왕복」이라고 적는 줄은 <code>.roundTrip</code>뿐</strong> — 손으로 되짚어 그은 것은 「지점 연결」로 뜬다</li>
+            <li><strong>「닫힌 코스」와 <code>.roundTrip</code>은 서로를 보지 않는다</strong> — 닫힘은 양끝을 재서 나온 결과다</li>
+            <li>화면은 <strong>번호</strong>를 건네고 세션은 그것으로 <strong>자리</strong>를 찾는다 — <strong>자유 끝은 공간 개념이라 번호로는 판정할 수 없다</strong></li>
+            <li>앞뒤 계산은 <strong>누를 때 한 번뿐</strong>이고, 그 결과가 값으로 적혀 <strong>되살릴 때 그대로 쓰인다</strong></li>
+            <li>자유 끝이어도 <strong>좌표 2개</strong>와 <strong>총 20,000</strong>이 남아 있다 — 앞은 실제로 걸릴 일이 없고, <strong>타입이 보장하지 않아</strong> 확인할 뿐이다</li>
+            <li>상한은 <strong>왕복에만</strong> 걸려 있어 <strong>그리기만으로는 넘길 수 있다</strong>. <strong>왜 20,000인지, 넘으면 무엇이 깨지는지는 기록도 측정도 없다</strong></li>
+            <li>같은 검사를 화면은 <strong>보여주려고</strong>, 세션은 <strong>지키려고</strong> 부른다 — <strong>값을 가진 쪽이 규칙을 지킨다</strong></li>
+            <li>왕복 구간은 <strong>대상의 좌표를 뒤집고 거리를 그대로 가져온</strong> 것이라 <strong>길찾기를 다시 부르지 않는다</strong></li>
+            <li>전체 왕복은 <strong>파트 2의 좌표 한 줄을 통째로</strong> 뒤집어 맨 뒤에 붙인다 — 갈리는 것은 <strong>자유 끝 검사 하나</strong>뿐이고 상한은 <strong>같다</strong></li>
+            <li>같은 상한인데 <strong>걸리는 시점이 다르다</strong> — 전체 왕복은 총 좌표가 <strong>약 10,000</strong>을 넘으면 계속 비활성이다</li>
+            <li><strong>자유 끝 제한은 원인이 아니라 대가</strong>다 — 거리를 2배로 맞추려고 정방향을 버리자 끝점이 옮겨 갔다</li>
+          </ul>
+        </div>
+      </li>
     </ol>
   </div>
 
@@ -4826,6 +4847,119 @@ colorKey         1         0         2      <span class="c">화면이 건네는 
 
     </div>
   </details>
+
+  <section id="where">
+    <div class="part-tag">마무리 1</div>
+    <h2>어디를 열면 되나</h2>
+
+    <p>
+      잊었을 때 <strong>10분이면 복원</strong>하기 위한 절이다. 이 청크가 다룬 것은 아래 다섯 파일에
+      거의 다 들어 있다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>무엇이 궁금하면</th><th>여기를 연다</th><th>파트</th></tr>
+        <tr>
+          <td>구간 하나의 생김새 · 세 종류 · 뒤집기</td>
+          <td><code>Trace/Domain/CoursePlanning/Entity/CourseSegment.swift</code></td>
+          <td><span class="pt">1</span></td>
+        </tr>
+        <tr>
+          <td>좌표 한 줄 잇기 · 총 거리 · 닫힘 판정에 쓰는 거리</td>
+          <td><code>…/Entity/PlannedCourse.swift</code> · <code>…/Entity/CourseCoordinate+Geo.swift</code></td>
+          <td><span class="pt">2</span></td>
+        </tr>
+        <tr>
+          <td><strong>붙일 자리 · 두 순서 · 되돌리기 · 왕복</strong> — 이 청크의 본체</td>
+          <td><strong><code>Trace/Application/CoursePlanning/CourseEditSession.swift</code></strong></td>
+          <td><span class="pt">3</span><span class="pt">4</span><span class="pt">5</span><span class="pt">6</span><span class="pt">7</span></td>
+        </tr>
+        <tr>
+          <td>탭·그리기 입력을 구간으로 만들어 넘기는 곳 · 닫힘 판정 · 힌트</td>
+          <td><code>Trace/Pages/CoursePlannerPage/CoursePlannerPageViewModel.swift</code></td>
+          <td><span class="pt">4</span><span class="pt">7</span></td>
+        </tr>
+        <tr>
+          <td>구간 패널 · 왕복 버튼 · 전체 왕복 버튼</td>
+          <td><code>…/UIComponent/CoursePlannerPage+BottomSheetComponent.swift</code></td>
+          <td><span class="pt">7</span></td>
+        </tr>
+        <tr>
+          <td>세 종류가 디스크에 어떻게 적히나</td>
+          <td><code>Trace/Infrastructure/Persistence/SwiftData/CoursePersistenceDTO.swift</code></td>
+          <td><span class="pt">1</span></td>
+        </tr>
+        <tr>
+          <td>무엇을 보장하는지 이름으로 훑기</td>
+          <td><code>TraceTests/CourseEditSessionTests.swift</code> ·
+              <code>CourseRoundTripInsertTests.swift</code> · <code>PlannedCourseTests.swift</code></td>
+          <td>전체</td>
+        </tr>
+        <tr>
+          <td>왜 그렇게 정했나 — 설계 문서</td>
+          <td><code>history/mvp9/</code>(붙일 자리 규칙 교체 · 되돌리기 스택) ·
+              <code>history/mvp10/</code>(원거리 양끝) · <code>history/mvp11/</code>(왕복 · 전체 왕복)</td>
+          <td>전체</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <section id="why">
+    <div class="part-tag">마무리 2</div>
+    <h2>왜 이렇게 됐나 — 버려진 것과 고쳐진 것</h2>
+
+    <p>
+      코드에는 <strong>지금 모양만</strong> 남는다. 여기 적는 것은 <strong>남지 않은 절반</strong>이다 —
+      한 번 만들었다가 버린 것, 그리고 깨져서 고친 것.
+    </p>
+
+    <h3>1. 왕복: 역+정 병합을 버렸다 (2026-07-08)</h3>
+    <p>
+      최초 설계는 <strong>아무 구간에서나</strong> 왕복시킬 수 있었다(역+정을 붙여 다시 돌아오므로
+      코스가 안 끊겼다). 실기기에서 걸린 것은 연결이 아니라 <strong>거리</strong>였다 — 대상 구간을
+      세 번 지나 <strong>3배</strong>가 됐다. 정방향을 버려 2배로 맞추자 끝점이 옮겨 갔고,
+      <strong>그 결과로 자유 끝 제한이 생겼다.</strong> 자세한 것은 파트 7 구간 ⑤.
+    </p>
+
+    <h3>2. 되살리기는 두 단계로 만들어졌다 (MVP9 → MVP11)</h3>
+    <p>
+      MVP9가 만든 것은 <strong>참/거짓 하나(<code>placedAtFront</code>)와 스택</strong>까지다.
+      <strong>대상 줄 이름표(<code>anchorID</code>)는 MVP11에서 왕복을 만들면서 생겼다</strong> —
+      앞쪽·뒤쪽 양쪽 다 거짓인 줄이 그때 처음 나왔기 때문이다. 파트 6의 구간 ②→③ 순서가 곧
+      이 두 단계다.
+    </p>
+
+    <h3>3. 「실패한 붙이기는 스택을 비우지 않는다」는 리뷰에서 나왔다 (MVP9)</h3>
+    <p>
+      설계 리뷰(adversarial)가 <em>“attach 실패 시 되살릴 것이 사라진다”</em>를 잡아
+      <strong>성공한 붙이기만 스택을 비우도록</strong> 고쳤다. 코드에서는 조건문이 아니라
+      <strong>비우는 줄이 성공 경로 안에 놓인 배치</strong>로 나타난다(파트 6 구간 ④).
+    </p>
+
+    <h3>4. 붙일 자리 판정: 양끝 비교를 버렸다가 되살렸다 (MVP9 → MVP10)</h3>
+    <p>
+      MVP9는 <strong>네 거리 중 최단</strong>을 고르는 방식을 버렸다 — 되짚어 그은 획에서 양끝이
+      코스 양끝에 똑같이 붙어 <strong>1m 차이로 앞뒤가 뒤집혔기</strong> 때문이다. MVP10이 그것을
+      <strong>원거리에서만</strong> 되살렸다. 되살릴 수 있던 근거는 <strong>그 위험한 장면이 거기
+      도달하지 못한다</strong>는 것이다(20m 판정이 먼저 가져간다). 파트 5.
+    </p>
+
+    <h3>5. 초안 자동 저장은 만든 날 지워졌다 (2026-07-08)</h3>
+    <p>
+      MVP11 설계는 편집 중인 코스를 디스크에 자동 저장해 앱을 껐다 켜도 복원하도록 했고,
+      <strong>왕복의 앞/뒤 값까지 그 저장 포맷에 넣었다.</strong> 그런데 같은 날
+      <strong>초안 저장 자체가 통째로 제거됐다</strong>(앱을 껐다 켜면 빈 상태로 시작한다).
+      <strong>그 값은 남았다</strong> — 저장용이 아니라 <strong>세션 안에서 되살릴 때</strong> 쓰는
+      값이기 때문이다.
+    </p>
+    <div class="fix">
+      <span class="fixtag">문서 ↔ 코드</span> 그래서 MVP11 설계 문서 §4에는 아직
+      <em>“초안 직렬화에 포함한다”</em>가 남아 있지만 <strong>그 타입은 코드에 없다.</strong>
+      설계가 틀린 것이 아니라 <strong>하루 뒤에 뒤집힌 것</strong>이다.
+    </div>
+  </section>
 
 </div>
 
