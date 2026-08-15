@@ -4175,7 +4175,7 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
             <td><code>maxTotalCoordinates</code></td>
           </tr>
           <tr>
-            <td>구간 ③</td>
+            <td><a href="#p7s3">구간 ③</a></td>
             <td>누르면 무엇이 만들어지나 — 뒤집어서 <code>.roundTrip</code>으로 감싼다</td>
             <td><code>insertRoundTrip</code></td>
           </tr>
@@ -4533,6 +4533,105 @@ colorKey         1         0         2      <span class="c">화면이 건네는 
             <p>자유 끝이어도 <strong>좌표 2개</strong>와 <strong>총 20,000</strong>이 남아 있다.
             상한은 <strong>왕복에만</strong> 걸려 있고 <strong>근거는 기록돼 있지 않다.</strong>
             같은 검사를 화면은 <strong>보여주려고</strong>, 세션은 <strong>지키려고</strong> 부른다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p7s3" open>
+        <summary>구간 ③ — 누르면 무엇이 만들어지나: 뒤집어서 <code>.roundTrip</code>으로 감싼다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 새로 생기는 구간의
+            <strong>좌표와 거리를 무엇으로 채울지</strong>, 그리고 <strong>길찾기를 다시 부를지 말지</strong>
+            정할 수 있다.
+          </p>
+
+          <p>
+            구간 ①②는 <strong>“언제 활성인가”</strong>였다. 여기서부터는
+            <strong>눌렀을 때 무슨 일이 일어나는가</strong>다.
+          </p>
+
+          <h4>1. 만드는 재료는 대상 구간 하나뿐이다</h4>
+
+          <p>
+            고른 구간의 좌표를 <strong>순서만 뒤집는다</strong>(파트 1의 <code>reversed()</code>).
+            새 좌표를 만들지 않는다.
+          </p>
+
+          <pre class="code">대상 구간   A ●━━━━━━━━━━● B     좌표 [ a1, a2, a3, … , a9 ]
+                ↓ 뒤집는다
+새 구간     B ●━━━━━━━━━━● A     좌표 [ a9, … , a3, a2, a1 ]</pre>
+
+          <p>
+            <strong>같은 점들을 반대쪽에서 읽는 것</strong>이라, 지도에 그려지는 선은 대상 구간과
+            <strong>완전히 겹친다.</strong>
+          </p>
+
+          <h4>2. 길찾기를 부르지 않는다 — 부를 이유가 없어서</h4>
+
+          <p>
+            파트 4·5에서는 벌어진 틈을 메우려고 길찾기를 한 번 더 불렀다. 여기서는 <strong>안 부른다.</strong>
+            그 좌표는 <strong>이미 길찾기를 거쳐 도로를 따르는 확정된 점들</strong>이기 때문이다.
+            순서를 뒤집어도 <strong>여전히 같은 도로 위</strong>라 다시 물어봐야 같은 답이 온다.
+            그래서 <strong>붙는 자리에도 틈이 없다</strong> — 대상 구간의 끝에서 시작하므로 이어지는
+            점이 곧 그 끝점이다.
+          </p>
+
+          <h4>3. <code>.roundTrip</code>으로 감싼다 — 세 번째 종류</h4>
+
+          <p>
+            뒤집은 좌표를 그대로 두지 않고 <strong><code>.roundTrip</code>이라는 종류로 감싼다.</strong>
+            파트 1에서 본 세 종류(<code>.tapped</code> · <code>.drawn</code> · <code>.roundTrip</code>)
+            중 셋째다. 파트 1에서 이미 확인한 것이 여기서 쓰인다 — <strong>세 종류 중 앱이 실제로
+            갈라 쓰는 것은 <code>.roundTrip</code> 하나</strong>다. 탭인지 그리기인지는 저장에만 남지만,
+            왕복인지는 <strong>화면이 매번 읽는다.</strong>
+          </p>
+
+          <pre class="code">패널 부제   isRoundTrip ? "왕복" : "지점 연결"</pre>
+
+          <p>
+            즉 <code>.roundTrip</code>은 <em>“어떻게 만들었나”</em>를 적어둔 것이 아니라,
+            <strong>화면에 「왕복」이라고 적기 위한 표시</strong>다.
+          </p>
+
+          <h4>4. 거리는 다시 재지 않는다 — 대상 구간의 값을 그대로 쓴다</h4>
+
+          <p>
+            뒤집기는 <strong>좌표 순서만</strong> 바꾸고 거리는 건드리지 않는다(파트 1).
+            그래서 새 구간의 거리는 <strong>대상 구간과 똑같다.</strong>
+          </p>
+
+          <pre class="code">대상 구간 410m  →  새 왕복 구간 410m       <span class="c">구간 하나로는 1배</span>
+코스 총 거리는 410m 만큼 늘어난다          <span class="c">그 구간을 두 번 지나므로 결과적으로 2배</span></pre>
+
+          <p>
+            파트 2에서 본 규칙이 그대로 작동한다 — <strong>코스 총 거리는 구간 거리를 더해서 낸다.</strong>
+            좌표로 다시 재지 않으므로, 왕복 구간이 대상과 완전히 겹쳐 있어도 거리가 사라지지 않는다.
+          </p>
+
+          <h4>5. 왕복 구간을 다시 왕복시킬 수 있다</h4>
+
+          <p>
+            새로 생긴 왕복 구간도 <strong>목록의 한 줄</strong>이라, 그것이 자유 끝이면
+            <strong>그 줄의 왕복 버튼도 활성</strong>이다. 코드는 대상의 종류를 보지 않는다.
+            테스트가 이 동작을 못박고 있다.
+          </p>
+
+          <p>
+            들어가는 자리와 대상 줄 기록은 <strong>구간 ①에서 이미 봤다</strong> — 같은
+            <code>index</code>로 앞뒤가 정해지고 그 결과가 <code>anchorInsertsBefore</code>에 적힌다.
+            나머지는 다른 편집과 같다(번호가 하나 올라가고, 복원 스택이 비워진다). <strong>다른 줄과
+            다른 칸은 하나뿐이다</strong> — 일반 줄은 대상 줄 칸(<code>anchorID</code>)이 비어 있는데
+            <strong>왕복 줄만 그 칸을 채운다</strong>(파트 6).
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>왕복 구간은 <strong>대상 구간의 좌표를 뒤집고 거리를 그대로 가져온</strong> 것이다.
+            <strong>길찾기를 다시 부르지 않고</strong>, <code>.roundTrip</code>은 화면에
+            <strong>「왕복」이라고 적기 위한 종류</strong>다.</p>
           </div>
 
         </div>
