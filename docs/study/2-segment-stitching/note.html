@@ -579,6 +579,7 @@
     <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 붙일 자리: 끝점 가까이서 시작할 때">붙일 자리 — 끝점 가까이서</a></li>
     <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — 붙일 자리: 양끝이 다 20m 밖일 때">붙일 자리 — 양끝이 다 밖</a></li>
     <li><span class="k"><i class="kf">6</i><i class="ks">6</i></span><a href="#p6" data-target="p6" title="파트 6 — 되돌리기와 앞으로 돌리기">되돌리기와 앞으로 돌리기</a></li>
+    <li><span class="k"><i class="kf">7</i><i class="ks">7</i></span><a href="#p7" data-target="p7" title="파트 7 — 왕복">왕복</a></li>
   </ol>
 </nav>
 
@@ -603,7 +604,7 @@
       <li class="on"><span class="k">4</span><a href="#p4">붙일 자리 — 끝점 가까이서 시작할 때</a></li>
       <li class="on"><span class="k">5</span><a href="#p5">붙일 자리 — 양끝이 다 20m 밖일 때</a></li>
       <li class="on"><span class="k">6</span><a href="#p6">되돌리기와 앞으로 돌리기</a></li>
-      <li class="todo"><span class="k">7</span>왕복</li>
+      <li class="on"><span class="k">7</span><a href="#p7">왕복</a></li>
     </ol>
   </nav>
 
@@ -3336,7 +3337,7 @@ segments[1]  [광화문, ⋯, 시청]      <span class="c">기존 구간</span>�
     </div>
   </details>
 
-  <details class="part" id="p6" open>
+  <details class="part" id="p6">
     <summary>
       <span class="part-tag">파트 6</span>
       <span class="ptitle">되돌리기와 앞으로 돌리기</span>
@@ -4135,13 +4136,187 @@ anchorInsertsBefore   <span class="c">그 줄의 어느 쪽인가</span>   →  
     </div>
   </details>
 
-  <div class="next">
-    <strong>다음은 파트 7 — 왕복.</strong> 이 청크의 마지막 파트다.
-    파트 6 구간 ③에서 <strong>재료로만 빌려 썼던 것</strong>이 여기서 본론이 된다 —
-    구간 하나를 골라 되짚는 <strong>구간 왕복</strong>과, 코스 전체를 되짚어 뒤에 붙이는
-    <strong>전체 왕복</strong>. 둘은 이름만 비슷하고 <strong>동작도 제약도 다르다.</strong>
-    파트 6에서 이미 깔아둔 것(자유 끝 · 뒤집기 · 대상 줄의 이름표)은 다시 파지 않는다.
-  </div>
+  <details class="part" id="p7" open>
+    <summary>
+      <span class="part-tag">파트 7</span>
+      <span class="ptitle">왕복</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트 한 줄</span>
+        이미 확정된 좌표를 <strong>되짚어</strong> 코스에 줄 하나를 더 넣는다 —
+        <strong>길찾기를 다시 부르지 않는다.</strong>
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>왕복 두 가지가 각각 <strong>어느 줄에서 켜지고 무엇을 만드는지</strong> 갈라서 말할 수 있고,
+          편집 동작을 새로 붙일 때 <strong>판정을 어느 값으로 할지</strong>(붙인 순서의 번호 ↔
+          달리는 순서의 자리)와 <strong>상한을 어디에 둘지</strong> 정할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr>
+            <td><a href="#p7s0">구간 ⓪</a></td>
+            <td>「왕복」이라 불리는 것이 넷이다 — 이름부터 고정</td>
+            <td>이름</td>
+          </tr>
+          <tr>
+            <td>구간 ①</td>
+            <td>어느 줄에서 켜지나 — 번호로 찾아 자리로 판정한다</td>
+            <td><code>canInsertRoundTrip</code></td>
+          </tr>
+          <tr>
+            <td>구간 ②</td>
+            <td>켜져도 막는 두 상한 — 좌표 2개 · 총 20,000</td>
+            <td><code>maxTotalCoordinates</code></td>
+          </tr>
+          <tr>
+            <td>구간 ③</td>
+            <td>누르면 무엇이 만들어지나 — 뒤집어서 <code>.roundTrip</code>으로 감싼다</td>
+            <td><code>insertRoundTrip</code></td>
+          </tr>
+          <tr>
+            <td>구간 ④</td>
+            <td>전체 왕복 — 갈리는 칸은 하나뿐</td>
+            <td><code>insertWholeCourseRoundTrip</code></td>
+          </tr>
+          <tr>
+            <td>구간 ⑤</td>
+            <td>왜 이 모양이 됐나 — 폐기된 역+정 병합</td>
+            <td>MVP11</td>
+          </tr>
+        </table>
+        <p class="hint">
+          <strong>왕복 버튼 둘은 탭과 그리기가 갈리지 않는다.</strong> 패널 줄과 헤더에 있는
+          버튼이라 판정에 모드가 들어가지 않는다. 갈리는 것은 구간 ⓪에 나오는
+          <strong>출발 핀 탭</strong> 하나뿐인데, 그건 이 파트가 다루는 것이 아니다 —
+          이름만 갈라놓고 넘어간다.
+          <br><em>※ 구간 ① 이후는 이어서 채운다(집필 중).</em>
+        </p>
+      </div>
+
+      <details class="seg" id="p7s0" open>
+        <summary>구간 ⓪ — 「왕복」이라 불리는 것이 넷이다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 화면에서 무엇을 눌렀을 때
+            <strong>어느 코드가 도는지</strong> 가릴 수 있다.
+          </p>
+
+          <p>
+            파트 6은 줄(<code>Entry</code>) 하나를 <strong>빼고 되살리는</strong> 이야기였다.
+            파트 7은 줄 하나를 <strong>넣는</strong> 이야기인데, 넣는 방법에 「왕복」이라는
+            <strong>같은 이름이 붙은 것이 넷</strong>이다. 먼저 이름부터 못박는다 — 안 가르면
+            뒤 구간에서 <em>“어느 왕복 말이야”</em>가 계속 걸린다.
+          </p>
+
+          <h4>1. 셋은 눈에 보인다 — 어디에 있나</h4>
+
+          <pre class="code">┌ 시트 헤더 ─────────────────────────────────┐
+│  구간 3개 · 1.24 km        [저장] [전체 왕복] │  <span class="c">← ⓑ 전체 왕복 버튼 (하나뿐)</span>
+├───────────────────────────────────────────┤
+│  ▍구간 1   지점 연결   320m           [↩]  │  <span class="c">← ⓐ 구간 왕복 버튼 (줄마다 하나)</span>
+│  ▍구간 2   지점 연결   410m           [↩]  │
+│  ▍구간 3   왕복       410m           [↩]  │
+└───────────────────────────────────────────┘
+
+지도    ●━━━━━━━━━━━━━●    <span class="c">← ⓒ 이 출발 핀을 탭하는 것 (탭 모드에서만)</span>
+       출발          도착</pre>
+
+          <p>
+            ⓐ는 구간 패널의 <strong>줄마다 하나씩</strong> 있는 아이콘 버튼이고, ⓑ는
+            <strong>시트 헤더에 하나만</strong> 있는 텍스트 버튼이다(저장 버튼 옆). ⓒ는 버튼이 아니라
+            <strong>지도 위 출발 핀을 탭하는 것</strong>이다. 넷째 ⓓ는 화면에 아무 장치가 없다 —
+            <strong>손으로 왔던 길을 되짚어 긋는 것</strong>(파트 5의 장면 ㉮)이라 그냥 그리기다.
+          </p>
+
+          <h4>2. 넷을 가르는 축은 하나다 — 길찾기를 부르나</h4>
+
+          <p>
+            ⓐ와 ⓑ는 <strong>길찾기를 부르지 않는다.</strong> 이미 코스에 들어 있는 확정된 좌표를
+            <strong>순서만 뒤집어서</strong>(파트 1의 <code>reversed()</code>) 줄 하나를 만들 뿐이다.
+            좌표 값 자체를 새로 만들지 않는다. ⓐ는 <strong>고른 줄 하나</strong>를 뒤집고,
+            ⓑ는 <strong>코스 전체</strong>를 뒤집는다.
+          </p>
+
+          <p>
+            ⓒ는 다르다. 출발 핀 탭은 <code>handleMapTap</code>이 <code>hitPin == .start</code>로 받아
+            <code>routeAndAttach(from: end, to: start)</code>를 부른다 — <strong>도착점에서 출발점까지
+            길찾기를 한 번 부르고</strong>, 그 결과로 탭 구간(<code>.tapped</code>)이 생긴다. 되짚는 것이
+            아니라 <strong>돌아가는 길을 새로 찾는 것</strong>이고, 붙는 자리는 파트 4의 탭 규칙이 그대로
+            판정한다(시작점이 곧 기존 도착점이라 20m 안 → 항상 코스 뒤쪽에 붙는다). 같은 핀 갈래의
+            나머지 둘은 붙이지 않고 막는다 — 도착 핀은 <em>“이미 도착점입니다”</em>, 합쳐진 핀은
+            <em>“이미 닫힌 코스입니다”</em>(파트 2에서 본 것)로 끝난다. ⓒ를 안내하는 힌트는
+            <strong>탭 모드이고 코스가 아직 안 닫혔을 때만</strong> 뜬다
+            (<code>roundTripHintVisible</code>). ⓓ도 길찾기를 부른다 — 손으로 그은 획이라
+            그리기 구간(<code>.drawn</code>)이 만들어지고, 파트 4·5의 붙이기 규칙이 자리를 정한다.
+          </p>
+
+          <h4>3. 이 파트가 다루는 것은 앞의 둘이다</h4>
+
+          <pre class="code">             무엇을 하면            길찾기   생기는 줄      어디서 다루나
+ⓐ 구간 왕복   패널 줄의 ↩ 버튼         ✕     .roundTrip    <span class="c">이 파트</span>
+ⓑ 전체 왕복   헤더의 「전체 왕복」 버튼    ✕     .roundTrip    <span class="c">이 파트</span>
+ⓒ 출발 핀 탭  지도의 출발 핀을 탭        ○     .tapped       <span class="c">파트 4 (탭 규칙)</span>
+ⓓ 되짚어 긋기 손으로 되짚어 긋기        ○     .drawn        <span class="c">파트 4·5</span></pre>
+
+          <p>
+            <strong>이름은 여기서 고정한다.</strong> 앞으로 이 파트에서 「왕복」은 ⓐⓑ 둘만 가리키고,
+            각각 <strong>구간 왕복</strong> · <strong>전체 왕복</strong>이라고만 부른다.
+            ⓒⓓ는 이 파트에서 다시 나오지 않는다.
+          </p>
+
+          <div class="concept">
+            <h3>💡 「왕복」은 두 층에서 쓰인다 — 장면의 이름과 종류의 이름</h3>
+            <p>
+              ⓒⓓ로 되짚어도 앱이 그것을 <strong>왕복으로 기록하지는 않는다.</strong> 생기는 줄의 종류가
+              <code>.tapped</code> · <code>.drawn</code>이라 구간 패널에는 <strong>「지점 연결」</strong>로
+              뜬다. 앱이 <strong>「왕복」이라고 적는 줄은 버튼 둘이 만든 <code>.roundTrip</code>뿐</strong>이다.
+            </p>
+            <p>
+              그래서 ⓒⓓ에서 「왕복」은 <strong>사용자가 겪는 장면의 이름</strong>이고, ⓐⓑ에서 「왕복」은
+              <strong>구간의 종류 이름</strong>이다. 같은 말인데 층이 다르다. 조건이 붙는 자리도 서로
+              다르다 — 탭은 <strong>출발 핀 20m 안</strong>을 눌렀을 때만 그 길찾기가 돌고(조건은 있지만
+              생기는 것은 <code>.tapped</code>), 그리기는 아무 조건 없이 그은 대로 붙는다.
+            </p>
+          </div>
+
+          <div class="concept">
+            <h3>💡 「닫힌 코스」와 <code>.roundTrip</code>은 만나지 않는다</h3>
+            <p>
+              코스의 첫 좌표와 끝 좌표가 20m 안이면 <strong>닫힌 코스</strong>다(파트 2). 그때 앱이 하는
+              일이 셋이다 — 지도의 핀 둘을 「출발/도착」 하나로 합치고, 탭 모드의 왕복 힌트를 감추고
+              (이미 닫혔으니 되돌아갈 곳이 없다), 새 구간을 붙일 때 <strong>무조건 코스 뒤쪽에</strong>
+              붙인다(파트 4의 규칙 1).
+            </p>
+            <p>
+              이 판정은 <strong>줄의 종류와 아무 관계가 없다.</strong> 둘은 서로를 보지 않는다 —
+              <code>.roundTrip</code> 줄이 있어도 <strong>안 닫혀 있을 수 있고</strong>(구간 셋짜리
+              코스의 맨 뒤 줄만 왕복시키면 코스 끝은 그 줄의 시작점으로 갈 뿐이다), 닫혀 있어도
+              <code>.roundTrip</code> 줄이 <strong>하나도 없을 수 있다</strong>(손으로 한 바퀴 그리면
+              전부 <code>.drawn</code>이다). 겹치는 경우는 하나 — <strong>전체 왕복은 누르면 코스가
+              반드시 닫힌다.</strong> 그래도 닫혔다는 사실을 만드는 것은 종류 이름이 아니라
+              <strong>두 끝점을 재서 나온 결과</strong>다.
+            </p>
+          </div>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>화면에서 「왕복」은 넷을 가리키는데, 갈리는 자리는 <strong>길찾기를 부르나</strong>다.
+            이 파트가 다루는 둘은 <strong>안 부르고</strong>, 이미 있는 좌표를 뒤집어
+            <code>.roundTrip</code> 줄을 만든다.</p>
+          </div>
+
+        </div>
+      </details>
+
+    </div>
+  </details>
 
 </div>
 
