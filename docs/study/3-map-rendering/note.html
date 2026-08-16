@@ -588,12 +588,12 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 소개 3절 완료 · 파트 1 진행 중(구간 ⓪·①·② 완료 / 8구간)</span></h4>
+    <h4>목차 <span class="tocnote">— 소개 3절 완료 · 파트 1 진행 중(구간 ⓪~③ 완료 / 8구간)</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
-      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a> <em>(구간 ⓪·①·② 완료)</em></li>
+      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a> <em>(구간 ⓪~③ 완료)</em></li>
       <li class="todo"><span class="k">2</span>지도에 얹는 것을 어떤 타입으로 만드나</li>
       <li class="todo"><span class="k">3</span>번호가 둘이다 — 색을 정하는 규칙</li>
       <li class="todo"><span class="k">4</span>선 하나를 세 겹으로 그린다</li>
@@ -986,7 +986,11 @@ flowchart LR
             <td>감싸면 내가 채울 것이 셋이다</td>
             <td><code>Coordinator</code></td>
           </tr>
-          <tr><td>구간 ③</td><td><code>makeUIView</code>는 한 번만 불린다</td><td>아직</td></tr>
+          <tr>
+            <td><a href="#p1s3">구간 ③</a></td>
+            <td><code>makeUIView</code>는 한 번만 불린다</td>
+            <td>초기값 / 연결</td>
+          </tr>
           <tr><td>구간 ④</td><td><code>updateUIView</code>는 값이 바뀔 때마다 불린다</td><td>아직</td></tr>
           <tr><td>구간 ⑤</td><td><code>struct</code>는 매번 새로 만들어진다</td><td>아직</td></tr>
           <tr><td>구간 ⑥</td><td>무엇을 SwiftUI에, 무엇을 <code>Coordinator</code>에</td><td>아직</td></tr>
@@ -1485,13 +1489,165 @@ updateUIView      값이 바뀔 때마다 그 MKMapView를 고친다   (매번)
         </div>
       </details>
 
+      <details class="seg" id="p1s3">
+        <summary>구간 ③ — <code>makeUIView</code>는 한 번만 불린다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> —
+            <strong>한 번만 하는 설정과 매번 하는 설정을 어디에 둘지</strong> 정할 수 있다.
+          </p>
+
+          <p>
+            <strong>앞 구간과의 연결</strong> — 구간 ②에서 셋이 <strong>한 번 / 한 번 / 매번</strong>으로
+            갈린다고 했다. 이제 그 갈림이 실제로 무엇을 만드는지 본다.
+            <strong>③은 「한 번」 쪽에서 생기는 일</strong>, ④는 「매번」 쪽이다.
+          </p>
+
+          <h4>1. 여기서 하는 일은 네 덩어리다</h4>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th></th><th>무엇</th><th>줄</th></tr>
+              <tr><td>1</td><td><code>MKMapView</code>를 만든다</td><td><code>:195</code></td></tr>
+              <tr><td>2</td><td>지도 자체 설정 — 델리게이트 대입 · 현위치 파란 점 켜기 · 첫 화면 위치</td><td><code>:196-198</code></td></tr>
+              <tr><td>3</td><td><strong>제스처 인식기 셋을 만들어 지도에 단다</strong></td><td><code>:200-231</code></td></tr>
+              <tr><td>4</td><td>그 인식기들을 <code>Coordinator</code>에 넣어둔다</td><td><code>:211</code>·<code>:219</code>·<code>:231</code></td></tr>
+            </table>
+          </div>
+
+          <p>
+            그리고 만든 <code>MKMapView</code>를 돌려준다(<code>:233</code>).
+            <strong>이게 전부이고, 다시 불리지 않는다.</strong>
+            3번의 세부 — 어떤 인식기를 왜 그 기준값으로 달았는지 — 는 <strong>청크 1이 이미 다뤘다.</strong>
+            여기서 볼 것은 <em>“인식기를 다는 자리가 여기 하나뿐”</em>이라는 사실이다.
+          </p>
+
+          <h4>2. 여기서 한 것은 나중에 못 바꾼다 — 그래서 <code>updateUIView</code>가 대신 바꾼다</h4>
+
+          <p>
+            4번이 왜 있는지가 여기서 나온다. <strong>인식기를 <code>Coordinator</code>에 넣어두지
+            않으면 나중에 손댈 방법이 없다.</strong> 그리기 모드가 그 실물이다.
+          </p>
+
+          <pre class="code">tapGR.isEnabled = !isDrawingMode          // :217   모드에 맞춘다
+touchObserver.isEnabled = !isDrawingMode  // :228   모드에 맞춘다
+drawGR.isEnabled = false                  // :209   이것만 모드를 안 본다</pre>
+
+          <p>
+            <strong>여기서 값을 박아넣는 것이 아니라 그 시점의 모드를 읽어서 맞춘다.</strong>
+            화면이 열릴 때는 항상 탭 모드이므로
+            (<code>CoursePlannerPageViewModel:35</code>, <code>interactionMode = .tap</code>),
+            결과적으로 탭 쪽 둘이 켜진 채로 화면에 붙는다 —
+            <strong><code>updateUIView</code>를 기다렸다가 켜지는 것이 아니다.</strong>
+          </p>
+
+          <p>
+            <code>drawGR</code>만 모드를 안 보는데, 진입 모드가 항상 탭이라
+            <code>false</code>라고 쓰나 <code>isDrawingMode</code>라고 쓰나 <strong>결과가 같다.</strong>
+            그래서 이 비대칭은 지금 겉으로 드러나지 않는다.
+          </p>
+
+          <p>
+            켜고 끄는 일은 <code>makeUIView</code>가 못 한다 — 이미 지나갔기 때문이다.
+            그래서 모드가 바뀌면 <code>updateUIView</code>가 <code>Coordinator</code>에 넣어둔
+            그 인식기를 꺼내 켠다(<code>:339</code>).
+          </p>
+
+          <pre class="code">makeUIView    인식기를 만들어 달고, 그때 모드에 맞추고, Coordinator에 넣어둔다   (한 번)
+updateUIView  Coordinator에서 꺼내 켜고 끈다                                  (모드가 바뀔 때마다)</pre>
+
+          <p>
+            <strong>이것이 「한 번만 하는 설정과 매번 하는 설정」을 가르는 실제 모습이다</strong> —
+            <strong>초기값은 <code>makeUIView</code>, 변화는 <code>updateUIView</code>.</strong>
+          </p>
+
+          <h4>3. 그 「한 번」이 <strong>너무 이를</strong> 수 있다</h4>
+
+          <p>
+            여기가 이 구간에서 값을 치른 자리다. MVP4 회고에 그대로 적혀 있다
+            (<code>history/mvp4/260627_mvp4_completion_retro.md:13</code>):
+            <em>“<strong>makeUIView 시점 내장 GR silent no-op.</strong> MKMapView의 내부
+            UIPanGestureRecognizer에 minimumNumberOfTouches = 2를 설정하는 방식이 실기기에서
+            동작하지 않았다. <strong>makeUIView 시점에 내부 GR이 아직 없는 것이 원인.</strong>
+            isScrollEnabled / isZoomEnabled 토글 방식으로 재설계했다.”</em>
+          </p>
+
+          <p>
+            원래 계획은 <strong>지도가 원래 갖고 있는 한 손가락 이동 인식기를 두 손가락으로 바꾸는
+            것</strong>이었다(구간 ①의 「셋이 필요했다」 중 1번). 그런데 <code>makeUIView</code>가
+            도는 시점에는 <strong>그 내부 인식기가 아직 만들어져 있지 않았다.</strong>
+          </p>
+
+          <p>
+            <strong>아무 오류도 안 났다는 것이 이 실패의 성격이다.</strong> 설정하는 코드는 돌았고
+            대상이 없어서 아무 일도 안 일어났을 뿐이다. 그래서
+            <strong>실기기에서 직접 그어보기 전까지 드러나지 않았다.</strong>
+            고친 방법은 그 인식기를 건드리는 대신 <code>MKMapView</code>가 원래 갖고 있는 스위치
+            (<code>isScrollEnabled</code> 등)를 쓰는 것이었다. 스위치는 언제 켜고 꺼도 된다.
+          </p>
+
+          <h4>4. 첫 화면 위치도 여기서 정한다</h4>
+
+          <p>
+            <code>setRegion(region, animated: false)</code>(<code>:198</code>)로 첫 화면을 잡는다.
+            <strong><code>animated: false</code>인 것이 이 자리의 성격을 보여준다</strong> —
+            첫 프레임이라 움직여 보일 이전 상태가 없다. 같은 <code>setRegion</code>이
+            <code>updateUIView</code>에도 있는데 거기는 <strong><code>animated: true</code></strong>다
+            (<code>:244</code>). 이미 보고 있는 화면에서 옮겨가는 것이기 때문이다.
+            <strong>같은 함수인데 자리에 따라 인자가 다르다.</strong>
+          </p>
+
+          <h4>5. <code>Coordinator</code>에 하는 일은 「연결」이다</h4>
+
+          <p>
+            <code>makeUIView</code> 안에 <code>context.coordinator</code>가 여러 번 나오는데,
+            <strong>값을 주고받는 것이 아니라 앞으로 오갈 수 있게 선을 이어두는 것</strong>이다.
+          </p>
+
+          <pre class="code">mapView.delegate = context.coordinator                     // :196  지도 → Coordinator 연결
+UILongPressGestureRecognizer(target: context.coordinator,  // :201  인식기 → Coordinator 연결
+                             action: #selector(Coordinator.handleDraw))
+context.coordinator.drawGestureRecognizer = drawGR         // :211  인식기를 Coordinator에 보관</pre>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>언제</th><th><code>Coordinator</code>에 하는 일</th></tr>
+              <tr><td><code>makeUIView</code> (한 번)</td><td><strong>연결한다</strong> — 지도와 인식기가 이 객체의 함수를 부르도록</td></tr>
+              <tr><td>그 뒤 (매번)</td><td>연결해 둔 그 함수들이 <strong>실제로 불린다</strong></td></tr>
+            </table>
+          </div>
+
+          <p>
+            그래서 <strong><code>makeUIView</code>는 값이 오가는 고리에 없다.</strong>
+            오가는 것은 <code>updateUIView</code>(SwiftUI → UIKit)와
+            <code>Coordinator</code>(UIKit → SwiftUI) 둘이고,
+            <code>makeUIView</code>는 <strong>한 번 만들어 연결해 놓고 빠진다.</strong>
+          </p>
+
+          <pre class="code">makeUIView ──▶ updateUIView ──▶ updateUIView ──▶ updateUIView ...
+   한 번            매번</pre>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p><code>makeUIView</code>는 <strong>한 번뿐이라 여기서 한 것은 나중에 못 바꾼다.</strong>
+              그래서 ①나중에 바꿔야 할 것은 <code>Coordinator</code>에 넣어두고
+              <code>updateUIView</code>가 꺼내 쓰고, ②<strong>그 시점에 아직 없는 것을 건드리면
+              조용히 실패한다</strong>(실기기에서야 드러났다).
+              <span class="aside">여기서 <code>Coordinator</code>에 하는 일은 값을 주고받는 것이
+              아니라 <strong>연결</strong>이다 — 오가는 것은 그 뒤부터다.</span></p>
+          </div>
+
+        </div>
+      </details>
+
       <a class="backtop" href="#toc">↑ 목차로</a>
 
     </div>
   </details>
 
   <div class="next">
-    <strong>다음 — 파트 1 구간 ③ 「<code>makeUIView</code>는 한 번만 불린다」.</strong>
+    <strong>다음 — 파트 1 구간 ④ 「<code>updateUIView</code>는 값이 바뀔 때마다 불린다」.</strong>
     구간을 하나씩 채우면서 이 페이지가 자란다. 링크는 그대로 유지된다.
   </div>
 
