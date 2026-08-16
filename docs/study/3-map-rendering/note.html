@@ -573,6 +573,7 @@
     <li><span class="k"><i class="kf">소개</i><i class="ks">소2</i></span><a href="#scenes" data-target="scenes" title="소개 2 — 사용자가 겪을 장면">사용자가 겪을 장면</a></li>
     <li><span class="k"><i class="kf">소개</i><i class="ks">소3</i></span><a href="#map" data-target="map" title="소개 3 — 장면 ↔ 맡은 부품">장면 ↔ 맡은 부품</a></li>
     <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
+    <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — SwiftUI 밖으로 나가기">SwiftUI 밖으로 나가기</a></li>
   </ol>
 </nav>
 
@@ -587,12 +588,12 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 소개 3절 완료, 파트 1부터 채우는 중</span></h4>
+    <h4>목차 <span class="tocnote">— 소개 3절 완료 · 파트 1 진행 중(구간 ⓪·① 완료 / 8구간)</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
-      <li class="todo"><span class="k">1</span>SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</li>
+      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a> <em>(구간 ⓪·① 완료)</em></li>
       <li class="todo"><span class="k">2</span>지도에 얹는 것을 어떤 타입으로 만드나</li>
       <li class="todo"><span class="k">3</span>번호가 둘이다 — 색을 정하는 규칙</li>
       <li class="todo"><span class="k">4</span>선 하나를 세 겹으로 그린다</li>
@@ -948,9 +949,336 @@ flowchart LR
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
+  <details class="part" id="p1" open>
+    <summary>
+      <span class="part-tag">파트 1</span>
+      <span class="ptitle">SwiftUI 밖으로 나가기 — <code>MKMapView</code>를 SwiftUI에 얹는 법</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트 한 줄</span>
+        지도를 SwiftUI 밖(UIKit)에 두고 감쌌더니 <strong>값이 두 곳으로 갈라졌다.</strong>
+        어느 값이 SwiftUI에 남고 어느 값이 감싼 쪽으로 넘어갔는지, 그리고 왜 그렇게 갈렸는지를 정한다.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>SwiftUI만으로 안 되는 화면을 감쌀 때 <strong>어떤 상태를 SwiftUI에 두고 어떤 상태를
+          <code>Coordinator</code>에 둘지</strong> 정할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr>
+            <td><a href="#p1s0">구간 ⓪</a></td>
+            <td>「감싼다」는 게 무슨 뜻인가</td>
+            <td><code>UIViewRepresentable</code></td>
+          </tr>
+          <tr>
+            <td><a href="#p1s1">구간 ①</a></td>
+            <td>왜 SwiftUI <code>Map</code>을 버렸나</td>
+            <td>hit-test 소유권</td>
+          </tr>
+          <tr><td>구간 ②</td><td>감싸면 내가 채울 것이 셋이다</td><td>아직</td></tr>
+          <tr><td>구간 ③</td><td><code>makeUIView</code>는 한 번만 불린다</td><td>아직</td></tr>
+          <tr><td>구간 ④</td><td><code>updateUIView</code>는 값이 바뀔 때마다 불린다</td><td>아직</td></tr>
+          <tr><td>구간 ⑤</td><td><code>struct</code>는 매번 새로 만들어진다</td><td>아직</td></tr>
+          <tr><td>구간 ⑥</td><td>무엇을 SwiftUI에, 무엇을 <code>Coordinator</code>에</td><td>아직</td></tr>
+          <tr><td>구간 ⑦</td><td>델리게이트는 내가 부르지 않는다</td><td>아직</td></tr>
+        </table>
+        <p class="hint">
+          이 파트는 <strong>사용자 장면 하나에 대응되지 않는다.</strong> 코스 편집 화면 전체가
+          이 골격 위에 서 있어서, 장면 ①~⑩ 전부의 바닥이다.
+          <em>구간 ⓪은 원래 없던 구간이다</em> — 학습 중에 <strong>“감싼다”가 정확히 무엇을
+          만드는 일인지</strong>에서 먼저 걸려서, 그 자리를 구간으로 올렸다.
+        </p>
+      </div>
+
+      <details class="seg" id="p1s0" open>
+        <summary>구간 ⓪ — 「감싼다」는 게 무슨 뜻인가</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — SwiftUI로 안 되는 UIKit 뷰를
+            써야 할 때, <strong>무엇을 만들어야 SwiftUI 쪽 코드에서 뷰처럼 다룰 수 있는지</strong>
+            정할 수 있다.
+          </p>
+
+          <h4>1. 막히는 자리는 하나다</h4>
+
+          <p>
+            <code>MKMapView</code>는 <code>UIView</code>의 서브클래스다. 그래서 SwiftUI의
+            <code>body</code> 안에 그냥 쓸 수 없다 — <code>body</code>가 요구하는 것은
+            <code>View</code>다. <strong>“감싼다”는 이 사이에 <code>struct</code> 하나를
+            만든다는 뜻이다.</strong>
+          </p>
+
+          <pre class="code">struct MapViewRepresentable: UIViewRepresentable {
+    func makeUIView(context: Context) -&gt; MKMapView { ... }          // MKMapView를 만들어서 돌려준다
+    func updateUIView(_ uiView: MKMapView, context: Context) { ... } // SwiftUI 값이 바뀌면 그 뷰에 반영한다
+}</pre>
+
+          <p>
+            <code>UIViewRepresentable</code>을 채택하면 <strong>이 <code>struct</code>가
+            <code>View</code>가 된다.</strong> 그래서 페이지 쪽 코드에서는 다른 SwiftUI 뷰와
+            문법적으로 똑같이 쓰인다 (<code>CoursePlannerPage.swift:234-258</code>).
+          </p>
+
+          <pre class="code">MapViewRepresentable(region: $cameraRegion, segments: ..., pins: ...)
+    .overlay { Canvas { ... } }</pre>
+
+          <p>
+            <code>.overlay</code>가 그대로 붙는 것이 보인다. SwiftUI 입장에서 이것은 그냥 뷰 하나다.
+          </p>
+
+          <h4>2. 이름 둘을 갈라둔다</h4>
+
+          <div class="roster">
+            <div class="card"><span class="nm"><code>UIViewRepresentable</code></span><span class="ro">SwiftUI가 주는 <strong>프로토콜</strong>. 애플이 정한 이름</span></div>
+            <div class="card"><span class="nm"><code>MapViewRepresentable</code></span><span class="ro">우리가 만든 <strong><code>struct</code></strong>. 그 프로토콜을 채택했고 이름도 우리가 지었다. 파일은 <code>MapViewRepresentable.swift</code> 하나</span></div>
+          </div>
+
+          <h4>3. 하나가 다른 하나로 바뀌는 것이 아니다 — 둘이 따로 있다</h4>
+
+          <p>
+            흔히 걸리는 자리가 여기다. <code>MKMapView</code>는 <strong>변환되지 않는다.</strong>
+            끝까지 그냥 <code>MKMapView</code>다. <code>makeUIView</code>가 하는 일은
+            <em>“<code>MKMapView</code>를 만들어서 돌려준다”</em>지,
+            <em>“<code>MapViewRepresentable</code>을 <code>MKMapView</code>로 바꾼다”</em>가 아니다.
+            실제로 있는 것은 <strong>둘</strong>이고, <strong>수명이 다르다.</strong>
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th></th><th>무엇</th><th>언제</th></tr>
+              <tr>
+                <td><code>MKMapView</code></td>
+                <td>진짜 화면에 있는 UIKit 객체</td>
+                <td><strong>한 번</strong> 만들어져서 계속 산다</td>
+              </tr>
+              <tr>
+                <td><code>MapViewRepresentable</code></td>
+                <td>SwiftUI 쪽 <code>struct</code>. 이쪽이 <code>View</code>다</td>
+                <td>SwiftUI가 <strong>필요할 때마다 새로</strong> 만든다</td>
+              </tr>
+            </table>
+          </div>
+
+          <p>
+            이 수명 차이가 <strong>이 파트의 도착점을 그대로 만든다</strong> — 값을 어디에 둘지가
+            여기서 갈린다(<strong>구간 ⑤·⑥</strong>). 지금은 <em>“둘이 따로 있다”</em>만 잡고 간다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>「감싼다」 = <strong>진짜로 화면에 있는 것은 <code>MKMapView</code>(UIKit)인데,
+              SwiftUI 쪽 코드에서는 뷰 하나처럼 다룰 수 있게 <code>UIViewRepresentable</code>을
+              채택한 <code>struct</code>를 사이에 두는 것.</strong>
+              <span class="aside">그 <code>struct</code>가 <code>MapViewRepresentable</code>이고
+              이 청크 내내 나온다.</span></p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p1s1" open>
+        <summary>구간 ① — 왜 SwiftUI <code>Map</code>을 버렸나</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 지도 위에 내가 만든 제스처를
+            얹어야 할 때, <strong>SwiftUI <code>Map</code>으로 갈지 감쌀지</strong> 정할 수 있다.
+          </p>
+
+          <p>
+            <strong>이건 눈에 보이던 문제다.</strong> 코드 안에서만 일어난 일이 아니라, 코스를
+            그리다 직접 겪던 장면이다.
+          </p>
+
+          <h4>1. 먼저 시기를 갈라야 한다 — 지도 제스처는 세 번 바뀌었다</h4>
+
+          <p>
+            이 대목이 헷갈리는 이유는 <strong>“지도가 안 움직인다”가 시기마다 다른 뜻</strong>이기
+            때문이다. 셋을 갈라 놓고 봐야 한다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>시기</th><th>지도 이동</th><th>그리기</th></tr>
+              <tr>
+                <td><strong>MVP4 이전</strong><br>SwiftUI <code>Map</code></td>
+                <td>그리기 모드에서는 <strong>안 됨</strong></td>
+                <td>한 손가락. <strong>모드를 나가야</strong> 옮길 수 있고, 나가면 그린 것이 초기화됐다</td>
+              </tr>
+              <tr>
+                <td><strong>MVP4 ~ MVP16</strong><br><code>MKMapView</code></td>
+                <td><strong>두 손가락</strong></td>
+                <td>한 손가락. 모드에 들어가면 지도 이동을 통째로 껐다</td>
+              </tr>
+              <tr>
+                <td><strong>MVP16 이후</strong><br>지금</td>
+                <td>한 손가락으로 훑기</td>
+                <td>한 손가락 <strong>꾹</strong>(0.25초) → <strong>그 획 동안만</strong> 잠금</td>
+              </tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>이 구간이 다루는 것은 맨 윗칸에서 가운데 칸으로 넘어간 사건이다.</strong>
+            아랫칸으로 다시 넘어간 것(롱프레스 전환)은 청크 1이 다뤘다.
+          </p>
+
+          <h4>2. 맨 윗칸에서 무엇이 안 됐나</h4>
+
+          <p>
+            그리기 모드에서 선을 긋는 동안 <strong>지도가 고정됐다.</strong> 화면에 지금 보이는
+            만큼만 그릴 수 있었다. 5km짜리 코스라면 중간에 지도를 옮겨야 하는데, 옮기려면 그리기
+            모드를 빠져나가야 했고, <strong>빠져나가면 그때까지 그린 경로가 초기화됐다.</strong>
+            설계 문서가 이 셋을 한 문장에 적어뒀다
+            (<code>history/mvp4/2026-06-26-mvp4-design.md:22</code>):
+            <em>“SwiftUI Map 위 오버레이 제스처는 Map 내부 UIKit 제스처로 전달되지 않는다
+            (hit-test 소유권 문제). 그리기 모드 중 지도가 고정되어 넓은 구간을 한 번에 그릴 수 없다.
+            모드 전환으로 우회하면 그린 경로가 초기화된다.”</em>
+          </p>
+
+          <h4>3. 왜 그랬나 — 터치가 우리 제스처까지 오지 않았다</h4>
+
+          <aside class="concept">
+            <h4>💡 hit-test</h4>
+            <p>화면의 한 점을 눌렀을 때 <strong>그 터치를 어느 뷰가 받을지 정하는 절차</strong>다.
+              문제는 SwiftUI <code>Map</code>의 안쪽이 UIKit으로 되어 있고, <strong>그 안쪽
+              제스처 인식기가 터치를 먼저 가져간다</strong>는 것이었다.</p>
+          </aside>
+
+          <p>세 층으로 나뉜다.</p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><td><strong>달 수는 있다</strong></td><td><code>Map</code>에도 <code>.gesture(...)</code>는 문법적으로 붙는다</td></tr>
+              <tr><td><strong>그런데 안 불린다</strong></td><td><code>Map</code> 안쪽 인식기가 터치를 먼저 가져간다. 인용문의 <em>“전달되지 않는다”</em>가 이 뜻</td></tr>
+              <tr><td><strong>조정할 수도 없다</strong></td><td>UIKit이라면 <em>“쟤가 실패해야 네가 이겨라”</em>(<code>require(toFail:)</code>) 같은 우선권 규칙을 인식기끼리 걸 수 있다. 그러려면 <strong>양쪽 인식기를 다 손에 쥐어야</strong> 하는데, <code>Map</code>은 자기 안쪽 인식기를 내주지 않는다</td></tr>
+            </table>
+          </div>
+
+          <p>
+            그러니 <code>Map</code>에 <strong>인식기가 없어서</strong> 생긴 문제가 아니다.
+            <strong>있는데 우리가 못 만져서</strong> 생긴 문제다. 그리고 이 앱에서 부딪힌 것은
+            정확히 <strong>한 손가락 드래그</strong>였다 — 지도 내장 이동도 한 손가락 드래그고
+            그리기도 한 손가락 드래그라, <strong>같은 입력을 두고 우선권이 정면으로 부딪혔다.</strong>
+          </p>
+
+          <h4>4. 가운데 칸을 만들려면 셋이 필요했다</h4>
+
+          <p>
+            <em>“한 손가락은 그리기, 두 손가락은 지도 이동”</em>이라는 구성을 만들려면 이 셋이
+            있어야 한다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><td>1</td><td>지도가 원래 갖고 있는 <strong>한 손가락 이동을 꺼야</strong> 한다 (안 그러면 그리기와 부딪힌다)</td></tr>
+              <tr><td>2</td><td>우리가 만든 <strong>한 손가락 인식기를 그 지도에 달아야</strong> 한다</td></tr>
+              <tr><td>3</td><td>우리가 만든 <strong>두 손가락 인식기를 따로 달아야</strong> 한다</td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>SwiftUI <code>Map</code>으로는 이 셋 중 아무것도 못 한다.</strong> 지도 인스턴스
+            자체를 손에 쥘 수 없어서, 거기에 인식기를 달 수도 없고 내장 인식기를 골라 끌 수도 없다.
+            할 수 있는 것은 <strong>지도 상호작용을 통째로 켜거나 끄는 것</strong>뿐이었다.
+            맨 윗칸이 저 모양이 된 이유가 이것이다 — <em>“그리기 모드 = 지도 통째로 끄기”</em> 말고
+            <strong>선택지가 없었다.</strong>
+          </p>
+
+          <h4>5. 그래서 고른 것</h4>
+
+          <p>
+            <code>MKMapView</code>를 직접 쓰고, <strong>제스처 인식기를 우리가 그 지도 인스턴스에
+            직접 단다.</strong> 그러면 위의 셋이 전부 우리 코드에서 된다. 실제로
+            <code>makeUIView</code>가 인식기 셋을 그 지도에 달고 있다(<code>:200-231</code> —
+            무엇을 어떤 기준으로 다는지는 <strong>구간 ③</strong>).
+            그것이 MVP4의 첫 마일스톤 <code>mkmap-migration</code>이고, 그때
+            <code>MapViewRepresentable.swift</code>가 생겼다.
+          </p>
+
+          <p>
+            소개 1에 적어둔 <strong>“고른 것이 아니라 밀린 것”</strong>이 이 뜻이다. SwiftUI로 안 되는
+            것이 있어서 나간 것이지 UIKit이 더 나아서 고른 것이 아니다.
+            <strong>지도를 그리는 일 자체는 SwiftUI <code>Map</code>으로도 됐다.</strong>
+          </p>
+
+          <h4>6. 무엇이 해결됐나 — 「그리면서 이동」이 아니다</h4>
+
+          <p>
+            여기서 오해하기 쉽다. <strong>지금도 획을 긋는 동안에는 지도가 안 움직인다.</strong>
+            롱프레스가 인식되는 순간 지도 이동을 끄고(<code>handleDraw:548</code>), 손을 떼면
+            곧바로 되살린다(<code>:568</code>). 그러니 <em>“이동 → 그리기 → 이동”</em>이라는
+            순서 자체는 지금도 같다.
+          </p>
+
+          <p>
+            달라진 것은 <strong>잠기는 단위</strong>다. 없어진 것은 그 사이에 <strong>모드를
+            들락거리는 일</strong>과, 들락거릴 때마다 <strong>그린 것이 날아가는 일</strong>이다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th></th><th>맨 윗칸 (SwiftUI <code>Map</code>)</th><th>지금</th></tr>
+              <tr><td>지도가 안 움직이는 구간</td><td><strong>그리기 모드에 있는 내내</strong></td><td><strong>획 하나를 긋는 동안만</strong></td></tr>
+              <tr><td>옮기려면</td><td>그리기 모드를 <strong>나가야</strong> 했다</td><td>손만 떼면 된다. 모드는 그대로</td></tr>
+              <tr><td>옮기고 나면</td><td>그린 경로가 <strong>초기화됐다</strong></td><td>그대로 남아 있고 이어 그린다</td></tr>
+            </table>
+          </div>
+
+          <p>
+            설계 문서에 목표로 적힌 <em>“두 손가락으로 지도 이동”</em>도 <strong>지금 코드에는
+            없다.</strong> MVP16에서 그리기를 롱프레스로 바꾸면서 커스텀 두 손가락 팬은 존재 이유를
+            잃고 삭제됐다(<code>831b8e6</code>). 그러니 <strong>설계 문서의 제스처 계획
+            (<code>:28-33</code>)은 지금 코드와 맞지 않는다</strong> — 낡은 것은 그 대목뿐이고,
+            오버레이·카메라 설계(<code>:35-37</code>·<code>:44-45</code>)는 지금도 그대로다.
+          </p>
+
+          <h4>7. 남는 기억 하나 — 「뻑뻑했다」</h4>
+
+          <p>
+            가운데 칸의 두 손가락 이동과 핀치는 <strong>우리가 만든 인식기</strong>였고, 회고가
+            그것을 적어뒀다 (<code>history/mvp4/260627_mvp4_completion_retro.md:19</code>):
+            <em>“핀치 UX가 내장 MKMapView 핀치보다 부자연스럽다. 커스텀 UIPinchGestureRecognizer가
+            동작하기는 하지만 가속도·감도가 내장과 다르다. 백로그로 이동.”</em>
+            지금은 그 커스텀 인식기들이 없어졌고 지도 내장 이동을 그대로 쓴다.
+          </p>
+
+          <p>
+            <strong>한 가지 밝혀둔다.</strong> <em>“SwiftUI <code>Map</code>으로는 안 된다”</em>는
+            이 프로젝트가 <strong>2026-06-25에 리서치해서 내린 판정</strong>이고
+            (<code>docs/agent-rules/project-decisions.md:106</code>, <em>“리서치 완료”</em>),
+            그 뒤로 다시 재본 적은 없다. iOS 17 이후 <code>Map</code> API가 늘었으니 지금 다시 재면
+            결과가 다를 여지는 있다. 다만 <strong>이 코드가 왜 이렇게 됐는지</strong>의 근거로는
+            이 기록이 맞다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>SwiftUI <code>Map</code>을 버린 이유는 그림이 부족해서가 아니라
+              <strong>터치를 누가 받을지 정하는 자리가 <code>Map</code> 안쪽에 있어서</strong>다.
+              그래서 할 수 있는 것이 <strong>통째로 켜기/끄기</strong>뿐이었다.
+              <span class="aside">그리고 감싸서 해결된 것은 「그리면서 이동」이 아니라
+              「이동하려고 모드를 나가는 것」이다.</span></p>
+          </div>
+
+        </div>
+      </details>
+
+      <a class="backtop" href="#toc">↑ 목차로</a>
+
+    </div>
+  </details>
+
   <div class="next">
-    <strong>다음 — 파트 1 「SwiftUI 밖으로 나가기: <code>MKMapView</code>를 SwiftUI에 얹는 법」.</strong>
-    파트를 하나씩 채우면서 이 페이지가 자란다. 링크는 그대로 유지된다.
+    <strong>다음 — 파트 1 구간 ② 「감싸면 내가 채울 것이 셋이다」.</strong>
+    구간을 하나씩 채우면서 이 페이지가 자란다. 링크는 그대로 유지된다.
   </div>
 
 </div>
