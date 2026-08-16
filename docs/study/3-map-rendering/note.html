@@ -588,12 +588,12 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 소개 3절 완료 · 파트 1 진행 중(구간 ⓪·① 완료 / 8구간)</span></h4>
+    <h4>목차 <span class="tocnote">— 소개 3절 완료 · 파트 1 진행 중(구간 ⓪·①·② 완료 / 8구간)</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
-      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a> <em>(구간 ⓪·① 완료)</em></li>
+      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a> <em>(구간 ⓪·①·② 완료)</em></li>
       <li class="todo"><span class="k">2</span>지도에 얹는 것을 어떤 타입으로 만드나</li>
       <li class="todo"><span class="k">3</span>번호가 둘이다 — 색을 정하는 규칙</li>
       <li class="todo"><span class="k">4</span>선 하나를 세 겹으로 그린다</li>
@@ -981,7 +981,11 @@ flowchart LR
             <td>왜 SwiftUI <code>Map</code>을 버렸나</td>
             <td>hit-test 소유권</td>
           </tr>
-          <tr><td>구간 ②</td><td>감싸면 내가 채울 것이 셋이다</td><td>아직</td></tr>
+          <tr>
+            <td><a href="#p1s2">구간 ②</a></td>
+            <td>감싸면 내가 채울 것이 셋이다</td>
+            <td><code>Coordinator</code></td>
+          </tr>
           <tr><td>구간 ③</td><td><code>makeUIView</code>는 한 번만 불린다</td><td>아직</td></tr>
           <tr><td>구간 ④</td><td><code>updateUIView</code>는 값이 바뀔 때마다 불린다</td><td>아직</td></tr>
           <tr><td>구간 ⑤</td><td><code>struct</code>는 매번 새로 만들어진다</td><td>아직</td></tr>
@@ -996,7 +1000,7 @@ flowchart LR
         </p>
       </div>
 
-      <details class="seg" id="p1s0" open>
+      <details class="seg" id="p1s0">
         <summary>구간 ⓪ — 「감싼다」는 게 무슨 뜻인가</summary>
         <div class="segbody">
 
@@ -1083,7 +1087,7 @@ flowchart LR
         </div>
       </details>
 
-      <details class="seg" id="p1s1" open>
+      <details class="seg" id="p1s1">
         <summary>구간 ① — 왜 SwiftUI <code>Map</code>을 버렸나</summary>
         <div class="segbody">
 
@@ -1271,13 +1275,223 @@ flowchart LR
         </div>
       </details>
 
+      <details class="seg" id="p1s2">
+        <summary>구간 ② — 감싸면 내가 채울 것이 셋이다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 감싸기를 시작할 때
+            <strong>무엇을 구현해야 하는지, 그리고 <code>Coordinator</code>를 둘지</strong> 정할 수 있다.
+          </p>
+
+          <p>
+            <strong>앞 구간과의 연결</strong> — 구간 ⓪에서 선언의 몸통을 <code>{ ... }</code>로
+            비워뒀다. 그 <code>...</code>를 채우는 것이 이 파트의 나머지 전부이고, ②는
+            <strong>칸이 몇 개이고 각각이 무엇인지</strong> 세는 자리다.
+          </p>
+
+          <h4>1. 자리는 셋이다</h4>
+
+          <pre class="code">func makeCoordinator() -&gt; Coordinator                        // :190
+func makeUIView(context: Context) -&gt; MKMapView               // :194
+func updateUIView(_ uiView: MKMapView, context: Context)     // :236</pre>
+
+          <p>
+            <code>MapViewRepresentable</code> 몸통의 함수는 이 셋이 전부다. 나머지
+            (<code>configureRenderer</code>·<code>syncHalo</code>·<code>midpointAlongPath</code>)는
+            우리가 편하려고 뺀 것이지 감싸기가 요구한 것이 아니다.
+          </p>
+
+          <p>
+            셋 다 요구사항인데 <strong><code>makeCoordinator</code>에만 기본 구현이 있다</strong> —
+            <em>“Required method. Default implementation provided.”</em> 그래서
+            <code>Coordinator</code>를 쓰지 않는 감싸기라면 아예 안 써도 된다. <strong>우리는 쓴다.</strong>
+            반대로 <code>updateUIView</code>에는 기본 구현이 <strong>없다</strong> — 옮길 것이 없어도
+            <strong>빈 몸통으로라도 반드시 써야 한다</strong>(7번에 그 실물이 있다).
+          </p>
+
+          <h4>2. 왜 하필 이 셋인가</h4>
+
+          <p>구간 ⓪의 <strong>수명 차이</strong>가 그대로 셋이 된다.</p>
+
+          <pre class="code">SwiftUI 뷰     값이다. 바뀔 때마다 새로 만들어진다
+UIKit 뷰       객체다. 한 번 만들어져 계속 살아야 한다</pre>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>메울 것</th><th>자리</th><th>불리는 횟수</th></tr>
+              <tr><td>만들기는 <strong>한 번만</strong></td><td><code>makeUIView</code></td><td>한 번</td></tr>
+              <tr><td>그 뒤의 변화는 <strong>반영으로</strong></td><td><code>updateUIView</code></td><td><strong>값이 바뀔 때마다</strong></td></tr>
+              <tr><td>그 사이를 <strong>잇는 것</strong></td><td><code>makeCoordinator</code></td><td>한 번, 셋 중 제일 먼저</td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong><code>makeUIView</code>는 다시 불리지 않는다.</strong>
+            <code>updateUIView</code>의 첫 파라미터 <code>uiView</code>가 처음에 만든 그 인스턴스이고,
+            그것을 <strong>받아서 고친다.</strong> 그래서 몸통이 전부
+            <code>uiView.setRegion(...)</code> · <code>uiView.addOverlay(...)</code> 같은 호출이다.
+            <strong>SwiftUI였다면 <code>body</code>가 다시 계산되며 뷰가 새로 만들어질 자리인데</strong>,
+            여기서는 지도 객체가 그대로 있고 우리가 그것을 고친다.
+          </p>
+
+          <aside class="concept">
+            <h4>💡 <code>Coordinator</code>란 — 이름 그대로다</h4>
+            <p><strong>coordinate = 조율하다.</strong> Apple이 이 자리를 설명한 문장이 그대로다
+              (<code>UIViewRepresentable</code> 문서):
+              <em>“A type to coordinate with the view”</em> — 뷰와 조율하는 타입.</p>
+            <p>무엇과 무엇을 조율하는지는 <code>context.coordinator</code> 쪽 문서가 명시한다 —
+              <em>“…used to handle delegates, data sources, and other interactions
+              <strong>between UIKit and SwiftUI</strong>”</em>. 즉 <strong>UIKit 쪽과 SwiftUI 쪽 사이에서
+              오가는 것을 맡는 객체</strong>다. 그리고 이 객체는 <code>MKMapView</code>처럼
+              <strong>한 번 만들어져 계속 산다</strong> — 위 표의 세 번째 줄이 이것이다.</p>
+            <p><code>makeCoordinator()</code>가 돌려주는 타입의 이름이 <code>Coordinator</code>이고,
+              <strong>그 타입이 무엇일지는 우리가 정한다.</strong> 우리는
+              <code>MapViewRepresentable</code> 안에 클래스를 하나 만들어 그것으로 정했고,
+              헷갈리지 않게 이름도 <code>Coordinator</code>로 맞췄다(<code>:404</code>).</p>
+          </aside>
+
+          <h4>3. 첫 번째 역할 — 델리게이트를 여기서 받는다</h4>
+
+          <p>
+            <code>MKMapView</code>는 델리게이트 패턴으로 동작한다. 선을 그려야 할 때
+            <code>rendererFor</code>를, 핀 뷰가 필요할 때 <code>viewFor</code>를, 화면이 움직일 때
+            <code>mapViewDidChangeVisibleRegion</code>을 <strong>델리게이트에게서 찾아 부른다.</strong>
+          </p>
+
+          <pre class="code">final class Coordinator: NSObject, MKMapViewDelegate, UIGestureRecognizerDelegate  // :404
+...
+mapView.delegate = context.coordinator                                            // :196</pre>
+
+          <p>
+            대입이 <code>makeUIView</code> 안에 있다. <strong>그래서
+            <code>makeCoordinator</code>가 먼저 불려야 한다</strong> — 문서도 그렇게 못박는다:
+            <em>“SwiftUI calls this method <strong>before</strong> calling the
+            <code>makeUIView(context:)</code> method.”</em>
+          </p>
+
+          <p class="later">
+            <code>MapViewRepresentable</code> 자신이 델리게이트를 맡지 못하는 이유는
+            <strong>구간 ⑤</strong>, 델리게이트라서 생기는 결과(<strong>호출 방향이 뒤집힌다</strong>)는
+            <strong>구간 ⑦</strong>이다.
+          </p>
+
+          <h4>4. 두 번째 역할 — 기억한다</h4>
+
+          <p>
+            Apple이 전형적인 쓰임으로 든 것이 이것이다 —
+            <em>“…provide an instance that <strong>binds its variables to SwiftUI properties,
+            causing the two to remain synchronized</strong>”</em>.
+            <code>updateUIView</code>는 값이 바뀔 때마다 불리는데, <em>“지난번엔 뭐였지”</em>를
+            어딘가 두지 않으면 비교할 수 없다. 우리 코드에서 그 자리가 <code>Coordinator</code>다 —
+            <code>lastSegmentSnapshots</code> · <code>lastSelectedIndex</code> ·
+            <code>currentHaloOverlay</code>(<code>:406-408</code>).
+          </p>
+
+          <h4>5. 방향으로 갈라 보면</h4>
+
+          <pre class="code">updateUIView 몸통이 차 있다   →  SwiftUI → UIKit   (SwiftUI 값을 UIKit 뷰에 옮긴다)
+Coordinator를 둔다            →  UIKit 쪽 일이 도는 곳</pre>
+
+          <p>
+            <strong>둘은 독립이다.</strong> <code>updateUIView</code>는 <code>Coordinator</code>와
+            상관없이 어차피 있어야 하고, 몸통이 비어도 된다. 그래서 네 조합이 다 가능하다.
+          </p>
+
+          <p>
+            ⚠️ <strong><code>Coordinator</code>를 “UIKit → SwiftUI 전달”로 좁히면 뒤에서 어긋난다.</strong>
+            <code>Coordinator</code>는 <strong><code>MKMapView</code>가 부르는 함수들이 있는 곳</strong>이고,
+            <strong>그중 일부만</strong> SwiftUI 쪽 값을 고친다. 실제로 세어 보면 갈린다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th><code>MKMapView</code>가 부르는 함수</th><th>SwiftUI를 건드리나</th></tr>
+              <tr><td><code>rendererFor</code> (<code>:417</code>)</td><td><strong>아니다.</strong> 렌더러를 만들어 <code>MKMapView</code>에 돌려주고 끝</td></tr>
+              <tr><td><code>viewFor</code> (<code>:450</code>)</td><td><strong>아니다.</strong> 뷰를 만들어 돌려주고 끝</td></tr>
+              <tr><td><code>mapViewDidChangeVisibleRegion</code> (<code>:495</code>)</td><td><strong>그렇다.</strong> <code>parent.region = region</code></td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>셋 중 하나뿐이다.</strong> <code>Coordinator</code>가 기억하는 값들도 SwiftUI로
+            가지 않는다 — UIKit 안에서 비교용으로만 쓴다.
+            <strong>이 구분이 구간 ⑥에서 그대로 판정 기준이 된다.</strong>
+          </p>
+
+          <h4>6. 손가락으로 밀면 두 방향이 맞물린다</h4>
+
+          <p>
+            지도를 손으로 밀면 <code>mapViewDidChangeVisibleRegion</code>이 불려
+            <code>parent.region</code>이 바뀌고, SwiftUI 쪽 값이 바뀌었으니 다시
+            <code>updateUIView</code>가 불린다. <strong>두 방향이 고리를 이룬다</strong> —
+            그 고리를 어떻게 끊어놨는지가 <strong>구간 ④</strong>다.
+          </p>
+
+          <h4>7. 둘지 말지 — 안 두는 쪽 실물</h4>
+
+          <p>
+            판정 기준이 섰으니 <strong>안 두는 경우</strong>를 보면 또렷해진다. 아래는 이 프로젝트가
+            아니라 <strong>같은 사람이 다른 프로젝트에서 쓴 카메라 미리보기</strong>다.
+          </p>
+
+          <pre class="code">struct CameraPreview: UIViewRepresentable {
+    let session: AVCaptureSession
+    func makeUIView(context: Context) -&gt; VideoPreview { ... }
+    func updateUIView(_ uiView: VideoPreview, context: Context) {}   // 몸통이 비었다
+    // makeCoordinator 없음
+}</pre>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>판정</th><th><code>CameraPreview</code></th></tr>
+              <tr><td>델리게이트를 받나</td><td><strong>안 받는다.</strong> 미리보기 레이어에 세션을 대입하는 것이 전부</td></tr>
+              <tr><td>지난번 값을 기억하나</td><td><strong>안 한다.</strong> <code>updateUIView</code>가 비어 있으니 비교할 것이 없다</td></tr>
+            </table>
+          </div>
+
+          <p>
+            둘 다 아니니 <code>Coordinator</code>가 필요 없고, 그래서 <code>makeCoordinator</code>도
+            쓰지 않는다. Apple 문서가 든 조건에 그대로 들어맞는다 —
+            <em>“If your view doesn’t interact with other parts of your app, you don’t have to
+            provide a coordinator.”</em> <strong>다만 <code>updateUIView</code>는 비어 있어도 있다</strong>
+            — 기본 구현이 없기 때문이다.
+          </p>
+
+          <p>
+            우리 지도는 정반대다. 둘 다 필요해서 둘 다 있고, <code>updateUIView</code>는
+            <strong>108줄</strong>이다(<code>:236-344</code>).
+          </p>
+
+          <h4>8. 셋이 한 줄로 이어진다</h4>
+
+          <pre class="code">makeCoordinator   조율할 객체를 만든다                    (한 번, 제일 먼저)
+      ↓
+makeUIView        MKMapView를 만들고,
+                  그 객체를 delegate로 대입한다            (한 번)
+      ↓
+updateUIView      값이 바뀔 때마다 그 MKMapView를 고친다   (매번)
+                  ↑ 지난번 값은 Coordinator가 들고 있다</pre>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>감싸면 채울 자리는 <strong><code>makeCoordinator</code> · <code>makeUIView</code> ·
+              <code>updateUIView</code></strong> 셋이고, <strong>한 번 / 한 번 / 매번</strong>으로 갈린다.
+              그중 <code>Coordinator</code>는 <strong>SwiftUI와 UIKit 사이를 조율하려고 두는 객체</strong>이고,
+              <strong>델리게이트를 받고 지난번 값을 기억한다.</strong>
+              <span class="aside">둘 다 필요 없으면 안 둔다 — 7번의 카메라 미리보기가 그 경우다.</span></p>
+          </div>
+
+        </div>
+      </details>
+
       <a class="backtop" href="#toc">↑ 목차로</a>
 
     </div>
   </details>
 
   <div class="next">
-    <strong>다음 — 파트 1 구간 ② 「감싸면 내가 채울 것이 셋이다」.</strong>
+    <strong>다음 — 파트 1 구간 ③ 「<code>makeUIView</code>는 한 번만 불린다」.</strong>
     구간을 하나씩 채우면서 이 페이지가 자란다. 링크는 그대로 유지된다.
   </div>
 
