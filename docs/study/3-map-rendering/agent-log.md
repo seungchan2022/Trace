@@ -8,7 +8,9 @@
 - 노트: [`note.html`](note.html)
 - 발행: <https://claude.ai/code/artifact/8a7a02b4-6ed3-4214-9436-3291a7886aed> · favicon `🗺️🎨`
 - 브랜치: `docs/study-chunk-3`
-- 상태: 🔄 진행 중 — **소개 3절 완료**(2026-08-15). 다음은 **파트 1 「번호가 둘이다 — 색을 정하는 규칙」**
+- 상태: 🔄 진행 중 — **소개 3절 완료 · 로드맵 7파트 → 8파트로 개정**(2026-08-15).
+  다음은 **파트 1 「SwiftUI 밖으로 나가기 — `MKMapView`를 SwiftUI에 얹는 법」**
+  (착수 메모는 맨 아래 🔑)
 
 ---
 
@@ -109,6 +111,142 @@ A/B/C는 **노트를 무엇 기준으로 쓸까**만 정하고, 백로그 등재
 이미 열려 있어 **다시 등재하지 않는 것**(노트에는 사실만 한 줄):
 겹침 렌더링 α/β 후보 · `MapViewRepresentable` 688줄 분해(린트 ③) · 핀·경로선 전량 교체 ·
 회색 "확인 중" 마커 깜빡임 · 구간 탭 카메라 프레이밍이 시트 높이 미반영(154번).
+
+---
+
+## 🔄 로드맵 개정 — 7파트 → 8파트 (2026-08-15, 사용자 제기 → `(b-5)` 재검토)
+
+### 사용자가 제기한 것
+
+*"결국에 지도에 관해서 화면에 표현하려면 UIViewRepresentable를 사용해야 하는데 이것에 대해서
+어떻게 다루는지, 그리고 MKMapView 관련해서도 어떻게 표현해야 될지를 그래도 알아야 하지 않을까"* —
+그리고 그 이유를 사용자가 직접 댔다: ***"그냥 swiftui뷰에 표현하는것이면은 아무렇지 않게 넘어갈것
+같은데, 이 지도앱 만의 특성이라고 생각해서 그래. 지금은 지도앱이 swiftui로만 표현하기 힘들어서
+우리가 MKMapView와 UIViewRepresentable를 가지고 커스텀에 맞게 수정을 해서 그것을 swiftui뷰에
+올린것이기 때문에."***
+
+**이 틀이 맞다.** 「UIKit 일반 지식」(범위 밖)이 아니라 **이 앱이 SwiftUI를 벗어나야 했던 이유**이고,
+그건 절대 원칙 ①이 시키는 것 그 자체 — *"이 프로젝트가 왜 여기에 그걸 썼나"*.
+
+### 🔴 내가 먼저 그은 선이 코드와 어긋났다
+
+*"오토레이아웃은 안 한다 · UIKit 일반은 뺀다"*고 그었는데, **코드에 있다** —
+`MapViewRepresentable:483`의 `NSLayoutConstraint.activate([...])`(병합 핀 배지),
+`:78~99`의 `UILabel`+`addSubview`+`sizeToFit`, `:457`의 `dequeueReusableAnnotationView`.
+**사용자가 잡았다.** 판정 기준을 바꿨다:
+
+> **이 청크 코드에 실제로 나오는 UIKit은 전부 다룬다. 코드에 안 나오는 UIKit 일반만 뺀다.**
+
+### 범위를 세 층으로 자른 결과
+
+| 층 | 무엇 | 어디 |
+|---|---|---|
+| **다룬다** | 왜 SwiftUI를 벗어났나 · 세 함수가 언제 불리나 · `Coordinator`는 왜 · **델리게이트는 내가 안 부른다** | 파트 1 |
+| **다룬다** | 조작 8종 — `addOverlay`/`addAnnotation` · `insertOverlay(_:below:)` · `setNeedsDisplay` · `UILabel`+`addSubview`+`NSLayoutConstraint` · `dequeueReusableAnnotationView` · `removeOverlays`/`removeAnnotations` · `setRegion` | 파트마다 |
+| **뺀다** | 코드에 없는 것 — `UIViewController` 생명주기 · `UITableView`/`UICollectionView` · 오토레이아웃 전반 · 안 쓰는 `MKMapView` API | — |
+
+**끝이 있다는 실측 근거:** 이 파일이 지도 인스턴스에 거는 것 **21종** · 구현한 델리게이트 **3개**
+(`rendererFor`·`viewFor`·`mapViewDidChangeVisibleRegion`) · `UIViewRepresentable` 요구사항 **3개**.
+
+### 🔁 순서가 뒤집혔다 — 색과 타입 (이번 개정의 핵심)
+
+**전:** 색(1) → 타입(2). 근거는 *"색을 정했는데 그리는 쪽이 그 색을 모른다"*가 서브클래싱의 동기라는 것.
+**후:** 타입(2) → 색(3). **감싸기 파트가 앞에 생기면서 그 동기가 옮겨갔다** — 서브클래싱을 강제하는 것은
+색이 아니라 **`rendererFor`가 오버레이 하나만 건네받는다**는 사실이다.
+
+**실측으로 확인했다 — `rendererFor`의 네 갈래 중 셋은 팔레트를 안 건드린다:**
+
+| 갈래 | 색 출처 | 팔레트 |
+|---|---|---|
+| `WaypointDotsOverlay` | 렌더러가 직접 그림 | ✕ |
+| `SegmentHaloPolyline` | `polylineHaloColor` **고정 상수** | ✕ |
+| `SegmentCasingPolyline` | `polylineCasingColor` **고정 상수** | ✕ |
+| `SegmentPolyline` | `configureRenderer(colorKey:)` | **○ 여기만** |
+
+즉 **타입으로 갈리는 함수지 색으로 갈리는 함수가 아니다.** 동기가 세 겹으로 쌓이게 됐다 —
+①델리게이트는 내가 안 부른다(1) → ②그래서 오버레이가 자기 정보를 들고 있어야 한다(2) →
+③그럼 무슨 번호를 들려 보내나(3).
+
+### 최종 8파트
+
+| | 파트 | 이동 |
+|---|---|---|
+| 1 | SwiftUI 밖으로 나가기 — `MKMapView`를 SwiftUI에 얹는 법 | 🆕 |
+| 2 | 지도에 얹는 것을 어떤 타입으로 만드나 | 2 → 2 |
+| 3 | 번호가 둘이다 — 색을 정하는 규칙 | **1 → 3** |
+| 4 | 선 하나를 세 겹으로 그린다 | 3 → 4 |
+| 5 | 거리 라벨을 어디에 찍나 | 4 → 5 |
+| 6 | 핀 목록을 만드는 규칙 | 5 → 6 |
+| 7 | 겹치는 선을 비켜 그리기 | 6 → 7 |
+| 8 | 언제 다시 그리나 | 7 → 8 |
+
+⚠️ **파트 7(겹침)이 열어보면 또 쪼개질 수 있다 → 9파트.** 그 지점에 오면 *"겹침을 별도 청크로 뺄지"*를
+그 자리에서 판단한다. **미리 정하지 않는다.**
+
+### 소유권 (노트 소개 3에 적었다)
+
+- **조작 모델** → 파트 1. 개별 호출은 각 파트.
+- **`rendererFor`/`viewFor` 구조** → 파트 2. 분기는 파트 4·5·6.
+- **z-order** → **보장**(오버레이는 항상 어노테이션 아래)은 파트 2, **명시 호출**(`insertOverlay(_:below:)`)은
+  파트 4. 파트 4가 파트 2를 이름으로 부른다. **두 번 설명하게 되면 한 곳으로 합친다.**
+
+---
+
+## 🔑 파트 1 착수 메모 — 다음 세션은 여기서 시작한다
+
+**파트 1 — SwiftUI 밖으로 나가기: `MKMapView`를 SwiftUI에 얹는 법**
+
+### 능력 선언 (확정)
+
+> SwiftUI만으로 안 되는 화면을 감쌀 때 **어떤 상태를 SwiftUI에 두고 어떤 상태를 `Coordinator`에 둘지**
+> 정할 수 있다.
+
+**왜 이 문장인가** — 이 앱이 실제로 **둘로 갈라놓았다.** `cameraRegion`은 페이지 뷰의 `@State`,
+`lastSegmentSnapshots`·`lastSelectedIndex`·`currentHaloOverlay`는 `Coordinator`. 청크 1 노트가
+그 이음매를 이미 한 줄 적어뒀다 — *"`Coordinator`는 UIKit 객체라 거기 값이 바뀌어도 SwiftUI가 모른다."*
+**그 문장 위에 세운다.**
+
+### 담을 것 다섯
+
+1. **왜 SwiftUI `Map`을 버렸나** — hit-test 소유권. 설계 문서를 인용한다(아래 재료).
+2. **`makeUIView`는 한 번만 불린다** — 제스처를 여기서 달기 때문에(`:200-231`), 나중에 켜고 끄려면
+   `updateUIView`에서 손으로 해야 한다(`:332-343`). **그 처리 자체는 청크 1 영역 — 이유만 대고 넘긴다.**
+3. **`updateUIView`는 값이 바뀔 때마다 불린다 — 카메라를 밀어도 불린다.** **파트 8의 전제**다.
+   여기서 사실만 대고, 파트 8이 다시 받는다.
+4. **`Coordinator`는 왜 있나** — `struct`는 델리게이트를 못 맡는다 + 편집 중 값을 들고 있어야 한다.
+5. **델리게이트는 내가 부르지 않는다** — 파트 2의 동기.
+
+### 재료 (경로 확인 완료 2026-08-15)
+
+| 재료 | 경로 |
+|---|---|
+| 골격 | `MapViewRepresentable.swift` — `makeCoordinator:190` · `makeUIView:194-234` · `updateUIView:236-344` · `Coordinator:404-413` |
+| 상태 분리 | `CoursePlannerPage.swift` — `cameraRegion` `@State` · `MapViewRepresentable(region: $cameraRegion …):234-249` |
+| **설계 근거** | `history/mvp4/2026-06-26-mvp4-design.md:22` (hit-test 소유권) · `:26-37` (제스처 주의사항 · *"Coordinator가 `MKMapViewDelegate`로 처리"*) |
+| 결정 기록 | `docs/agent-rules/project-decisions.md:106` |
+| 깨진 것 | `history/mvp4/260627_mvp4_completion_retro.md` |
+
+⚠️ **`history/mvp4/2026-06-26-mkmap-migration.md`는 플랜이라 재료가 아니다**(스킬 `[1]`).
+설계 문서(`2026-06-26-mvp4-design.md`)를 쓴다. **둘을 헷갈리지 말 것.**
+
+### 진행 순서
+
+1. `(b-3)` — 이 파트는 분기가 여럿인 함수가 주인공이 아니라 **골격 소개**라 판정 구조 뽑기는
+   해당 없을 수 있다. **`updateUIView`는 예외** — 그 안이 네 갈래 게이트(카메라 · 세그먼트 스냅샷 ·
+   핀 diff · 그리기 모드)인데 **그중 셋은 파트 8·청크 1 것**이다. 파트 1에서는 *"갈래가 넷이고
+   여기서는 구조만 본다"*까지만.
+2. `(b-4)` — 구간 표 + **표면 전수 + 배정표**를 함께 넘긴다. 전수는 **코드에서 다시 뽑는다**(착수 메모 아님).
+3. 구간 하나씩 채팅 → **승인** → 저장·발행.
+
+### ⚠️ 이 파트에서 조심할 것
+
+- **UIKit 강의로 번지지 않게.** 판정 기준은 하나 — **이 청크 코드를 읽는 데 필요한가.** 아니면 접는다.
+- **문법을 설명하지 않는다**(절대 원칙 ①). `some View`·제네릭·`associatedtype`이 나와도 넘어간다.
+  설명할 것은 **이 프로젝트가 왜 그렇게 썼나**뿐.
+- **사용자는 SwiftUI는 알고 UIKit·`UIViewRepresentable`은 거의 안 써봤다**(본인 말).
+  그러므로 **SwiftUI 쪽을 기준점으로 삼아 이어준다** — *"SwiftUI였다면 `body`가 다시 계산될 자리에,
+  여기서는 `updateUIView`가 불린다"*처럼.
+- **의인화 금지**(②-2). *"MapKit이 물어본다"* 대신 **함수 호출**로 쓴다.
 
 ---
 
