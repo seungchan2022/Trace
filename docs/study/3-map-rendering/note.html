@@ -574,6 +574,7 @@
     <li><span class="k"><i class="kf">소개</i><i class="ks">소3</i></span><a href="#map" data-target="map" title="소개 3 — 장면 ↔ 맡은 부품">장면 ↔ 맡은 부품</a></li>
     <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
     <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — SwiftUI 밖으로 나가기">SwiftUI 밖으로 나가기</a></li>
+    <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 지도에 얹는 것을 어떤 타입으로 만드나">얹는 것의 타입</a></li>
   </ol>
 </nav>
 
@@ -588,13 +589,13 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 소개 3절 + 파트 1 완료 · 다음은 파트 2</span></h4>
+    <h4>목차 <span class="tocnote">— 소개 3절 + 파트 1 완료 · 파트 2 진행 중</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
       <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a></li>
-      <li class="todo"><span class="k">2</span>지도에 얹는 것을 어떤 타입으로 만드나</li>
+      <li class="on"><span class="k">2</span><a href="#p2">지도에 얹는 것을 어떤 타입으로 만드나</a> <em>(구간 표까지)</em></li>
       <li class="todo"><span class="k">3</span>번호가 둘이다 — 색을 정하는 규칙</li>
       <li class="todo"><span class="k">4</span>선 하나를 세 겹으로 그린다</li>
       <li class="todo"><span class="k">5</span>거리 라벨을 어디에 찍나</li>
@@ -627,7 +628,7 @@
           <li><code>Coordinator</code>의 값은 앱 상태가 아니라 <strong>「지도에 어디까지 반영했나」는 기록</strong>이다</li>
           <li><strong>얹는 코드와 그리는 방법을 정하는 코드가 갈라져 있고</strong>, 뒤엣것(<code>rendererFor</code>)은 우리가 부르지 않는다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">2</span><div><div class="can"><strong>오버레이로 둘지 어노테이션으로 둘지, 거기에 무슨 정보를 실어야 하는지</strong> 정할 수 있다</div></div></li>
+      <li><span class="k">2</span><div><div class="can"><strong>오버레이로 둘지 어노테이션으로 둘지, 거기에 무슨 정보를 실어야 하는지</strong> 정할 수 있다</div><div class="sum">얹는 쪽과 그리는 쪽이 갈라져 있어서(파트 1), <strong>얹을 때 알던 것을 답할 때 쓸 수 없다.</strong> 그래서 지도에 얹을 것들을 <strong>어떤 타입으로 만들고 거기에 무엇을 실어 보낼지</strong>를 정한다. <em>붙들 것은 구간을 채우면서 자란다.</em></div></div></li>
       <li class="pending"><span class="k">3</span><div><div class="can">표시 요소에 색을 붙일 때 <strong>배열 위치와 만든 순서 중 어느 번호를 써야 하는지</strong> 정할 수 있다</div></div></li>
       <li class="pending"><span class="k">4</span><div><div class="can">선에 굵기·강조를 더할 때 <strong>레이어를 몇 겹 쌓고 어느 순서로 끼울지</strong> 정할 수 있다</div></div></li>
       <li class="pending"><span class="k">5</span><div><div class="can">지도 위 라벨의 자리를 <strong>배열 인덱스 기준으로 잡을지 실거리 기준으로 잡을지</strong> 정할 수 있다</div></div></li>
@@ -817,7 +818,8 @@ flowchart LR
         <div class="st"><span class="n">②</span><span class="t">각 선 한가운데에 <b>그 선과 같은 색</b> 배경의 거리 라벨(“320m”)이 붙는다</span></div>
         <div class="st"><span class="n">④</span><span class="t">구간 경계마다 <b>흰 점</b>이 찍혀 어디서 끊겼는지 보인다</span></div>
       </div>
-      <div class="seen">지도를 SwiftUI에 얹는 것이 파트 1, 얹을 것의 타입은 파트 2, 색은 파트 3, 선은 파트 4, 라벨은 파트 5.</div>
+      <div class="seen">지도를 SwiftUI에 얹는 것이 파트 1, 얹을 것의 타입은 파트 2, 색은 파트 3, 선은 파트 4, 라벨은 파트 5.
+        <strong>④의 흰 점은 파트 2가 통째로 갖는다</strong> — 선이 아니라서 오버레이를 처음부터 만든 유일한 경우다.</div>
     </div>
 
     <div class="scene">
@@ -959,7 +961,7 @@ flowchart LR
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
-  <details class="part" id="p1" open>
+  <details class="part" id="p1">
     <summary>
       <span class="part-tag">파트 1</span>
       <span class="ptitle">SwiftUI 밖으로 나가기 — <code>MKMapView</code>를 SwiftUI에 얹는 법</span>
@@ -2349,6 +2351,83 @@ Coordinator
 
         </div>
       </details>
+
+      <a class="backtop" href="#toc">↑ 목차로</a>
+
+    </div>
+  </details>
+
+  <details class="part" id="p2" open>
+    <summary>
+      <span class="part-tag">파트 2</span>
+      <span class="ptitle">지도에 얹는 것을 어떤 타입으로 만드나</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트 한 줄</span>
+        얹는 쪽과 그리는 쪽이 갈라져 있어서(파트 1), <strong>얹을 때 알던 것을 답할 때 쓸 수 없다.</strong>
+        그래서 지도에 얹을 것들을 <strong>어떤 타입으로 만들고 거기에 무엇을 실어 보낼지</strong>를 정한다.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p><strong>오버레이로 둘지 어노테이션으로 둘지, 거기에 무슨 정보를 실어야 하는지</strong>
+          정할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr>
+            <td>구간 ①</td>
+            <td>답할 때 없는 것을 어떻게 아나</td>
+            <td>되찾기 / 실어 보내기</td>
+          </tr>
+          <tr>
+            <td>구간 ②</td>
+            <td>이미 있는 타입을 물려받는다</td>
+            <td><code>MKPolyline</code> 상속</td>
+          </tr>
+          <tr>
+            <td>구간 ③</td>
+            <td>어노테이션 둘은 무엇을 싣나</td>
+            <td><code>MKAnnotation</code></td>
+          </tr>
+          <tr>
+            <td>구간 ④</td>
+            <td>선이 아닌 것은 처음부터 만든다</td>
+            <td><code>MKOverlay</code> 직접 채택</td>
+          </tr>
+          <tr>
+            <td>구간 ⑤</td>
+            <td>오버레이냐 어노테이션이냐</td>
+            <td>z-order 보장</td>
+          </tr>
+          <tr>
+            <td>구간 ⑥</td>
+            <td>뷰는 누가 만드나</td>
+            <td><code>viewFor</code></td>
+          </tr>
+        </table>
+        <p class="hint">
+          <strong>순서에 이유가 있다.</strong> ②에서 오버레이를 <strong>쉬운 길</strong>(있는 타입
+          물려받기)로 만들고, ③에서 어노테이션은 <strong>다른 길</strong>(프로토콜 채택)이라는 것을
+          본다. ④는 <strong>오버레이인데 물려받을 것이 없는 경우</strong>라 ②와 ③을 합친 자리이고,
+          ⑤는 ④에서 만든 그 물건(경계의 흰 점)이 <strong>원래 어노테이션이었다가 옮겨진 사건</strong>이라
+          ③과 ④를 다 알아야 성립한다.
+          <br><br>
+          이 파트도 <strong>사용자 장면 하나에 대응되지 않는다.</strong> 장면 ①(색 다른 선)
+          ②(거리 라벨) ③(출발·도착 핀) ④(경계의 흰 점) <strong>넷 전부의 재료</strong>를 여기서
+          만들고, 색·자리·모양은 파트 3~6이 가져간다.
+          <br><br>
+          <strong>뒤로 넘기는 것</strong> — <code>colorKey</code>가 <code>segmentIndex</code>와
+          왜 둘인지는 <strong>파트 3</strong>, 선을 세 겹으로 그리는 이유와
+          <code>insertOverlay(_:below:)</code>는 <strong>파트 4</strong>, 라벨의 자리는
+          <strong>파트 5</strong>, 핀의 배지·역할은 <strong>파트 6</strong>, 핀이 통째로 다시
+          떨어지는 비교는 <strong>파트 8</strong>.
+        </p>
+      </div>
 
       <a class="backtop" href="#toc">↑ 목차로</a>
 
