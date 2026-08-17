@@ -588,12 +588,12 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 소개 3절 완료 · 파트 1 진행 중(구간 ⓪~⑤ 완료 / 8구간)</span></h4>
+    <h4>목차 <span class="tocnote">— 소개 3절 완료 · 파트 1 진행 중(구간 ⓪~⑥ 완료 / 8구간)</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
-      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a> <em>(구간 ⓪~⑤ 완료)</em></li>
+      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a> <em>(구간 ⓪~⑥ 완료)</em></li>
       <li class="todo"><span class="k">2</span>지도에 얹는 것을 어떤 타입으로 만드나</li>
       <li class="todo"><span class="k">3</span>번호가 둘이다 — 색을 정하는 규칙</li>
       <li class="todo"><span class="k">4</span>선 하나를 세 겹으로 그린다</li>
@@ -616,7 +616,7 @@
       위에서 아래로 읽으면 그 파트를 훑는 것이 된다. 목록 순서는 곧 <strong>만드는 순서</strong>.
       <em>아직 파트를 안 썼으므로 지금은 능력 선언만 있다 — 파트를 채우면서 같이 자란다.</em></p>
     <ol>
-      <li class="pending"><span class="k">1</span><div><div class="can">SwiftUI만으로 안 되는 화면을 감쌀 때 <strong>어떤 상태를 SwiftUI에 두고 어떤 상태를 <code>Coordinator</code>에 둘지</strong> 정할 수 있다</div><div class="sum"><em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다. 파트 2부터는 전부 이 앱이 쓴 코드 이야기라 이만큼 안 나온다.</em></div></div></li>
+      <li class="pending"><span class="k">1</span><div><div class="can">SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에 남아야 하는지</strong> 가를 수 있다</div><div class="sum"><em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다. 파트 2부터는 전부 이 앱이 쓴 코드 이야기라 이만큼 안 나온다.</em></div></div></li>
       <li class="pending"><span class="k">2</span><div><div class="can"><strong>오버레이로 둘지 어노테이션으로 둘지, 거기에 무슨 정보를 실어야 하는지</strong> 정할 수 있다</div></div></li>
       <li class="pending"><span class="k">3</span><div><div class="can">표시 요소에 색을 붙일 때 <strong>배열 위치와 만든 순서 중 어느 번호를 써야 하는지</strong> 정할 수 있다</div></div></li>
       <li class="pending"><span class="k">4</span><div><div class="can">선에 굵기·강조를 더할 때 <strong>레이어를 몇 겹 쌓고 어느 순서로 끼울지</strong> 정할 수 있다</div></div></li>
@@ -964,8 +964,8 @@ flowchart LR
 
       <div class="goal">
         <span class="tag">이 파트를 끝내면</span>
-        <p>SwiftUI만으로 안 되는 화면을 감쌀 때 <strong>어떤 상태를 SwiftUI에 두고 어떤 상태를
-          <code>Coordinator</code>에 둘지</strong> 정할 수 있다.</p>
+        <p>SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에
+          남아야 하는지</strong> 가를 수 있다.</p>
       </div>
 
       <div class="segmap">
@@ -1001,7 +1001,11 @@ flowchart LR
             <td><code>MapViewRepresentable</code>은 매번 새로 만들어진다</td>
             <td>지난번 값 · 도식</td>
           </tr>
-          <tr><td>구간 ⑥</td><td>무엇을 SwiftUI에, 무엇을 <code>Coordinator</code>에</td><td>아직</td></tr>
+          <tr>
+            <td><a href="#p1s6">구간 ⑥</a></td>
+            <td>값은 세 군데에 나뉘어 있다</td>
+            <td>사실 / 기록</td>
+          </tr>
           <tr><td>구간 ⑦</td><td>델리게이트는 내가 부르지 않는다</td><td>아직</td></tr>
         </table>
         <p class="hint">
@@ -2141,13 +2145,93 @@ Coordinator 는 최신을 봐야 한다         → 그래서 대입한다</pre>
         </div>
       </details>
 
+      <details class="seg" id="p1s6">
+        <summary>구간 ⑥ — 값은 세 군데에 나뉘어 있다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 어떤 값이 <code>Coordinator</code>에
+            남고 어떤 값이 남지 않는지 <strong>가를 수 있다.</strong>
+          </p>
+
+          <p>
+            <strong>앞 구간과의 연결</strong> — ⑤에서 셋이 <code>Coordinator</code>에 있다고 했다.
+            여기서 나오는 물음이 <strong>“상태는 ViewModel이 갖는 것 아닌가?”</strong>다.
+          </p>
+
+          <h4>1. 맞다. 그런데 저 셋은 상태가 아니다</h4>
+
+          <pre class="code">selectedSegmentIndex   ViewModel      "지금 2번이 선택돼 있다"
+lastSelectedIndex      Coordinator    "지도에 반영했을 때는 nil이었다"</pre>
+
+          <p>
+            앞엣것은 <strong>앱이 아는 사실</strong>이다. 사용자가 2번을 골랐으니 2번이다.
+            뒤엣것은 사실이 아니라 <strong>작업 기록</strong>이다 — <em>“내가 지도를 마지막으로
+            손봤을 때는 어땠나”</em>. 지도를 손보는 일은 <code>updateUIView</code>만 하니
+            <strong>그 기록도 거기서만 안다.</strong>
+          </p>
+
+          <p>
+            그래서 둘은 자주 다르다. 2번을 고른 직후 ViewModel은 이미 <code>2</code>인데
+            <code>Coordinator</code>는 아직 <code>nil</code>이다. <strong>그 어긋남이 곧 “지도를
+            고쳐야 한다”는 신호</strong>이고, 그것을 확인하는 것이 구간 ④의 비교였다.
+          </p>
+
+          <h4>2. 그래서 기준은 이렇다</h4>
+
+          <div class="takeaway">
+            <span class="tag">가르는 기준</span>
+            <p><strong>앱이 아는 사실인가, 지도를 손본 기록인가.</strong>
+              <span class="aside">사실이면 <strong>ViewModel</strong> — 구간 목록 · 선택된 번호 ·
+              탭/그리기 모드. 기록이면 <strong><code>Coordinator</code></strong> —
+              <code>lastSelectedIndex</code> · <code>lastSegmentSnapshots</code> ·
+              <code>currentHaloOverlay</code>.</span></p>
+          </div>
+
+          <p>
+            기록은 ViewModel에 둘 수 없다. <strong>ViewModel은 지도가 어디까지 반영됐는지
+            모른다.</strong>
+          </p>
+
+          <h4>3. 하나 더 — 카메라는 페이지가 갖는다</h4>
+
+          <p>
+            <code>cameraRegion</code>은 ViewModel도 <code>Coordinator</code>도 아니라
+            <strong>코스 편집 화면의 <code>@State</code></strong>이고, <code>@Binding</code>으로
+            지도에 내려준다(<code>CoursePlannerPage:235</code>).
+          </p>
+
+          <p>
+            <strong>왜 하필 페이지인지는 앱을 나갔다 켤 때의 저장·복원과 얽혀 있고, 그 흐름은 이
+            파트에서 다루지 않는다.</strong> 여기서는 <strong>거기 있다는 사실</strong>과, 그래서
+            손가락으로 민 결과가 페이지까지 올라온다는 것(구간 ④의 두 방향)까지만 알면 된다.
+          </p>
+
+          <h4>4. <code>Coordinator</code>에 있는 것이 셋뿐은 아니다</h4>
+
+          <p>
+            코드를 열면 인식기 참조, 탭 판별기, 그리는 중 좌표 모음도 보인다.
+            <strong>위 셋은 「이 청크가 다루는 표시 기록」</strong>이고 나머지는 그리기·탭 판별용으로
+            <strong>청크 1</strong> 몫이다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p><code>Coordinator</code>에 있는 값들은 <strong>앱 상태가 아니라 「지도를 어디까지
+              반영했나」는 기록</strong>이다. 앱이 아는 사실은 ViewModel이 갖고, 기록은
+              <strong>옮기는 쪽만 아니까</strong> 거기 남는다.</p>
+          </div>
+
+        </div>
+      </details>
+
       <a class="backtop" href="#toc">↑ 목차로</a>
 
     </div>
   </details>
 
   <div class="next">
-    <strong>다음 — 파트 1 구간 ⑥ 「무엇을 SwiftUI에, 무엇을 <code>Coordinator</code>에」.</strong>
+    <strong>다음 — 파트 1 구간 ⑦ 「델리게이트는 내가 부르지 않는다」.</strong>
     구간을 하나씩 채우면서 이 페이지가 자란다. 링크는 그대로 유지된다.
   </div>
 
