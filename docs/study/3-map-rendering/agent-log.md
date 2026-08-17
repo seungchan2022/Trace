@@ -777,6 +777,38 @@ z-order **보장**(오버레이는 항상 어노테이션 아래)은 파트 2, *
   스킬 `[4]`의 「파트를 처음 저장할 때 골격을 함께 만든다」와 같은 말인데 **내가 구간 ①부터
   열려고 했다.** 골격을 먼저 세우면 구간마다 붙일 자리가 이미 있다.
 
+### 🔑 구간별 착수 재료 — 다음 세션은 구간 ①부터 (2026-08-17)
+
+**골격은 이미 노트에 있다.** 파트 머리(한 줄·능력 선언·구간 표 6개)는 저장·발행됐으므로
+**다시 만들지 말고 그 아래에 구간을 하나씩 붙인다.** 저장 단위는 구간이고 매번 재발행한다
+(`url` 인자 + 사전 `WebFetch`).
+
+**각 구간의 첫 조각 — `(b-4)`에서 여섯 전부 「실물」로 통과했다. 이 성격을 바꾸지 말 것:**
+
+| 구간 | 첫 조각 (실물) | 재료 |
+|---|---|---|
+| ① | `addOverlay(polyline)` 자리에서는 `index`를 알고, `rendererFor(overlay:)`에는 `overlay`만 온다 — **두 코드 자리를 나란히** | `:274,279` ↔ `:417` · 반대편 `:312-318` |
+| ② | `SegmentPolyline` 선언 3줄 (`MKPolyline` + 저장 프로퍼티 둘) | `:45-49` · `:53-56` · `:61-63` |
+| ③ | `ColoredPinAnnotation`·`SegmentDistanceAnnotation` 선언 둘 나란히 | `:29-43` · `:65-75` · `MapPin :14-27` |
+| ④ | 장면 ④ — 경계의 흰 점. `MKPolyline`으로는 안 되는 이유(점 여럿은 선이 아니다) | `:108-131` · `:133-148` |
+| ⑤ | 실기기에서 거리 라벨이 흰 점에 가려지던 장면(2026-07-04) | `:104-107` 주석 · `history/mvp9/` |
+| ⑥ | `viewFor`가 **무엇을 하는 함수인가** 한 줄 + 라벨이 화면에 뭘로 보이나 | `:450-491` · `:77-102` |
+
+⚠️ **구간 ⑥의 `viewFor`가 이 파트에서 가장 위험한 자리다** — 노트에 이름만 7번 나와 있고
+**무엇을 하는 함수인지는 한 번도 안 나왔다.** 구간 ⑦이 `rendererFor`로 똑같이 값을 치렀다.
+
+**처음 나오는 이름 — 한 줄 설명을 반드시 붙일 것(노트 등장 0~2회 실측):**
+`MKAnnotation`(0) · `MKAnnotationView`(0) · `MKMarkerAnnotationView`(0) · `boundingMapRect`(0) ·
+`SegmentDistanceAnnotationView`(0) · `MapPin`(0) · `colorKey`·`segmentIndex`(0) · 서브클래싱(0) ·
+`viewFor`(이름만) · `dequeueReusableAnnotationView`(1) · `WaypointDotsOverlay`/`Renderer`(1).
+
+**뒤로 넘길 것 (구간에서 흘러넘치면 여기로):** `colorKey`↔`segmentIndex`가 왜 둘인가 → 파트 3 ·
+3겹과 `insertOverlay(_:below:)`·`syncHalo` 본론 → 파트 4 · `midpointAlongPath` → 파트 5 ·
+배지·`displayPriority`·`collisionMode`·`MKUserLocation → nil` → 파트 6 ·
+`OverlapOffsetResolver` → 파트 7 · `MapPin.==` diff·`SegmentSnapshot` → 파트 8.
+
+**파트 2를 다 쓰면 `(d)` 팩트체크를 그 세션에서 바로 건다**(파트 1에서 그렇게 했다).
+
 ---
 
 ## 📦 인계 원문 보존 — 청크 2 종료 시 쓴 착수 메모 (2026-08-15)
