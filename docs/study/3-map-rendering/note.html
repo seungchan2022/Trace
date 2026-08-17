@@ -603,7 +603,7 @@
       <li class="todo"><span class="k">8</span>언제 다시 그리나</li>
       <li class="todo"><span class="k">마무리</span>어디를 열면 되나 — 파일 경로</li>
       <li class="todo"><span class="k">마무리</span>왜 이렇게 됐나 — 버려진 것과 고쳐진 것</li>
-      <li class="todo"><span class="k">마무리</span>팩트체크 수정 내역</li>
+      <li class="on"><span class="k">마무리</span><a href="#factcheck">팩트체크 수정 내역</a> <em>(파트 1까지)</em></li>
       <li class="todo"><span class="k">마무리</span>확인 문제 기록</li>
     </ol>
   </nav>
@@ -1338,7 +1338,8 @@ func updateUIView(_ uiView: MKMapView, context: Context)     // :236</pre>
 
           <p>
             셋 다 요구사항인데 <strong><code>makeCoordinator</code>에만 기본 구현이 있다</strong> —
-            <em>“Required method. Default implementation provided.”</em> 그래서
+            <em>“Required method. Default implementation provided.”</em>
+            (Apple <code>UIViewRepresentable.makeCoordinator()</code> 문서). 그래서
             <code>Coordinator</code>를 쓰지 않는 감싸기라면 아예 안 써도 된다. <strong>우리는 쓴다.</strong>
             반대로 <code>updateUIView</code>에는 기본 구현이 <strong>없다</strong> — 옮길 것이 없어도
             <strong>빈 몸통으로라도 반드시 써야 한다</strong>(7번에 그 실물이 있다).
@@ -1374,7 +1375,8 @@ UIKit 뷰       객체다. 한 번 만들어져 계속 살아야 한다</pre>
             <p><strong>coordinate = 조율하다.</strong> Apple이 이 자리를 설명한 문장이 그대로다
               (<code>UIViewRepresentable</code> 문서):
               <em>“A type to coordinate with the view”</em> — 뷰와 조율하는 타입.</p>
-            <p>무엇과 무엇을 조율하는지는 <code>context.coordinator</code> 쪽 문서가 명시한다 —
+            <p>무엇과 무엇을 조율하는지는 Apple <code>UIViewRepresentableContext.coordinator</code>
+              문서가 명시한다 —
               <em>“…used to handle delegates, data sources, and other interactions
               <strong>between UIKit and SwiftUI</strong>”</em>. 즉 <strong>UIKit 쪽과 SwiftUI 쪽 사이에서
               오가는 것을 맡는 객체</strong>다. 그리고 이 객체는 <code>MKMapView</code>처럼
@@ -1399,7 +1401,8 @@ mapView.delegate = context.coordinator                                          
 
           <p>
             대입이 <code>makeUIView</code> 안에 있다. <strong>그래서
-            <code>makeCoordinator</code>가 먼저 불려야 한다</strong> — 문서도 그렇게 못박는다:
+            <code>makeCoordinator</code>가 먼저 불려야 한다</strong> — 문서도 그렇게 못박는다
+            (Apple <code>makeCoordinator()</code> 문서):
             <em>“SwiftUI calls this method <strong>before</strong> calling the
             <code>makeUIView(context:)</code> method.”</em>
           </p>
@@ -1413,7 +1416,7 @@ mapView.delegate = context.coordinator                                          
           <h4>4. 두 번째 역할 — 기억한다</h4>
 
           <p>
-            Apple이 전형적인 쓰임으로 든 것이 이것이다 —
+            Apple이 전형적인 쓰임으로 든 것이 이것이다 (<code>makeCoordinator()</code> 문서) —
             <em>“…provide an instance that <strong>binds its variables to SwiftUI properties,
             causing the two to remain synchronized</strong>”</em>.
             <code>updateUIView</code>는 값이 바뀔 때마다 불리는데, <em>“지난번엔 뭐였지”</em>를
@@ -1486,7 +1489,7 @@ Coordinator를 둔다            →  UIKit 쪽 일이 도는 곳</pre>
 
           <p>
             둘 다 아니니 <code>Coordinator</code>가 필요 없고, 그래서 <code>makeCoordinator</code>도
-            쓰지 않는다. Apple 문서가 든 조건에 그대로 들어맞는다 —
+            쓰지 않는다. Apple <code>makeCoordinator()</code> 문서가 든 조건에 그대로 들어맞는다 —
             <em>“If your view doesn’t interact with other parts of your app, you don’t have to
             provide a coordinator.”</em> <strong>다만 <code>updateUIView</code>는 비어 있어도 있다</strong>
             — 기본 구현이 없기 때문이다.
@@ -1870,7 +1873,7 @@ if 모드 달라졌나?    → 아니오 → 건너뛴다          ┘</pre>
 
           <p>
             그래서 카메라 <code>if</code>에는 <strong>숫자</strong>가 들어 있다 — 위도·경도·확대 폭의
-            차이가 <strong>0.0001도(≈ 11m)보다 클 때만</strong> <code>setRegion</code>을 부른다
+            차이가 <strong>0.0001도(위도로 치면 10m쯤)보다 클 때만</strong> <code>setRegion</code>을 부른다
             (<code>:243</code>). 손가락으로 민 경우는 차이가 거의 0이라 <strong>아무것도 안 하고
             끝난다.</strong> 정확히 같을 필요는 없고 <strong>그 정도 어긋남은 무시하도록 여유를
             둔 것</strong>이다.
@@ -2058,10 +2061,11 @@ if 모드 달라졌나?    → 아니오 → 건너뛴다          ┘</pre>
           </figure>
 
           <p class="later">
-            ⚠️ 마지막 단계에서 <code>rendererFor</code>는 <strong>안 불린다.</strong> 오버레이가 그대로라
-            렌더러도 그대로이고, <code>uiView.renderer(for:)</code>로 <strong>이미 있는 렌더러를 가져와</strong>
-            고친다(<code>:299</code>). <code>rendererFor</code>가 불리는 것은
-            <strong>오버레이가 새로 추가될 때</strong>다(구간이 늘어난 경우).
+            ⚠️ 마지막 단계에서 <strong>새 렌더러를 만들지 않는다.</strong> 오버레이가 그대로라
+            <code>uiView.renderer(for:)</code>로 <strong>이미 있는 렌더러를 가져와</strong>
+            고친다(<code>:299</code>). <strong>MapKit이 <code>rendererFor</code>를 언제 부르는지는
+            우리가 정하지 않는다</strong> — 여기서 확인되는 것은 <strong>그 시점에 렌더러가 이미
+            있다는 것</strong>뿐이다.
           </p>
 
           <h4>3. 지난번 값은 여기서 생긴다</h4>
@@ -2350,6 +2354,53 @@ Coordinator
 
     </div>
   </details>
+
+  <section id="factcheck">
+    <div class="part-tag">마무리</div>
+    <h2>팩트체크 수정 내역</h2>
+
+    <p>
+      <strong>파트를 하나 끝낼 때마다 내용이 맞는지 한 번 더 검토한다.</strong> 이미 읽은 내용이
+      바뀐 것이 있으므로 무엇을 어떻게 고쳤는지 남긴다.
+    </p>
+
+    <h3>파트 1 (2026-08-17)</h3>
+
+    <div class="fix">
+      <span class="fixtag">고침 1 · 구간 ⑤</span>
+      <p><em>“<code>rendererFor</code>가 불리는 것은 오버레이가 새로 추가될 때다”</em>라고 썼는데
+        <strong>확인한 적 없는 주장</strong>이다. MapKit이 언제 부르는지는 보장된 바가 없다.
+        이 코드가 실제로 기대는 사실은 <strong>“그 시점에 렌더러가 이미 만들어져 있다”</strong>뿐이라
+        (<code>renderer(for:)</code>가 nil이 아닌 것을 돌려주므로) 거기까지만 남겼다.
+        구간 ⑦의 논지(얹는 시점 ≠ 답하는 시점)는 그대로다.</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">고침 2 · 구간 ④</span>
+      <p>카메라 문턱값을 <em>“0.0001도(≈ 11m)”</em>라고 썼는데 <strong>위도에만 맞는 환산</strong>이다.
+        경도 0.0001도는 서울에서 9m쯤이고, 확대 폭(<code>spanDiff</code>)은 거리가 아니라
+        <strong>다른 축</strong>이라 미터로 옮기는 것 자체가 안 맞는다.
+        <em>“0.0001도(위도로 치면 10m쯤)”</em>로 한정했다.</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">고침 3 · 구간 ②·⑤</span>
+      <p>Apple 문서 인용 다섯에 <strong>출처가 안 적혀 있었다.</strong> 코드는 전부
+        <code>파일:줄</code>을 달았는데 문서만 비어 있어서, 나중에 열면
+        <em>“애플 문서인가 이 프로젝트 기록인가”</em>를 가릴 수 없다.
+        <code>UIViewRepresentable.makeCoordinator()</code> ·
+        <code>UIViewRepresentableContext.coordinator</code>로 한 줄씩 달았다.</p>
+    </div>
+
+    <p class="later">
+      <strong>통과한 것</strong> — 구간 ②의 「요구사항 셋 + <code>makeCoordinator</code>만 기본 구현」 ·
+      구간 ③의 회고 인용 · 구간 ④의 게이트 다섯과 각 조건 줄 · 구간 ⑤의 <code>:237</code>·
+      <code>:291</code>·<code>:296</code> · 구간 ⑥의 <code>cameraRegion</code> 쓰기 넷과 읽기 하나.
+      전부 코드·문서와 일치했다.
+    </p>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
 
   <div class="next">
     <strong>다음 — 파트 2 「지도에 얹는 것을 어떤 타입으로 만드나」.</strong>
