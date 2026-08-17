@@ -588,12 +588,12 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 소개 3절 완료 · 파트 1 진행 중(구간 ⓪~⑥ 완료 / 8구간)</span></h4>
+    <h4>목차 <span class="tocnote">— 소개 3절 + 파트 1 완료 · 다음은 파트 2</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
-      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a> <em>(구간 ⓪~⑥ 완료)</em></li>
+      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a></li>
       <li class="todo"><span class="k">2</span>지도에 얹는 것을 어떤 타입으로 만드나</li>
       <li class="todo"><span class="k">3</span>번호가 둘이다 — 색을 정하는 규칙</li>
       <li class="todo"><span class="k">4</span>선 하나를 세 겹으로 그린다</li>
@@ -616,7 +616,17 @@
       위에서 아래로 읽으면 그 파트를 훑는 것이 된다. 목록 순서는 곧 <strong>만드는 순서</strong>.
       <em>아직 파트를 안 썼으므로 지금은 능력 선언만 있다 — 파트를 채우면서 같이 자란다.</em></p>
     <ol>
-      <li class="pending"><span class="k">1</span><div><div class="can">SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에 남아야 하는지</strong> 가를 수 있다</div><div class="sum"><em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다. 파트 2부터는 전부 이 앱이 쓴 코드 이야기라 이만큼 안 나온다.</em></div></div></li>
+      <li><span class="k">1</span><div><div class="can">SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에 남아야 하는지</strong> 가를 수 있다</div><div class="sum">지도를 SwiftUI 밖(UIKit)에 두고 감쌌더니 <strong>값이 두 곳으로 갈라졌다.</strong> 어느 값이 SwiftUI에 남고 어느 값이 감싼 쪽으로 넘어갔는지, 그리고 왜 그렇게 갈렸는지를 정한다. <em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다.</em></div>
+        <ul class="keys">
+          <li>「감싼다」는 <strong><code>UIViewRepresentable</code>을 채택한 <code>struct</code>를 사이에 두는 것</strong> — <code>MKMapView</code>와 둘이 따로 있고 수명이 다르다</li>
+          <li>SwiftUI <code>Map</code>을 버린 이유는 그림이 아니라 <strong>터치를 누가 받을지 정하는 자리</strong>가 그 안쪽이라서</li>
+          <li>채울 자리는 셋 — <code>makeCoordinator</code> · <code>makeUIView</code> · <code>updateUIView</code>. <strong>한 번 / 한 번 / 매번</strong></li>
+          <li><code>makeUIView</code>는 <strong>한 번뿐</strong>이라, 나중에 바꿀 것은 <code>Coordinator</code>에 넣어둬야 손이 닿는다</li>
+          <li><code>updateUIView</code>는 <strong>관계없는 이유로도 불려서</strong> 안이 전부 「달라졌나」 비교다</li>
+          <li><code>MapViewRepresentable</code>은 <strong>매번 새로 만들어져</strong> 지난번 값을 거기 둘 수 없다</li>
+          <li><code>Coordinator</code>의 값은 앱 상태가 아니라 <strong>「지도에 어디까지 반영했나」는 기록</strong>이다</li>
+          <li><strong>얹는 코드와 그리는 방법을 정하는 코드가 갈라져 있고</strong>, 뒤엣것(<code>rendererFor</code>)은 우리가 부르지 않는다</li>
+        </ul></div></li>
       <li class="pending"><span class="k">2</span><div><div class="can"><strong>오버레이로 둘지 어노테이션으로 둘지, 거기에 무슨 정보를 실어야 하는지</strong> 정할 수 있다</div></div></li>
       <li class="pending"><span class="k">3</span><div><div class="can">표시 요소에 색을 붙일 때 <strong>배열 위치와 만든 순서 중 어느 번호를 써야 하는지</strong> 정할 수 있다</div></div></li>
       <li class="pending"><span class="k">4</span><div><div class="can">선에 굵기·강조를 더할 때 <strong>레이어를 몇 겹 쌓고 어느 순서로 끼울지</strong> 정할 수 있다</div></div></li>
@@ -1006,7 +1016,11 @@ flowchart LR
             <td>값은 세 군데에 나뉘어 있다</td>
             <td>사실 / 기록</td>
           </tr>
-          <tr><td>구간 ⑦</td><td>델리게이트는 내가 부르지 않는다</td><td>아직</td></tr>
+          <tr>
+            <td><a href="#p1s7">구간 ⑦</a></td>
+            <td>얹는 일과 그리는 방법은 갈라져 있다</td>
+            <td><code>rendererFor</code></td>
+          </tr>
         </table>
         <p class="hint">
           <strong>여덟 구간이 성격으로 둘로 갈린다</strong> — <strong>⓪~③은 감싸기 자체</strong>
@@ -2225,14 +2239,121 @@ lastSelectedIndex      Coordinator    "지도에 반영했을 때는 nil이었�
         </div>
       </details>
 
+      <details class="seg" id="p1s7">
+        <summary>구간 ⑦ — 얹는 일과 그리는 방법은 갈라져 있다</summary>
+        <div class="segbody">
+
+          <p class="later">
+            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 선의 색이나 굵기를 바꾸려면
+            <strong>어느 함수를 고쳐야 하는지</strong> 짚을 수 있다.
+          </p>
+
+          <h4>1. MapKit이 둘을 갈라놨다</h4>
+
+          <pre class="code">오버레이 (MKOverlay)          어디에 있나      좌표만 들고 있다
+렌더러  (MKOverlayRenderer)   어떻게 그리나    색 · 굵기 · 선 끝 모양</pre>
+
+          <p>
+            우리가 얹는 <code>MKPolyline</code>은 좌표 배열일 뿐이라
+            <strong>얹기만 해서는 화면에 아무것도 안 나온다.</strong> 그릴 도구를 따로 줘야 한다.
+          </p>
+
+          <h4>2. 그래서 코드도 두 군데로 갈린다</h4>
+
+          <pre class="code">updateUIView      uiView.addOverlay(polyline)        여기까지가 「얹기」        :279
+
+Coordinator
+  rendererFor     MKPolylineRenderer 를 만들어         여기가 「그리는 방법」    :417-445
+                  색과 굵기를 넣어 돌려준다</pre>
+
+          <p>
+            <strong>색을 바꾸려면 아래쪽을 고친다.</strong> <code>addOverlay</code> 쪽에는 색을
+            넣을 자리가 아예 없다.
+          </p>
+
+          <p>
+            <code>rendererFor</code> 안이 타입별로 갈라져 있는데, 그것은
+            <strong>얹는 오버레이가 네 종류</strong>이기 때문이다 — 경유점 점 · 후광 · 케이싱(테두리 선) ·
+            구간 선. 종류마다 그리는 법이 달라 각각 렌더러를 만든다.
+            <strong>그 네 갈래는 파트 2~4에서 본다.</strong>
+          </p>
+
+          <h4>3. 아래쪽은 우리가 부르지 않는다</h4>
+
+          <p>
+            <code>rendererFor</code>를 우리 코드에서 호출하는 곳은 <strong>없다.</strong> 오버레이를
+            얹어두면 MapKit이 <strong>그릴 때가 되면</strong> 알아서 부른다.
+          </p>
+
+          <p>
+            그래서 <strong>얹는 시점과 색을 정하는 시점이 갈린다.</strong> 얹을 때는 이것이 몇 번
+            구간인지 알고 있었는데, 나중에 <code>rendererFor</code>가 불릴 때는
+            <strong>오버레이 하나만 건네받는다.</strong>
+          </p>
+
+          <pre class="code">func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -&gt; MKOverlayRenderer   // :417</pre>
+
+          <p>
+            몇 번째로 얹었는지도, 지금 무엇이 선택돼 있는지도 같이 오지 않는다.
+          </p>
+
+          <h4>4. 이런 함수가 셋이다</h4>
+
+          <p>
+            이 파일이 구현한 델리게이트 메서드는 <strong>셋</strong>이고,
+            <strong>셋 다 우리가 부르지 않는다.</strong>
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>함수</th><th>지도가 무엇을 물어보나</th><th>어디서 다루나</th></tr>
+              <tr>
+                <td><code>rendererFor</code></td>
+                <td>이 오버레이를 그릴 도구를 줘</td>
+                <td>이 구간 · 파트 2~4</td>
+              </tr>
+              <tr>
+                <td><code>viewFor</code></td>
+                <td>이 어노테이션을 그릴 뷰를 줘 (핀 · 거리 라벨)</td>
+                <td>파트 2 · 5 · 6</td>
+              </tr>
+              <tr>
+                <td><code>mapViewDidChangeVisibleRegion</code></td>
+                <td>묻는 것이 아니라 <strong>알리는 것</strong> — 보이는 범위가 바뀌었다</td>
+                <td>구간 ④에서 봤다</td>
+              </tr>
+            </table>
+          </div>
+
+          <p>
+            앞의 둘은 <strong>물어보면 답하는</strong> 형태이고, 셋째는 <strong>일어난 일을
+            알려주는</strong> 형태다(구간 ④의 <code>didChange</code>). 방향은 달라도
+            <strong>부르는 쪽이 우리가 아니라는 점은 같다.</strong>
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>오버레이를 <strong>얹는 코드</strong>(<code>updateUIView</code>)와
+              <strong>그리는 방법을 정하는 코드</strong>(<code>rendererFor</code>)가 갈라져 있고,
+              뒤엣것은 <strong>우리가 부르지 않는다.</strong> 그래서 얹을 때 알던 것이 답할 때는 없다.</p>
+          </div>
+
+          <p class="later">
+            <strong>여기서 파트 2가 시작된다.</strong> <em>“그럼 답할 때 어떻게 알아내나”</em> —
+            그 해결이 파트 2의 주제(<code>SegmentPolyline</code> 같은 타입을 새로 만든 이유)다.
+          </p>
+
+        </div>
+      </details>
+
       <a class="backtop" href="#toc">↑ 목차로</a>
 
     </div>
   </details>
 
   <div class="next">
-    <strong>다음 — 파트 1 구간 ⑦ 「델리게이트는 내가 부르지 않는다」.</strong>
-    구간을 하나씩 채우면서 이 페이지가 자란다. 링크는 그대로 유지된다.
+    <strong>다음 — 파트 2 「지도에 얹는 것을 어떤 타입으로 만드나」.</strong>
+    파트 1은 여기까지다. 링크는 그대로 유지된다.
   </div>
 
 </div>
