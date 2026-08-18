@@ -439,6 +439,22 @@
   .fix strong { color: #8a5510; }
   .fixtag { color: #8a5510; font-size: .85em; }
 
+  /* ── 구간 머리 — 보는 이유 ─────────────── */
+  .segintro {
+    margin: .2rem 0 1.5rem;
+    padding: .9rem 1.15rem;
+    background: #FFFFFF;
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--deep);
+    border-radius: 0 10px 10px 0;
+  }
+  .segintro .tag {
+    display: block;
+    font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .3rem;
+  }
+  .segintro p { line-height: 1.7; margin: 0; }
+
   /* ── 구간 마무리 — 알고 갈 것 ─────────── */
   .takeaway {
     margin: 1.5rem 0 2rem;
@@ -573,8 +589,8 @@
     <li><span class="k"><i class="kf">소개</i><i class="ks">소2</i></span><a href="#scenes" data-target="scenes" title="소개 2 — 사용자가 겪을 장면">사용자가 겪을 장면</a></li>
     <li><span class="k"><i class="kf">소개</i><i class="ks">소3</i></span><a href="#map" data-target="map" title="소개 3 — 장면 ↔ 맡은 부품">장면 ↔ 맡은 부품</a></li>
     <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
-    <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — SwiftUI 밖으로 나가기">SwiftUI 밖으로 나가기</a></li>
-    <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 지도에 얹는 것을 어떤 타입으로 만드나">얹는 것의 타입</a></li>
+    <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 구간마다 색이 다른 선">색이 다른 선</a></li>
+    <li><span class="k"><i class="kf">골격</i><i class="ks">골</i></span><a href="#bg1" data-target="bg1" title="골격 — 화면에 안 보이는 부분">SwiftUI 밖으로</a></li>
   </ol>
 </nav>
 
@@ -585,39 +601,53 @@
   <p class="sub">
     좌표가 다 정해진 코스를 <strong>무슨 색으로 · 어느 자리에 · 몇 겹으로 · 언제 다시</strong>
     그릴지 정하는 층. 이 화면은 SwiftUI가 아니라 <code>MKMapView</code>를 감싼 것이라,
-    <strong>감싸는 법부터</strong> 시작한다. 만드는 순서로 8파트.
+    <strong>감싸는 법부터</strong> 시작한다. <strong>화면에 보이는 것 하나하나를 파트로 나눴다</strong> — 6파트 + 골격 2.
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 소개 3절 + 파트 1 완료 · 파트 2 진행 중</span></h4>
+    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1 진행 중</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
-      <li class="on"><span class="k">소개</span><a href="#map">장면 ↔ 맡은 부품</a></li>
-      <li class="on"><span class="k">1</span><a href="#p1">SwiftUI 밖으로 나가기 — MKMapView를 SwiftUI에 얹는 법</a></li>
-      <li class="on"><span class="k">2</span><a href="#p2">지도에 얹는 것을 어떤 타입으로 만드나</a> <em>(구간 표까지)</em></li>
-      <li class="todo"><span class="k">3</span>번호가 둘이다 — 색을 정하는 규칙</li>
-      <li class="todo"><span class="k">4</span>선 하나를 세 겹으로 그린다</li>
-      <li class="todo"><span class="k">5</span>거리 라벨을 어디에 찍나</li>
-      <li class="todo"><span class="k">6</span>핀 목록을 만드는 규칙</li>
-      <li class="todo"><span class="k">7</span>겹치는 선을 비켜 그리기</li>
-      <li class="todo"><span class="k">8</span>언제 다시 그리나</li>
+      <li class="on"><span class="k">소개</span><a href="#map">장면 &#8596; 맡은 부품</a></li>
+      <li class="on"><span class="k">1</span><a href="#p1">구간마다 색이 다른 선</a> <em>(구간 &#9312;까지)</em></li>
+      <li class="todo"><span class="k">2</span>선 한가운데 거리 라벨</li>
+      <li class="todo"><span class="k">3</span>출발&#183;도착 핀</li>
+      <li class="todo"><span class="k">4</span>구간 경계의 흰 점</li>
+      <li class="todo"><span class="k">5</span>고른 구간이 굵어지고 후광이 깔린다</li>
+      <li class="todo"><span class="k">6</span>되짚어 그리면 두 줄로 보인다</li>
+      <li class="on"><span class="k">골격</span><a href="#bg1">SwiftUI 밖으로 나가기 — 지도를 올리는 뼈대</a> <em>(화면에 안 보이는 부분)</em></li>
+      <li class="todo"><span class="k">골격</span>언제 다시 그리나</li>
       <li class="todo"><span class="k">마무리</span>어디를 열면 되나 — 파일 경로</li>
       <li class="todo"><span class="k">마무리</span>왜 이렇게 됐나 — 버려진 것과 고쳐진 것</li>
-      <li class="on"><span class="k">마무리</span><a href="#factcheck">팩트체크 수정 내역</a> <em>(파트 1까지)</em></li>
+      <li class="on"><span class="k">마무리</span><a href="#factcheck">팩트체크 수정 내역</a></li>
       <li class="todo"><span class="k">마무리</span>확인 문제 기록</li>
     </ol>
   </nav>
 
   <div class="recap" id="recap">
     <h3>3분 복습</h3>
-    <p class="hint"><strong>굵은 줄에서 걸리면 그 파트만 연다.</strong> 굵은 줄이
-      <strong>그 파트를 끝내면 할 수 있게 되는 것</strong>, 그 아래가 <strong>그 파트가 하는 일</strong>,
-      점선 아래가 <strong>붙들 것</strong>이다 — <strong>파트 안 구간 순서 그대로</strong>라
-      위에서 아래로 읽으면 그 파트를 훑는 것이 된다. 목록 순서는 곧 <strong>만드는 순서</strong>.
-      <em>아직 파트를 안 썼으므로 지금은 능력 선언만 있다 — 파트를 채우면서 같이 자란다.</em></p>
+    <p class="hint"><strong>&#9888; 이 절은 한 번 읽은 뒤에 쓰는 것이다.</strong> 처음이라면 <a href="#intro">소개 1</a>부터 읽는다 — 여기에는 <strong>아직 안 쓴 파트의 예고</strong>가 섞여 있어 처음 보면 모르는 말이 먼저 나온다.<br><br><strong>굵은 줄에서 걸리면 그 파트만 연다.</strong> 굵은 줄이
+      <strong>그 파트를 끝내면 설명할 수 있게 되는 것</strong>, 그 아래가 <strong>그 파트가 만드는 화면</strong>,
+      점선 아래가 <strong>기억할 것</strong>이다.
+      <em>파트 순서는 <strong>화면에 보이는 것</strong> 기준이고, 화면에 보이는 것이 없는 파트는 뒤쪽 「골격」에 모았다 — <strong>먼저 안 봐도 된다</strong>.</em></p>
     <ol>
-      <li><span class="k">1</span><div><div class="can">SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에 남아야 하는지</strong> 가를 수 있다</div><div class="sum">지도를 SwiftUI 밖(UIKit)에 두고 감쌌더니 <strong>값이 두 곳으로 갈라졌다.</strong> 어느 값이 SwiftUI에 남고 어느 값이 감싼 쪽으로 넘어갔는지, 그리고 왜 그렇게 갈렸는지를 정한다. <em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다.</em></div>
+      <li><span class="k">1</span><div><div class="can">구간 선들이 <strong>왜 지금의 색과 모양으로 그려지는지</strong> 설명할 수 있다</div><div class="sum">코스를 여러 번 나눠 이으면 <strong>선이 구간마다 다른 색</strong>으로 그려진다. 그 색이 어디서 오고, 선이 왜 <strong>두 겹</strong>(흰 테두리 위에 색 선을 겹쳐 그린다)이며, 굵기와 색을 실제로 어디서 칠하는지를 본다. <em>기억할 것은 구간을 채우면서 자란다.</em></div>
+        <ul class="keys">
+          <li>색 여섯은 <strong>에셋</strong>에 있고(<code>Seg0</code>~<code>Seg5</code>), <code>SegmentPalette</code>는 <strong>번호를 에셋 이름으로 바꿔줄 뿐</strong>이다</li>
+          <li>번호는 둘 — <code>segmentIndex</code>(배열 자리) / <code>colorKey</code>(만들어진 순서). <strong>색에 쓰는 것은 <code>colorKey</code></strong></li>
+          <li>배열 자리를 쓰면 <strong>앞쪽에 구간이 붙을 때 기존 색이 전부 바뀐다</strong> — 그래서 만들어진 순서를 따로 센다</li>
+          <li><code>MKPolyline</code>은 <strong>좌표 배열일 뿐</strong>이라 그것만으로는 화면에 안 그려진다 — 칠하는 것은 렌더러</li>
+          <li>선 아래에 띠를 까는 이유는 <strong>지도 배경에 묻히지 않게</strong>다 — 목적이 <strong>대비</strong>라서 밝은 지도에선 흰색, 어두운 지도에선 검정</li>
+          <li>선 하나가 <strong>폴리라인 둘</strong>이다 — 넓은 케이싱을 <strong>먼저</strong> 추가해 아래에 깔고 색 선을 위에 얹는다. <strong>굵기 차이가 띠</strong>가 된다</li>
+          <li>렌더러를 <strong>직접 만드는 길도 있었다</strong> — 기성품 둘을 겹치는 쪽이 <strong>좌표 변환을 직접 안 해도 돼서</strong> 그쪽을 골랐다</li>
+        </ul></div></li>
+      <li class="pending"><span class="k">2</span><div><div class="can">거리 라벨(선 위의 <em>“320m”</em>)이 <strong>왜 그 자리에 그 색으로 붙는지</strong> 설명할 수 있다</div></div></li>
+      <li class="pending"><span class="k">3</span><div><div class="can">출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 서고 언제 하나로 합쳐지는지</strong> 설명할 수 있다</div></div></li>
+      <li class="pending"><span class="k">4</span><div><div class="can">구간 경계의 흰 점이 <strong>왜 선이 아니라 따로 만든 오버레이인지</strong> 설명할 수 있다</div></div></li>
+      <li class="pending"><span class="k">5</span><div><div class="can">고른 구간이 <strong>왜 굵어지고 후광이 깔리는지, 그 순서가 어떻게 정해지는지</strong> 설명할 수 있다</div></div></li>
+      <li class="pending"><span class="k">6</span><div><div class="can">좌표가 같은 두 구간이 <strong>왜 화면에서는 두 줄로 보이는지</strong> 설명할 수 있다</div></div></li>
+      <li><span class="k">골격</span><div><div class="can">SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에 남아야 하는지</strong> 가를 수 있다</div><div class="sum">지도를 SwiftUI 밖(UIKit)에 두고 감쌌더니 <strong>값이 두 곳으로 갈라졌다.</strong> 어느 값이 SwiftUI에 남고 어느 값이 감싼 쪽으로 넘어갔는지, 그리고 왜 그렇게 갈렸는지를 정한다. <em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다.</em></div>
         <ul class="keys">
           <li>「감싼다」는 <strong><code>UIViewRepresentable</code>을 채택한 <code>struct</code>를 사이에 두는 것</strong> — <code>MKMapView</code>와 둘이 따로 있고 수명이 다르다</li>
           <li>SwiftUI <code>Map</code>을 버린 이유는 그림이 아니라 <strong>터치를 누가 받을지 정하는 자리</strong>가 그 안쪽이라서</li>
@@ -626,15 +656,9 @@
           <li><code>updateUIView</code>는 <strong>관계없는 이유로도 불려서</strong> 안이 전부 「달라졌나」 비교다</li>
           <li><code>MapViewRepresentable</code>은 <strong>매번 새로 만들어져</strong> 지난번 값을 거기 둘 수 없다</li>
           <li><code>Coordinator</code>의 값은 앱 상태가 아니라 <strong>「지도에 어디까지 반영했나」는 기록</strong>이다</li>
-          <li><strong>얹는 코드와 그리는 방법을 정하는 코드가 갈라져 있고</strong>, 뒤엣것(<code>rendererFor</code>)은 우리가 부르지 않는다</li>
+          <li><strong>추가하는 코드와 그리는 방법을 정하는 코드가 갈라져 있고</strong>, 뒤엣것(<code>rendererFor</code>)은 우리가 부르지 않는다</li>
         </ul></div></li>
-      <li><span class="k">2</span><div><div class="can"><strong>오버레이로 둘지 어노테이션으로 둘지, 거기에 무슨 정보를 실어야 하는지</strong> 정할 수 있다</div><div class="sum">얹는 쪽과 그리는 쪽이 갈라져 있어서(파트 1), <strong>얹을 때 알던 것을 답할 때 쓸 수 없다.</strong> 그래서 지도에 얹을 것들을 <strong>어떤 타입으로 만들고 거기에 무엇을 실어 보낼지</strong>를 정한다. <em>붙들 것은 구간을 채우면서 자란다.</em></div></div></li>
-      <li class="pending"><span class="k">3</span><div><div class="can">표시 요소에 색을 붙일 때 <strong>배열 위치와 만든 순서 중 어느 번호를 써야 하는지</strong> 정할 수 있다</div></div></li>
-      <li class="pending"><span class="k">4</span><div><div class="can">선에 굵기·강조를 더할 때 <strong>레이어를 몇 겹 쌓고 어느 순서로 끼울지</strong> 정할 수 있다</div></div></li>
-      <li class="pending"><span class="k">5</span><div><div class="can">지도 위 라벨의 자리를 <strong>배열 인덱스 기준으로 잡을지 실거리 기준으로 잡을지</strong> 정할 수 있다</div></div></li>
-      <li class="pending"><span class="k">6</span><div><div class="can"><strong>어떤 상태에 핀을 몇 개 낼지, 겹칠 때 무엇을 살릴지</strong> 정할 수 있다</div></div></li>
-      <li class="pending"><span class="k">7</span><div><div class="can"><strong>누가 원래 자리에 남고, 얼마나, 어느 쪽으로 밀지</strong> 정할 수 있다</div></div></li>
-      <li class="pending"><span class="k">8</span><div><div class="can">SwiftUI 값이 바뀔 때 <strong>무엇을 다시 그리고 무엇을 그대로 둘지</strong> 정할 수 있다</div></div></li>
+      <li class="pending"><span class="k">골격</span><div><div class="can">SwiftUI 값이 바뀔 때 <strong>무엇을 다시 그리고 무엇을 그대로 두는지</strong> 설명할 수 있다</div></div></li>
     </ol>
   </div>
 
@@ -651,7 +675,7 @@
     <p>
       청크 2는 <strong>구간을 이어붙여 코스를 만드는 데서 끝났다.</strong> 그 결과는
       좌표 한 줄과 거리 몇 개다 — <strong>아직 화면에는 아무것도 없다.</strong>
-      그 코스를 <code>MKMapView</code> 위에 얹는 순간부터가 이 청크다.
+      그 코스를 <code>MKMapView</code> 위에 추가하는 순간부터가 이 청크다.
     </p>
 
     <div class="bounds">
@@ -665,7 +689,7 @@
       </div>
       <div class="bd here">
         <span class="lb">여기</span>
-        <span><strong>지도 위</strong>에 무엇을 어떻게 그리나 — 지도를 SwiftUI에 얹는 법 ·
+        <span><strong>지도 위</strong>에 무엇을 어떻게 그리나 — 지도를 SwiftUI에 추가하는 법 ·
           색 · 세 겹 선 · 거리 라벨 · 핀 · 겹침 오프셋 · 다시 그리는 조건 — <em>청크 3</em></span>
       </div>
       <div class="bd">
@@ -687,30 +711,73 @@
     </p>
 
     <figure>
-      <pre class="mermaid">
-flowchart LR
-  A["구간 1개<br/>CourseSegment"] --> B["코스<br/>PlannedCourse"]
-  B --> C["표시용 좌표<br/>겹침 오프셋"]
-  C --> D["오버레이 · 어노테이션"]
-  D --> E["MKMapView"]
-  subgraph one["청크 1 · 2"]
-    A
-    B
-  end
-  subgraph two["청크 3 — 여기"]
-    C
-    D
-    E
-  end
-      </pre>
-      <figcaption>코스가 완성된 뒤부터 화면에 픽셀이 찍히기 전까지가 이 청크다</figcaption>
+      <svg viewBox="0 0 600 486" width="100%" style="max-width:600px;display:block;margin:0 auto"
+           role="img" aria-labelledby="ch3-scope-title ch3-scope-desc">
+        <title id="ch3-scope-title">청크 3의 범위 — 코스가 완성된 뒤부터 화면에 그려지기까지</title>
+        <desc id="ch3-scope-desc">청크 1과 2에서 구간 하나가 만들어지고 그것들이 이어져 코스가 된다. 청크 3은 그 코스를 표시용 좌표로 바꾸고, 오버레이와 어노테이션 객체로 만들어, MKMapView에 추가해 화면에 그리는 구간이다.</desc>
+        <defs>
+          <marker id="ch3-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#A3BFBA"/>
+          </marker>
+        </defs>
+        <rect width="600" height="486" fill="#FFFFFF"/>
+
+        <rect x="70" y="14" width="460" height="164" rx="10" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+        <text x="88" y="38" font-size="13" font-weight="700" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">청크 1 &#183; 2 — 앞에서 끝난 것</text>
+
+        <rect x="150" y="52" width="300" height="46" rx="8" fill="#FFFFFF" stroke="#C7D6D3" stroke-width="1.4"/>
+        <text x="300" y="72" text-anchor="middle" font-size="14" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">구간 하나</text>
+        <text x="300" y="89" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="ui-monospace, SFMono-Regular, Menlo, monospace">CourseSegment</text>
+
+        <path d="M300 98 V 124" stroke="#A3BFBA" stroke-width="1.4" fill="none" marker-end="url(#ch3-arrow)"/>
+
+        <rect x="150" y="126" width="300" height="46" rx="8" fill="#FFFFFF" stroke="#C7D6D3" stroke-width="1.4"/>
+        <text x="300" y="146" text-anchor="middle" font-size="14" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">이어 붙인 코스</text>
+        <text x="300" y="163" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="ui-monospace, SFMono-Regular, Menlo, monospace">PlannedCourse</text>
+
+        <path d="M300 178 V 212" stroke="#A3BFBA" stroke-width="1.4" fill="none" marker-end="url(#ch3-arrow)"/>
+        <text x="316" y="200" font-size="12" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">좌표는 정해졌고, 화면에는 아직 아무것도 없다</text>
+
+        <rect x="70" y="216" width="460" height="256" rx="10" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.8"/>
+        <text x="88" y="240" font-size="13" font-weight="700" fill="#04796E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">청크 3 — 여기</text>
+
+        <rect x="150" y="254" width="300" height="46" rx="8" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.4"/>
+        <text x="300" y="274" text-anchor="middle" font-size="14" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">표시용 좌표</text>
+        <text x="300" y="291" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">겹치는 구간은 옆으로 비켜 놓는다</text>
+
+        <path d="M300 300 V 326" stroke="#A3BFBA" stroke-width="1.4" fill="none" marker-end="url(#ch3-arrow)"/>
+
+        <rect x="150" y="328" width="300" height="46" rx="8" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.4"/>
+        <text x="300" y="348" text-anchor="middle" font-size="14" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">지도에 추가할 객체</text>
+        <text x="300" y="365" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">선 &#183; 라벨 &#183; 핀 &#183; 점</text>
+
+        <path d="M300 374 V 400" stroke="#A3BFBA" stroke-width="1.4" fill="none" marker-end="url(#ch3-arrow)"/>
+
+        <rect x="150" y="402" width="300" height="46" rx="8" fill="#FFFFFF" stroke="#04796E" stroke-width="1.8"/>
+        <text x="300" y="422" text-anchor="middle" font-size="14" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면에 그려진다</text>
+        <text x="300" y="439" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="ui-monospace, SFMono-Regular, Menlo, monospace">MKMapView</text>
+      </svg>
+      <figcaption>코스가 완성된 뒤부터 화면에 그려지기까지가 이 청크다</figcaption>
     </figure>
 
     <h3>이 화면은 SwiftUI가 아니다 — 그래서 어디까지 다루나</h3>
 
     <p>
       코스 편집 화면의 지도는 SwiftUI 뷰가 아니다. <code>MKMapView</code>(UIKit)를
-      <code>UIViewRepresentable</code>로 감싸 SwiftUI 위에 얹은 것이다.
+      <code>UIViewRepresentable</code>로 감싸 SwiftUI 위에 추가한 것이다.
       <strong>고른 것이 아니라 밀린 것이다</strong> — 설계 문서
       (<code>history/mvp4/2026-06-26-mvp4-design.md:22</code>)가 이유를 적어뒀다:
       <em>“SwiftUI Map 위 오버레이 제스처는 Map 내부 UIKit 제스처로 전달되지 않는다
@@ -734,7 +801,7 @@ flowchart LR
         </tr>
         <tr>
           <td><strong>다룬다</strong></td>
-          <td>실제 조작 — 얹기(<code>addOverlay</code>·<code>addAnnotation</code>) ·
+          <td>실제 조작 — 추가(<code>addOverlay</code>·<code>addAnnotation</code>) ·
             순서 끼우기(<code>insertOverlay(_:below:)</code>) · 다시 그리게 하기
             (<code>setNeedsDisplay</code>) · 뷰 직접 만들기(<code>UILabel</code>·
             <code>addSubview</code>·<code>NSLayoutConstraint</code>) · 재사용
@@ -818,8 +885,8 @@ flowchart LR
         <div class="st"><span class="n">②</span><span class="t">각 선 한가운데에 <b>그 선과 같은 색</b> 배경의 거리 라벨(“320m”)이 붙는다</span></div>
         <div class="st"><span class="n">④</span><span class="t">구간 경계마다 <b>흰 점</b>이 찍혀 어디서 끊겼는지 보인다</span></div>
       </div>
-      <div class="seen">지도를 SwiftUI에 얹는 것이 파트 1, 얹을 것의 타입은 파트 2, 색은 파트 3, 선은 파트 4, 라벨은 파트 5.
-        <strong>④의 흰 점은 파트 2가 통째로 갖는다</strong> — 선이 아니라서 오버레이를 처음부터 만든 유일한 경우다.</div>
+      <div class="seen">&#9312;색이 다른 선은 <strong>파트 1</strong>, &#9313;거리 라벨은 <strong>파트 2</strong>.
+        <strong>&#9315;의 흰 점은 파트 4</strong> — 선이 아니라서 오버레이를 처음부터 만든 유일한 경우다. 지도를 SwiftUI에 올리는 뼈대는 화면에 안 보여서 뒤쪽 「골격」에 있다.</div>
     </div>
 
     <div class="scene">
@@ -828,7 +895,7 @@ flowchart LR
         <div class="st"><span class="n">③</span><span class="t">코스 양 끝에 <b>출발</b>(초록·러너)과 <b>도착</b>(빨강·깃발) 핀이 선다. 되짚어 와서 두 끝이 20m 안으로 붙으면 <b>「출발/도착」 핀 하나</b>로 합친다</span></div>
         <div class="st"><span class="n">⑤</span><span class="t"><em>탭 모드 전용 —</em> 첫 탭을 기다리는 동안 <b>출발 핀</b>이 미리 서고, 탭인지 더블탭인지 가리는 0.35초 동안에는 <b>회색 “확인 중”</b> 마커가 뜬다</span></div>
       </div>
-      <div class="seen">둘 다 파트 6. 이 청크에서 <b>탭·그리기가 갈리는 곳은 여기뿐</b>이다 — 나머지 표시 경로는 두 모드가 같은 길을 지난다.</div>
+      <div class="seen">둘 다 <strong>파트 3</strong>. 이 청크에서 <b>탭·그리기가 갈리는 곳은 여기뿐</b>이다 — 나머지 표시 경로는 두 모드가 같은 길을 지난다.</div>
     </div>
 
     <div class="scene">
@@ -837,7 +904,7 @@ flowchart LR
         <div class="st"><span class="n">⑥</span><span class="t">구간 패널에서 한 줄을 누르면 그 선이 <b>굵어지고 옅은 초록 후광</b>이 깔리며, <b>카메라가 그 구간에 맞춰 옮겨간다</b></span></div>
         <div class="st"><span class="n">⑦</span><span class="t">왔던 길을 되짚어 그리면 두 선이 <b>나란히</b> 보인다 — 좌표는 완전히 같은데도. 출발·도착 핀 자리에서는 다시 한 점으로 모인다</span></div>
       </div>
-      <div class="seen">⑥은 파트 4, ⑦은 파트 7. ⑦의 <em>“좌표가 같은데 두 줄”</em>이 청크 2가 예고해 둔 자리다.</div>
+      <div class="seen">&#9317;은 <strong>파트 5</strong>, &#9318;은 <strong>파트 6</strong>. ⑦의 <em>“좌표가 같은데 두 줄”</em>이 청크 2가 예고해 둔 자리다.</div>
     </div>
 
     <h3>정한 것과 어긋난 지점</h3>
@@ -852,7 +919,7 @@ flowchart LR
       <div class="steps">
         <div class="st"><span class="n">1</span><span class="t">색을 <b>「구간 순서」로 주기로 했다가 「만든 순서」로 뒤집었다</b> — 코스 앞쪽에 구간을 꽂으면 기존 구간 색이 전부 밀렸다 (MVP7 → MVP8)</span></div>
       </div>
-      <div class="seen">파트 3에서 다룬다.</div>
+      <div class="seen"><strong>파트 1</strong>에서 다룬다 — 구간 &#9312;가 그 이야기다.</div>
     </div>
 
     <div class="scene">
@@ -863,7 +930,7 @@ flowchart LR
         <div class="st"><span class="n">4</span><span class="t"><b>핀이 하나만 바뀌어도 전부 지웠다 다시 떨어진다</b></span></div>
         <div class="st"><span class="n">5</span><span class="t"><b>회색 “확인 중” 마커가 느린 더블탭에서 깜빡인다</b></span></div>
       </div>
-      <div class="seen">2는 파트 7, 3은 파트 4, 4는 파트 8, 5는 파트 6에서 각각 그 자리에 나온다. 넷 다 <code>docs/backlog.md</code>에 <code>open</code>으로 있다.</div>
+      <div class="seen">&#9313;는 파트 6, &#9314;는 파트 5, &#9315;는 골격(언제 다시 그리나), &#9316;는 파트 3에서 각각 그 자리에 나온다. 넷 다 <code>docs/backlog.md</code>에 <code>open</code>으로 있다.</div>
     </div>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
@@ -877,7 +944,7 @@ flowchart LR
       <table>
         <tr><th>장면</th><th>맡은 부품</th><th>파트</th></tr>
         <tr>
-          <td><em>(전부의 바탕)</em> 지도를 SwiftUI에 얹기</td>
+          <td><em>(전부의 바탕)</em> 지도를 SwiftUI에 추가</td>
           <td><code>MapViewRepresentable</code> 골격 · <code>Coordinator</code></td>
           <td><span class="pt">1</span></td>
         </tr>
@@ -924,13 +991,13 @@ flowchart LR
 
     <p>
       <strong>장면 ①의 파트 번호가 셋으로 흩어져 있다.</strong> 사용자가 제일 먼저 보는 것
-      — 색깔 선 하나 — 이 만들 때는 <em>얹을 타입 만들기 → 번호 정하기 → 그림으로 바꾸기</em>로
+      — 색깔 선 하나 — 이 만들 때는 <em>추가할 타입 만들기 → 번호 정하기 → 그림으로 바꾸기</em>로
       세 파트에 걸쳐 있어서다. <strong>만드는 순서와 겪는 순서가 다르다</strong>는 것이 표에
       그대로 나타난다.
     </p>
 
     <p>
-      맨 윗줄에는 <strong>사용자 장면이 없다.</strong> 지도를 SwiftUI에 얹는 일은 화면에
+      맨 윗줄에는 <strong>사용자 장면이 없다.</strong> 지도를 SwiftUI에 추가하는 일은 화면에
       따로 보이지 않지만, <strong>나머지 전부가 그 위에서 돈다.</strong> 그래서 만드는
       순서로는 이것이 첫 번째다.
     </p>
@@ -938,33 +1005,380 @@ flowchart LR
     <h3>여러 파트에 나오는 것 — 소유권을 미리 정해둔다</h3>
 
     <p>
-      <code>rendererFor</code>와 <code>viewFor</code>는 파트 2·4·5·6에 나온다.
-      <strong>구조는 파트 2가 갖는다</strong> — 둘이 언제 불리는가, 오버레이가 왜 자기 정보를
-      들고 있어야 하는가. <strong>파트 4·5·6은 각자의 분기만</strong> 가져간다.
+      <code>rendererFor</code>(오버레이를 그릴 렌더러를 반환)와 <code>viewFor</code>(어노테이션을
+      그릴 뷰를 반환)는 여러 파트에 나온다. <strong>둘이 무엇이고 우리가 부르지 않는다는 구조는
+      「골격」이 갖는다.</strong> 각 기능 파트는 <strong>자기 분기만</strong> 가져간다 —
+      선은 파트 1, 라벨은 파트 2, 핀은 파트 3, 흰 점은 파트 4.
     </p>
 
     <p>
-      <strong>조작 모델은 파트 1이 갖는다</strong> — SwiftUI가 값을 내려주고, 델리게이트가
-      되불리고, 그 사이에서 지도를 직접 고친다는 그림. 개별 호출
-      (<code>addOverlay</code> · <code>insertOverlay</code> · <code>setNeedsDisplay</code> …)은
-      각 파트가 자기 것만 가져간다.
+      <strong>조작 모델도 「골격」이 갖는다</strong> — SwiftUI가 값을 내려주고, 델리게이트가
+      되불리고, 그 사이에서 지도를 직접 고친다는 그림. 개별 호출(<code>addOverlay</code> ·
+      <code>insertOverlay</code> · <code>setNeedsDisplay</code> …)은 각 파트가 자기 것만 가져간다.
     </p>
 
     <p>
       <strong>레이어 순서(z-order)는 둘로 나뉜다</strong> —
-      <em>“오버레이는 항상 어노테이션보다 아래”</em>라는 <strong>보장</strong>은 <strong>파트 2</strong>
-      (경유점을 어노테이션에서 오버레이로 옮긴 사건), <code>insertOverlay(_:below:)</code>로
-      <strong>순서를 직접 지정</strong>하는 것은 <strong>파트 4</strong>. 파트 4가 파트 2를
-      이름으로 부른다.
+      <em>“오버레이는 항상 어노테이션보다 아래”</em>라는 <strong>보장</strong>은
+      <strong>파트 4</strong>(경계의 흰 점을 어노테이션에서 오버레이로 옮긴 사건),
+      <code>insertOverlay(_:below:)</code>로 <strong>순서를 직접 지정</strong>하는 것은
+      <strong>파트 5</strong>(후광을 케이싱 아래에 끼워 넣는다).
+    </p>
+
+    <p>
+      <strong><code>updateUIView</code>는 「골격」이 게이트 구조를 갖고</strong>(무엇이 달라졌을 때
+      무엇을 다시 그리나), 각 기능 파트는 <strong>그 안의 자기 몫만</strong> 본다.
+      <strong>카메라도 「골격」이 갖는다</strong> — 저장·복원·사용자 이동 감지. 구간을 골랐을 때
+      카메라가 옮겨가는 것만 파트 5가 가져간다.
     </p>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
 
-  <details class="part" id="p1">
+  <details class="part" id="p1" open>
     <summary>
       <span class="part-tag">파트 1</span>
-      <span class="ptitle">SwiftUI 밖으로 나가기 — <code>MKMapView</code>를 SwiftUI에 얹는 법</span>
+      <span class="ptitle">구간마다 색이 다른 선</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트가 만드는 화면</span>
+        코스를 한 번에 다 긋지 않고 여러 번 나눠 이으면, 지도에 <strong>선이 구간마다
+        다른 색으로</strong> 그려진다 — 아래 구간 패널의 색 막대와 같은 색이다.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>그 선들이 <strong>왜 지금의 색과 모양으로 그려지는지</strong> 설명할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr><td><a href="#p1s1">구간 &#9312;</a></td><td>구간마다 다른 색은 어디서 정해지나</td></tr>
+          <tr><td><a href="#p1s2">구간 &#9313;</a></td><td>구간 선 하나가 실은 두 겹인 이유</td></tr>
+          <tr><td>구간 &#9314;</td><td>굵기와 색을 실제로 칠하는 곳</td></tr>
+        </table>
+        <p class="hint">
+          <strong>순서에 이유가 있다.</strong> &#9312;&#9313;는 <strong>미리 정해두는 것</strong>이다 —
+          어떤 번호로 색을 고를지(&#9312;), 선을 몇 겹으로 그릴지(&#9313;). &#9314;는 그 둘을
+          <strong>꺼내 실제로 칠하는 자리</strong>다. 그래서 &#9314;를 먼저 보면 무엇을 꺼내 쓰는지
+          몰라 읽히지 않는다.
+        </p>
+      </div>
+
+      <details class="seg" id="p1s1" open>
+        <summary>구간 &#9312; — 구간마다 다른 색은 어디서 정해지나</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>코스를 여러 번 나눠 이으면 <strong>구간마다 선 색이 다르다.</strong> 그 색은 고르는 것이
+              아니라 <strong>번호 하나로 정해진다.</strong> <strong>그 번호가 무엇이고 왜 그것을
+              골랐는지</strong>를 본다. <em>이 파트의 첫 조각이라, 여기서 정한 번호를
+              구간 &#9313;&#9314;가 받아 쓴다.</em></p>
+          </div>
+
+          <h4>1. 색 여섯 개는 에셋에 있고, <code>SegmentPalette</code>는 번호를 그중 하나로 바꿔주는 로직이다</h4>
+
+          <div class="card hero">
+            <div class="nm">SegmentPalette</div>
+            <div class="ro">함수 하나만 들어 있는 <code>enum</code>. 파일 전체가 13줄이고 <strong>저장된 색이 없다.</strong>
+              하는 일은 <strong>받은 번호를 6으로 나눈 나머지로 바꿔, 그 번호의 에셋을 이름으로 찾아 돌려주는 것</strong>뿐이다
+              (<code>Seg0</code>~<code>Seg5</code>). 못 찾으면 시스템 파랑으로 떨어진다.</div>
+          </div>
+
+          <p>
+            <strong>색 자체는 코드에 없다.</strong> 여섯 색은 에셋 카탈로그에
+            <code>Seg0</code>~<code>Seg5</code>로 등록돼 있다(<code>Assets.xcassets/DesignSystem/</code>).
+            <code>SegmentPalette</code>가 하는 일은 <strong>번호를 에셋 이름으로 바꾸는 것</strong>뿐이라,
+            일곱 번째 구간은 6으로 나눈 나머지가 0이 되어 다시 <code>Seg0</code> — 첫 구간과 같은 색이 된다.
+          </p>
+
+          <p>
+            <strong>&ldquo;무슨 색으로 칠할까&rdquo;를 정하는 코드는 없다. 정할 것은 번호 하나뿐이다.</strong>
+          </p>
+
+          <h4>2. 선 하나는 <code>SegmentPolyline</code> 객체이고, 번호를 둘 가지고 있다</h4>
+
+          <p>
+            여기서 <strong>&ldquo;선&rdquo;</strong>은 화면에 보이는 그림이 아니라 <strong>객체 하나</strong>다.
+          </p>
+
+          <div class="card hero">
+            <div class="nm">SegmentPolyline</div>
+            <div class="ro"><strong>이 앱이 만든 타입.</strong> MapKit이 주는 <code>MKPolyline</code>
+              (좌표 목록을 담아 지도에 그릴 수 있는 타입)을 <strong>상속해서</strong> 저장 프로퍼티
+              둘을 더 붙였다. 구간 하나당 이 객체 하나가 만들어지고, 지도에 추가하면 그 구간의
+              선이 그려진다.</div>
+          </div>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>값</th><th>무엇인가</th><th>어디에 쓰나</th></tr>
+              <tr>
+                <td><code>segmentIndex</code></td>
+                <td>구간 배열에서 <strong>몇 번째 자리</strong>인가</td>
+                <td>고른 구간을 굵게 (파트 5)</td>
+              </tr>
+              <tr>
+                <td><code>colorKey</code></td>
+                <td><strong>몇 번째로 만들어진</strong> 구간인가</td>
+                <td><strong>색을 고를 때</strong></td>
+              </tr>
+            </table>
+          </div>
+
+          <p><code>SegmentPalette</code>에 넘기는 번호는 <strong><code>colorKey</code></strong>다.</p>
+
+          <h4>3. 배열 위치로 색을 정하면 앞에 구간이 붙을 때 기존 색이 전부 바뀐다</h4>
+
+          <p>
+            이 앱은 코스 뒤쪽뿐 아니라 <strong>앞쪽에도</strong> 구간을 이어 붙일 수 있다.
+            출발점에서 반대 방향으로 그리면 새 구간이 <strong>배열 맨 앞에 꽂힌다.</strong>
+          </p>
+
+          <pre class="code">구간 셋을 그린 상태
+  배열 위치     0       1       2
+  colorKey      0       1       2
+  쓰는 색     Seg0    Seg1    Seg2
+
+앞쪽에 한 구간을 더 이었다
+  배열 위치     0       1       2       3     <span class="c">&larr; 전부 한 칸씩 밀린다</span>
+  colorKey      3       0       1       2     <span class="c">&larr; 밀리지 않는다</span>
+
+  &#9424; 색을 segmentIndex로 정했다면
+     쓰는 색  Seg0    Seg1    Seg2    Seg3    <span class="c">&larr; 기존 셋의 색이 전부 바뀐다</span>
+
+  &#9425; 색을 colorKey로 정하면 (실제)
+     쓰는 색  Seg3    Seg0    Seg1    Seg2    <span class="c">&larr; 기존 셋은 색 그대로</span></pre>
+
+          <p>
+            &#9424;라면 손대지도 않은 구간 셋의 색이 그 순간 다 바뀐다. 아래 구간 패널의 색 막대도
+            같이 바뀌므로, <strong>사용자가 보기에는 앞에 하나 그었을 뿐인데 화면 전체 색이
+            뒤집힌 것</strong>이 된다.
+          </p>
+
+          <p>
+            <strong>그래서 「만들어진 순서」를 배열 위치와 따로 세어 두고 색은 그것으로 정했다.</strong>
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 앱이 고른 지점</span>
+            <p>MapKit이 강제한 것이 아니라, <strong>앞쪽 이어붙이기를 지원하기로 하면서 따라온
+              결정</strong>이다.</p>
+          </div>
+
+          <h4>4. 번호는 객체 안에 미리 저장해 둔다 — MapKit이 그 객체만 건네주므로</h4>
+
+          <p>
+            <code>colorKey</code>는 선을 그리는 순간에 계산하지 않는다.
+            <strong><code>SegmentPolyline</code> 객체를 만들자마자 그 안에 대입해 두고</strong>
+            지도에 추가한다.
+          </p>
+
+          <p>
+            MapKit은 그릴 때가 되면 <em>&ldquo;이 오버레이는 어떻게 그리느냐&rdquo;</em>를 묻는 함수를
+            호출하는데, <strong>그때 넘겨주는 것은 오버레이 객체 하나뿐</strong>이다.
+            몇 번째 구간인지, 무엇이 선택돼 있는지는 같이 오지 않는다.
+            <strong>그 시점에 번호를 알아낼 방법이 없어서 미리 넣어두는 것</strong>이다.
+          </p>
+
+          <p class="later">
+            이건 고른 것이 아니라 <strong>MapKit 구조상 그럴 수밖에 없는 부분</strong>이라
+            여기까지만 알면 된다. 그 함수가 정확히 무엇이고 언제 호출되는지는
+            <strong>골격 파트</strong>에서 다룬다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>구간 색은 <strong>에셋의 여섯 색을 번호 하나로 골라 쓴 것</strong>이고, 그 번호는
+              <strong>배열에서 몇 번째인가가 아니라 「몇 번째로 만들어졌나」
+              (<code>colorKey</code>)</strong>다. 코스 <strong>앞쪽에도</strong> 구간을 붙일 수 있어서,
+              배열 위치를 쓰면 <strong>손대지 않은 구간의 색까지 전부 밀리기 때문</strong>이다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p1s2" open>
+        <summary>구간 &#9313; — 구간 선 하나가 실은 두 겹인 이유</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>지도의 구간 선은 <strong>한 겹이 아니라 두 겹</strong>이다 — 색 선 아래에 넓은 선이
+              하나 더 깔려 있고, 그 삐져나온 가장자리가 <strong>얇은 띠</strong>로 보인다.
+              <strong>왜 굳이 그렇게 했고, 그게 어떻게 만들어지는지</strong>를 본다.
+              <em>구간 &#9312;이 「무슨 색으로 그리나」였다면 여기는 「어떤 모양으로 그리나」다.</em></p>
+          </div>
+
+          <h4>1. 먼저 — <code>MKPolyline</code>은 화면에 보이는 선이 아니라 「선이 지나갈 자리」다</h4>
+
+          <div class="card hero">
+            <div class="nm">MKPolyline</div>
+            <div class="ro"><strong>지도 위 어느 자리에 어떤 모양이 있는지를 적어둔 것</strong>
+              (<strong>poly</strong> 여럿 + <strong>line</strong> 선 = 점 여러 개를 이은 선).
+              들고 있는 것은 <strong>좌표 배열</strong>과 <strong>그 좌표를 모두 감싸는 사각형 영역</strong>
+              둘뿐이다 — 뒤엣것은 MapKit이 <em>“지금 화면에 이 도형이 걸치나”</em>를 판단하는 데 쓴다.
+              <strong>생김새에 대한 정보는 하나도 없어서 그것만으로는 화면에 아무것도 안 나온다.</strong></div>
+          </div>
+
+          <p>
+            그래서 <strong>구간 하나와 폴리라인 하나가 1대1이 아니다.</strong>
+          </p>
+
+          <pre class="code">구간 하나  (CourseSegment)
+    <span class="c">↓  같은 좌표를 두 번 써서 객체를 둘 만든다</span>
+SegmentCasingPolyline   <span class="c">← 아래에 깔릴 자리 (넓게 칠할 것)</span>
+SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 칠할 것)</span>
+    <span class="c">↓  각각 렌더러가 칠한다</span>
+화면에는 테두리 있는 선  하나로  보인다</pre>
+
+          <h4>2. 왜 테두리를 두르나 — 지도 배경에 선이 묻히지 않게 하려고</h4>
+
+          <p>
+            지도 위에는 도로 &#183; 건물 &#183; 녹지 &#183; 물이 <strong>제각각 다른 밝기</strong>로 깔려 있다.
+            선 하나만 그으면 어떤 구간에서는 잘 보이고 어떤 구간에서는 배경에 묻힌다.
+            <strong>선 아래에 밝기가 확 다른 띠를 깔면, 선이 어디를 지나든 자기 배경을 갖게 된다.</strong>
+          </p>
+
+          <p>
+            근거는 케이싱을 넣은 커밋(2026-07-12)에 있다 —
+            <em>“<code>SegmentCasingPolyline</code>(2-pass 케이싱 렌더링)을 추가해 폴리라인 아래에
+            <strong>밝기 대비</strong> halo를 깐다”</em>. 목적이 <strong>대비</strong>라는 것이
+            뒤에 나올 <strong>띠 색이 화면 모드에 따라 뒤집히는 이유</strong>이기도 하다.
+          </p>
+
+          <h4>3. 화면의 선은 색 선 하나가 아니라, 넓은 선 위에 색 선을 얹은 두 겹이다</h4>
+
+          <p>
+            지도에서 코스 선을 보면 <strong>색 있는 선 둘레에 얇은 흰 띠</strong>가 둘려 있다.
+            도로나 건물 위를 지날 때 선이 배경에 묻히지 않는 것이 그 띠 때문이다.
+            <strong>그 띠는 선에 붙은 테두리 속성이 아니라 선을 하나 더 그린 것</strong>이다.
+          </p>
+
+          <h4>4. 길이 둘이었고 이 앱은 「기성품 둘을 겹치는」 쪽을 골랐다</h4>
+
+          <p>
+            MapKit이 주는 기성품 렌더러(<code>MKPolylineRenderer</code>)에는 선 색과 굵기는 있지만
+            <strong>테두리에 해당하는 것이 없다.</strong> 그렇다고 <strong>불가능한 것은 아니었다</strong> —
+            길이 둘이었다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>길</th><th>어떻게</th><th>대가</th></tr>
+              <tr>
+                <td>&#9424;</td>
+                <td>렌더러를 <strong>직접 만들어</strong> 한 번에 두 겹을 그린다</td>
+                <td>화면 좌표 변환 &#183; 확대축소 대응을 <strong>전부 직접</strong></td>
+              </tr>
+              <tr>
+                <td><strong>&#9425;</strong></td>
+                <td><strong>기성품 렌더러 둘</strong>에 폴리라인 둘을 겹친다</td>
+                <td>객체와 렌더러가 <strong>두 배</strong>가 된다</td>
+              </tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>이 앱은 &#9425;를 골랐다.</strong> &#9424;가 불가능해서가 아니다 —
+            <strong>같은 파일 안에 &#9424;로 만든 것이 실제로 있다</strong>(구간 경계의 흰 점.
+            <strong>파트 4</strong>에서 본다). 그쪽은 점 여러 개라 기성품으로는 안 되는 모양이었고,
+            그 대가로 <strong>반지름을 확대 배율로 직접 나누는</strong> 코드를 떠안았다.
+            선은 기성품으로 되는 모양이라 <strong>그 일을 안 하는 쪽</strong>을 골랐다.
+          </p>
+
+          <p>
+            그래서 이 앱은 좌표 배열 하나를
+            <strong>두 번 써서 객체를 각각 새로 만든다</strong> — 원본을 복제하는 것이 아니다.
+            <strong>선을 보이게 하는 데는 하나면 충분하다</strong>(색 선 하나만 있어도 그려진다).
+            <strong>둘째는 순전히 테두리를 만들려고 있는 것</strong>이다.
+          </p>
+
+          <div class="card hero">
+            <div class="nm">SegmentCasingPolyline</div>
+            <div class="ro">색 선 아래에 깔리는 <strong>넓은 선</strong>. <code>SegmentPolyline</code>과
+              마찬가지로 <code>MKPolyline</code>을 상속한 <strong>이 앱이 만든 타입</strong>이고,
+              가진 값도 <strong>완전히 같다</strong>(<code>segmentIndex</code> · <code>colorKey</code>).
+              <strong>casing</strong>은 「덮개·외피」라는 뜻이다.</div>
+          </div>
+
+          <p>
+            <strong>두 타입은 내용이 똑같고 이름만 다르다.</strong> 그런데도 나눈 이유가 구간
+            &#9312;에서 본 그것이다 — MapKit이 그릴 방법을 물을 때 <strong>객체 하나만 건네주므로,
+            그것이 케이싱인지 색 선인지 구분할 방법이 타입밖에 없다.</strong> 이름이 곧 표식이다.
+          </p>
+
+          <h4>5. 넓은 것을 먼저 추가한다 — 나중에 추가한 오버레이가 위에 올라오므로</h4>
+
+          <p>
+            <strong>추가하는 순서가 곧 위아래</strong>다. MapKit은 나중에 추가한 오버레이를 위에
+            얹으므로, <strong>아래에 깔릴 것을 먼저 추가해야</strong> 한다.
+          </p>
+
+          <pre class="code">uiView.addOverlay(casing)     <span class="c">← 넓은 선. 먼저 추가하므로 아래</span>
+uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추가하므로 위</span></pre>
+
+          <p>
+            순서를 바꾸면 넓은 선이 색 선을 덮어버린다.
+            <strong>코드 주석이 이 점을 따로 적어둘 만큼 순서에 의존하는 방식</strong>이다.
+          </p>
+
+          <h4>6. 굵기 차이 4pt가 양옆 2pt씩의 흰 띠로 남는다</h4>
+
+          <p>
+            두 선은 같은 자리에 그려지므로, <strong>넓은 쪽이 색 선 바깥으로 삐져나온 만큼</strong>이
+            띠로 보인다. 가운데는 색 선 밑에 완전히 숨는다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th></th><th>평소</th><th>고른 구간</th></tr>
+              <tr><td><strong>케이싱</strong>(아래 &#183; 넓다)</td><td>9.5</td><td>11</td></tr>
+              <tr><td><strong>색 선</strong>(위 &#183; 좁다)</td><td>5.5</td><td>7</td></tr>
+              <tr><td><strong>보이는 흰 띠</strong>(한쪽 두께)</td><td>2</td><td>2</td></tr>
+            </table>
+          </div>
+
+          <p>
+            구간을 고르면 둘 다 굵어지지만 <strong>차이는 4pt로 유지</strong>돼서,
+            띠 두께는 그대로인 채 선만 굵어진다.
+            <em>구간을 골랐을 때 생기는 민트색 층은 이것과 다른 것</em>(세 번째 층)이고
+            <strong>파트 5</strong>에서 다룬다.
+          </p>
+
+          <h4>7. 띠 색은 고정이 아니다 — 밝은 지도에서는 흰색, 어두운 지도에서는 검정</h4>
+
+          <p>
+            케이싱 색은 하나로 박혀 있지 않고 화면 모드에 따라 갈린다 —
+            <strong>밝은 모드에서는 흰색 60% 불투명, 어두운 모드에서는 검정 35% 불투명</strong>이다.
+            밝은 배경에서는 흰 띠가 선을 띄워 보이게 하지만 어두운 배경에서 흰 띠를 쓰면 그것이 더
+            튄다. <strong>색을 미리 정해두지 않고 그릴 때 화면 모드를 보고 고르는 방식</strong>이다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>구간 선은 <strong>같은 좌표로 만든 폴리라인 둘을 겹친 것</strong>이다.
+              넓은 것을 아래에 먼저 깔아 <strong>삐져나온 부분이 테두리처럼 보이게</strong> 했고,
+              <strong>지도 배경에 선이 묻히지 않게 대비를 만들려는 것</strong>이다.</p>
+          </div>
+
+        </div>
+      </details>
+
+
+      <a class="backtop" href="#toc">↑ 목차로</a>
+
+    </div>
+  </details>
+
+  <details class="part" id="bg1">
+    <summary>
+      <span class="part-tag">골격</span>
+      <span class="ptitle">SwiftUI 밖으로 나가기 — <code>MKMapView</code>를 SwiftUI에 추가하는 법</span>
     </summary>
     <div class="pbody">
 
@@ -984,43 +1398,43 @@ flowchart LR
         <span class="tag">이 파트의 구간</span>
         <table>
           <tr>
-            <td><a href="#p1s0">구간 ⓪</a></td>
+            <td><a href="#bg1s0">구간 ⓪</a></td>
             <td>「감싼다」는 게 무슨 뜻인가</td>
             <td><code>UIViewRepresentable</code></td>
           </tr>
           <tr>
-            <td><a href="#p1s1">구간 ①</a></td>
+            <td><a href="#bg1s1">구간 ①</a></td>
             <td>왜 SwiftUI <code>Map</code>을 버렸나</td>
             <td>hit-test 소유권</td>
           </tr>
           <tr>
-            <td><a href="#p1s2">구간 ②</a></td>
+            <td><a href="#bg1s2">구간 ②</a></td>
             <td>감싸면 내가 채울 것이 셋이다</td>
             <td><code>Coordinator</code></td>
           </tr>
           <tr>
-            <td><a href="#p1s3">구간 ③</a></td>
+            <td><a href="#bg1s3">구간 ③</a></td>
             <td><code>makeUIView</code>는 한 번만 불린다</td>
             <td>초기값 / 연결</td>
           </tr>
           <tr>
-            <td><a href="#p1s4">구간 ④</a></td>
+            <td><a href="#bg1s4">구간 ④</a></td>
             <td><code>updateUIView</code>는 값이 바뀔 때마다 불린다</td>
             <td>비교 · 도식</td>
           </tr>
           <tr>
-            <td><a href="#p1s5">구간 ⑤</a></td>
+            <td><a href="#bg1s5">구간 ⑤</a></td>
             <td><code>MapViewRepresentable</code>은 매번 새로 만들어진다</td>
             <td>지난번 값 · 도식</td>
           </tr>
           <tr>
-            <td><a href="#p1s6">구간 ⑥</a></td>
+            <td><a href="#bg1s6">구간 ⑥</a></td>
             <td>값은 세 군데에 나뉘어 있다</td>
             <td>사실 / 기록</td>
           </tr>
           <tr>
-            <td><a href="#p1s7">구간 ⑦</a></td>
-            <td>얹는 일과 그리는 방법은 갈라져 있다</td>
+            <td><a href="#bg1s7">구간 ⑦</a></td>
+            <td>추가하는 일과 그리는 방법은 갈라져 있다</td>
             <td><code>rendererFor</code></td>
           </tr>
         </table>
@@ -1036,7 +1450,7 @@ flowchart LR
         </p>
       </div>
 
-      <details class="seg" id="p1s0">
+      <details class="seg" id="bg1s0">
         <summary>구간 ⓪ — 「감싼다」는 게 무슨 뜻인가</summary>
         <div class="segbody">
 
@@ -1123,13 +1537,13 @@ flowchart LR
         </div>
       </details>
 
-      <details class="seg" id="p1s1">
+      <details class="seg" id="bg1s1">
         <summary>구간 ① — 왜 SwiftUI <code>Map</code>을 버렸나</summary>
         <div class="segbody">
 
           <p class="later">
             <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 지도 위에 내가 만든 제스처를
-            얹어야 할 때, <strong>SwiftUI <code>Map</code>으로 갈지 감쌀지</strong> 정할 수 있다.
+            추가해야 할 때, <strong>SwiftUI <code>Map</code>으로 갈지 감쌀지</strong> 정할 수 있다.
           </p>
 
           <p>
@@ -1311,7 +1725,7 @@ flowchart LR
         </div>
       </details>
 
-      <details class="seg" id="p1s2">
+      <details class="seg" id="bg1s2">
         <summary>구간 ② — 감싸면 내가 채울 것이 셋이다</summary>
         <div class="segbody">
 
@@ -1510,7 +1924,7 @@ makeUIView        MKMapView를 만들고,
                   그 객체를 delegate로 대입한다            (한 번)
       ↓
 updateUIView      값이 바뀔 때마다 그 MKMapView를 고친다   (매번)
-                  ↑ 지난번 값은 Coordinator가 들고 있다</pre>
+                  ↑ 지난번 값은 Coordinator가 가지고 있다</pre>
 
           <div class="takeaway">
             <span class="tag">이 구간에서 알고 갈 것</span>
@@ -1524,7 +1938,7 @@ updateUIView      값이 바뀔 때마다 그 MKMapView를 고친다   (매번)
         </div>
       </details>
 
-      <details class="seg" id="p1s3">
+      <details class="seg" id="bg1s3">
         <summary>구간 ③ — <code>makeUIView</code>는 한 번만 불린다</summary>
         <div class="segbody">
 
@@ -1676,7 +2090,7 @@ context.coordinator.drawGestureRecognizer = drawGR         // :211  인식기를
         </div>
       </details>
 
-      <details class="seg" id="p1s4">
+      <details class="seg" id="bg1s4">
         <summary>구간 ④ — <code>updateUIView</code>는 값이 바뀔 때마다 불린다</summary>
         <div class="segbody">
 
@@ -1930,7 +2344,7 @@ if 모드 달라졌나?    → 아니오 → 건너뛴다          ┘</pre>
         </div>
       </details>
 
-      <details class="seg" id="p1s5">
+      <details class="seg" id="bg1s5">
         <summary>구간 ⑤ — <code>MapViewRepresentable</code>은 매번 새로 만들어진다</summary>
         <div class="segbody">
 
@@ -2165,7 +2579,7 @@ Coordinator 는 최신을 봐야 한다         → 그래서 대입한다</pre>
         </div>
       </details>
 
-      <details class="seg" id="p1s6">
+      <details class="seg" id="bg1s6">
         <summary>구간 ⑥ — 값은 세 군데에 나뉘어 있다</summary>
         <div class="segbody">
 
@@ -2245,8 +2659,8 @@ lastSelectedIndex      Coordinator    "지도에 반영했을 때는 nil이었�
         </div>
       </details>
 
-      <details class="seg" id="p1s7">
-        <summary>구간 ⑦ — 얹는 일과 그리는 방법은 갈라져 있다</summary>
+      <details class="seg" id="bg1s7">
+        <summary>구간 ⑦ — 추가하는 일과 그리는 방법은 갈라져 있다</summary>
         <div class="segbody">
 
           <p class="later">
@@ -2256,17 +2670,17 @@ lastSelectedIndex      Coordinator    "지도에 반영했을 때는 nil이었�
 
           <h4>1. MapKit이 둘을 갈라놨다</h4>
 
-          <pre class="code">오버레이 (MKOverlay)          어디에 있나      좌표만 들고 있다
+          <pre class="code">오버레이 (MKOverlay)          어디에 있나      좌표만 가지고 있다
 렌더러  (MKOverlayRenderer)   어떻게 그리나    색 · 굵기 · 선 끝 모양</pre>
 
           <p>
-            우리가 얹는 <code>MKPolyline</code>은 좌표 배열일 뿐이라
-            <strong>얹기만 해서는 화면에 아무것도 안 나온다.</strong> 그릴 도구를 따로 줘야 한다.
+            우리가 추가하는 <code>MKPolyline</code>은 좌표 배열일 뿐이라
+            <strong>추가만 해서는 화면에 아무것도 안 나온다.</strong> 그릴 도구를 따로 줘야 한다.
           </p>
 
           <h4>2. 그래서 코드도 두 군데로 갈린다</h4>
 
-          <pre class="code">updateUIView      uiView.addOverlay(polyline)        여기까지가 「얹기」        :279
+          <pre class="code">updateUIView      uiView.addOverlay(polyline)        여기까지가 「추가」        :279
 
 Coordinator
   rendererFor     MKPolylineRenderer 를 만들어         여기가 「그리는 방법」    :417-445
@@ -2279,7 +2693,7 @@ Coordinator
 
           <p>
             <code>rendererFor</code> 안이 타입별로 갈라져 있는데, 그것은
-            <strong>얹는 오버레이가 네 종류</strong>이기 때문이다 — 경유점 점 · 후광 · 케이싱(테두리 선) ·
+            <strong>추가하는 오버레이가 네 종류</strong>이기 때문이다 — 경유점 점 · 후광 · 케이싱(테두리 선) ·
             구간 선. 종류마다 그리는 법이 달라 각각 렌더러를 만든다.
             <strong>그 네 갈래는 파트 2~4에서 본다.</strong>
           </p>
@@ -2288,11 +2702,11 @@ Coordinator
 
           <p>
             <code>rendererFor</code>를 우리 코드에서 호출하는 곳은 <strong>없다.</strong> 오버레이를
-            얹어두면 MapKit이 <strong>그릴 때가 되면</strong> 알아서 부른다.
+            추가해 두면 MapKit이 <strong>그릴 때가 되면</strong> 알아서 부른다.
           </p>
 
           <p>
-            그래서 <strong>얹는 시점과 색을 정하는 시점이 갈린다.</strong> 얹을 때는 이것이 몇 번
+            그래서 <strong>추가하는 시점과 색을 정하는 시점이 갈린다.</strong> 추가할 때는 이것이 몇 번
             구간인지 알고 있었는데, 나중에 <code>rendererFor</code>가 불릴 때는
             <strong>오버레이 하나만 건네받는다.</strong>
           </p>
@@ -2300,7 +2714,7 @@ Coordinator
           <pre class="code">func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -&gt; MKOverlayRenderer   // :417</pre>
 
           <p>
-            몇 번째로 얹었는지도, 지금 무엇이 선택돼 있는지도 같이 오지 않는다.
+            몇 번째로 추가했는지도, 지금 무엇이 선택돼 있는지도 같이 오지 않는다.
           </p>
 
           <h4>4. 이런 함수가 셋이다</h4>
@@ -2312,40 +2726,40 @@ Coordinator
 
           <div class="tablewrap">
             <table>
-              <tr><th>함수</th><th>지도가 무엇을 물어보나</th><th>어디서 다루나</th></tr>
+              <tr><th>함수</th><th>호출되면 무엇을 반환하나</th><th>어디서 다루나</th></tr>
               <tr>
                 <td><code>rendererFor</code></td>
-                <td>이 오버레이를 그릴 도구를 줘</td>
+                <td>그 오버레이를 그릴 렌더러(<code>MKOverlayRenderer</code>)</td>
                 <td>이 구간 · 파트 2~4</td>
               </tr>
               <tr>
                 <td><code>viewFor</code></td>
-                <td>이 어노테이션을 그릴 뷰를 줘 (핀 · 거리 라벨)</td>
+                <td>그 어노테이션을 그릴 뷰(<code>MKAnnotationView</code>) — 핀 · 거리 라벨</td>
                 <td>파트 2 · 5 · 6</td>
               </tr>
               <tr>
                 <td><code>mapViewDidChangeVisibleRegion</code></td>
-                <td>묻는 것이 아니라 <strong>알리는 것</strong> — 보이는 범위가 바뀌었다</td>
+                <td><strong>반환값이 없다</strong> — 보이는 범위가 바뀐 뒤 호출된다</td>
                 <td>구간 ④에서 봤다</td>
               </tr>
             </table>
           </div>
 
           <p>
-            앞의 둘은 <strong>물어보면 답하는</strong> 형태이고, 셋째는 <strong>일어난 일을
-            알려주는</strong> 형태다(구간 ④의 <code>didChange</code>). 방향은 달라도
+            앞의 둘은 <strong>호출되면 값을 반환하는</strong> 형태이고, 셋째는
+            <strong>반환값 없이 호출만 되는</strong> 형태다(구간 ④의 <code>didChange</code>). 방향은 달라도
             <strong>부르는 쪽이 우리가 아니라는 점은 같다.</strong>
           </p>
 
           <div class="takeaway">
             <span class="tag">이 구간에서 알고 갈 것</span>
-            <p>오버레이를 <strong>얹는 코드</strong>(<code>updateUIView</code>)와
+            <p>오버레이를 <strong>추가하는 코드</strong>(<code>updateUIView</code>)와
               <strong>그리는 방법을 정하는 코드</strong>(<code>rendererFor</code>)가 갈라져 있고,
-              뒤엣것은 <strong>우리가 부르지 않는다.</strong> 그래서 얹을 때 알던 것이 답할 때는 없다.</p>
+              뒤엣것은 <strong>우리가 부르지 않는다.</strong> 그래서 추가할 때 알던 것이 <code>rendererFor</code> 안에는 없다.</p>
           </div>
 
           <p class="later">
-            <strong>여기서 파트 2가 시작된다.</strong> <em>“그럼 답할 때 어떻게 알아내나”</em> —
+            <strong>여기서 파트 2가 시작된다.</strong> <em>“그럼 <code>rendererFor</code> 안에서 어떻게 알아내나”</em> —
             그 해결이 파트 2의 주제(<code>SegmentPolyline</code> 같은 타입을 새로 만든 이유)다.
           </p>
 
@@ -2357,82 +2771,6 @@ Coordinator
     </div>
   </details>
 
-  <details class="part" id="p2" open>
-    <summary>
-      <span class="part-tag">파트 2</span>
-      <span class="ptitle">지도에 얹는 것을 어떤 타입으로 만드나</span>
-    </summary>
-    <div class="pbody">
-
-      <div class="oneline">
-        <span class="tag">이 파트 한 줄</span>
-        얹는 쪽과 그리는 쪽이 갈라져 있어서(파트 1), <strong>얹을 때 알던 것을 답할 때 쓸 수 없다.</strong>
-        그래서 지도에 얹을 것들을 <strong>어떤 타입으로 만들고 거기에 무엇을 실어 보낼지</strong>를 정한다.
-      </div>
-
-      <div class="goal">
-        <span class="tag">이 파트를 끝내면</span>
-        <p><strong>오버레이로 둘지 어노테이션으로 둘지, 거기에 무슨 정보를 실어야 하는지</strong>
-          정할 수 있다.</p>
-      </div>
-
-      <div class="segmap">
-        <span class="tag">이 파트의 구간</span>
-        <table>
-          <tr>
-            <td>구간 ①</td>
-            <td>답할 때 없는 것을 어떻게 아나</td>
-            <td>되찾기 / 실어 보내기</td>
-          </tr>
-          <tr>
-            <td>구간 ②</td>
-            <td>이미 있는 타입을 물려받는다</td>
-            <td><code>MKPolyline</code> 상속</td>
-          </tr>
-          <tr>
-            <td>구간 ③</td>
-            <td>어노테이션 둘은 무엇을 싣나</td>
-            <td><code>MKAnnotation</code></td>
-          </tr>
-          <tr>
-            <td>구간 ④</td>
-            <td>선이 아닌 것은 처음부터 만든다</td>
-            <td><code>MKOverlay</code> 직접 채택</td>
-          </tr>
-          <tr>
-            <td>구간 ⑤</td>
-            <td>오버레이냐 어노테이션이냐</td>
-            <td>z-order 보장</td>
-          </tr>
-          <tr>
-            <td>구간 ⑥</td>
-            <td>뷰는 누가 만드나</td>
-            <td><code>viewFor</code></td>
-          </tr>
-        </table>
-        <p class="hint">
-          <strong>순서에 이유가 있다.</strong> ②에서 오버레이를 <strong>쉬운 길</strong>(있는 타입
-          물려받기)로 만들고, ③에서 어노테이션은 <strong>다른 길</strong>(프로토콜 채택)이라는 것을
-          본다. ④는 <strong>오버레이인데 물려받을 것이 없는 경우</strong>라 ②와 ③을 합친 자리이고,
-          ⑤는 ④에서 만든 그 물건(경계의 흰 점)이 <strong>원래 어노테이션이었다가 옮겨진 사건</strong>이라
-          ③과 ④를 다 알아야 성립한다.
-          <br><br>
-          이 파트도 <strong>사용자 장면 하나에 대응되지 않는다.</strong> 장면 ①(색 다른 선)
-          ②(거리 라벨) ③(출발·도착 핀) ④(경계의 흰 점) <strong>넷 전부의 재료</strong>를 여기서
-          만들고, 색·자리·모양은 파트 3~6이 가져간다.
-          <br><br>
-          <strong>뒤로 넘기는 것</strong> — <code>colorKey</code>가 <code>segmentIndex</code>와
-          왜 둘인지는 <strong>파트 3</strong>, 선을 세 겹으로 그리는 이유와
-          <code>insertOverlay(_:below:)</code>는 <strong>파트 4</strong>, 라벨의 자리는
-          <strong>파트 5</strong>, 핀의 배지·역할은 <strong>파트 6</strong>, 핀이 통째로 다시
-          떨어지는 비교는 <strong>파트 8</strong>.
-        </p>
-      </div>
-
-      <a class="backtop" href="#toc">↑ 목차로</a>
-
-    </div>
-  </details>
 
   <section id="factcheck">
     <div class="part-tag">마무리</div>
@@ -2451,7 +2789,7 @@ Coordinator
         <strong>확인한 적 없는 주장</strong>이다. MapKit이 언제 부르는지는 보장된 바가 없다.
         이 코드가 실제로 기대는 사실은 <strong>“그 시점에 렌더러가 이미 만들어져 있다”</strong>뿐이라
         (<code>renderer(for:)</code>가 nil이 아닌 것을 돌려주므로) 거기까지만 남겼다.
-        구간 ⑦의 논지(얹는 시점 ≠ 답하는 시점)는 그대로다.</p>
+        구간 ⑦의 논지(추가하는 시점 ≠ <code>rendererFor</code>가 호출되는 시점)는 그대로다.</p>
     </div>
 
     <div class="fix">
@@ -2482,7 +2820,7 @@ Coordinator
   </section>
 
   <div class="next">
-    <strong>다음 — 파트 2 「지도에 얹는 것을 어떤 타입으로 만드나」.</strong>
+    <strong>다음 — 파트 2 「지도에 추가하는 것을 어떤 타입으로 만드나」.</strong>
     파트 1은 여기까지다. 링크는 그대로 유지된다.
   </div>
 
