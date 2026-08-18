@@ -605,12 +605,12 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1 진행 중</span></h4>
+    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1 완료(검토까지)</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 &#8596; 맡은 부품</a></li>
-      <li class="on"><span class="k">1</span><a href="#p1">구간마다 색이 다른 선</a> <em>(구간 &#9312;까지)</em></li>
+      <li class="on"><span class="k">1</span><a href="#p1">구간마다 색이 다른 선</a></li>
       <li class="todo"><span class="k">2</span>선 한가운데 거리 라벨</li>
       <li class="todo"><span class="k">3</span>출발&#183;도착 핀</li>
       <li class="todo"><span class="k">4</span>구간 경계의 흰 점</li>
@@ -632,7 +632,7 @@
       점선 아래가 <strong>기억할 것</strong>이다.
       <em>파트 순서는 <strong>화면에 보이는 것</strong> 기준이고, 화면에 보이는 것이 없는 파트는 뒤쪽 「골격」에 모았다 — <strong>먼저 안 봐도 된다</strong>.</em></p>
     <ol>
-      <li><span class="k">1</span><div><div class="can">구간 선들이 <strong>왜 지금의 색과 모양으로 그려지는지</strong> 설명할 수 있다</div><div class="sum">코스를 여러 번 나눠 이으면 <strong>선이 구간마다 다른 색</strong>으로 그려진다. 그 색이 어디서 오고, 선이 왜 <strong>두 겹</strong>(흰 테두리 위에 색 선을 겹쳐 그린다)이며, 굵기와 색을 실제로 어디서 칠하는지를 본다. <em>기억할 것은 구간을 채우면서 자란다.</em></div>
+      <li><span class="k">1</span><div><div class="can">구간 선들이 <strong>왜 지금의 색과 모양으로 그려지는지</strong> 설명할 수 있다</div><div class="sum">코스를 여러 번 나눠 이으면 <strong>선이 구간마다 다른 색</strong>으로 그려진다. 그 색이 어디서 오고, 선이 왜 <strong>두 겹</strong>(흰 테두리 위에 색 선을 겹쳐 그린다)이며, 굵기와 색을 실제로 어디서 칠하는지를 본다.</div>
         <ul class="keys">
           <li>색 여섯은 <strong>에셋</strong>에 있고(<code>Seg0</code>~<code>Seg5</code>), <code>SegmentPalette</code>는 <strong>번호를 에셋 이름으로 바꿔줄 뿐</strong>이다</li>
           <li>번호는 둘 — <code>segmentIndex</code>(배열 자리) / <code>colorKey</code>(만들어진 순서). <strong>색에 쓰는 것은 <code>colorKey</code></strong></li>
@@ -946,62 +946,63 @@
       <table>
         <tr><th>장면</th><th>맡은 부품</th><th>파트</th></tr>
         <tr>
-          <td><em>(전부의 바탕)</em> 지도를 SwiftUI에 추가</td>
-          <td><code>MapViewRepresentable</code> 골격 · <code>Coordinator</code></td>
-          <td><span class="pt">1</span></td>
-        </tr>
-        <tr>
           <td>① 구간마다 다른 색 선</td>
           <td><code>SegmentPolyline</code> · <code>SegmentCasingPolyline</code> ·
-            <code>rendererFor</code> · <code>SegmentPalette</code></td>
-          <td><span class="pt">2</span><span class="pt">3</span><span class="pt">4</span></td>
-        </tr>
-        <tr>
-          <td>④ 구간 경계 흰 점</td>
-          <td><code>WaypointDotsOverlay</code> · <code>WaypointDotsRenderer</code></td>
-          <td><span class="pt">2</span></td>
-        </tr>
-        <tr>
-          <td>⑥ 선택 강조 + 카메라</td>
-          <td><code>SegmentHaloPolyline</code> · <code>syncHalo</code> ·
-            <code>CoursePlannerPage.onChange</code> → <code>regionFitting</code></td>
-          <td><span class="pt">4</span></td>
+            <code>SegmentPalette</code> · <code>configureRenderer</code></td>
+          <td><span class="pt">1</span></td>
         </tr>
         <tr>
           <td>② 거리 라벨</td>
           <td><code>SegmentDistanceAnnotation(View)</code> · <code>midpointAlongPath</code> ·
             <code>viewFor</code></td>
-          <td><span class="pt">5</span></td>
+          <td><span class="pt">2</span></td>
         </tr>
         <tr>
           <td>③⑤ 핀 — 출발·도착·병합·대기·확인 중</td>
           <td><code>mapPins</code> · <code>ColoredPinAnnotation</code> · <code>viewFor</code></td>
+          <td><span class="pt">3</span></td>
+        </tr>
+        <tr>
+          <td>④ 구간 경계 흰 점</td>
+          <td><code>WaypointDotsOverlay</code> · <code>WaypointDotsRenderer</code></td>
+          <td><span class="pt">4</span></td>
+        </tr>
+        <tr>
+          <td>⑥ 고른 구간이 굵어지고 후광 + 카메라 이동</td>
+          <td><code>SegmentHaloPolyline</code> · <code>syncHalo</code> ·
+            <code>CoursePlannerPage.onChange</code> → <code>regionFitting</code></td>
+          <td><span class="pt">5</span></td>
+        </tr>
+        <tr>
+          <td>⑦ 되짚어 그리면 두 줄로 보인다</td>
+          <td><code>OverlapOffsetResolver</code> · <code>CourseCoordinate+Geo</code></td>
           <td><span class="pt">6</span></td>
         </tr>
         <tr>
-          <td>⑦ 겹친 선 갈라 그리기</td>
-          <td><code>OverlapOffsetResolver</code> · <code>CourseCoordinate+Geo</code></td>
-          <td><span class="pt">7</span></td>
+          <td><em>(화면에 안 보이는 것)</em> 지도를 SwiftUI에 올리는 뼈대</td>
+          <td><code>MapViewRepresentable</code> 골격 · <code>Coordinator</code> ·
+            <code>rendererFor</code> · 카메라 저장·복원</td>
+          <td><span class="pt">골 1</span></td>
         </tr>
         <tr>
-          <td><em>(화면에 안 보이는 것)</em> 다시 그리는 조건</td>
+          <td><em>(화면에 안 보이는 것)</em> 언제 다시 그리나</td>
           <td><code>updateUIView</code> · <code>SegmentSnapshot</code></td>
-          <td><span class="pt">8</span></td>
+          <td><span class="pt">골 2</span></td>
         </tr>
       </table>
     </div>
 
     <p>
-      <strong>장면 ①의 파트 번호가 셋으로 흩어져 있다.</strong> 사용자가 제일 먼저 보는 것
-      — 색깔 선 하나 — 이 만들 때는 <em>추가할 타입 만들기 → 번호 정하기 → 그림으로 바꾸기</em>로
-      세 파트에 걸쳐 있어서다. <strong>만드는 순서와 겪는 순서가 다르다</strong>는 것이 표에
-      그대로 나타난다.
+      <strong>장면 하나가 파트 하나다.</strong> 화면에서 구별해 보이는 것을 그대로 파트로 잘랐다.
+      순서는 <strong>단순한 것부터</strong>다 — 색 선 하나(파트 1)로 시작해 라벨 · 핀 · 점을 얹고,
+      <strong>조건이 붙는 것</strong>(고른 구간만 강조 · 겹쳤을 때만 갈라 그리기)을 뒤에 뒀다.
     </p>
 
     <p>
-      맨 윗줄에는 <strong>사용자 장면이 없다.</strong> 지도를 SwiftUI에 추가하는 일은 화면에
-      따로 보이지 않지만, <strong>나머지 전부가 그 위에서 돈다.</strong> 그래서 만드는
-      순서로는 이것이 첫 번째다.
+      <strong>아래 두 줄에는 사용자 장면이 없다.</strong> 지도를 SwiftUI에 올리는 일과 언제 다시
+      그릴지 정하는 일은 화면에 따로 보이지 않지만 <strong>나머지 전부가 그 위에서 돈다.</strong>
+      그래도 <strong>먼저 안 봐도 된다</strong> — 기능 파트가 필요한 대목을 그때그때 한두 줄로 짚고
+      넘어간다. 그래서 <strong>「골격」은 뒤에 두고, 궁금해진 뒤에 연다.</strong>
     </p>
 
     <h3>여러 파트에 나오는 것 — 소유권을 미리 정해둔다</h3>
@@ -1086,10 +1087,20 @@
 
           <div class="card hero">
             <div class="nm">SegmentPalette</div>
-            <div class="ro">함수 하나만 들어 있는 <code>enum</code>. 파일 전체가 13줄이고 <strong>저장된 색이 없다.</strong>
-              하는 일은 <strong>받은 번호를 6으로 나눈 나머지로 바꿔, 그 번호의 에셋을 이름으로 찾아 돌려주는 것</strong>뿐이다
+            <div class="ro"><strong>함수 둘</strong>이 들어 있는 <code>enum</code>. 파일 전체가 13줄이고 <strong>저장된 색이 없다.</strong>
+              둘 다 하는 일은 <strong>받은 번호를 6으로 나눈 나머지로 바꿔, 그 번호의 에셋을 이름으로 찾아 돌려주는 것</strong>이다
               (<code>Seg0</code>~<code>Seg5</code>). 못 찾으면 애플 기본색 <code>.systemBlue</code>로 떨어진다.</div>
           </div>
+
+          <p>
+            <strong>함수가 둘인 이유는 이 색을 쓰는 화면이 둘이라서다.</strong> 이 파트가 쓰는
+            <code>color(at:)</code>는 <code>UIColor</code>를 돌려준다 — 지도가 <code>MKMapView</code>라
+            UIKit 타입이 필요하다. 다른 하나 <code>swiftUIColor(at:)</code>는 <strong>같은 색을</strong>
+            SwiftUI의 <code>Color</code>로 감싸 돌려주고, <strong>기록 상세 화면</strong>이 그것을 쓴다
+            (<code>HistoryPage+RecordComponent</code> — 지난 러닝의 구간 선과 구간 표).
+            <strong>지도에 그린 선과 기록 화면의 색이 같은 것은 둘이 이 한 곳에서 색을 받아 가기
+            때문</strong>이다.
+          </p>
 
           <p>
             <strong>색 자체는 코드에 없다.</strong> 여섯 색은 에셋 카탈로그에
@@ -1122,7 +1133,7 @@
               <tr>
                 <td><code>segmentIndex</code></td>
                 <td>구간 배열에서 <strong>몇 번째 자리</strong>인가</td>
-                <td>고른 구간을 굵게 (파트 5)</td>
+                <td>고른 구간을 굵게 (<strong>구간 &#9314;</strong>, 그리고 파트 5)</td>
               </tr>
               <tr>
                 <td><code>colorKey</code></td>
@@ -1181,16 +1192,18 @@
           </p>
 
           <p>
-            MapKit은 그릴 때가 되면 <em>&ldquo;이 오버레이는 어떻게 그리느냐&rdquo;</em>를 묻는 함수를
-            호출하는데, <strong>그때 넘겨주는 것은 오버레이 객체 하나뿐</strong>이다.
-            몇 번째 구간인지, 무엇이 선택돼 있는지는 같이 오지 않는다.
+            MapKit은 그릴 때가 되면 <code>rendererFor</code>(<code>mapView(_:rendererFor:)</code>)를
+            호출한다 — <strong>오버레이 하나를 받아 「그것을 어떻게 칠할지」를 담은 객체를 돌려주는
+            함수</strong>다. <strong>그때 넘겨주는 것은 오버레이 객체 하나뿐</strong>이라,
+            몇 번째 구간인지도 무엇이 선택돼 있는지도 같이 오지 않는다.
             <strong>그 시점에 번호를 알아낼 방법이 없어서 미리 넣어두는 것</strong>이다.
           </p>
 
           <p class="later">
             이건 고른 것이 아니라 <strong>MapKit 구조상 그럴 수밖에 없는 부분</strong>이라
-            여기까지만 알면 된다. 그 함수가 정확히 무엇이고 언제 호출되는지는
-            <strong>골격 파트</strong>에서 다룬다.
+            여기까지만 알면 된다. <strong>돌려주는 그 객체가 무엇이고 색·굵기가 거기 어떻게
+            들어가는지는 구간 &#9314;</strong>에서 다루고, <strong>우리가 부르지 않는데도 그 함수가
+            실행되는 구조</strong>는 골격 파트가 갖는다.
           </p>
 
           <div class="takeaway">
@@ -1247,10 +1260,20 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
           </p>
 
           <p>
-            근거는 케이싱을 넣은 커밋(2026-07-12)에 있다 —
+            <strong>근거는 둘인데 뒷받침하는 것이 다르다.</strong> <strong>목적</strong>을 적은 것은
+            케이싱을 넣은 커밋(2026-07-12)이다 —
             <em>“<code>SegmentCasingPolyline</code>(2-pass 케이싱 렌더링)을 추가해 폴리라인 아래에
-            <strong>밝기 대비</strong> halo를 깐다”</em>. 목적이 <strong>대비</strong>라는 것이
-            뒤에 나올 <strong>띠 색이 화면 모드에 따라 뒤집히는 이유</strong>이기도 하다.
+            <strong>밝기 대비</strong> halo를 깐다”</em>. <strong>값</strong>은 그보다 먼저
+            설계 문서(2026-07-10 디자인 방향)가 확정해 뒀다 — <em>“구간별 <code>seg</code> 색
+            폴리라인 + 케이싱(<strong>라이트 흰색 .6 / 다크 검정 .35</strong>), 선 폭
+            <strong>5.5</strong>(케이싱 <strong>9.5</strong>)”</em>.
+          </p>
+
+          <p>
+            목적이 <strong>대비</strong>라는 것이 뒤에 나올 <strong>띠 색이 화면 모드에 따라 뒤집히는
+            이유</strong>이기도 하다. 거꾸로, <strong>밝은 배경에 흰색·어두운 배경에 검정을 미리
+            짝지어 둔 것 자체가 목적이 대비라는 방증</strong>이다 — 대비가 목적이 아니라면 색을
+            화면 모드에 따라 뒤집을 이유가 없다.
           </p>
 
           <h4>3. 길이 둘이었고 이 앱은 「기성품 둘을 겹치는」 쪽을 골랐다</h4>
@@ -1306,9 +1329,9 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
           </div>
 
           <p>
-            <strong>두 타입은 내용이 똑같고 이름만 다르다.</strong> 그런데도 나눈 이유가 구간
-            &#9312;에서 본 그것이다 — MapKit이 그릴 방법을 물을 때 <strong>객체 하나만 건네주므로,
-            그것이 케이싱인지 색 선인지 구분할 방법이 타입밖에 없다.</strong> 이름이 곧 표식이다.
+            <strong>두 타입은 내용이 똑같고 이름만 다르다.</strong> 그런데도 나눈 이유는 구간
+            &#9312;에서 세운 그 제약이다 — <code>rendererFor</code>에 <strong>오버레이 객체 하나만
+            건네지므로</strong>, 그것이 케이싱인지 색 선인지 <strong>구분할 방법이 타입밖에 없다.</strong> 이름이 곧 표식이다.
           </p>
 
           <h4>4. 넓은 것을 먼저 추가한다 — 나중에 추가한 오버레이가 위에 올라오므로</h4>
@@ -1332,7 +1355,10 @@ uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추�
             추가한다”</em>까지만 말한다. 간접 근거는 둘이다 — <strong>순서를 직접 지정하는 API가 따로
             있다는 것</strong>(<code>insertOverlay(_:below:)</code>는 <em>“지정한 형제 아래에 그린다”</em>)과,
             <strong>MapKit JS 문서에는 명시돼 있다는 것</strong>(<em>“overlays added later appear closer
-            to the foreground”</em>). <strong>이 앱은 그 전제로 동작하고 있다.</strong>
+            to the foreground”</em>). <strong>이 앱은 그 전제로 동작하고 있다</strong> — 케이싱을 넣은
+            계획 문서도 <em>“색 선보다 <strong>먼저</strong> 케이싱을 추가해 아래에 깔리게 한다”</em>고
+            적으면서 같은 전제를 근거로 대고, <strong>구간 경계의 흰 점이 이미 쓰고 있는 관례</strong>라고
+            덧붙인다.
           </p>
 
           <h4>5. 굵기 차이 4pt가 양옆 2pt씩의 흰 띠로 남는다</h4>
@@ -1413,8 +1439,19 @@ uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추�
 
           <p>
             한 번 만들어 넘기면 끝이 아니라 <strong>지도가 그 오버레이와 짝지어 보관한다.</strong>
-            나중에 <em>“이 오버레이의 렌더러를 내놔”</em>라고 하면 돌려준다.
-            <strong>값을 고치고 싶을 때 이미 있는 것을 찾아 쓸 수 있는 이유</strong>가 이것이다.
+            나중에 <code>renderer(for:)</code>로 <em>“이 오버레이의 렌더러를 내놔”</em>라고 하면
+            돌려준다 — 애플 문서가 <em>“델리게이트가 <code>mapView(_:rendererFor:)</code>에서 준
+            렌더러 객체를 돌려준다”</em>고 적는다. <strong>값을 고치고 싶을 때 이미 있는 것을
+            찾아 쓸 수 있는 이유</strong>가 이것이다.
+          </p>
+
+          <p class="later">
+            &#9888; <strong>다만 항상 돌려주는 것은 아니다.</strong> 같은 문서가
+            <em>“오버레이가 <strong>화면 밖이면</strong> <code>nil</code>”</em>이라고 적는다.
+            코드는 받은 것이 있을 때만 굵기를 넣으므로, <strong>화면 밖에 있는 구간은 그 자리에서
+            굵기가 바뀌지 않는다.</strong> 다시 화면에 들어오면 그때 <code>rendererFor</code>가
+            불려 렌더러가 새로 만들어지고, <strong>그 자리에서 지금 선택된 번호를 보고 칠하므로</strong>
+            결과는 어긋나지 않는다.
           </p>
 
           <p>
@@ -1475,17 +1512,25 @@ uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추�
   ↓
 지도에 올라가 있는 오버레이를 하나씩 훑는다
   ↓
-오버레이의 segmentIndex == 선택된 번호 ?        <span class="c">← 판단 재료는 오버레이</span>
+구간 선이면 짝인 렌더러를 지도에서 찾는다        <span class="c">← 고른 것만 고르지 않는다. 전부 찾는다</span>
   ↓
-그 오버레이와 짝인 렌더러를 지도에서 찾는다
+그 렌더러를 configureRenderer 에 넘긴다
   ↓
-찾은 렌더러에 굵기를 넣는다                     <span class="c">← 화면은 아직 그대로</span>
+  <span class="c">└ 그 안에서</span>  segmentIndex == 선택된 번호 ?   <span class="c">← 비교는 여기서 일어난다</span>
+             맞으면 7 · 아니면 5.5 를 넣는다     <span class="c">← 화면은 아직 그대로</span>
   ↓
 setNeedsDisplay() 를 부른다
   ↓
 MapKit 이 다음 그리기 차례에 그 렌더러의 draw 를 실행한다
   ↓
 draw 가 렌더러의 굵기·색을 읽어 칠한다          <span class="c">→ 굵어진 선이 보인다</span></pre>
+
+          <p>
+            <strong>고른 것만 골라내는 관문이 없다는 점이 중요하다.</strong> 훑으면서 <strong>구간 선
+            전부</strong>의 렌더러를 찾아 <strong>전부 다시 넣는다.</strong> 그래서 <strong>선택을
+            풀거나 다른 줄로 옮겼을 때 직전에 굵어져 있던 선이 저절로 5.5로 돌아온다</strong> —
+            「굵게 할 것」만 손댔다면 이전 것을 따로 되돌리는 코드가 필요했을 자리다.
+          </p>
 
           <p>
             굵기 값을 바꿔도 <strong>화면은 저절로 안 바뀐다.</strong> <code>setNeedsDisplay()</code>는
@@ -1511,7 +1556,12 @@ draw 가 렌더러의 굵기·색을 읽어 칠한다          <span class="c">�
 
           <p class="later">
             &#9888; <strong>다만 이렇게 한 이유는 기록에 없다.</strong> 커밋 메시지에도 주석에도 없어서,
-            위 설명은 <strong>코드 구조에서 읽히는 것</strong>이다.
+            위 설명은 <strong>코드 구조에서 읽히는 것</strong>이다. 옆에 있는 근거는 하나 있다 —
+            <strong>이 파일은 원래 「바뀐 것만 건드리는」 방식으로 쓰였다.</strong> 오버레이를 다시
+            만드는 쪽도 좌표가 실제로 달라졌을 때만 돌도록 감싸여 있고, 그 커밋(2026-07-01)이
+            <em>“카메라 이동마다 불필요하게 다시 그리지 않도록”</em> 스냅샷으로 비교한다고 적는다.
+            <strong>다만 그것은 오버레이를 다시 만드는 쪽 이야기이지, 선택이 바뀔 때를 그렇게 만든
+            이유를 적은 것은 아니다.</strong>
           </p>
 
           <div class="takeaway">
@@ -2852,7 +2902,9 @@ Coordinator
             <code>rendererFor</code> 안이 타입별로 갈라져 있는데, 그것은
             <strong>추가하는 오버레이가 네 종류</strong>이기 때문이다 — 경유점 점 · 후광 · 케이싱(테두리 선) ·
             구간 선. 종류마다 그리는 법이 달라 각각 렌더러를 만든다.
-            <strong>그 네 갈래는 파트 2~4에서 본다.</strong>
+            <strong>그 네 갈래는 기능 파트가 하나씩 나눠 갖는다</strong> — 구간 선과
+            케이싱은 <strong>파트 1</strong>, 경유점 점은 <strong>파트 4</strong>,
+            후광은 <strong>파트 5</strong>다.
           </p>
 
           <h4>3. 아래쪽은 우리가 부르지 않는다</h4>
@@ -2887,12 +2939,12 @@ Coordinator
               <tr>
                 <td><code>rendererFor</code></td>
                 <td>그 오버레이를 그릴 렌더러(<code>MKOverlayRenderer</code>)</td>
-                <td>이 구간 · 파트 2~4</td>
+                <td>이 구간 · 파트 1 · 4 · 5</td>
               </tr>
               <tr>
                 <td><code>viewFor</code></td>
                 <td>그 어노테이션을 그릴 뷰(<code>MKAnnotationView</code>) — 핀 · 거리 라벨</td>
-                <td>파트 2 · 5 · 6</td>
+                <td>파트 2(거리 라벨) · 파트 3(핀)</td>
               </tr>
               <tr>
                 <td><code>mapViewDidChangeVisibleRegion</code></td>
@@ -2916,8 +2968,10 @@ Coordinator
           </div>
 
           <p class="later">
-            <strong>여기서 파트 2가 시작된다.</strong> <em>“그럼 <code>rendererFor</code> 안에서 어떻게 알아내나”</em> —
-            그 해결이 파트 2의 주제(<code>SegmentPolyline</code> 같은 타입을 새로 만든 이유)다.
+            <em>“그럼 <code>rendererFor</code> 안에서 어떻게 알아내나”</em> —
+            <strong>그 해결이 파트 1 구간 ①에서 본 것이다.</strong> 오버레이를 만들 때 번호를 그 안에
+            미리 넣어 두고(<code>SegmentPolyline</code>을 새로 만든 이유), 종류는
+            <strong>타입으로</strong> 가른다.
           </p>
 
         </div>
@@ -2937,6 +2991,82 @@ Coordinator
       <strong>파트를 하나 끝낼 때마다 내용이 맞는지 한 번 더 검토한다.</strong> 이미 읽은 내용이
       바뀐 것이 있으므로 무엇을 어떻게 고쳤는지 남긴다.
     </p>
+
+    <h3>파트 1 — 2026-08-18 · advisor 팩트체크</h3>
+
+    <p>
+      <strong>앞선 자체 검증 뒤에 advisor 검토를 받았다</strong>(앞 세션에서 네 번 실패한 것을
+      새 세션에서 다시 걸어 받았다). <strong>고침 5건 + 파트 밖 정리 1건</strong>이 나왔다.
+    </p>
+
+    <div class="fix">
+      <span class="fixtag">고침 1 · 구간 ①</span>
+      <p><code>SegmentPalette</code>를 <em>“함수 하나만 들어 있는 <code>enum</code>”</em>이라고 썼는데
+        <strong>함수가 둘이다</strong>(<code>color(at:)</code> · <code>swiftUIColor(at:)</code>).
+        파일이 13줄인 것은 맞다. 개수를 바로잡고, 그 바람에 가려져 있던 사실 —
+        <strong>같은 팔레트를 기록 상세 화면이 함께 쓴다</strong>는 것 — 을 문단으로 넣었다.</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">고침 2 · 구간 ③ — 메커니즘을 반대로 읽게 만들던 것</span>
+      <p>구간 ⑤의 흐름도가 <em>“<code>segmentIndex</code> == 선택된 번호 ?”</em>를
+        <strong>훑는 루프 안의 관문</strong>처럼 그렸는데, <strong>코드에 그 관문이 없다.</strong>
+        구간 선 <strong>전부</strong>의 렌더러를 찾아 <code>configureRenderer</code>에 넘기고,
+        비교는 <strong>그 함수 안에서</strong> 일어난다. 도식을 고치고,
+        <strong>“전부 다시 넣기 때문에 선택을 풀면 저절로 5.5로 돌아온다”</strong>는 설명을 붙였다 —
+        관문이 있었다면 이전 것을 되돌리는 코드가 따로 필요했을 자리다.</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">고침 3 · 구간 ① — 파트 안에서의 자기모순</span>
+      <p>표가 <code>segmentIndex</code>의 용도를 <em>“고른 구간을 굵게 (파트 5)”</em>로 보냈는데,
+        <strong>구간 ③이 바로 그 값을 선택 판정에 쓴다.</strong> 첫 실사용은 파트 5가 아니라
+        같은 파트의 구간 ③이라 <em>“구간 ③, 그리고 파트 5”</em>로 고쳤다.</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">고침 4 · 구간 ③ — 빠져 있던 조건</span>
+      <p><code>renderer(for:)</code>가 <em>“보관해 둔 렌더러를 돌려준다”</em>까지만 적혀 있었다.
+        <strong>애플 문서가 「보관해 둔 것을 돌려준다」는 쪽은 실제로 보증한다</strong>
+        (<em>“델리게이트가 <code>mapView(_:rendererFor:)</code>에서 준 렌더러 객체를 돌려준다”</em>) —
+        그래서 이 문장은 낮추지 않았다. <strong>대신 빠진 조건을 넣었다</strong>:
+        <em>“오버레이가 화면 밖이면 <code>nil</code>”</em>이라 <strong>화면 밖 구간은 그 자리에서
+        굵기가 안 바뀐다</strong>(다시 들어오면 그때 칠해지므로 결과는 어긋나지 않는다).</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">고침 5 · 구간 ①② — 설명하지 않고 두 번 빌려 쓰던 것</span>
+      <p>구간 ①과 ②가 <em>“MapKit은 오버레이 객체 하나만 건네준다”</em>는 사실에 <strong>두 번
+        기대는데, <code>rendererFor</code>가 무엇을 하는 함수인지는 구간 ③에 가서야 나왔다.</strong>
+        구간 ①에서 <strong>함수 이름과 하는 일을 먼저 밝히고</strong> 뒤를 예고하도록 고쳤고,
+        구간 ②는 되풀이하지 않고 <strong>구간 ①을 참조만</strong> 하게 줄였다.</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">근거 보강 · 구간 ②</span>
+      <p>케이싱을 넣은 이유를 <strong>커밋 메시지 하나</strong>로만 뒷받침하고 있었다.
+        <strong>설계 문서가 값까지 확정해 둔 것을 찾아</strong> 함께 실었다
+        (라이트 흰색 .6 / 다크 검정 .35 · 선 폭 5.5 · 케이싱 9.5).
+        <strong>목적을 적은 것은 커밋, 값을 정한 것은 설계 문서</strong>로 갈라 적었다.
+        <code>addOverlay</code> 순서에도 계획 문서 근거를 하나 더 붙였다.</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">유지 · 구간 ③</span>
+      <p><em>“선택이 바뀔 때 오버레이를 다시 만들지 않는 이유”</em>의 &#9888; 표시는
+        <strong>그대로 뒀다.</strong> 이 파일이 원래 「바뀐 것만 건드리는」 방식으로 쓰였다는
+        인접 근거는 찾았으나, <strong>그것은 오버레이를 다시 만드는 쪽 이야기이고 선택 경로의
+        이유를 적은 기록은 여전히 없다.</strong> 보강만 하고 단정으로 올리지 않았다.</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">파트 밖 정리 · 소개 3과 골격</span>
+      <p><strong>「장면 ↔ 맡은 부품」 표가 옛 8파트 구성 그대로였다</strong>(색 선을 <em>“파트 2·3·4”</em>로
+        보내는 등 여덟 줄 전부). 소개 2는 <em>“파트 1”</em>로 고쳐져 있어 <strong>소개 둘이 서로 반대말을
+        하고 있었다.</strong> 표를 새 구성(6파트 + 골격 2)으로 다시 쓰고, 그 아래 산문도
+        폐기한 「만드는 순서」 축 설명에서 「화면에 보이는 것 하나가 파트 하나」로 바꿨다.
+        골격 파트에 남아 있던 옛 파트 번호 4곳도 함께 고쳤다.</p>
+    </div>
 
     <h3>파트 1 (새 구성) — 2026-08-18 · 자체 검증</h3>
 
