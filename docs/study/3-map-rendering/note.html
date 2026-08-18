@@ -1314,8 +1314,8 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
           <h4>4. 넓은 것을 먼저 추가한다 — 나중에 추가한 오버레이가 위에 올라오므로</h4>
 
           <p>
-            <strong>추가하는 순서가 곧 위아래</strong>다. MapKit은 나중에 추가한 오버레이를 위에
-            얹으므로, <strong>아래에 깔릴 것을 먼저 추가해야</strong> 한다.
+            <strong>추가하는 순서가 곧 위아래</strong>다. 이 앱은 <strong>나중에 추가한 것이 위에
+            온다는 전제</strong>로 만들어져 있어서, <strong>아래에 깔릴 것을 먼저 추가한다.</strong>
           </p>
 
           <pre class="code">uiView.addOverlay(casing)     <span class="c">← 넓은 선. 먼저 추가하므로 아래</span>
@@ -1324,6 +1324,15 @@ uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추�
           <p>
             순서를 바꾸면 넓은 선이 색 선을 덮어버린다.
             <strong>코드 주석이 이 점을 따로 적어둘 만큼 순서에 의존하는 방식</strong>이다.
+          </p>
+
+          <p class="later">
+            &#9888; <strong>다만 iOS MapKit 문서에 「나중에 추가한 것이 위」라고 적혀 있지는 않다.</strong>
+            <code>addOverlay(_:)</code> 설명은 <em>“<code>aboveLabels</code> 레벨의 오버레이 그룹에
+            추가한다”</em>까지만 말한다. 간접 근거는 둘이다 — <strong>순서를 직접 지정하는 API가 따로
+            있다는 것</strong>(<code>insertOverlay(_:below:)</code>는 <em>“지정한 형제 아래에 그린다”</em>)과,
+            <strong>MapKit JS 문서에는 명시돼 있다는 것</strong>(<em>“overlays added later appear closer
+            to the foreground”</em>). <strong>이 앱은 그 전제로 동작하고 있다.</strong>
           </p>
 
           <h4>5. 굵기 차이 4pt가 양옆 2pt씩의 흰 띠로 남는다</h4>
@@ -2929,7 +2938,43 @@ Coordinator
       바뀐 것이 있으므로 무엇을 어떻게 고쳤는지 남긴다.
     </p>
 
-    <h3>파트 1 (2026-08-17)</h3>
+    <h3>파트 1 (새 구성) — 2026-08-18 · 자체 검증</h3>
+
+    <p>
+      <strong>advisor 팩트체크는 세 번 시도했으나 구간별 결과를 받지 못했다.</strong> 대신
+      <strong>코드와 Apple 문서로 직접 대조</strong>했다. 고침 1건이 나왔다.
+    </p>
+
+    <div class="fix">
+      <span class="fixtag">고침 1 · 구간 &#9313;</span>
+      <p><em>“MapKit은 나중에 추가한 오버레이를 위에 얹으므로”</em>라고 단정했는데
+        <strong>iOS MapKit 문서에는 그 순서가 명시돼 있지 않다.</strong>
+        <em>“이 앱은 나중에 추가한 것이 위에 온다는 전제로 만들어져 있다”</em>로 낮추고,
+        간접 근거 둘(<code>insertOverlay(_:below:)</code>의 존재 · MapKit JS 문서의 명시)을 함께 적었다.
+        <strong>2026-08-17의 고침 1과 같은 종류다</strong> — 확인 안 된 프레임워크 동작을 단정한 것.</p>
+    </div>
+
+    <p class="later">
+      <strong>코드로 확인한 것</strong> — <code>SegmentPalette</code>의 <code>% 6</code>과
+      <code>?? .systemBlue</code> 폴백 · 에셋 <code>Seg0</code>~<code>Seg5</code> 여섯 개 ·
+      <code>SegmentPolyline</code>/<code>SegmentCasingPolyline</code>의 상속과 프로퍼티 ·
+      <strong><code>colorKey</code>가 <code>CourseEditSession</code>의 <code>order</code>와 같은 값</strong> ·
+      <strong>맨 앞에 구간을 붙여도 <code>order</code>는 새 번호를 받는다</strong>(구간 &#9312;의 도식이
+      코드와 일치) · 굵기 5.5/7 &#183; 9.5/11 · 케이싱 색 흰색 60%/검정 35% ·
+      <strong>케이싱 굵기 계산이 두 곳에 중복</strong> · <code>renderer(for:)</code>와
+      <code>configureRenderer</code>의 동작.
+      <strong>Apple 문서로 확인한 것</strong> — <code>setNeedsDisplay()</code>가
+      <em>“다음 갱신 주기에 다시 그려지게 한다”</em>.
+    </p>
+
+    <p class="later">
+      <strong>&#9888; 여전히 검증되지 않은 것 둘</strong> — 구간 &#9314;의
+      <em>“선택이 바뀔 때 오버레이를 다시 만들지 않는 이유”</em>는 <strong>기록이 없어 코드 구조에서
+      읽은 추론</strong>이고, 구간 &#9313;의 <em>“케이싱 = 밝기 대비”</em>는
+      <strong>커밋 메시지가 유일한 근거</strong>다. 둘 다 본문에 그렇게 표시해 뒀다.
+    </p>
+
+    <h3>파트 1 (옛 구성) — 2026-08-17</h3>
 
     <div class="fix">
       <span class="fixtag">고침 1 · 구간 ⑤</span>
