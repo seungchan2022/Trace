@@ -640,7 +640,9 @@
           <li><code>MKPolyline</code>은 <strong>좌표 배열일 뿐</strong>이라 그것만으로는 화면에 안 그려진다 — 칠하는 것은 렌더러</li>
           <li>선 아래에 띠를 까는 이유는 <strong>지도 배경에 묻히지 않게</strong>다 — 목적이 <strong>대비</strong>라서 밝은 지도에선 흰색, 어두운 지도에선 검정</li>
           <li>선 하나가 <strong>폴리라인 둘</strong>이다 — 넓은 케이싱을 <strong>먼저</strong> 추가해 아래에 깔고 색 선을 위에 얹는다. <strong>굵기 차이가 띠</strong>가 된다</li>
-          <li>렌더러를 <strong>직접 만드는 길도 있었다</strong> — 기성품 둘을 겹치는 쪽이 <strong>좌표 변환을 직접 안 해도 돼서</strong> 그쪽을 골랐다</li>
+          <li>렌더러를 <strong>직접 만드는 길도 있었다</strong> — 이 앱은 기성품 둘을 겹치는 쪽을 골랐다</li>
+          <li>색·굵기를 들고 있는 것은 <strong>오버레이가 아니라 렌더러</strong>다 — 오버레이마다 하나씩 만들어져 <strong>지도가 보관</strong>한다</li>
+          <li>선택이 바뀌면 오버레이를 다시 만들지 않고 <strong>보관된 렌더러의 굵기만 고친 뒤</strong> <code>setNeedsDisplay()</code>로 다시 칠하라고 알린다</li>
         </ul></div></li>
       <li class="pending"><span class="k">2</span><div><div class="can">거리 라벨(선 위의 <em>“320m”</em>)이 <strong>왜 그 자리에 그 색으로 붙는지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">3</span><div><div class="can">출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 서고 언제 하나로 합쳐지는지</strong> 설명할 수 있다</div></div></li>
@@ -1058,7 +1060,7 @@
         <table>
           <tr><td><a href="#p1s1">구간 &#9312;</a></td><td>구간마다 다른 색은 어디서 정해지나</td></tr>
           <tr><td><a href="#p1s2">구간 &#9313;</a></td><td>구간 선 하나가 실은 두 겹인 이유</td></tr>
-          <tr><td>구간 &#9314;</td><td>굵기와 색을 실제로 칠하는 곳</td></tr>
+          <tr><td><a href="#p1s3">구간 &#9314;</a></td><td>굵기와 색을 실제로 칠하는 곳</td></tr>
         </table>
         <p class="hint">
           <strong>순서에 이유가 있다.</strong> &#9312;&#9313;는 <strong>미리 정해두는 것</strong>이다 —
@@ -1251,15 +1253,7 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
             뒤에 나올 <strong>띠 색이 화면 모드에 따라 뒤집히는 이유</strong>이기도 하다.
           </p>
 
-          <h4>3. 화면의 선은 색 선 하나가 아니라, 넓은 선 위에 색 선을 얹은 두 겹이다</h4>
-
-          <p>
-            지도에서 코스 선을 보면 <strong>색 있는 선 둘레에 얇은 흰 띠</strong>가 둘려 있다.
-            도로나 건물 위를 지날 때 선이 배경에 묻히지 않는 것이 그 띠 때문이다.
-            <strong>그 띠는 선에 붙은 테두리 속성이 아니라 선을 하나 더 그린 것</strong>이다.
-          </p>
-
-          <h4>4. 길이 둘이었고 이 앱은 「기성품 둘을 겹치는」 쪽을 골랐다</h4>
+          <h4>3. 길이 둘이었고 이 앱은 「기성품 둘을 겹치는」 쪽을 골랐다</h4>
 
           <p>
             MapKit이 주는 기성품 렌더러(<code>MKPolylineRenderer</code>)에는 선 색과 굵기는 있지만
@@ -1288,7 +1282,12 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
             <strong>같은 파일 안에 &#9424;로 만든 것이 실제로 있다</strong>(구간 경계의 흰 점.
             <strong>파트 4</strong>에서 본다). 그쪽은 점 여러 개라 기성품으로는 안 되는 모양이었고,
             그 대가로 <strong>반지름을 확대 배율로 직접 나누는</strong> 코드를 떠안았다.
-            선은 기성품으로 되는 모양이라 <strong>그 일을 안 하는 쪽</strong>을 골랐다.
+          </p>
+
+          <p class="later">
+            &#9888; <strong>선 쪽이 왜 &#9425;로 갔는지는 기록에 없다.</strong> 커밋 메시지에도 주석에도
+            적혀 있지 않다. 확인할 수 있는 것은 <strong>두 길이 다 가능했고 이 앱이 둘을 나눠 썼다</strong>는
+            사실까지다.
           </p>
 
           <p>
@@ -1312,7 +1311,7 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
             그것이 케이싱인지 색 선인지 구분할 방법이 타입밖에 없다.</strong> 이름이 곧 표식이다.
           </p>
 
-          <h4>5. 넓은 것을 먼저 추가한다 — 나중에 추가한 오버레이가 위에 올라오므로</h4>
+          <h4>4. 넓은 것을 먼저 추가한다 — 나중에 추가한 오버레이가 위에 올라오므로</h4>
 
           <p>
             <strong>추가하는 순서가 곧 위아래</strong>다. MapKit은 나중에 추가한 오버레이를 위에
@@ -1327,7 +1326,7 @@ uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추�
             <strong>코드 주석이 이 점을 따로 적어둘 만큼 순서에 의존하는 방식</strong>이다.
           </p>
 
-          <h4>6. 굵기 차이 4pt가 양옆 2pt씩의 흰 띠로 남는다</h4>
+          <h4>5. 굵기 차이 4pt가 양옆 2pt씩의 흰 띠로 남는다</h4>
 
           <p>
             두 선은 같은 자리에 그려지므로, <strong>넓은 쪽이 색 선 바깥으로 삐져나온 만큼</strong>이
@@ -1350,7 +1349,7 @@ uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추�
             <strong>파트 5</strong>에서 다룬다.
           </p>
 
-          <h4>7. 띠 색은 고정이 아니다 — 밝은 지도에서는 흰색, 어두운 지도에서는 검정</h4>
+          <h4>6. 띠 색은 고정이 아니다 — 밝은 지도에서는 흰색, 어두운 지도에서는 검정</h4>
 
           <p>
             케이싱 색은 하나로 박혀 있지 않고 화면 모드에 따라 갈린다 —
@@ -1368,6 +1367,155 @@ uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추�
 
         </div>
       </details>
+
+      <details class="seg" id="p1s3" open>
+        <summary>구간 &#9314; — 굵기와 색을 실제로 칠하는 곳</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간 &#9312;에서 색을 고를 번호를 정했고 구간 &#9313;에서 선을 두 겹으로 만들었다.
+              <strong>그런데 지도에 추가하는 것만으로는 화면에 아무것도 안 나온다.</strong>
+              실제로 칠하는 것은 <strong>렌더러</strong>다. 그것이 무엇이고 색과 굵기가
+              <strong>언제 어디서</strong> 들어가는지를 본다.</p>
+          </div>
+
+          <h4>1. 오버레이는 「여기 도형이 있다」는 등록이고, 칠하는 것은 렌더러다</h4>
+
+          <div class="card hero">
+            <div class="nm">오버레이</div>
+            <div class="ro">지도에 추가해 둔 <strong>도형 객체</strong>. 구간 &#9313;에서 만든 선 둘이
+              각각 오버레이 하나다. <strong>좌표와 번호(<code>segmentIndex</code> &#183;
+              <code>colorKey</code>)를 들고 있고 색&#183;굵기는 없다.</strong></div>
+          </div>
+
+          <div class="card hero">
+            <div class="nm">렌더러</div>
+            <div class="ro">오버레이 하나를 <strong>실제로 칠하는 객체</strong>.
+              <strong>색과 굵기를 들고 있다.</strong></div>
+          </div>
+
+          <p>
+            지도에 오버레이를 추가하면 MapKit이 <em>“이건 어떻게 그리느냐”</em>를 물어오고,
+            <strong>렌더러를 만들어 돌려주면</strong> 그때 화면에 그림이 나온다.
+          </p>
+
+          <h4>2. 렌더러는 오버레이마다 하나씩 있고, 지도가 계속 보관한다</h4>
+
+          <p>
+            한 번 만들어 넘기면 끝이 아니라 <strong>지도가 그 오버레이와 짝지어 보관한다.</strong>
+            나중에 <em>“이 오버레이의 렌더러를 내놔”</em>라고 하면 돌려준다.
+            <strong>값을 고치고 싶을 때 이미 있는 것을 찾아 쓸 수 있는 이유</strong>가 이것이다.
+          </p>
+
+          <p>
+            그리고 <strong>하나를 여럿이 돌려 쓰지 않는다.</strong> 렌더러 하나는 색 하나만 들고 있는데
+            구간마다 색이 달라야 하기 때문이다.
+          </p>
+
+          <pre class="code">구간 1   케이싱 오버레이  ─짝─  렌더러 A   흰색 · 9.5
+         색 선 오버레이   ─짝─  렌더러 B   Seg0 · 5.5
+구간 2   케이싱 오버레이  ─짝─  렌더러 C   흰색 · 9.5
+         색 선 오버레이   ─짝─  렌더러 D   Seg1 · 5.5</pre>
+
+          <h4>3. 색 선과 케이싱은 같은 것을 보고 판단하지만, 값을 넣는 방식이 다르다</h4>
+
+          <p>
+            <strong>둘 다 같은 것을 본다</strong> — 오버레이가 들고 있는
+            <strong><code>segmentIndex</code>가 선택된 번호와 같은가.</strong> 구간 &#9312;에서
+            오버레이에 저장해 둔 그 번호다. <strong>렌더러는 값을 받는 쪽</strong>이지 판단 재료가 아니다.
+          </p>
+
+          <p>
+            <strong>색 선은 넣을 값이 둘이다.</strong> 색은 <code>colorKey</code>로 골라야 하고
+            굵기는 선택되면 7, 아니면 5.5다. 이 둘을 넣는 일을 <code>configureRenderer</code>라는
+            함수가 맡는다.
+          </p>
+
+          <p>
+            <strong>케이싱은 색이 고정이다.</strong> 화면 밝기에 따른 흰색이나 검정 하나뿐이라 고를 것이
+            없고, 굵기만 렌더러에 직접 넣는다. 선택되면 11, 아니면 9.5다.
+          </p>
+
+          <p>
+            <strong>여기에 어긋난 데가 하나 있다.</strong> 케이싱도 색 선과 똑같이 <strong>두 자리에서</strong>
+            굵기를 정하는데, 함수로 빼지 않아서 <strong>같은 계산이 두 곳에 적혀 있다.</strong>
+            굵기를 바꾸려면 두 곳을 다 고쳐야 하고, 한 곳만 고치면 <strong>새로 나타난 선과 선택된 선의
+            굵기가 어긋난다.</strong> 왜 한쪽만 함수로 뺐는지는 <strong>기록에 없다.</strong>
+          </p>
+
+          <h4>4. 값이 들어가는 자리는 둘이다</h4>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>화면에서 무슨 일이 일어나나</th><th>코드에서는</th></tr>
+              <tr>
+                <td>구간을 하나 더 이어서 <strong>새 선이 나타난다</strong></td>
+                <td>MapKit이 물어옴 → <strong>렌더러를 만들면서</strong> 값을 넣는다</td>
+              </tr>
+              <tr>
+                <td>구간 패널에서 다른 줄을 눌러 <strong>그 선이 굵어진다</strong></td>
+                <td>오버레이는 그대로 → <strong>보관된 렌더러를 찾아</strong> 굵기만 다시 넣는다</td>
+              </tr>
+            </table>
+          </div>
+
+          <h4>5. 선택이 바뀌면 이 순서로 돈다</h4>
+
+          <pre class="code">구간 패널에서 다른 줄을 눌렀다
+  ↓
+지도에 올라가 있는 오버레이를 하나씩 훑는다
+  ↓
+오버레이의 segmentIndex == 선택된 번호 ?        <span class="c">← 판단 재료는 오버레이</span>
+  ↓
+그 오버레이와 짝인 렌더러를 지도에서 찾는다
+  ↓
+찾은 렌더러에 굵기를 넣는다                     <span class="c">← 화면은 아직 그대로</span>
+  ↓
+setNeedsDisplay() 를 부른다
+  ↓
+MapKit 이 다음 그리기 차례에 그 렌더러의 draw 를 실행한다
+  ↓
+draw 가 렌더러의 굵기·색을 읽어 칠한다          <span class="c">→ 굵어진 선이 보인다</span></pre>
+
+          <p>
+            굵기 값을 바꿔도 <strong>화면은 저절로 안 바뀐다.</strong> <code>setNeedsDisplay()</code>는
+            애플이 만든 함수로, <strong>“이 렌더러를 다시 칠해야 한다”고 MapKit에 알린다.</strong>
+            알림을 받은 MapKit이 다음 그리기 차례에 그 렌더러의 <code>draw</code>를 실행하고,
+            <code>draw</code>가 바뀐 굵기를 읽어 칠한다.
+          </p>
+
+          <p>
+            <strong><code>MKPolylineRenderer</code>의 <code>draw</code>는 애플이 이미 구현해 놨다.</strong>
+            우리는 값만 바꿔두면 되고 칠하는 코드를 쓸 일이 없다.
+            <em>(렌더러를 직접 만들면 그 <code>draw</code>를 우리가 쓴다 — 구간 경계의 흰 점이 그
+            경우이고 <strong>파트 4</strong>에서 본다.)</em>
+          </p>
+
+          <h4>6. 왜 오버레이를 다시 만들지 않고 렌더러만 고치나</h4>
+
+          <p>
+            <strong>구간을 고른다고 선이 지나가는 자리가 달라지지 않는다.</strong> 좌표는 그대로고
+            굵기만 바뀐다. <strong>좌표를 들고 있는 것은 오버레이, 굵기를 들고 있는 것은 렌더러</strong>라
+            바뀐 쪽만 고치면 된다.
+          </p>
+
+          <p class="later">
+            &#9888; <strong>다만 이렇게 한 이유는 기록에 없다.</strong> 커밋 메시지에도 주석에도 없어서,
+            위 설명은 <strong>코드 구조에서 읽히는 것</strong>이다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>색과 굵기를 들고 있는 것은 <strong>오버레이가 아니라 렌더러</strong>이고,
+              <strong>오버레이마다 하나씩 만들어져 지도에 보관된다.</strong> 그래서 구간 선택이 바뀌면
+              <strong>오버레이를 다시 만들지 않고, 보관된 렌더러의 굵기만 고친 뒤 「다시 칠하라」고
+              표시</strong>한다.</p>
+          </div>
+
+        </div>
+      </details>
+
 
 
       <a class="backtop" href="#toc">↑ 목차로</a>
