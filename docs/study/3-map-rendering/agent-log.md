@@ -738,6 +738,91 @@ the view"*였다. **비유가 아니라 원래 뜻이었다** — ②(나)의 *"
 
 ---
 
+## 📋 파트 2 재료 전수 — 코드에서 다시 뽑았다 (2026-08-18, `(b-4)` 입력)
+
+> 착수 메모의 재료 7건은 **전부 줄 번호까지 맞았다.** 아래는 그것을 포함한 **전수**다.
+> `(b-4)`가 요구하는 「표면 전수 + 배정」의 왼쪽 절반이고, **배정은 구간 표를 짜면서 채운다.**
+
+### 표면 전수 — `MapViewRepresentable.swift` (688줄)
+
+| # | 표면 | 줄 |
+|---|---|---|
+| 1 | `SegmentDistanceAnnotation` 선언 — `NSObject, MKAnnotation` 채택 | `:65` |
+| 2 | 프로퍼티 셋 `coordinate`·`distanceText`·`color` (전부 `let`) | `:66-68` |
+| 3 | `init(coordinate:distanceText:color:)` | `:70-74` |
+| 4 | `SegmentDistanceAnnotationView` 선언 — `MKAnnotationView` 상속 | `:77` |
+| 5 | `label: UILabel` 스타일 — 11pt semibold · 흰 글자 · 가운데 · `cornerRadius 4` · `masksToBounds` | `:78-87` |
+| 6 | `canShowCallout = false` | `:88` |
+| 7 | `init?(coder:)` → `fatalError` | `:91-93` |
+| 8 | `configure(text:color:)` — 텍스트 양옆 공백 · 배경색 · `sizeToFit()` · `bounds = label.bounds` · `centerOffset = .zero` | `:95-101` |
+| 9 | 라벨 생성·추가 — `midpointAlongPath(coords)` · `String(format: "%.0fm", segment.distanceMeters)` · `SegmentPalette.color(at: colorKey)` · `addAnnotation` | `:281-287` |
+| 10 | 라벨 제거 — `removeAnnotations(uiView.annotations.filter { $0 is SegmentDistanceAnnotation })` | `:258` |
+| 11 | 스냅샷 게이트 `lastSegmentSnapshots != currentSnapshots` — 9·10이 **이 안에 있다** | `:256` |
+| 12 | `midpointAlongPath` — 누적거리 배열 → 절반 → 두 좌표 사이 선형 보간 · 폴백 `coords[count / 2]` | `:374-397` |
+| 13 | `viewFor`의 라벨 분기 — identifier `"segmentDistance"` · `dequeueReusableAnnotationView` · `view.annotation` 재대입 · `configure` | `:454-462` |
+| 14 | `viewFor`가 **먼저** 걸러내는 것 — `annotation is MKUserLocation` → `nil` | `:451-453` |
+| 15 | 층 주석 — *"MapKit은 오버레이를 항상 애노테이션보다 아래에 그린다"* | `:104-107` |
+| 16 | 핀 쪽 `displayPriority = .required` · `collisionMode = .none` (주석이 **거리 라벨을 원인으로 명시**) | `:468-470` |
+| 17 | 라벨이 쓰는 좌표는 `displayCoordinates`(겹침 오프셋된 **표시 좌표**)다 — 도메인 좌표가 아니다 | `:261-266` |
+| 18 | 라벨 텍스트의 값 출처 — `CourseSegment`의 연관값 `distanceMeters` | `CourseSegment.swift:3-6` |
+| 19 | 색 출처 — `SegmentPalette.color(at:)` = `UIColor(named: "Seg\(index % 6)") ?? .systemBlue` | `SegmentPalette.swift:5-7` |
+
+### 🔑 새로 확인한 사실 셋 (착수 메모에 없던 것)
+
+1. **`SegmentDistanceAnnotation`·`midpointAlongPath`는 이 파일 밖에서 한 번도 쓰이지 않는다.**
+   앱 전체 grep 결과 참조 0건. **테스트도 0건**이다(`TraceTests` 어디에서도 안 나온다).
+   → 「사실은 노트에」 규칙에 따라 **한 줄로 남긴다.**
+2. **라벨 좌표는 표시 좌표(`displayCoordinates`) 기준이다.** 겹침 오프셋으로 옆으로 비켜 그린
+   좌표를 그대로 받으므로, **라벨도 비켜난 선을 따라간다.** 파트 6(겹친 선)과 이어지는 자리다.
+3. **`viewFor`는 `ColoredPinAnnotation`도 아니면 `nil`을 돌려준다**(`:463`) — MapKit 기본 뷰로 넘어간다.
+
+### `(b-3)` 판정 — `viewFor`는 줄 순서 = 판정 순서다
+
+분기 진입 조건 셋을 전부 뽑았다: ①`is MKUserLocation` → `nil` ②`as? SegmentDistanceAnnotation`
+③`guard as? ColoredPinAnnotation else { return nil }`. **모든 분기에 공통으로 붙은 부정 조건이 없어서**
+청크 2의 `attach`처럼 파일 아래쪽이 먼저 걸러지는 구조가 **아니다.**
+**가장 먼저 걸러지는 것은 파란 점(`MKUserLocation`)이고 그것이 파일에서도 맨 위다.**
+
+### `(b-2)` 셋 — 1차 출처를 전부 확인했다
+
+1. **라벨 위치가 랜덤해 보였다** — 커밋 `117f821` *"거리 라벨 위치를 배열 인덱스 대신 실거리 절반 지점으로"*.
+   원인은 *"라우팅 좌표 밀도가 불균일해(커브 촘촘, 직선 듬성)"*. 회고의 판정 —
+   *"인덱스 기반 위치는 좌표 밀도가 균일하다는 암묵적 가정이 깨지는 순간 바로 틀어진다 …
+   실거리 기준으로 바꿔 가정 자체를 없앰"*(`history/daily-retro/260704_daily_retro.md`).
+   **반대편이 실재했고 갈아엎었다 — 이 파트의 진짜 결정이다.**
+2. **경유점이 라벨을 가렸다** — 커밋 `fb1069f`. QA 문서에 *"두 번의 시도(zPosition, 추가 순서 재정렬)가
+   모두 실기기에서 재발"* → *"애노테이션끼리의 z-order가 애초에 안정적으로 보장 안 된다"*로 파악하고
+   층을 옮겼다. 회고의 교훈 — *"같은 층위 안에서 순서 조정보다 다른 층위로 옮기기가 더 안정적"*.
+   **파트 4 몫. 파트 2는 「라벨이 왜 안 가려지나」까지만.**
+3. **라벨과 핀이 겹치면 핀이 사라졌다** — `history/mvp7/260701_mvp7_completion_retro.md` —
+   *"MapKit이 기본 `collisionMode`로 핀을 자동으로 숨겨버린다 … 원인이 라우팅 로직이 아니라
+   순수 렌더링 레이어의 충돌 처리였다"*. **파트 3 몫. 원인이 라벨이라 파트 2에서 한 줄.**
+
+### 처음 나오는 이름 — 노트 등장 횟수 실측 (2026-08-18)
+
+**0회:** `MKAnnotation`(단독 0 — 기존 1건은 `MKAnnotationView`의 부분 문자열이었다) ·
+`MKMarkerAnnotationView` · `canShowCallout` · `sizeToFit` · `centerOffset` ·
+`displayPriority` · `collisionMode` · `removeAnnotations`
+**1회:** `MKAnnotationView`(설명 있음 — *"그 어노테이션을 그릴 뷰"*) · `dequeueReusableAnnotationView` ·
+`SegmentDistanceAnnotation` · `UILabel` · `distanceMeters` · `addAnnotation`
+**2회 이상:** `midpointAlongPath`(2) · `어노테이션`(5) · `viewFor`(7 — **한 줄 설명이 이미 있다**,
+*"어노테이션을 …"* `:1011`) · `SegmentPalette`(9) · `colorKey`(13)
+
+⚠️ **착수 메모의 *"`viewFor`는 이름만 7번 나오고 무엇을 하는 함수인지는 한 번도 안 나왔다"*는
+지금은 사실이 아니다** — 파트 1에서 `rendererFor`와 나란히 설명이 들어갔다. **다시 처음부터
+열지 말고 이어받는다.**
+
+### 다음 — 여기서 이어서 한다
+
+**구간 표 초안을 짜고 `(b-4)` advisor 검토를 건다.** 검토에 넘길 것은 다섯이다 —
+①구간 표 ②위 표면 전수 19건 + **각 줄이 어느 구간에 배정됐는지** ③각 구간 능력 선언의 「반대편」
+④각 구간의 첫 조각 ⑤위 등장 횟수 + 「한 줄 설명 있음/없음」.
+**통과한 뒤에** 사용자에게 내고, 골격(파트 머리 + 구간 표)을 노트에 넣어 발행한다
+(`url` 인자 + 사전 `WebFetch`). 그 발행이 `note.html:3146`의 낡은 예고
+(*"다음 — 파트 2 「지도에 추가하는 것을 어떤 타입으로 만드나」"*)를 함께 걷어낸다.
+
+---
+
 ## ⛔️ 파트 2 착수 메모 — **폐기됨. 이 메모의 파트는 삭제됐다** (2026-08-17 작성 · 2026-08-18 폐기)
 
 > 🔴 **이 메모는 「옛 파트 2 — 지도에 얹는 것을 어떤 타입으로 만드나」의 것이고, 그 파트는
