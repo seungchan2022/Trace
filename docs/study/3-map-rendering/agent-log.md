@@ -665,7 +665,7 @@ the view"*였다. **비유가 아니라 원래 뜻이었다** — ②(나)의 *"
 
 ---
 
-## 🔑 파트 2 착수 메모 — 다음 세션은 여기서 시작한다 (2026-08-18 작성)
+## ✅ 파트 2 착수 메모 (2026-08-18 작성 · **파트 2 완료로 소진됨**)
 
 > **옛 메모(「지도에 얹는 것을 어떤 타입으로 만드나」)는 폐기됐다.** 이것이 유효한 메모다.
 
@@ -1166,6 +1166,78 @@ source"* · `MKOverlay` 정의·필수 둘 · `protocol MKOverlay : MKAnnotation
 
 파트 2가 넘긴 것 둘: ①**`collisionMode`/`displayPriority` 두 줄의 판정**(위 📌)
 ②**어노테이션끼리는 층 규칙 밖**이라는 사실(파트 2 구간 ④에서 세웠다 — 다시 세우지 말고 이어받는다).
+
+---
+
+## 🔑 파트 3 착수 메모 — 다음 세션은 여기서 시작한다 (2026-08-19 작성)
+
+**파트 3 — 출발·도착 핀** (장면 ③⑤)
+
+### 🔴 먼저 할 것 — `apple-docs` MCP 승인
+
+`.mcp.json`에 **`@kimsungwhee/apple-docs-mcp`를 추가했다**(2026-08-19 사용자 요청).
+**세션을 시작하면 승인 프롬프트가 뜬다** — 승인해야 도구가 붙는다(`claude mcp list`에서
+`⏸ Pending approval`로 확인됨).
+
+- **고른 이유:** 이 서버는 **Apple 공식 search API를 실시간 조회**한다(경쟁 후보
+  `apple-doc-mcp-server`는 캐시 스냅샷). 사용자 기준이 *"가장 최신 것까지 커버"*였다.
+- ⚠️ **npm 마지막 수정이 2025-09로 11개월 전이다.** 실시간 조회는 Apple 사이트 구조가 바뀌면
+  깨지므로, **도구가 뜨는지 · 실제 조회가 되는지 한 번 확인하고 쓴다.**
+  안 되면 `apple-doc-mcp-server`(= `github.com/MightyDillah/apple-doc-mcp`)로 갈아끼운다.
+- **context7은 그대로 둔다** — Apple 밖 라이브러리는 계속 그쪽이 맡는다.
+
+### 화면에서 무엇인가
+
+지도 위의 **출발·도착 핀**. 물방울 모양 마커에 아이콘이 들어 있고, 상황에 따라
+**몇 개가 서는지와 모양이 달라진다**(출발/도착/병합/대기/확인 중). 능력 선언(발행됨) —
+*"출발·도착 핀이 **어떤 상태에 몇 개 서고 언제 하나로 합쳐지는지** 설명할 수 있다."*
+
+### ⚠️ 재료가 한 파일이 아니다 — 파트 2와 다른 점
+
+파트 2는 `MapViewRepresentable.swift` 한 파일 안에서 끝났는데 **파트 3은 셋에 걸쳐 있다.**
+(경로 확인 2026-08-19 · ⚠️ **전수는 `(b-4)`에서 코드로 다시 뽑는다**)
+
+| 무엇 | 어디 |
+|---|---|
+| `MapPin` 선언 + `==` 커스텀 비교(*"좌표가 같아도 스타일 전환을 diff가 감지"*) | `MapViewRepresentable.swift:14-27` |
+| `ColoredPinAnnotation` 선언 | `MapViewRepresentable.swift:29-43` |
+| `viewFor`의 핀 분기 — `MKMarkerAnnotationView` · `markerTintColor` · `glyphImage` · `animatesWhenAdded` · `isEnabled = false` · 병합 배지 | `MapViewRepresentable.swift:463-491` |
+| `displayPriority` · `collisionMode` | `MapViewRepresentable.swift:468-470` |
+| 핀 전량 교체 판정(`pinsChanged`) — **어노테이션을 타입만으로 걸러 되만들어 비교한다** | `MapViewRepresentable.swift:312-318` |
+| 핀 히트 판정 `pinHit`(24pt) | `MapViewRepresentable.swift:662` |
+| **핀 목록을 만드는 곳** | `CoursePlannerPage+MapPinsComponent.swift` (`mapPins`) |
+| `CoursePinRole` 정의 | `CoursePlannerPageViewModel.swift:11` |
+
+### 파트 2가 넘긴 것 둘 — 이어서 받는다
+
+1. 📌 **`displayPriority = .required`의 판정을 마무리한다.** 애플 문서가 **기본값이
+   `.required`**라 하고(*"Defaults to `required`"*), MapKit JS 문서는 **`collisionMode`가
+   `.none`이면 priority를 무시한다**고 적는다. → **기본값을 다시 적은 죽은 줄로 보인다.**
+   **파트 3에서 판정하고, 죽은 줄이면 `docs/backlog.md`에 올린다.**
+   🔑 **새로 붙인 `apple-docs` MCP로 iOS 문서를 확인하면 이 판정과 MCP 검증이 한 번에 된다.**
+2. **어노테이션끼리는 층 규칙 밖**이라는 사실은 **파트 2 구간 ④에서 이미 세웠다.**
+   다시 세우지 말고 **이어받는다** — 핀이 사라졌던 사건의 원인(거리 라벨과의 겹침)도 거기 있다.
+   **파트 3은 「핀 쪽에서 무엇을 했나」를 가져간다.**
+
+### ⚠️ 조심할 것
+
+1. 🔴 **처음 나오는 이름을 「구간별로」 뽑는다.** 파트 2에서 이름 목록을 **어노테이션 계열로만**
+   뽑아 `MKDirections`가 통째로 샜고, `(b-4)`를 두 번 돌았는데도 안 걸렸다
+   (**입력에 없으면 안 걸린다**). 파트 3에서 0회일 이름: `MKMarkerAnnotationView` ·
+   `markerTintColor` · `glyphImage` · `animatesWhenAdded` · `displayPriority` · `collisionMode`.
+2. **파트 1·2와 부딪히지 않는지 본다.** 파트 2 팩트체크에서 걸린 것이 **파트 1의 붙들 것과
+   충돌**이었다(*"색을 들고 있는 것은 오버레이가 아니라 렌더러"*). **앞 파트의 「붙들 것」을
+   먼저 읽고 쓴다.**
+3. **저장·발행 단위는 구간**이고, 발행은 **`url` 인자 없이** 같은 파일 경로로 재발행하면 된다
+   (이 세션에서 발행한 URL이면). **다른 세션이면 `url` + 사전 `WebFetch`가 필요하다.**
+4. **`(d)` 팩트체크는 파트를 끝낸 그 세션에서 건다.** 🔑 **통한 방법(2026-08-19):
+   채팅이 아니라 「저장된 최종본」을 파일에서 추출해 올리고, 범위를
+   「그 파트 전체 · 마지막 구간에 쏠리지 말 것 · 무엇이 범위 밖인지」까지 열거해 호출.**
+5. **노트에는 기능만 쓴다.** *"붙들 것이 아니다"* 같은 **학습 운영 판정은 `agent-log.md`로.**
+   **판별법: 그 문장이 「무엇이 일어나는가」인가 「어디까지 가르칠지」인가.**
+6. 🔴 **내가 만든 질문을 「구간 N에서 본다」로 미루지 않는다.** 파트 2에서 *"왜 데이터와 뷰를
+   안 합치나"*를 스스로 던지고 미뤘다가, 그걸 설명하느라 **범위 밖 주제(UIKit 뷰 재사용)로
+   끌려가 사용자가 바닥에서 막혔다.** **미루기 전에 그 질문을 사용자가 물었는지 본다.**
 
 ---
 
