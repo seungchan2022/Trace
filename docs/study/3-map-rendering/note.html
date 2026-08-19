@@ -592,6 +592,7 @@
     <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 구간마다 색이 다른 선">색이 다른 선</a></li>
     <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 선 한가운데 거리 라벨">거리 라벨</a></li>
     <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 출발·도착 핀">출발·도착 핀</a></li>
+    <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 구간 경계의 흰 점">구간 경계의 흰 점</a></li>
     <li><span class="k"><i class="kf">골격</i><i class="ks">골</i></span><a href="#bg1" data-target="bg1" title="골격 — 화면에 안 보이는 부분">SwiftUI 밖으로</a></li>
   </ol>
 </nav>
@@ -607,7 +608,7 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1·2 완료(검토까지) · 파트 3 5구간 완료</span></h4>
+    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1·2 완료(검토까지) · 파트 3 5구간 완료 · 파트 4 4구간 완료</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
@@ -615,7 +616,7 @@
       <li class="on"><span class="k">1</span><a href="#p1">구간마다 색이 다른 선</a></li>
       <li class="on"><span class="k">2</span><a href="#p2">선 한가운데 거리 라벨</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">출발&#183;도착 핀</a></li>
-      <li class="todo"><span class="k">4</span>구간 경계의 흰 점</li>
+      <li class="on"><span class="k">4</span><a href="#p4">구간 경계의 흰 점</a></li>
       <li class="todo"><span class="k">5</span>고른 구간이 굵어지고 후광이 깔린다</li>
       <li class="todo"><span class="k">6</span>되짚어 그리면 두 줄로 보인다</li>
       <li class="on"><span class="k">골격</span><a href="#bg1">SwiftUI 밖으로 나가기 — 지도를 올리는 뼈대</a> <em>(화면에 안 보이는 부분)</em></li>
@@ -675,7 +676,23 @@
           <li>누름을 감지하는 것은 MapKit이 아니라 이 앱이고, <strong>화면 24pt</strong>로 재는 것은 줌과 무관하게 하려고</li>
           <li><code>isEnabled = false</code>는 선택을 안 쓰려는 선언이 아니라 <strong>확대&#183;흔들림 효과를 끈 수정</strong>이다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">4</span><div><div class="can">구간 경계의 흰 점이 <strong>왜 선이 아니라 따로 만든 오버레이인지</strong> 설명할 수 있다</div></div></li>
+      <li><span class="k">4</span><div><div class="can">구간 경계의 흰 점이 <strong>어디서 나온 좌표인지</strong> 짚을 수 있고, <strong>화면에서 크기가 고정돼야 한다는 요구가 왜 오버레이와 렌더러를 직접 만들게 했는지</strong>, 그때 <strong>내가 채워야 하는 것이 무엇인지</strong> 설명할 수 있다</div><div class="sum">코스를 여러 번 나눠 이으면 구간과 구간이 만나는 자리마다 <strong>작은 흰 동그라미</strong>가 찍힌다. 그 좌표가 어디서 나오는지, 지도를 확대&#183;축소해도 <strong>화면에서 보이는 크기가 대체로 그대로인</strong> 이유, 그리고 그러려고 <strong>오버레이와 렌더러를 밑바닥부터 만들면서</strong> 무엇을 직접 채워야 했는지를 본다.</div>
+        <ul class="keys">
+          <li>흰 점 좌표는 저장된 값이 아니라 <strong>읽을 때마다 코스를 보고 새로 만드는 계산 결과</strong>다 &#8212; 화면에 그려지는 것의 뿌리는 <code>entries</code> 하나</li>
+          <li>각 구간의 <strong>끝점</strong>을 모으고 <strong>마지막 구간 하나를 뺀다</strong> &#8212; 양 끝은 출발&#183;도착 핀이 맡는다</li>
+          <li><code>dropLast()</code>가 걸리는 대상은 좌표 배열이 아니라 <strong>구간 배열</strong>이다</li>
+          <li>뷰모델은 도메인 좌표로 돌려주고 <strong>뷰가 MapKit 타입으로 바꿔</strong> 넘긴다 &#8212; 구간 선은 도메인 타입 그대로 넘어간다</li>
+          <li>흰 점을 그리는 코드는 <strong>애플이 준 것이 아니라 이 프로젝트 안에 있다</strong> &#8212; <code>draw</code>의 기본 구현은 아무 일도 안 한다</li>
+          <li>얹는 클래스와 그리는 클래스가 <strong>따로</strong>다 &#8212; 그리는 쪽은 이 프로젝트가 부르지 않고 지도가 <code>rendererFor</code>로 가져간다</li>
+          <li><strong>객체 하나가 점 전부</strong>를 들고 있다 &#8212; 어노테이션이던 시절엔 점마다 하나씩이었다</li>
+          <li>크기는 <strong>애플이 넘겨준 현재 배율에 맞춰 계산</strong>한다 &#8212; 안 하면 확대할 때 부풀고 축소하면 사라진다</li>
+          <li>애플이 주는 원(<code>MKCircle</code>)은 반지름이 <strong>미터</strong>라 화면 고정 크기를 낼 수 없다 &#8212; 그래서 직접 만들었다</li>
+          <li><strong>완전히 고정되지는 않는다</strong> &#8212; 다시 그리는 시점을 MapKit이 정해서 핀치 중에는 단계적으로 변한다</li>
+          <li>지도는 <strong>보이지 않는 박스가 화면에 걸칠 때만</strong> 그리는 코드를 실행한다</li>
+          <li>박스에 <strong>사방 여유(<code>2000</code>)</strong>를 더하는 것은 가장자리에 걸친 점이 통째로 사라지는 것을 막으려고다</li>
+          <li><code>coordinate</code>는 <strong>어노테이션에서 물려받은 요구</strong>라 그리기에는 안 쓰인다 &#8212; 오버레이가 더한 것은 박스 하나</li>
+          <li>겹침을 조정하는 값은 없다 &#8212; 핀&#183;라벨보다 아래인 것은 <strong>구조가 보장</strong>하고 흰 점끼리는 양보하지 않는다</li>
+        </ul></div></li>
       <li class="pending"><span class="k">5</span><div><div class="can">고른 구간이 <strong>왜 굵어지고 후광이 깔리는지, 그 순서가 어떻게 정해지는지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">6</span><div><div class="can">좌표가 같은 두 구간이 <strong>왜 화면에서는 두 줄로 보이는지</strong> 설명할 수 있다</div></div></li>
       <li><span class="k">골격</span><div><div class="can">SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에 남아야 하는지</strong> 가를 수 있다</div><div class="sum">지도를 SwiftUI 밖(UIKit)에 두고 감쌌더니 <strong>값이 두 곳으로 갈라졌다.</strong> 어느 값이 SwiftUI에 남고 어느 값이 감싼 쪽으로 넘어갔는지, 그리고 왜 그렇게 갈렸는지를 정한다. <em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다.</em></div>
@@ -850,12 +867,12 @@
       </table>
     </div>
 
-    <p class="later">
-      끝이 있다는 근거는 실측이다 — 이 파일이 지도 인스턴스에 거는 것은 <strong>21종</strong>,
+    <p>
+            끝이 있다는 근거는 실측이다 — 이 파일이 지도 인스턴스에 거는 것은 <strong>21종</strong>,
       구현한 델리게이트 메서드는 <strong>3개</strong>(<code>rendererFor</code> ·
       <code>viewFor</code> · <code>mapViewDidChangeVisibleRegion</code>),
       <code>UIViewRepresentable</code> 요구사항은 <strong>3개</strong>다.
-    </p>
+          </p>
 
     <h3>청크 2가 넘긴 것 — 여기서 받는다</h3>
 
@@ -892,10 +909,6 @@
       </table>
     </div>
 
-    <p class="later">
-      테스트도 같이 넘어왔다 — <code>CourseCoordinateGeoTests</code>의 7개는 전부 이 청크 쪽이다.
-      여기에 <code>SegmentPaletteTests</code> 2개와 <code>OverlapOffsetResolverTests</code> 10개가 더 있다.
-    </p>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
@@ -1228,7 +1241,7 @@
             <strong>그 시점에 번호를 알아낼 방법이 없어서 미리 넣어두는 것</strong>이다.
           </p>
 
-          <p class="later">
+          <p>
             이건 고른 것이 아니라 <strong>MapKit 구조상 그럴 수밖에 없는 부분</strong>이라
             여기까지만 알면 된다. <strong>돌려주는 그 객체가 무엇이고 색·굵기가 거기 어떻게
             들어가는지는 구간 &#9314;</strong>에서 다루고, <strong>우리가 부르지 않는데도 그 함수가
@@ -1336,8 +1349,8 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
             그 대가로 <strong>반지름을 확대 배율로 직접 나누는</strong> 코드를 떠안았다.
           </p>
 
-          <p class="later">
-            &#9888; <strong>선 쪽이 왜 &#9425;로 갔는지는 기록에 없다.</strong> 커밋 메시지에도 주석에도
+          <p>
+            <strong>선 쪽이 왜 &#9425;로 갔는지는 기록에 없다.</strong> 커밋 메시지에도 주석에도
             적혀 있지 않다. 확인할 수 있는 것은 <strong>두 길이 다 가능했고 이 앱이 둘을 나눠 썼다</strong>는
             사실까지다.
           </p>
@@ -1378,8 +1391,8 @@ uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추�
             <strong>코드 주석이 이 점을 따로 적어둘 만큼 순서에 의존하는 방식</strong>이다.
           </p>
 
-          <p class="later">
-            &#9888; <strong>다만 iOS MapKit 문서에 「나중에 추가한 것이 위」라고 적혀 있지는 않다.</strong>
+          <p>
+            <strong>다만 iOS MapKit 문서에 「나중에 추가한 것이 위」라고 적혀 있지는 않다.</strong>
             <code>addOverlay(_:)</code> 설명은 <em>“<code>aboveLabels</code> 레벨의 오버레이 그룹에
             추가한다”</em>까지만 말한다. 간접 근거는 둘이다 — <strong>순서를 직접 지정하는 API가 따로
             있다는 것</strong>(<code>insertOverlay(_:below:)</code>는 <em>“지정한 형제 아래에 그린다”</em>)과,
@@ -1474,8 +1487,8 @@ uiView.addOverlay(polyline)   <span class="c">← 좁은 색 선. 나중에 추�
             찾아 쓸 수 있는 이유</strong>가 이것이다.
           </p>
 
-          <p class="later">
-            &#9888; <strong>다만 항상 돌려주는 것은 아니다.</strong> 같은 문서가
+          <p>
+            <strong>다만 항상 돌려주는 것은 아니다.</strong> 같은 문서가
             <em>“오버레이가 <strong>화면 밖이면</strong> <code>nil</code>”</em>이라고 적는다.
             코드는 받은 것이 있을 때만 굵기를 넣으므로, <strong>화면 밖에 있는 구간은 그 자리에서
             굵기가 바뀌지 않는다.</strong> 다시 화면에 들어오면 그때 <code>rendererFor</code>가
@@ -1583,8 +1596,8 @@ draw 가 렌더러의 굵기·색을 읽어 칠한다          <span class="c">�
             바뀐 쪽만 고치면 된다.
           </p>
 
-          <p class="later">
-            &#9888; <strong>다만 이렇게 한 이유는 기록에 없다.</strong> 커밋 메시지에도 주석에도 없어서,
+          <p>
+            <strong>다만 이렇게 한 이유는 기록에 없다.</strong> 커밋 메시지에도 주석에도 없어서,
             위 설명은 <strong>코드 구조에서 읽히는 것</strong>이다. 옆에 있는 근거는 하나 있다 —
             <strong>이 파일은 원래 「바뀐 것만 건드리는」 방식으로 쓰였다.</strong> 오버레이를 다시
             만드는 쪽도 좌표가 실제로 달라졌을 때만 돌도록 감싸여 있고, 그 커밋(2026-07-01)이
@@ -1977,14 +1990,14 @@ uiView.addAnnotation(annotation)</pre>
             것이 아니어서다.
           </p>
 
-          <p class="later">
+          <p>
             뷰를 얻는 줄은 <code>dequeueReusableAnnotationView</code>로 시작한다.
             <strong>지도에 넣은 라벨은 사라지지 않지만 화면에 붙어 있는 뷰는 다르다</strong> &#8212;
             라벨이 화면 밖으로 나가면 MapKit이 그 뷰를 떼어 보관해 두었다가, 다시 필요해지면 새로 만들지
             않고 그것을 꺼내 준다. 그 찾는 함수가 이것이고, 보관해 둔 것이 없으면 그때 만든다.
           </p>
 
-          <p class="later">
+          <p>
             꺼내온 뷰에는 <strong>직전에 쓰던 다른 구간의 글자와 색이 남아 있다.</strong> 그래서 바로 다음
             줄에서 <code>configure</code>로 글자와 색을 다시 넣는다. 이 방식은 이 앱이 고안한 것이 아니라
             <strong>MapKit이 그렇게 쓰라고 만들어 둔 것</strong>이다.
@@ -2069,7 +2082,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
               라벨이 안 가려지는 것은 <strong>라벨이 세서가 아니라 상대가 아래 층으로 내려가서</strong>다.</p>
           </div>
 
-          <p class="later">
+          <p>
             흰 점을 오버레이로 만드는 이야기 자체는 <strong>파트 4</strong>가 다룬다.
           </p>
 
@@ -2105,7 +2118,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             2번의 방법을 쓸 수 없는 자리였다.
           </p>
 
-          <p class="later">
+          <p>
             핀 이야기 자체는 <strong>파트 3</strong>이 다룬다. 여기서 짚을 것은
             <strong>원인이 거리 라벨과의 겹침이었다</strong>는 것이다.
           </p>
@@ -2271,7 +2284,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             </figure>
           </div>
 
-          <p class="later">
+          <p>
             이 목록을 만드는 코드는 <code>CoursePlannerPage</code> 본체가 아니라 확장 파일
             (<code>CoursePlannerPage+MapPinsComponent.swift</code>)에 따로 떨어져 있다.
             기능상의 이유가 아니라 <strong>린트 규칙</strong>이다 &#8212; 본체가 타입 본문 300줄
@@ -2863,7 +2876,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             마커를 그려주는 뷰 클래스)를 <strong>그대로 만들어 쓰면서 프로퍼티만 설정한다.</strong>
           </p>
 
-          <p class="later">
+          <p>
             한 가지 차이가 더 있다. 라벨은 <strong>재사용 창고에서 꺼내 쓰는데</strong>
             (<code>dequeueReusableAnnotationView</code>) <strong>핀은 매번 새로 만든다.</strong>
             라벨은 구간 수만큼 있어서 재사용이 값을 하지만, <strong>핀은 많아야 셋이라 아낄 것이 없다.</strong>
@@ -3155,7 +3168,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             <strong>그 핀은 눌러도 할 일이 없어서</strong> 획을 그 위에서 시작했다고 달라질 것이 없다.
           </p>
 
-          <p class="later">
+          <p>
             판정 결과는 <strong>좌표와 함께 밖으로 넘어간다.</strong> 지도를 감싼 쪽이 뷰모델에 알릴 때
             <em>&#8220;어디를 눌렀나&#8221;</em>만이 아니라 <em>&#8220;그 자리에 어떤 핀이 있었나&#8221;</em>까지
             같이 넘긴다.
@@ -3194,6 +3207,678 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             <strong>왕복이 만들어지고</strong>, 도착&#183;병합 핀이면 안내만 뜨고, 임시 핀이면
             아무 일도 없다. <strong>그 누름을 감지하는 것은 MapKit이 아니라 이 앱</strong>이고,
             <strong>화면 24pt 반경</strong>으로 재는 것은 줌이 바뀌어도 손가락 기준이 일정하기 때문이다.</p>
+          </div>
+
+        </div>
+      </details>
+
+    </div>
+  </details>
+
+  <details class="part" id="p4" open>
+    <summary>
+      <span class="part-tag">파트 4</span>
+      <span class="ptitle">구간 경계의 흰 점</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트가 만드는 화면</span>
+        코스를 여러 번 나눠 이으면, 구간과 구간이 만나는 자리마다 <strong>작은 흰 동그라미</strong>가
+        찍힌다 &#8212; 흰 채움에 회색 테두리다. 출발&#183;도착 핀보다 확실히 작고 <strong>번호가 없다</strong>.
+        지도를 확대하거나 축소해도 <strong>화면에서 보이는 크기는 대체로 그대로</strong>다
+        (핀치하는 동안에는 단계적으로 변한다 &#8212; 구간 &#9314;).
+        <em>&#8212; 사용자 장면 &#9315;(구간 경계마다 흰 점이 찍혀 어디서 끊겼는지 보인다).</em>
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>구간 경계의 흰 점이 <strong>어디서 나온 좌표인지</strong> 짚을 수 있고,
+        <strong>화면에서 크기가 고정돼야 한다는 요구가 왜 오버레이와 렌더러를 직접 만들게 했는지</strong>,
+        그때 <strong>내가 채워야 하는 것이 무엇인지</strong> 설명할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr><td><a href="#p4s1">구간 &#9312;</a></td><td>흰 점이 찍히는 좌표는 어디서 오나 &#8212; 핀이 아닌 경계만 맡는다</td></tr>
+          <tr><td><a href="#p4s2">구간 &#9313;</a></td><td>흰 점은 어떻게 화면에 그려지나 &#8212; 좌표마다 동그라미를 직접 찍는다</td></tr>
+          <tr><td><a href="#p4s3">구간 &#9314;</a></td><td>동그라미 크기는 왜 지도를 확대&#183;축소해도 그대로인가</td></tr>
+          <tr><td><a href="#p4s4">구간 &#9315;</a></td><td>지도가 그 코드를 언제 실행하나 &#8212; 보이지 않는 박스와 여유 <code>2000</code></td></tr>
+        </table>
+        <p class="hint">
+          <strong>왜 이 순서인가.</strong> &#9312;이 <strong>어느 좌표에 찍을지</strong>를 정하고,
+          &#9313;가 <strong>그 좌표에 무엇을 어떻게 찍는지</strong>, &#9314;이 <strong>그 크기를 어떻게
+          고정하는지</strong>, &#9315;가 <strong>그 코드가 언제 실행되는지</strong>를 본다.<br>
+          <strong>&#9315;를 앞으로 당기지 않는 이유가 있다</strong>(2026-08-19에 그렇게 짰다가 다시 짰다) &#8212;
+          &#9315;는 <strong>「그리는 코드를 실행할지 말지」를 정하는 값</strong>이라,
+          <strong>그리는 코드가 무엇인지 모르면 설명할 대상이 없다.</strong><br>
+          <strong>앞 파트에서 이어받는 것이 둘 있다.</strong> 흰 점을 어노테이션에서 오버레이로
+          옮긴 사건 자체는 <a href="#p2s4"><strong>파트 2 구간 &#9315;</strong></a>가 다뤘으므로
+          이 파트는 <strong>그 뒤에 점 쪽에서 무엇을 만들어야 했나</strong>를 맡는다.
+          그리고 <a href="#p3s4"><strong>파트 3 구간 &#9315;</strong></a>가 남긴
+          <em>&#8220;모양 자체는 값으로 못 바꾼다 &#8212; 바꾸려면 직접 만들어야 한다&#8221;</em>가
+          <strong>여기서 실제로 그 길을 간 예</strong>다(&#9313;&#9314;).
+        </p>
+      </div>
+
+      <aside class="concept">
+        <h3>&#128161; 리마인드 &#8212; 오버레이와 어노테이션은 모양으로 갈리지 않는다</h3>
+        <p>
+          <em>&#8220;어노테이션이 점이고 오버레이가 선&#8221;</em>이 아니다. 지금까지 본 것들이
+          이렇게 나뉜다.
+        </p>
+        <pre class="code">구간 선 (색이 다른 선)      오버레이      <span class="c">파트 1</span>
+거리 라벨 (&#8220;320m&#8221;)          어노테이션    <span class="c">파트 2</span>
+출발&#183;도착 핀 (물방울)      어노테이션    <span class="c">파트 3</span>
+구간 경계의 흰 점           <b>오버레이</b>      <span class="c">파트 4 &#8212; 여기</span></pre>
+        <p>
+          가르는 기준은 <strong>무엇을 덮느냐</strong>다. <strong>어노테이션</strong>은 지도의
+          <strong>한 지점</strong>에 붙어서 좌표 하나면 되고, <strong>오버레이</strong>는
+          <strong>영역</strong>을 덮어서 <em>&#8220;어디부터 어디까지 차지하는가&#8221;</em>를
+          함께 들고 있어야 한다.
+        </p>
+        <p>
+          <strong>흰 점은 작지만 오버레이다.</strong> 모양이 점이라서가 아니라
+          <strong>거리 라벨에 가리지 않으려고</strong> 그렇게 만들었다 &#8212;
+          <a href="#p2s4">파트 2 구간 &#9315;</a>에서 본 사건이다. 흰 점이 어노테이션이던 시절
+          라벨을 가렸고, 같은 층 안에서 앞뒤를 정해보려던 두 번이 모두 실기기에서 재발했다.
+          세 번째로 <strong>오버레이로 옮겨</strong> 해결했다 &#8212; MapKit이 오버레이를 항상
+          어노테이션보다 아래에 그리기 때문이다.
+        </p>
+      </aside>
+
+      <details class="seg" id="p4s1" open>
+        <summary>구간 &#9312; &#8212; 흰 점이 찍히는 좌표는 어디서 오나: 핀이 아닌 경계만 맡는다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>흰 점이 찍히는 자리는 지도가 고른 것이 아니라 <strong>코스를 보고 그때그때
+            계산해 만드는 좌표 목록</strong>이다. 어디에도 저장되지 않고, 세는 규칙은 한 줄인데
+            거기서 <strong>마지막 구간 하나가 통째로 빠진다</strong>. 무엇을 세고, 왜 하나를 빼고,
+            그 목록이 지도까지 어떻게 가는지를 본다.<br>
+            <em>파트 3이 「핀이 표시되는 자리」였다면, 여기는 그 핀이 닿지 않는 자리다.</em></p>
+          </div>
+
+          <h4>1. 흰 점 좌표는 저장돼 있지 않다 &#8212; 뿌리는 <code>entries</code> 하나다</h4>
+
+          <p>
+            좌표를 만드는 것은 뷰모델의 계산 프로퍼티 하나다. 코스(<code>PlannedCourse</code>)가
+            들고 있는 <strong>구간(<code>CourseSegment</code>) 목록을 훑어 각 구간의 마지막 좌표를
+            모은다.</strong> 저장해 둔 값을 꺼내는 것이 아니라 <strong>읽힐 때마다 새로 만드는
+            목록</strong>이다.
+          </p>
+
+          <p>
+            <strong>이게 없으면</strong> 구간을 셋 이어 붙여도 화면에는 색이 다른 선 셋이 이어져
+            있을 뿐, <strong>어디가 이음매인지 표시가 없다.</strong> 색이 바뀌는 지점을 눈으로
+            짐작하는 수밖에 없다.
+          </p>
+
+          <p>
+            계산이라면 <strong>그 계산의 재료는 어딘가 저장돼 있어야 한다.</strong> <strong>화면에 그려지는 것의 뿌리는</strong>
+            편집 세션(<code>CourseEditSession</code>)의 <code>entries</code> 배열 하나이고,
+            구간 목록도 코스도 흰 점 좌표도 <strong>전부 그 위에 얹힌 계산 프로퍼티</strong>다.
+            구간 하나가 <code>Entry</code> 하나이고, 그 안에 구간 본체와 <em>&#8220;언제 어디에
+            어떻게 붙었나&#8221;</em>가 함께 들어 있다.
+          </p>
+
+          <pre class="code">entries : [Entry]                          <span class="c">← 편집 세션이 실제로 들고 있는 것 (:20)</span>
+   │   entries.map(\.segment)
+   ▼
+segments : [CourseSegment]                 <span class="c">← 계산</span>
+   │   PlannedCourse(segments: segments)
+   ▼
+course : PlannedCourse?                    <span class="c">← 계산</span>
+   │   segments.dropLast().compactMap { $0.coordinates.last }
+   ▼
+waypointCoordinates : [CourseCoordinate]   <span class="c">← 계산 · 흰 점 좌표 (:68)</span></pre>
+
+          <p>
+            <strong>왜 이렇게 했나.</strong> 뿌리가 하나면 <strong>고칠 자리도 하나</strong>다.
+            구간을 붙이든, 되돌리든, 앞으로 돌리든, 전체를 지우든 <strong>화면에 그려질 목록을
+            정하는 것은 <code>entries</code></strong>이고, 코스도 흰 점도 <strong>다음에 읽힐 때 저절로 새 값이
+            된다.</strong> 흰 점 목록을 따로 저장했다면 그 네 군데에서 함께 갱신해야 하고,
+            한 군데를 빠뜨리면 <strong>지운 구간의 이음매에 점이 남는다.</strong>
+            파트 3의 핀도 같은 모양이었다 &#8212; 핀 목록 역시 저장하지 않고 코스를 보고 매번
+            새로 만든다. (되돌리기용 보관함과 순번 카운터가 옆에 더 저장돼 있지만
+            화면에 그려지는 것은 아니다.)
+          </p>
+
+          <p>
+            <strong>왜 계산 프로퍼티로 했는지는 기록에 없다.</strong> 이 코드가 들어온
+            커밋(<code>158e6ac</code>)에도 설계 문서에도 적혀 있지 않다. 위 이유는
+            <strong>코드가 그렇게 되어 있다는 사실에서 읽어낸 것</strong>이다.
+          </p>
+
+          <h4>2. 세는 단위는 「각 구간의 끝」이고, 마지막 구간은 아예 빼고 시작한다</h4>
+
+          <figure>
+            <svg viewBox="0 0 600 250" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p4s1-joint-t p4s1-joint-d">
+              <title id="p4s1-joint-t">구간 셋을 이었을 때 흰 점이 찍히는 자리</title>
+              <desc id="p4s1-joint-d">구간 세 개를 이으면 각 구간의 끝 좌표는 셋이다. 구간 1의 끝과 구간 2의 끝은 이음매라서 흰 점이 찍히고, 구간 3의 끝은 코스의 도착점이라 도착 핀이 이미 표시되므로 목록에서 빠진다. 첫 구간의 시작인 출발점은 시작 좌표라 애초에 목록에 들어오지 않는다.</desc>
+              <rect width="600" height="250" fill="#FFFFFF"/>
+
+              <text x="230" y="42" font-size="13" font-weight="700" fill="#04796E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">구간 1의 끝 ✓</text>
+              <text x="390" y="42" font-size="13" font-weight="700" fill="#04796E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">구간 2의 끝 ✓</text>
+              <text x="528" y="42" font-size="13" font-weight="700" fill="#9A8F8A" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">구간 3의 끝 ✕</text>
+
+              <line x1="230" y1="52" x2="230" y2="92" stroke="#A3BFBA" stroke-width="1.4"/>
+              <line x1="390" y1="52" x2="390" y2="92" stroke="#A3BFBA" stroke-width="1.4"/>
+              <line x1="528" y1="52" x2="528" y2="92" stroke="#CFCAC6" stroke-width="1.4" stroke-dasharray="3 3"/>
+
+              <line x1="70"  y1="110" x2="230" y2="110" stroke="#06B6A4" stroke-width="7" stroke-linecap="round"/>
+              <line x1="230" y1="110" x2="390" y2="110" stroke="#5B7596" stroke-width="7" stroke-linecap="round"/>
+              <line x1="390" y1="110" x2="530" y2="110" stroke="#7A6BA8" stroke-width="7" stroke-linecap="round"/>
+
+              <circle cx="70"  cy="110" r="11" fill="#2E9E6B" stroke="#FFFFFF" stroke-width="2.5"/>
+              <circle cx="530" cy="110" r="11" fill="#C0504D" stroke="#FFFFFF" stroke-width="2.5"/>
+              <circle cx="230" cy="110" r="6.5" fill="#FFFFFF" stroke="#8E9A97" stroke-width="2.5"/>
+              <circle cx="390" cy="110" r="6.5" fill="#FFFFFF" stroke="#8E9A97" stroke-width="2.5"/>
+
+              <text x="70"  y="146" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">출발 핀</text>
+              <text x="530" y="146" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">도착 핀</text>
+
+              <line x1="70"  y1="172" x2="228" y2="172" stroke="#DAE6E3" stroke-width="1.4"/>
+              <line x1="232" y1="172" x2="388" y2="172" stroke="#DAE6E3" stroke-width="1.4"/>
+              <line x1="392" y1="172" x2="530" y2="172" stroke="#DAE6E3" stroke-width="1.4"/>
+              <text x="149" y="192" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">구간 1</text>
+              <text x="310" y="192" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">구간 2</text>
+              <text x="461" y="192" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">구간 3</text>
+
+              <text x="70" y="226" font-size="13" fill="#9A8F8A" text-anchor="start"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">구간 1의 시작(＝출발점)은 「끝」이 아니라서 애초에 후보가 아니다</text>
+            </svg>
+            <figcaption>구간 셋 → 끝 좌표 셋 → 흰 점 둘. 빼는 것은 한 번뿐이다.</figcaption>
+          </figure>
+
+          <p>
+            세는 단위가 <strong>「각 구간의 끝 좌표」</strong>다. 그래서 첫 구간의 시작
+            &#8212; 곧 코스의 출발점 &#8212; 은 <strong>따로 제외하는 것이 아니라 애초에 후보가
+            아니다.</strong> 실제로 빼는 것은 <strong>마지막 구간 하나뿐</strong>이고, 그 끝은
+            코스의 도착점이라 <strong>파트 3에서 본 도착 핀이 이미 표시되는 자리</strong>다.
+          </p>
+
+          <p>
+            <strong>끝만 세도 되는 이유</strong>는 이음매에서 앞 구간의 끝과 뒤 구간의 시작이
+            <strong>거의 같은 지점</strong>이기 때문이다(청크 2에서 이어붙일 때 기존 끝점에 맞춰 붙인다).
+            <strong>정확히 같은 좌표인지 확인한 적은 없다</strong> &#8212; 그리기 모드는 끝점에 맞춘 뒤
+            길찾기를 한 번 더 거친다.
+            둘 중 하나만 세면 이음매 하나에 점 하나가 되고, <strong>둘 다 세면 같은 자리에 점이
+            둘 겹친다.</strong> 반대로 <strong>시작 좌표를 세는 쪽</strong>으로 짜도 된다 &#8212;
+            그때는 첫 구간의 시작만 빼면 되고, 빼는 횟수는 역시 한 번이다.
+            어느 쪽을 세느냐가 <strong>어느 끝을 빼느냐</strong>를 정할 뿐이다.
+          </p>
+
+          <p>
+            코드에서 그 규칙은 한 줄이고, <strong>빼는 대상이 좌표가 아니라 구간</strong>이다.
+            끝점을 다 모은 뒤 마지막을 버리는 것이 아니라, <strong>구간 배열에서 마지막 구간을
+            먼저 덜어내고 남은 것들의 끝점을 모은다.</strong> 나오는 값은 어느 순서로 해도 같지만,
+            코드를 열었을 때 보이는 것은 앞쪽 순서다.
+          </p>
+
+          <pre class="code">segments.dropLast().compactMap { $0.coordinates.last }   <span class="c">// :70</span>
+   │         │                    └─ 남은 구간들의 끝점을 모은다
+   │         └─ 마지막 <b>구간</b>을 덜어낸다
+   └─ 구간 배열
+
+[구간1, 구간2, 구간3] ─▶ [구간1, 구간2] ─▶ [구간1의 끝, 구간2의 끝]</pre>
+
+          <p>
+            같은 이유로 <strong>구간이 하나뿐이면 빈 목록</strong>을 돌려준다
+            (<code>segments.count &gt; 1</code> 검사). 이음매가 없고 양 끝은 둘 다 핀이 맡는다.
+            그리고 이 점에는 <strong>번호가 없다</strong> &#8212; 설계 문서가
+            <em>&#8220;무번호 점으로 시작, 순서 니즈가 확인되면 확장&#8221;</em>이라고 적어뒀다.
+            못 하는 것이 아니라 <strong>미뤄둔 것</strong>이다.
+          </p>
+
+          <h4>3. 지도에 넘기기 전에 뷰가 타입을 바꾼다 &#8212; 다만 모든 값이 그런 건 아니다</h4>
+
+          <p>
+            뷰모델이 돌려주는 것은 이 앱의 좌표 타입(<code>CourseCoordinate</code>)이고,
+            지도를 감싼 <code>MapViewRepresentable</code>이 받는 프로퍼티는 처음부터
+            MapKit 타입(<code>[CLLocationCoordinate2D]</code>)이다. 뷰모델은 MapKit을 쓰지 않고
+            감싼 쪽은 도메인 타입을 모르니, <strong>둘을 잇는 일은 사이에 있는
+            뷰(<code>CoursePlannerPage</code>)가 맡는다.</strong> 인자를 채우는 그 자리에서 바꿔 넣는다.
+          </p>
+
+          <pre class="code">MapViewRepresentable(
+    …
+    waypoints: viewModel.waypointCoordinates.map {                    <span class="c">// CoursePlannerPage.swift:241</span>
+        CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+    },</pre>
+
+          <p>
+            <strong>이게 이 파일의 유일한 방식은 아니다.</strong> 바로 윗줄에서 구간 선은
+            도메인 타입 그대로 넘어가고, 지도 안쪽에서 변환된다.
+          </p>
+
+          <pre class="code">흰 점    waypointCoordinates ──[뷰에서 변환]──▶ [CLLocationCoordinate2D]
+구간 선  course?.segments ─────[그대로]───────▶ [CourseSegment]
+                                                     └─ 지도 안에서 변환한다</pre>
+
+          <p>
+            같은 화면에서 <strong>밖에서 바꿔 넣는 것</strong>과 <strong>도메인 타입 그대로 넘겨
+            안에서 바꾸는 것</strong>이 둘 다 쓰인다. 왜 갈렸는지는 커밋 메시지에도 설계 문서에도
+            <strong>적혀 있지 않다</strong> &#8212; 확인되는 것은 두 방식이 함께 있다는 사실까지다.
+          </p>
+
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>흰 점 좌표는 저장된 값이 아니라 <strong>각 구간의 끝점에서 마지막 구간 하나를 빼고
+            모은 계산 결과</strong>다. 양 끝은 출발&#183;도착 핀이 맡으므로, 흰 점은
+            <strong>핀이 닿지 않는 이음매만</strong> 표시한다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p4s2" open>
+        <summary>구간 &#9313; &#8212; 흰 점은 어떻게 화면에 그려지나: 좌표마다 동그라미를 직접 찍는다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간 &#9312;에서 뽑은 흰 점 좌표를 <strong>화면의 동그라미로 바꾸는 자리</strong>다.
+            그 동그라미를 그리는 코드는 <strong>애플이 준 것이 아니라 이 프로젝트 안에 있다.</strong>
+            무슨 일을 하는 코드이고, 어디에 들어 있고, 왜 직접 채우게 됐는지를 본다.<br>
+            <em>구간 &#9312;이 「어느 좌표에 찍나」였다면, 여기는 「그 좌표에 무엇을 어떻게 찍나」다.</em></p>
+          </div>
+
+          <h4>1. 그리는 코드가 하는 일 &#8212; 좌표 하나에 흰 점 하나</h4>
+
+          <pre class="code">흰 점 좌표를 하나씩 꺼내서:
+    그 좌표가 그리는 영역 안의 어느 위치인지 계산한다   <span class="c">← point(for:)</span>
+    그 자리에 흰 점을 그린다</pre>
+
+          <p>
+            이게 전부다. <strong>선이 어디를 지나는지도, 구간이 몇 개인지도 보지 않는다.</strong>
+            그건 구간 &#9312;에서 이미 정해져 좌표 목록으로 넘어왔다.
+            좌표를 <strong>그리는 영역 안의 위치</strong>로 바꾸는 <code>point(for:)</code>는 애플이 만든 함수다 &#8212;
+            문서 그대로 <em>&#8220;지도 위의 한 점에 해당하는, 그리는 영역 안의 위치를 돌려준다&#8221;</em>.
+          </p>
+
+          <p>
+            <strong>이 코드가 없으면 흰 점은 영영 안 보인다.</strong> 함수 이름은 <code>draw</code>이고
+            애플이 정한 이름인데, 문서가 이렇게 적는다 &#8212;
+            <em>&#8220;The default implementation of this method does nothing.&#8221;</em>
+            <strong>채워 넣지 않으면 아무 일도 하지 않는다.</strong> 오버레이를 지도에 올려도
+            화면은 그대로다.
+          </p>
+
+          <h4>2. 그 코드가 어디에 있나 &#8212; 얹는 클래스와 그리는 클래스가 따로다</h4>
+
+          <p>
+            파트 1에서 본 구조가 그대로다. 지도에 <strong>얹는 것</strong>과 그것을
+            <strong>그리는 것</strong>이 다른 클래스다.
+          </p>
+
+          <pre class="code">WaypointDotsOverlay     흰 점 좌표 목록을 들고 지도에 얹힌다
+WaypointDotsRenderer    그 목록을 보고 화면에 흰 점을 그린다      <span class="c">← draw 가 여기 있다</span></pre>
+
+          <p>
+            그리는 쪽은 <code>MKOverlayRenderer</code>를 <strong>상속해서 만든 클래스</strong>다.
+            애플이 준 빈 뼈대를 물려받아 <code>draw</code>만 채운 것이고, 목록은 얹는 쪽 객체에서
+            꺼내 쓴다.
+          </p>
+
+          <p>
+            <strong>얹는 쪽</strong>은 <code>addOverlay</code>를 부른다. 조건은 한 줄이고,
+            점 목록이 비어 있지 않을 때만 만들어 붙인다.
+            <strong>그리는 쪽은 이 프로젝트가 부르지 않는다.</strong> 지도가 그릴 때가 되면
+            <code>rendererFor</code>를 불러 <em>&#8220;이 오버레이는 무엇으로 그리느냐&#8221;</em>를
+            확인하고, 거기서 <code>WaypointDotsRenderer</code>를 돌려준다. 「골격」에서 본 네 갈래 중
+            하나가 이것이다.
+          </p>
+
+          <p>
+            그리고 <strong>객체 하나가 점 전부를 들고 있다.</strong> 점마다 객체 하나가 아니다.
+            그래서 렌더러도 하나만 만들어지고, 그 안의 반복문이 점 전부를 돈다.
+          </p>
+
+          <h4>3. 왜 직접 채우게 됐나 &#8212; 파트 1과 정반대다</h4>
+
+          <pre class="code">파트 1   구간 선   애플이 만든 렌더러를 쓰고  →  색·굵기 값만 정했다
+파트 4   흰 점     렌더러를 새로 만들고      →  그리는 코드를 직접 채웠다</pre>
+
+          <p>
+            파트 1에서 <em>&#8220;렌더러를 직접 만드는 길도 있었다&#8221;</em>고 하고 넘어간 그 길을,
+            흰 점이 실제로 갔다. <strong>왜 그 길을 가야 했는지는 구간 &#9314;에서 본다</strong> &#8212;
+            애플이 주는 것으로는 낼 수 없는 요구가 하나 있었다.
+          </p>
+
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>흰 점을 화면에 그리는 코드는 <strong>애플이 준 것이 아니라 이 프로젝트 안에 있다.</strong>
+            좌표 목록을 돌면서 그 자리에 흰 점을 하나씩 그리고, 선이나 구간은 보지 않는다.
+            파트 1의 구간 선은 반대로 <strong>애플이 만든 렌더러에 값만 넘겼다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p4s3" open>
+        <summary>구간 &#9314; &#8212; 동그라미 크기는 왜 지도를 확대&#183;축소해도 그대로인가</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>지도를 확대하든 축소하든 흰 점은 화면에서 <strong>대체로 같은 크기</strong>로 보인다.
+            저절로 그렇게 되는 것이 아니라, <strong>그리는 코드가 애플이 넘겨준 현재 배율에 맞춰
+            크기를 계산하기 때문</strong>이다. 무엇을 계산하고, 안 하면 무엇이 깨지고,
+            애플이 주는 원으로는 왜 이 요구를 못 냈는지를 본다.<br>
+            <em>구간 &#9313;가 「무엇을 그리나」였다면, 여기는 「얼마나 크게 그리나」다.</em></p>
+          </div>
+
+          <h4>1. 크기는 현재 배율에 맞춰 계산한다 &#8212; 안 하면 확대할 때 부풀고 축소하면 사라진다</h4>
+
+          <p>
+            애플은 <code>draw</code>를 부를 때 <code>zoomScale</code>을 함께 넘겨준다.
+            <strong>지금 지도가 얼마나 확대돼 있는지</strong>를 나타내는 값이다. 코드는 그 값으로
+            나눠서 크기를 정한다 &#8212; 반지름은 <code>5 / zoomScale</code>, 테두리 굵기는
+            <code>2 / zoomScale</code>이고, <code>5</code>와 <code>2</code>는
+            <strong>화면 포인트</strong> 기준이다.
+          </p>
+
+          <p>
+            나누는 이유는 <code>draw</code> 안에서 쓰는 좌표가 화면 좌표가 아니라
+            <strong>지도 좌표</strong>여서다. 여기에 그린 것이 화면에 나올 때 배율이 곱해지므로,
+            미리 나눠두면 곱해질 때 상쇄된다.
+            <strong>안 나누면 곱하기만 남는다</strong> &#8212; 확대하면 점이 부풀어 선을 덮고,
+            축소하면 점이 사라진다. <strong>필요한 것은 정확히 그 반대다.</strong>
+            코스 전체를 보려고 축소했을 때야말로 어디서 구간이 끊겼는지 보여야 한다.
+          </p>
+
+          <p>
+            그 요구는 이 코드가 들어온 커밋에 적혀 있다 &#8212;
+            <em>&#8220;줌에 무관하게 화면상 고정 크기로 그림&#8221;</em>(<code>fb1069f</code>).
+            애플 문서도 <code>zoomScale</code>을 그런 데 쓰라고 적어뒀다 &#8212;
+            <em>&#8220;선 굵기나, 지도 내용의 배율에 영향받는 다른 속성을 설정하는 데 이 값을 쓸 수 있다.&#8221;</em>
+          </p>
+
+          <h4>2. 애플이 주는 원으로는 이 요구를 낼 수 없었다</h4>
+
+          <p>
+            MapKit에는 <code>MKCircle</code>이라는 원 오버레이가 있다. 만들어 지도에 올리면
+            그리는 렌더러(<code>MKCircleRenderer</code>)까지 애플이 준다 &#8212;
+            <strong>구간 &#9313;에서 한 일을 통째로 안 해도 된다.</strong>
+          </p>
+
+          <p>
+            그런데 <code>MKCircle</code>의 반지름은 <strong>미터</strong>다. 애플 문서 그대로
+            <em>&#8220;The radius of the circular area, in meters.&#8221;</em>
+            화면에서의 크기가 아니라 <strong>실제 땅 위의 크기</strong>라, 확대하면 커지고 축소하면
+            작아진다. <strong>화면에서 고정 크기여야 한다는 요구를 이 길로는 낼 수 없다.</strong>
+            그래서 렌더러를 직접 만들었다.
+          </p>
+
+          <p>
+            <strong>파트 1은 이 계산을 하지 않았다.</strong> 구간 선의 굵기를 정하는 코드에
+            배율로 나누는 곳이 없고 값만 넣는다. <code>MKPolylineRenderer</code> 안에서 무엇을
+            하는지는 애플 코드라 볼 수 없고 문서도 단위를 적지 않지만,
+            <strong>이 프로젝트 코드에 그 계산이 없다는 것</strong>은 확인된다. 흰 점 코드에는 있다.
+            <strong>그 차이가 직접 만들어서 늘어난 몫이다.</strong>
+          </p>
+
+          <p>
+            <code>MKCircle</code>을 <strong>실제로 검토했다는 기록은 없다.</strong>
+            확인되는 것은 그런 길이 있다는 것과, 그 길로는 이 요구를 못 낸다는 것까지다.
+          </p>
+
+          <h4>3. 다만 화면에서 완전히 고정되지는 않는다 &#8212; 다시 그리는 시점은 MapKit이 정한다</h4>
+
+          <p>
+            위의 &#8220;크기가 맞춰진다&#8221;는 <strong><code>draw</code>가 다시 불린 뒤</strong>의
+            이야기다. <strong>언제 다시 그릴지는 이 앱이 정하지 않는다.</strong> 다시 그려달라는 요청
+            (<code>setNeedsDisplay()</code>)은 <strong>구간을 선택했을 때 선 굵기를 바꾸는 두 자리</strong>에만
+            있고, 지도의 보이는 범위가 바뀌는 것을 받는 함수는 <strong>현재 범위를 SwiftUI 쪽에
+            되돌려주기만</strong> 한다.
+          </p>
+
+          <p>
+            그래서 실기기에서는 이렇게 보인다(2026-08-19 확인) &#8212; 두 손가락으로 확대를 시작하면
+            <strong>처음에는 보이던 크기 그대로 있다가, 어느 정도 지나면 크기가 한 번 바뀌고,
+            손을 떼면 그 상태로 남는다.</strong> 축소도 같은 일이 반대로 일어난다.
+            <strong>점 하나가 아니라 화면의 흰 점 전부가 동시에 변한다.</strong>
+          </p>
+
+          <p>
+            <strong>왜 단계적인지는 재보지 않았다.</strong> 확인된 것은
+            <strong>다시 그리기 요청이 이 앱 코드에 없다</strong>는 것과 <strong>실기기에서 그렇게
+            보인다</strong>는 것 둘이다. 확인 방법은 <code>docs/backlog.md</code>에 적어뒀다.
+          </p>
+
+          <aside class="concept">
+            <h3>&#128161; 이 노트가 설명하는 것과 화면에 나오는 것 사이에는 한 칸이 있다</h3>
+            <p>
+              이 노트는 <strong>코드가 무엇을 하는가</strong>를 기준으로 쓴다. 그런데 화면에 실제로
+              나오는 모습에는 그 사이에 <strong>MapKit이 언제 어떻게 다시 그리느냐</strong>가 끼어
+              있고, 그 부분은 이 프로젝트가 정하지 않는다.
+            </p>
+            <p>
+              <strong>이 구간이 그 예다.</strong> 코드만 읽으면 <em>&#8220;크기가 항상 고정&#8221;</em>으로
+              읽히지만, 실기기에서는 단계적으로 변한다. <strong>코드에서 읽은 것을 화면에서 본 것과
+              같다고 단정하지 않는다</strong> &#8212; 어긋나면 그 자리를 기록해 두고 재본다.
+            </p>
+          </aside>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>흰 점 크기는 <strong>애플이 넘겨준 현재 배율에 맞춰 계산</strong>한다. 애플이 주는
+            원(<code>MKCircle</code>)은 반지름이 <strong>미터</strong>라 이 요구를 낼 수 없었고,
+            그래서 렌더러를 직접 만들었다. 다만 <strong>다시 그리는 시점은 MapKit이 정해서</strong>
+            핀치 중에는 크기가 단계적으로 변한다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p4s4" open>
+        <summary>구간 &#9315; &#8212; 지도가 그 코드를 언제 실행하나: 보이지 않는 박스와 여유 <code>2000</code></summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간 &#9313;의 그리는 코드는 항상 도는 것이 아니다. 오버레이는 <strong>화면에 보이지
+            않는 박스</strong>를 하나 들고 있고, 지도는 <strong>그 박스가 지금 화면에 걸칠 때만</strong>
+            그리는 코드를 실행한다. 그 박스가 무엇이고, 왜 직접 계산해야 하고, 왜 사방에 여유를
+            더하는지를 본다.<br>
+            <em>구간 &#9313;가 「무엇을 그리나」, &#9314;이 「얼마나 크게」였다면, 여기는 「언제 그리나」다.</em></p>
+          </div>
+
+          <h4>1. 지도는 이 박스가 화면에 걸칠 때만 그리는 코드를 실행한다</h4>
+
+          <p>
+            <code>boundingMapRect</code>는 <strong>이 오버레이가 지도 위에서 차지하는 네모</strong>다.
+            화면에는 안 보인다. 지도는 화면이 움직일 때마다 올려둔 오버레이를 전부 그려보지 않고,
+            <strong>각 오버레이의 박스가 지금 화면과 겹치는지만 확인한다.</strong> 애플 문서 그대로다 &#8212;
+            <em>&#8220;오버레이의 영역이 화면에 보이는 부분과 겹칠 때, 지도가 델리게이트의
+            <code>rendererFor</code>를 불러 그릴 렌더러를 얻는다.&#8221;</em>
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 600 250" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p4s4-when-t p4s4-when-d">
+              <title id="p4s4-when-t">오버레이와 어노테이션이 화면에 나오는 조건</title>
+              <desc id="p4s4-when-d">오버레이인 구간 선은 시작점과 끝점이 둘 다 화면 밖이어도 덮는 박스가 화면과 겹치므로 화면을 가로지르는 선이 그려진다. 어노테이션인 거리 라벨은 기준점 하나가 화면 밖이면 아무것도 나오지 않는다.</desc>
+              <rect width="600" height="250" fill="#FFFFFF"/>
+
+              <text x="150" y="30" font-size="13" font-weight="700" fill="#04796E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">오버레이 &#8212; 구간 선</text>
+              <text x="450" y="30" font-size="13" font-weight="700" fill="#04796E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">어노테이션 &#8212; 거리 라벨</text>
+
+              <rect x="14" y="100" width="274" height="30" rx="4" fill="none" stroke="#04796E"
+                    stroke-width="1.4" stroke-dasharray="5 4"/>
+              <line x1="20" y1="115" x2="282" y2="115" stroke="#06B6A4" stroke-width="6" stroke-linecap="round"/>
+              <rect x="45" y="62" width="210" height="112" rx="6" fill="none" stroke="#52625E" stroke-width="1.8"/>
+              <text x="150" y="56" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면</text>
+              <text x="150" y="152" font-size="13" fill="#04796E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">┈ 덮는 박스 ┈</text>
+
+              <rect x="345" y="62" width="200" height="112" rx="6" fill="none" stroke="#52625E" stroke-width="1.8"/>
+              <text x="445" y="56" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면</text>
+              <circle cx="568" cy="115" r="6" fill="#C0504D"/>
+              <text x="568" y="140" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">기준점</text>
+
+              <text x="150" y="202" font-size="13" fill="#0E1817" text-anchor="middle" font-weight="700"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">박스가 화면에 걸친다</text>
+              <text x="150" y="224" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">→ 양 끝이 화면 밖이어도 그려진다</text>
+              <text x="450" y="202" font-size="13" fill="#0E1817" text-anchor="middle" font-weight="700"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">기준점이 화면 밖이다</text>
+              <text x="450" y="224" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">→ 아무것도 안 나온다</text>
+            </svg>
+            <figcaption>덮는 영역으로 판정하느냐, 기준점 하나로 판정하느냐 &#8212; 오버레이와 어노테이션이 갈리는 자리.</figcaption>
+          </figure>
+
+          <p>
+            구간 &#9313;와 짝이다. <strong>박스가 「실행할까」를 정하고, <code>draw</code>가
+            「무엇을 그릴까」를 한다.</strong> 이 값은 안 넣을 수 없고
+            (<code>MKOverlay</code>가 요구한다), <strong>잘못 넣으면 흰 점이 안 그려진다.</strong>
+            오류도 안 난다.
+          </p>
+
+          <p>
+            <strong>같은 프로토콜이 요구하는 값이 하나 더 있다 &#8212; <code>coordinate</code>.</strong>
+            위도와 경도 한 쌍이고(<code>CLLocationCoordinate2D</code>), 파트 2에서 거리 라벨이 붙을
+            자리가 이 값이었다. 다만 <strong>여기서는 판정에 쓰이지 않는다.</strong> 오버레이는
+            어노테이션을 상속한 것이라 <code>coordinate</code>는 <strong>어노테이션 쪽 요구</strong>이고,
+            오버레이가 새로 더한 것은 <code>boundingMapRect</code> 하나뿐이다.
+          </p>
+
+          <pre class="code">MKAnnotation      coordinate                     <span class="c">← 한 점에 붙는 것이라 그 점이 필수</span>
+     ↑ 상속
+MKOverlay         coordinate + boundingMapRect   <span class="c">← 오버레이가 더한 것은 박스 하나</span></pre>
+
+          <p>
+            애플 문서도 갈라 적는다 &#8212; <em>오버레이로 추가하면 덮는 영역으로,
+            어노테이션으로 추가하면 <code>coordinate</code>로 판정한다.</em> 이 앱은 오버레이로
+            추가하므로 <code>coordinate</code>에는 <strong>첫 번째 점을 넣어 요구만 채웠고</strong>
+            (점이 하나도 없으면 위도&#183;경도 0), <strong>그리는 코드도 이 값을 읽지 않는다</strong> &#8212;
+            좌표 목록을 읽는다.
+          </p>
+
+          <h4>2. 박스는 직접 계산한다 &#8212; 점들을 감싸고 사방에 여유를 더한다</h4>
+
+          <p>
+            계산은 두 단계다. 먼저 점들의 x&#183;y 최소&#183;최대를 구해 <strong>전부를 감싸는
+            네모</strong>를 만들고, 거기에 <strong>사방으로 <code>2000</code>을 더한다.</strong>
+          </p>
+
+          <p>
+            <strong><code>2000</code>은 박스의 크기가 아니라 사방에 더하는 여유다.</strong>
+            박스 크기는 점들이 어디 있느냐가 정한다 &#8212; 점 둘이 500m 떨어져 있으면 작고
+            5km 떨어져 있으면 크다. 여유는 어느 경우든 똑같이 더해진다.
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 600 300" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p4s4-pad-t p4s4-pad-d">
+              <title id="p4s4-pad-t">박스에 여유를 더하지 않으면 화면 가장자리의 점이 사라진다</title>
+              <desc id="p4s4-pad-d">점들이 화면 오른쪽 밖에 있고 가장 왼쪽 점만 동그라미의 왼쪽 절반이 화면 안에 걸치는 상황이다. 박스를 점의 중심에 딱 맞게 잡으면 박스가 화면과 겹치지 않는다고 판정돼 그리는 코드가 실행되지 않고, 보여야 할 반쪽이 사라진다. 사방에 여유를 더하면 박스가 화면과 겹쳐 그려진다.</desc>
+              <rect width="600" height="300" fill="#FFFFFF"/>
+
+              <text x="140" y="30" font-size="13" font-weight="700" fill="#9A8F8A" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">여유 없는 박스</text>
+              <text x="450" y="30" font-size="13" font-weight="700" fill="#04796E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">여유를 더한 박스</text>
+
+              <rect x="40" y="70" width="150" height="120" rx="6" fill="none" stroke="#52625E" stroke-width="1.8"/>
+              <text x="115" y="62" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면</text>
+              <rect x="196" y="112" width="52" height="36" fill="none" stroke="#B9A9A5"
+                    stroke-width="1.4" stroke-dasharray="5 4"/>
+              <circle cx="196" cy="130" r="13" fill="none" stroke="#B9A9A5" stroke-width="2.5" stroke-dasharray="4 3"/>
+              <circle cx="245" cy="130" r="13" fill="none" stroke="#B9A9A5" stroke-width="2.5" stroke-dasharray="4 3"/>
+              <line x1="196" y1="98" x2="196" y2="162" stroke="#B9A9A5" stroke-width="1.2" stroke-dasharray="3 3"/>
+              <text x="222" y="182" font-size="13" fill="#9A8F8A" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">박스 왼쪽 끝 = 점의 중심</text>
+
+              <rect x="340" y="70" width="150" height="120" rx="6" fill="none" stroke="#52625E" stroke-width="1.8"/>
+              <text x="415" y="62" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면</text>
+              <rect x="478" y="106" width="86" height="48" fill="none" stroke="#04796E"
+                    stroke-width="1.4" stroke-dasharray="5 4"/>
+              <circle cx="496" cy="130" r="13" fill="#FFFFFF" stroke="#8E9A97" stroke-width="2.5"/>
+              <circle cx="545" cy="130" r="13" fill="#FFFFFF" stroke="#8E9A97" stroke-width="2.5"/>
+              <line x1="478" y1="96" x2="478" y2="164" stroke="#04796E" stroke-width="1.2" stroke-dasharray="3 3"/>
+              <text x="510" y="182" font-size="13" fill="#04796E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">박스 왼쪽 끝이 점보다 왼쪽</text>
+
+              <text x="140" y="222" font-size="13" fill="#0E1817" text-anchor="middle" font-weight="700"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면과 안 겹친다</text>
+              <text x="140" y="244" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">→ 안 그려진다</text>
+              <text x="450" y="222" font-size="13" fill="#0E1817" text-anchor="middle" font-weight="700"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면과 겹친다</text>
+              <text x="450" y="244" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">→ 그려진다</text>
+
+              <text x="300" y="280" font-size="13" fill="#52625E" text-anchor="middle"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면 안쪽에 보여야 할 반쪽이 사라지는 것을 막는 것이 여유(2000)다</text>
+            </svg>
+            <figcaption>점이 화면 가장자리에 걸친 순간, 박스를 딱 맞게 잡으면 그리는 코드가 아예 안 돈다.</figcaption>
+          </figure>
+
+          <p>
+            <strong>왜 여유가 필요한가.</strong> 최소&#183;최대만으로 잡으면 박스의 테두리가
+            <strong>점의 정확한 한가운데</strong>를 지난다. 그런데 화면에 그려지는 동그라미는 그
+            한가운데에서 <strong>바깥으로 퍼진다.</strong> 그래서 점이 화면 가장자리에 반쯤 걸친
+            상황에서 박스가 화면과 안 겹친다고 판정되고, <strong>보여야 할 반쪽이 통째로 사라진다.</strong>
+            주석이 그걸 한 줄로 적어뒀다 &#8212;
+            <em>&#8220;점 반경을 어느 줌에서든 넉넉히 덮을 여유&#8221;</em>.
+          </p>
+
+          <p>
+            <strong>왜 &#8220;어느 줌에서든&#8221;인가.</strong> 구간 &#9314;에서 본 대로 동그라미의
+            <strong>화면상 크기는 고정</strong>인데, 그것을 지도 좌표로 환산하면
+            <strong>축소할수록 커진다.</strong> 축소할수록 점 하나가 지도 위에서 차지하는 범위가
+            넓어지니 여유도 더 필요하다. <code>2000</code>은 그걸 한 값으로 덮으려고 잡은 고정값이다.
+          </p>
+
+          <p>
+            <strong>단위는 <code>MKMapPoint</code>다.</strong> 지구를 평평한 그림 한 장으로 펼쳤을 때의
+            x&#183;y 좌표이고 <strong>미터도 화면 픽셀도 아니다.</strong> 박스(<code>MKMapRect</code>)를
+            만들려면 이 좌표계를 써야 해서 위도&#183;경도를 여기로 바꿔 계산한다.
+          </p>
+
+          <p>
+            <code>2000</code>이 <strong>실제로 어느 배율까지 넉넉한지는 재본 기록이 없다.</strong>
+          </p>
+
+
+
+          <p>
+            <strong>겹침을 조정하는 값은 흰 점 쪽에 하나도 없다.</strong> 출발&#183;도착 핀과
+            거리 라벨보다 아래에 놓이는 것은 <strong>「오버레이는 항상 어노테이션보다 아래」라는
+            구조가 보장</strong>하므로 정할 것이 없고, <strong>흰 점끼리는 서로 양보하지 않는다</strong> &#8212;
+            가까이 붙어도 둘 다 그대로 그려진다. 그것이 실사용에서 지저분해 보이는지는
+            <strong>재본 기록이 없다</strong>(<code>docs/backlog.md</code>에 확인 항목으로 올려뒀다).
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>지도는 오버레이가 들고 있는 <strong>보이지 않는 박스가 화면에 걸칠 때만</strong>
+            그리는 코드를 실행한다. 그 박스는 점들을 감싼 뒤 <strong>사방에 여유(<code>2000</code>)를
+            더해</strong> 만드는데, 딱 맞게 잡으면 <strong>화면 가장자리에 걸친 점이 통째로 안 그려지기</strong>
+            때문이다.</p>
           </div>
 
         </div>
@@ -3281,11 +3966,10 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
         <summary>구간 ⓪ — 「감싼다」는 게 무슨 뜻인가</summary>
         <div class="segbody">
 
-          <p class="later">
-            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — SwiftUI로 안 되는 UIKit 뷰를
-            써야 할 때, <strong>무엇을 만들어야 SwiftUI 쪽 코드에서 뷰처럼 다룰 수 있는지</strong>
-            정할 수 있다.
-          </p>
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>SwiftUI 화면 안에 <code>MKMapView</code>를 넣는 방법은 <strong>직접 얹는 것이 아니라 <code>UIViewRepresentable</code>을 채택한 <code>struct</code>를 사이에 두는 것</strong>이다. 그 <code>struct</code>가 무엇이고, 지도 본체와 어떤 관계인지를 본다.</p>
+          </div>
 
           <h4>1. 막히는 자리는 하나다</h4>
 
@@ -3368,10 +4052,10 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
         <summary>구간 ① — 왜 SwiftUI <code>Map</code>을 버렸나</summary>
         <div class="segbody">
 
-          <p class="later">
-            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 지도 위에 내가 만든 제스처를
-            추가해야 할 때, <strong>SwiftUI <code>Map</code>으로 갈지 감쌀지</strong> 정할 수 있다.
-          </p>
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>SwiftUI에는 지도를 바로 놓는 <code>Map</code>이 있는데 <strong>이 앱은 그것을 쓰지 않는다.</strong> 그림이 모자라서가 아니라 <strong>터치를 누가 받을지 정하는 자리가 그 안쪽</strong>이라서다. 무엇이 막혔고 그래서 무엇을 골랐는지를 본다.</p>
+          </div>
 
           <p>
             <strong>이건 눈에 보이던 문제다.</strong> 코드 안에서만 일어난 일이 아니라, 코스를
@@ -3556,10 +4240,10 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
         <summary>구간 ② — 감싸면 내가 채울 것이 셋이다</summary>
         <div class="segbody">
 
-          <p class="later">
-            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 감싸기를 시작할 때
-            <strong>무엇을 구현해야 하는지, 그리고 <code>Coordinator</code>를 둘지</strong> 정할 수 있다.
-          </p>
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>감싸기로 정하면 <strong>내가 채워야 하는 자리가 셋</strong> 생긴다 &#8212; <code>makeCoordinator</code> &#183; <code>makeUIView</code> &#183; <code>updateUIView</code>. 각각 언제 불리고 무엇을 맡는지를 본다.</p>
+          </div>
 
           <p>
             <strong>앞 구간과의 연결</strong> — 구간 ⓪에서 선언의 몸통을 <code>{ ... }</code>로
@@ -3650,7 +4334,7 @@ mapView.delegate = context.coordinator                                          
             <code>makeUIView(context:)</code> method.”</em>
           </p>
 
-          <p class="later">
+          <p>
             <code>MapViewRepresentable</code> 자신이 델리게이트를 맡지 못하는 이유는
             <strong>구간 ⑤</strong>, 델리게이트라서 생기는 결과(<strong>호출 방향이 뒤집힌다</strong>)는
             <strong>구간 ⑦</strong>이다.
@@ -3769,10 +4453,10 @@ updateUIView      값이 바뀔 때마다 그 MKMapView를 고친다   (매번)
         <summary>구간 ③ — <code>makeUIView</code>는 한 번만 불린다</summary>
         <div class="segbody">
 
-          <p class="later">
-            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> —
-            <strong>한 번만 하는 설정과 매번 하는 설정을 어디에 둘지</strong> 정할 수 있다.
-          </p>
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p><code>makeUIView</code>는 <strong>한 번만 불린다.</strong> 그래서 여기서 한 설정은 나중에 손이 닿지 않고, 뒤에 바꿀 것은 다른 자리에 둬야 한다. 무엇을 여기 두고 무엇을 빼야 하는지를 본다.</p>
+          </div>
 
           <p>
             <strong>앞 구간과의 연결</strong> — 구간 ②에서 셋이 <strong>한 번 / 한 번 / 매번</strong>으로
@@ -3921,10 +4605,10 @@ context.coordinator.drawGestureRecognizer = drawGR         // :211  인식기를
         <summary>구간 ④ — <code>updateUIView</code>는 값이 바뀔 때마다 불린다</summary>
         <div class="segbody">
 
-          <p class="later">
-            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — <code>updateUIView</code> 안을
-            <strong>왜 전부 「달라졌나」 비교로 채워야 하는지</strong> 정할 수 있다.
-          </p>
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p><code>updateUIView</code>는 <strong>값이 바뀔 때마다 불리는데, 관계없는 이유로도 불린다.</strong> 그래서 이 함수 안이 전부 「달라졌나」 비교로 채워져 있다. 왜 그렇게 되는지를 본다.</p>
+          </div>
 
           <p>
             <strong>앞 구간과의 연결</strong> — ③이 「한 번」 쪽이었으니 ④는 <strong>「매번」 쪽</strong>이다.
@@ -4100,10 +4784,6 @@ if 모드 달라졌나?    → 아니오 → 건너뛴다          ┘</pre>
             그리기로 정해지면 부분이 아니라 <strong>전량</strong>이다. 핀도 같다(<code>:320</code>).
           </p>
 
-          <p class="later">
-            ⚠️ 이것은 지금 열려 있는 문제이기도 하다 — 백로그에 <em>“핀과 경로선이 하나만 바뀌어도
-            전부 지웠다 다시 그려진다 — 핀이 매번 다시 떨어진다”</em>가 <code>open</code>으로 있다.
-          </p>
 
           <h4>5. 카메라 비교가 막는 것 — 중복 이동</h4>
 
@@ -4175,17 +4855,17 @@ if 모드 달라졌나?    → 아니오 → 건너뛴다          ┘</pre>
         <summary>구간 ⑤ — <code>MapViewRepresentable</code>은 매번 새로 만들어진다</summary>
         <div class="segbody">
 
-          <p class="later">
-            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 「지난번 값」을
-            <code>MapViewRepresentable</code> 안에 두면 <strong>무엇이 깨지는지</strong> 말할 수 있다.
-          </p>
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p><code>MapViewRepresentable</code>은 <strong>매번 새로 만들어진다.</strong> 그래서 「지난번에 어디까지 반영했나」를 여기 둘 수 없다. 무엇이 사라지고 그것을 어디에 둬야 하는지를 본다.</p>
+          </div>
 
           <p>
             <strong>앞 구간과의 연결</strong> — 구간 ④의 <code>if</code> 다섯은 전부 두 값을 견줬다.
             그중 <strong>왼쪽 항이 어디서 나서 어디에 남는지</strong>가 이 구간이다.
           </p>
 
-          <p class="later">
+          <p>
             구간 ⓪의 한 줄을 다시 이어둔다 — <strong>화면에 있는 것은 <code>MKMapView</code>이고,
             <code>MapViewRepresentable</code>은 SwiftUI 코드에서 쓰는 <code>struct</code></strong>다.
             여기서 다루는 것은 그중 <strong><code>MapViewRepresentable</code> 쪽의 수명</strong>이다.
@@ -4303,8 +4983,8 @@ if 모드 달라졌나?    → 아니오 → 건너뛴다          ┘</pre>
             <figcaption>가운데 두 화살표가 이 구간의 전부다 — 지난번 값을 읽고, 이번 값을 다시 적어둔다</figcaption>
           </figure>
 
-          <p class="later">
-            ⚠️ 마지막 단계에서 <strong>새 렌더러를 만들지 않는다.</strong> 오버레이가 그대로라
+          <p>
+            마지막 단계에서 <strong>새 렌더러를 만들지 않는다.</strong> 오버레이가 그대로라
             <code>uiView.renderer(for:)</code>로 <strong>이미 있는 렌더러를 가져와</strong>
             고친다(<code>:299</code>). <strong>MapKit이 <code>rendererFor</code>를 언제 부르는지는
             우리가 정하지 않는다</strong> — 여기서 확인되는 것은 <strong>그 시점에 렌더러가 이미
@@ -4410,10 +5090,10 @@ Coordinator 는 최신을 봐야 한다         → 그래서 대입한다</pre>
         <summary>구간 ⑥ — 값은 세 군데에 나뉘어 있다</summary>
         <div class="segbody">
 
-          <p class="later">
-            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 어떤 값이 <code>Coordinator</code>에
-            남고 어떤 값이 남지 않는지 <strong>가를 수 있다.</strong>
-          </p>
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>이 화면의 값은 <strong>세 군데에 나뉘어 있다</strong> &#8212; SwiftUI 쪽, 감싼 <code>struct</code>, 그리고 <code>Coordinator</code>. 무엇이 어디에 남고 그 기준이 무엇인지를 본다.</p>
+          </div>
 
           <p>
             <strong>앞 구간과의 연결</strong> — ⑤에서 셋이 <code>Coordinator</code>에 있다고 했다.
@@ -4490,10 +5170,10 @@ lastSelectedIndex      Coordinator    "지도에 반영했을 때는 nil이었�
         <summary>구간 ⑦ — 추가하는 일과 그리는 방법은 갈라져 있다</summary>
         <div class="segbody">
 
-          <p class="later">
-            <strong>이 구간을 알면 무엇을 정할 수 있나</strong> — 선의 색이나 굵기를 바꾸려면
-            <strong>어느 함수를 고쳐야 하는지</strong> 짚을 수 있다.
-          </p>
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>지도에 <strong>얹는 일</strong>과 그것을 <strong>그리는 방법을 정하는 일</strong>이 다른 함수로 갈라져 있고, 뒤엣것은 이 프로젝트가 부르지 않는다. 왜 갈라져 있고 누가 부르는지를 본다.</p>
+          </div>
 
           <h4>1. MapKit이 둘을 갈라놨다</h4>
 
@@ -4587,7 +5267,7 @@ Coordinator
               뒤엣것은 <strong>우리가 부르지 않는다.</strong> 그래서 추가할 때 알던 것이 <code>rendererFor</code> 안에는 없다.</p>
           </div>
 
-          <p class="later">
+          <p>
             <em>“그럼 <code>rendererFor</code> 안에서 어떻게 알아내나”</em> —
             <strong>그 해결이 파트 1 구간 ①에서 본 것이다.</strong> 오버레이를 만들 때 번호를 그 안에
             미리 넣어 두고(<code>SegmentPolyline</code>을 새로 만든 이유), 종류는
@@ -4704,8 +5384,8 @@ Coordinator
         <strong>2026-08-17의 고침 1과 같은 종류다</strong> — 확인 안 된 프레임워크 동작을 단정한 것.</p>
     </div>
 
-    <p class="later">
-      <strong>코드로 확인한 것</strong> — <code>SegmentPalette</code>의 <code>% 6</code>과
+    <p>
+            <strong>코드로 확인한 것</strong> — <code>SegmentPalette</code>의 <code>% 6</code>과
       <code>?? .systemBlue</code> 폴백 · 에셋 <code>Seg0</code>~<code>Seg5</code> 여섯 개 ·
       <code>SegmentPolyline</code>/<code>SegmentCasingPolyline</code>의 상속과 프로퍼티 ·
       <strong><code>colorKey</code>가 <code>CourseEditSession</code>의 <code>order</code>와 같은 값</strong> ·
@@ -4715,14 +5395,8 @@ Coordinator
       <code>configureRenderer</code>의 동작.
       <strong>Apple 문서로 확인한 것</strong> — <code>setNeedsDisplay()</code>가
       <em>“다음 갱신 주기에 다시 그려지게 한다”</em>.
-    </p>
+          </p>
 
-    <p class="later">
-      <strong>&#9888; 여전히 검증되지 않은 것 둘</strong> — 구간 &#9314;의
-      <em>“선택이 바뀔 때 오버레이를 다시 만들지 않는 이유”</em>는 <strong>기록이 없어 코드 구조에서
-      읽은 추론</strong>이고, 구간 &#9313;의 <em>“케이싱 = 밝기 대비”</em>는
-      <strong>커밋 메시지가 유일한 근거</strong>다. 둘 다 본문에 그렇게 표시해 뒀다.
-    </p>
 
     <h3>파트 1 (옛 구성) — 2026-08-17</h3>
 
@@ -4752,12 +5426,12 @@ Coordinator
         <code>UIViewRepresentableContext.coordinator</code>로 한 줄씩 달았다.</p>
     </div>
 
-    <p class="later">
-      <strong>통과한 것</strong> — 구간 ②의 「요구사항 셋 + <code>makeCoordinator</code>만 기본 구현」 ·
+    <p>
+            <strong>통과한 것</strong> — 구간 ②의 「요구사항 셋 + <code>makeCoordinator</code>만 기본 구현」 ·
       구간 ③의 회고 인용 · 구간 ④의 게이트 다섯과 각 조건 줄 · 구간 ⑤의 <code>:237</code>·
       <code>:291</code>·<code>:296</code> · 구간 ⑥의 <code>cameraRegion</code> 쓰기 넷과 읽기 하나.
       전부 코드·문서와 일치했다.
-    </p>
+          </p>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
