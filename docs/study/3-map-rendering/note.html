@@ -1850,6 +1850,120 @@ uiView.addAnnotation(annotation)</pre>
         </div>
       </details>
 
+      <details class="seg" id="p2s3" open>
+        <summary>구간 &#9314; &#8212; 그 데이터를 화면의 글자로 바꾸는 것은 누가 하나</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간 &#9312;에서 만든 <code>SegmentDistanceAnnotation</code>은 <strong>글자가 아니다.</strong>
+              그것을 화면의 글자로 바꾸는 것은 <code>SegmentDistanceAnnotationView</code>이고,
+              <strong>우리가 그것을 부르지 않는다.</strong> 그 뷰가 무엇이고 왜 직접 만들었는지를 본다.
+              <em>구간 &#9312;&#9313;가 「지도에 넣을 데이터를 만드는 일」이었다면, 여기는
+              <strong>그 데이터가 그림이 되는 자리</strong>다.</em></p>
+          </div>
+
+          <h4>1. <code>viewFor</code>는 어노테이션 하나를 받아 그릴 뷰를 돌려주는 함수다</h4>
+
+          <p>
+            파트 1에서 본 <code>rendererFor</code>(오버레이를 받아 렌더러를 돌려준다)와
+            <strong>같은 자리</strong>다. 어노테이션 쪽에서 그 일을 하는 것이
+            <code>viewFor</code>(<code>:450</code>)이고, <strong>둘 다 우리가 부르지 않는다</strong> &#8212;
+            지도가 그 어노테이션을 화면에 보여야 할 때 호출한다.
+          </p>
+
+          <p>
+            지도는 어노테이션을 <strong>종류를 가리지 않고 한데 모아 두고</strong>, 화면에 보여야 할 때마다
+            이 함수를 부르면서 <strong>그 객체 하나를 넘겨준다.</strong> 그래서 <strong>어노테이션인 것은
+            전부 이 함수로 들어오고</strong>, 함수 안에서 <strong>타입을 보고 갈라야</strong> 한다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>무엇이 오나</th><th>누가 지도에 넣었나</th><th><code>viewFor</code>가 돌려주는 것</th></tr>
+              <tr><td>내 위치 파란 점 (<code>MKUserLocation</code>)</td>
+                <td><strong>MapKit이 자동으로</strong></td>
+                <td><strong><code>nil</code></strong> &#8212; 시스템 기본 모양을 그대로 쓴다</td></tr>
+              <tr><td>거리 라벨 (<code>SegmentDistanceAnnotation</code>)</td>
+                <td>이 앱이 <code>addAnnotation</code>으로</td>
+                <td>라벨 뷰</td></tr>
+              <tr><td>출발&#183;도착 핀 (<code>ColoredPinAnnotation</code>)</td>
+                <td>이 앱이 <code>addAnnotation</code>으로</td>
+                <td>핀 뷰 <em>(파트 3)</em></td></tr>
+            </table>
+          </div>
+
+          <p>
+            내 위치가 맨 위에서 걸러지는 것도 그 때문이다. 우리가 넣은 것이 아닌데도 같은 함수로 들어오니,
+            <strong>손대지 않겠다는 뜻으로 <code>nil</code>을 돌려준다.</strong> 그러면 MapKit이 자기 기본
+            모양(파란 점과 퍼지는 원)을 쓴다.
+          </p>
+
+          <h4>2. 라벨 뷰는 직접 만들었고, 핀은 기성품을 쓴다 &#8212; 같은 함수 안에 둘 다 있다</h4>
+
+          <p>핀 쪽은 이 한 줄로 뷰를 얻는다.</p>
+
+          <pre class="code">let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "coloredPin")   <span class="c">// :464</span></pre>
+
+          <p>
+            <code>MKMarkerAnnotationView</code>는 <strong>애플이 만들어 둔 완성품</strong>이다. 지도에서 흔히
+            보는 물방울 모양 핀이고, 색과 안쪽 아이콘만 바꿔주면 된다.
+          </p>
+
+          <p>
+            라벨에는 그런 완성품이 없다. <strong>글자 조각을 지도에 붙이는 기성 뷰는 MapKit에 없다.</strong>
+            그래서 이렇게 만들었다.
+          </p>
+
+          <pre class="code">final class SegmentDistanceAnnotationView: MKAnnotationView {   <span class="c">// :77</span>
+    private let label = UILabel()
+    ...
+}</pre>
+
+          <p>
+            <code>MKAnnotationView</code>는 <strong>어노테이션 뷰의 바탕</strong>이다. 그 자체로는 아무것도
+            그리지 않고 위치 잡기 같은 공통 동작만 갖고 있다. 여기에 <code>UILabel</code> 하나를 얹은 것이
+            라벨 뷰다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 앱이 고른 지점</span>
+            <p>가른 기준은 <strong>쓸 만한 기성품이 있느냐</strong>다. 파트 1에서 선을 그릴 때는 기성
+              렌더러 둘을 겹쳐 썼는데, 여기서는 <strong>한쪽은 기성품을 쓰고 한쪽은 직접 만들었다.</strong></p>
+          </div>
+
+          <p>
+            직접 만들었으니 <strong>생김새도 여기서 정한다</strong> &#8212; 글꼴, 흰 글자, 둥근 모서리.
+            그중 하나는 <strong>기본값을 끈 것</strong>이다. <code>canShowCallout = false</code>는
+            <strong>탭했을 때 뜨는 말풍선을 꺼둔 것</strong>인데, 라벨은 읽으라고 붙인 것이지 누르라고 붙인
+            것이 아니어서다.
+          </p>
+
+          <p class="later">
+            뷰를 얻는 줄은 <code>dequeueReusableAnnotationView</code>로 시작한다.
+            <strong>지도에 넣은 라벨은 사라지지 않지만 화면에 붙어 있는 뷰는 다르다</strong> &#8212;
+            라벨이 화면 밖으로 나가면 MapKit이 그 뷰를 떼어 보관해 두었다가, 다시 필요해지면 새로 만들지
+            않고 그것을 꺼내 준다. 그 찾는 함수가 이것이고, 보관해 둔 것이 없으면 그때 만든다.
+          </p>
+
+          <p class="later">
+            꺼내온 뷰에는 <strong>직전에 쓰던 다른 구간의 글자와 색이 남아 있다.</strong> 그래서 바로 다음
+            줄에서 <code>configure</code>로 글자와 색을 다시 넣는다. 이 방식은 이 앱이 고안한 것이 아니라
+            <strong>MapKit이 그렇게 쓰라고 만들어 둔 것</strong>이다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>화면의 글자는 <code>SegmentDistanceAnnotationView</code>가 만들고,
+              <strong>우리가 그것을 부르지 않는다</strong> &#8212; 지도가 라벨을 보여야 할 때
+              <code>viewFor</code>를 호출한다. 어노테이션인 것은 <strong>전부 그 함수 하나로 들어와서</strong>
+              타입으로 갈리고, 라벨은 <strong>쓸 만한 기성품이 없어서 직접 만든 것</strong>이다 &#8212;
+              같은 함수 안에서 <strong>핀은 애플이 만든 기성품을 그대로 쓴다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
       <a class="backtop" href="#toc">&#8593; 목차로</a>
 
     </div>
