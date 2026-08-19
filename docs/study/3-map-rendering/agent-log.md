@@ -1194,19 +1194,28 @@ iOS `.none` 문서는 *"A constant indicating that collisions can't occur."* 한
 `.mcp.json` 등록 + `settings.local.json` 활성화까지 끝나 `claude mcp list`에서 `✔ Connected`.
 **실제 조회로 검증했고 절반만 동작한다.**
 
+**7개를 찔러봤고 깨진 것은 하나뿐이다** (처음엔 3개만 보고 "검색이 깨졌다"고 적었다가
+사용자 지적으로 범위를 넓혔다 — `unverified-is-not-impossible`의 반대 실수였다).
+
 | 도구 | 결과 |
 |---|---|
-| `search_apple_docs` | ❌ **깨졌다.** `"MKAnnotationView"` 같은 **있을 수밖에 없는 이름도 0건**을 준다 |
-| `get_apple_doc_content` | ✅ 정상 — 본문·선언·플랫폼 가용성까지 최신으로 온다 |
-| `search_framework_symbols` | ✅ 정상 — `framework` + `namePattern`으로 심볼과 URL을 준다 |
+| `search_apple_docs` | ❌ **유일하게 깨졌다.** `"MKAnnotationView"` 같은 **있을 수밖에 없는 이름도 0건** |
+| `get_apple_doc_content` | ✅ 본문·선언·플랫폼 가용성까지 최신으로 온다 |
+| `search_framework_symbols` | ✅ `framework` + `namePattern`으로 심볼과 URL을 준다 |
+| `get_related_apis` | ✅ **이 작업에는 검색보다 낫다** — URL 하나로 상속·준수·See Also를 67건 준다 |
+| `list_technologies` | ✅ 카테고리별 프레임워크 목록 |
+| `search_wwdc_content` | ✅ 전사·코드 전문 검색 |
+| `get_documentation_updates` | ✅ 프레임워크별 업데이트 페이지 |
 
 **판정: 유지한다.** 깨진 것은 자유 검색 한 개뿐이고, **결정적 사실을 가져온 것은 동작하는
 쪽**이었다. `apple-doc-mcp-server`로 갈아끼우면 **사용자 기준이던 「실시간 최신」을 캐시
 스냅샷과 맞바꾸게 된다** — 우회 가능한 절반 때문에 그러지 않는다.
 
-🔑 **우회 경로 (검색이 0건일 때 이 순서로 간다):**
-`search_framework_symbols(framework:"mapkit", namePattern:"MKMarker*")` → **결과의 URL을 받아**
-→ `get_apple_doc_content(url:)`. 심볼 이름을 이미 알면 URL을 직접 조립해 2단계를 건너뛴다.
+🔑 **우회 경로 — 셋 다 검증했다. `search_apple_docs`는 아예 안 쓴다.**
+1. **심볼 이름을 안다**(학습은 코드에서 뽑으니 대개 이쪽) → URL을 직접 조립해 `get_apple_doc_content`.
+2. **한 타입의 주변을 훑고 싶다** → `get_related_apis(apiUrl:)`. **이번 판정에서 가장 유용했을 경로다** —
+   `MKAnnotationView` 하나로 `MKMarkerAnnotationView`·`collisionMode`·`displayPriority`가 한 번에 나온다.
+3. **이름이 흐릿하다** → `search_framework_symbols(framework:, namePattern:)`로 URL을 얻고 1번으로.
 ⚠️ **`/documentation/mapkitjs/**`는 이 서버로 404다** — MapKit JS 문서는 여기서 못 읽는다.
 
 ### 낮은 우선순위 (고치지 않음 — 판단 근거를 남긴다)
