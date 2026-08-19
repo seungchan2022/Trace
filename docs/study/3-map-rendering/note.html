@@ -591,6 +591,7 @@
     <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
     <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 구간마다 색이 다른 선">색이 다른 선</a></li>
     <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 선 한가운데 거리 라벨">거리 라벨</a></li>
+    <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 출발·도착 핀">출발·도착 핀</a></li>
     <li><span class="k"><i class="kf">골격</i><i class="ks">골</i></span><a href="#bg1" data-target="bg1" title="골격 — 화면에 안 보이는 부분">SwiftUI 밖으로</a></li>
   </ol>
 </nav>
@@ -606,14 +607,14 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1 완료(검토까지)</span></h4>
+    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1·2 완료(검토까지) · 파트 3 진행 중</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 &#8596; 맡은 부품</a></li>
       <li class="on"><span class="k">1</span><a href="#p1">구간마다 색이 다른 선</a></li>
       <li class="on"><span class="k">2</span><a href="#p2">선 한가운데 거리 라벨</a></li>
-      <li class="todo"><span class="k">3</span>출발&#183;도착 핀</li>
+      <li class="on"><span class="k">3</span><a href="#p3">출발&#183;도착 핀</a></li>
       <li class="todo"><span class="k">4</span>구간 경계의 흰 점</li>
       <li class="todo"><span class="k">5</span>고른 구간이 굵어지고 후광이 깔린다</li>
       <li class="todo"><span class="k">6</span>되짚어 그리면 두 줄로 보인다</li>
@@ -2107,6 +2108,54 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
       </details>
 
       <a class="backtop" href="#toc">&#8593; 목차로</a>
+
+    </div>
+  </details>
+
+  <details class="part" id="p3" open>
+    <summary>
+      <span class="part-tag">파트 3</span>
+      <span class="ptitle">출발&#183;도착 핀</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트가 만드는 화면</span>
+        지도 위에 <strong>물방울 모양 마커</strong>가 선다 &#8212; 시작 지점에 <strong>초록 러너
+        아이콘</strong>, 끝 지점에 <strong>빨강 깃발 아이콘</strong>. 코스가 한 바퀴 돌아 제자리로
+        오면 <strong>둘이 하나로 합쳐지고</strong> 오른쪽 위에 작은 <strong>체크무늬 깃발 배지</strong>가
+        붙는다. 탭 모드에서 지도를 한 번 누르면 <strong>회색 점선 동그라미</strong>가 잠깐 뜬다.
+        <em>&#8212; 사용자 장면 &#9314;(코스를 만든다)와 &#9316;(왕복을 닫는다)에 걸쳐 있다.</em>
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 서고 언제 하나로 합쳐지는지</strong>
+        설명할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr><td>구간 &#9312;</td><td>코스가 있을 때 서는 핀 &#8212; 출발&#183;도착, 그리고 둘이 하나로 합쳐지는 조건</td></tr>
+          <tr><td>구간 &#9313;</td><td>아직 코스가 아닐 때 서는 핀 &#8212; 첫 탭 대기와 「확인 중」</td></tr>
+          <tr><td>구간 &#9314;</td><td>핀 하나를 만드는 데 타입이 둘인 이유</td></tr>
+          <tr><td>구간 &#9315;</td><td>핀이 바뀌면 통째로 갈아끼운다</td></tr>
+          <tr><td>구간 &#9316;</td><td>핀은 애플 기성품이다 &#8212; 기성품이 주는 것과 안 주는 것</td></tr>
+          <tr><td>구간 &#9317;</td><td>핀을 누르는 것은 MapKit이 아니다</td></tr>
+        </table>
+        <p class="hint">
+          <strong>왜 이 순서인가.</strong> &#9312;&#9313;가 <strong>「몇 개가 어떤 모습으로
+          서는가」를 정하는 자리</strong>다 &#8212; 능력 선언이 직접 묻는 것이 여기 있다.
+          &#9314;&#9315;는 그렇게 정해진 목록이 <strong>화면까지 가는 경로</strong>이고,
+          &#9316;는 <strong>실제로 그려지는 모습</strong>, &#9317;은 <strong>그려진 핀을
+          눌렀을 때</strong>다. &#9314;를 먼저 보면 그 타입들이 무엇을 나르는지 모르는 채로
+          선언만 읽게 된다.<br>
+          <strong>모드가 갈리는 구간이 둘 있다.</strong> &#9313;는 <strong>탭 모드에만</strong>
+          있는 장면이고(그리기에는 첫 탭 대기가 없다), &#9317;은 둘 다 지나가되
+          <strong>받는 쪽이 다르다</strong>.
+        </p>
+      </div>
 
     </div>
   </details>
