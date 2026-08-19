@@ -645,7 +645,7 @@
           <li>색·굵기를 들고 있는 것은 <strong>오버레이가 아니라 렌더러</strong>다 — 오버레이마다 하나씩 만들어져 <strong>지도가 보관</strong>한다</li>
           <li>선택이 바뀌면 오버레이를 다시 만들지 않고 <strong>보관된 렌더러의 굵기만 고친 뒤</strong> <code>setNeedsDisplay()</code>로 다시 칠하라고 알린다</li>
         </ul></div></li>
-      <li><span class="k">2</span><div><div class="can">거리 라벨(선 위의 <em>“320m”</em>)이 <strong>무엇으로 만들어져 왜 그 자리에 그 색으로 붙고, 왜 다른 것에 안 가려지는지</strong> 설명할 수 있다</div><div class="sum">구간 선 한가운데에 <strong>그 선과 같은 색</strong> 배경의 라벨이 붙어 그 구간이 몇 미터인지 보여준다. 그 글자가 <strong>선과는 다른 갈래로</strong> 지도에 얹힌다는 것, 찍는 자리를 <strong>실거리 절반</strong>으로 정한 이유, 화면의 글자로 바꾸는 것이 누구인지, 그리고 <strong>어느 층에 놓여서</strong> 안 가려지는지를 본다.</div></div></li>
+      <li><span class="k">2</span><div><div class="can">거리 라벨(선 위의 <em>“320m”</em>)이 <strong>무엇으로 만들어져 왜 그 자리에 그 색으로 붙고, 왜 다른 것에 안 가려지는지</strong> 설명할 수 있다</div><div class="sum">구간 선 한가운데에 <strong>그 선과 같은 색</strong> 배경의 라벨이 붙어 그 구간이 몇 미터인지 보여준다. 그 글자가 <strong>선과 다른 방식으로</strong>(선은 오버레이, 라벨은 어노테이션) 지도에 얹힌다는 것, 찍는 자리를 <strong>실거리 절반</strong>으로 정한 이유, 화면의 글자로 바꾸는 것이 누구인지, 그리고 <strong>어느 층에 놓여서</strong> 안 가려지는지를 본다.</div></div></li>
       <li class="pending"><span class="k">3</span><div><div class="can">출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 서고 언제 하나로 합쳐지는지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">4</span><div><div class="can">구간 경계의 흰 점이 <strong>왜 선이 아니라 따로 만든 오버레이인지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">5</span><div><div class="can">고른 구간이 <strong>왜 굵어지고 후광이 깔리는지, 그 순서가 어떻게 정해지는지</strong> 설명할 수 있다</div></div></li>
@@ -1618,6 +1618,147 @@ draw 가 렌더러의 굵기·색을 읽어 칠한다          <span class="c">�
           <strong>&#9312;(라벨이 어노테이션이라는 것)뿐</strong>이라 &#9314;와는 무관하다.
         </p>
       </div>
+
+      <details class="seg" id="p2s1" open>
+        <summary>구간 &#9312; &#8212; 선 위의 글자는 선이 아니라 따로 얹은 것이다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>선 한가운데 뜨는 <em>&#8220;320m&#8221;</em>은 <strong>선에 딸린 장식이 아니라 지도에
+              따로 추가한 별개의 객체</strong>다. 그 객체가 무엇이고, 선과 어디서 갈리며,
+              <em>&#8220;320m&#8221;</em> 하나가 화면에 뜨기까지 무엇을 지나가는지를 본다.
+              <em>파트 1이 「선을 어떻게 등록하고 누가 칠하나」였다면, 여기는
+              「글자를 어떻게 등록하나」다.</em></p>
+          </div>
+
+          <h4>1. 라벨은 이 앱이 만든 <code>SegmentDistanceAnnotation</code>이다</h4>
+
+          <pre class="code">final class SegmentDistanceAnnotation: NSObject, MKAnnotation {   <span class="c">// :65</span>
+    let coordinate: CLLocationCoordinate2D   <span class="c">// 이 라벨이 붙을 지점</span>
+    let distanceText: String                 <span class="c">// 화면에 뜰 글자 &#8212; "320m"</span>
+    let color: UIColor                       <span class="c">// 라벨 배경색</span>
+}</pre>
+
+          <p>
+            <code>MKAnnotation</code>은 <strong>MapKit이 준 프로토콜</strong>이고,
+            <code>SegmentDistanceAnnotation</code>은 <strong>이 앱이 그것을 채택해 만든 클래스</strong>다.
+          </p>
+
+          <p>
+            <strong>셋의 출처가 갈린다.</strong> <code>coordinate</code>는 <strong>MapKit이 요구한
+            이름</strong>이라 바꿀 수 없고 &#8212; 지도가 그 이름으로 좌표를 읽어 라벨을 놓을 자리를
+            정한다 &#8212; <code>distanceText</code>와 <code>color</code>는 <strong>이 앱이 추가한
+            것</strong>이라 MapKit은 읽지 않는다. 셋 다 <code>let</code>이라 한 번 만들면 안 바뀌고,
+            거리가 달라지면 <strong>지우고 새로 만든다.</strong>
+          </p>
+
+          <p>
+            <strong>여기 없는 것은 생김새다.</strong> 글꼴도, 글자 크기도, 모서리를 얼마나 둥글릴지도
+            없다. 들고 있는 셋은 전부 <strong>무엇을 담을지</strong>(어디에 &#183; 무슨 글자 &#183;
+            무슨 색)이고, <strong>어떻게 보일지</strong>는 하나도 없다.
+          </p>
+
+          <h4>2. 어노테이션은 「이 좌표에 내용이 있다」는 데이터다</h4>
+
+          <p>
+            <code>annotation</code>은 원래 <strong>덧붙인 표시</strong>를 뜻하고, 애플 문서도 그 뜻대로
+            쓴다 &#8212; <em>&#8220;An interface for associating your content with a specific map
+            <strong>location</strong>.&#8221;</em> 정작 중요한 것은 그다음 문장이다.
+          </p>
+
+          <p>
+            <em>&#8220;Objects adopting this protocol <strong>do not provide the visual representation
+            themselves</strong>; instead, they serve as the <strong>data source</strong> for the
+            map view.&#8221;</em>
+          </p>
+
+          <p>
+            <strong>파트 1과 같은 구조다.</strong> 오버레이가 「여기 도형이 있다」는 등록이고 칠하는
+            것은 렌더러였듯, 어노테이션도 <strong>데이터일 뿐</strong>이고 화면의 글자는 다른 것이 만든다.
+          </p>
+
+          <h4>3. 오버레이와 갈리는 곳은 「점이냐 영역이냐」다</h4>
+
+          <p>
+            어노테이션과 오버레이는 서로 무관한 것이 아니다. MapKit의 선언이 이렇다.
+          </p>
+
+          <pre class="code">protocol MKOverlay : MKAnnotation</pre>
+
+          <p>
+            <strong>오버레이가 어노테이션을 상속한다.</strong> 그래서 애플 문서가
+            <em>&#8220;all overlay objects can also function as annotations&#8221;</em>라고 적는다.
+            갈리는 지점은 <strong>요구사항 하나</strong>이고, <strong>둘 다 MapKit이 정한 이름</strong>이다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>프로토콜</th><th>필수</th><th>붙이는 대상</th></tr>
+              <tr><td><code>MKAnnotation</code></td><td><code>coordinate</code></td>
+                <td><strong>location</strong> &#8212; 한 지점</td></tr>
+              <tr><td><code>MKOverlay</code></td>
+                <td><code>coordinate</code> + <strong><code>boundingMapRect</code></strong></td>
+                <td><strong>region</strong> &#8212; 영역</td></tr>
+            </table>
+          </div>
+
+          <p>
+            <code>boundingMapRect</code>는 그 도형이 지도에서 차지하는 <strong>사각 범위</strong>다.
+            선은 어디서 어디까지 뻗는지가 있어야 하니 필요하고, <strong>라벨은 한 점에 붙으니 필요
+            없다.</strong> 그래서 라벨은 <code>MKAnnotation</code>만 채택하면 되고, 들고 있는 것도
+            셋으로 끝난다.
+          </p>
+
+          <h4>4. <em>&#8220;320m&#8221;</em>이 화면에 뜨기까지 타입 셋을 지나간다</h4>
+
+          <p>
+            <code>updateUIView</code> 안에서 구간 하나마다 이 코드가 돈다.
+          </p>
+
+          <pre class="code">let annotation = SegmentDistanceAnnotation(                        <span class="c">// :281</span>
+    coordinate:   midpointAlongPath(coords),                       <span class="c">// 어디에</span>
+    distanceText: String(format: "%.0fm", segment.distanceMeters), <span class="c">// 무슨 글자로</span>
+    color:        SegmentPalette.color(at: colorKey)               <span class="c">// 무슨 색으로</span>
+)
+uiView.addAnnotation(annotation)</pre>
+
+          <p>
+            <code>320.4</code>라는 <strong>숫자</strong>가 여기서 <em>&#8220;320m&#8221;</em>이라는
+            <strong>글자</strong>가 된다. 색은 <strong>파트 1에서 선이 쓰던 그 함수에 그 번호를 그대로
+            넘긴다</strong> &#8212; 라벨 배경색이 선 색과 같은 이유가 이것이다. 맞춘 것이 아니라
+            <strong>같은 곳에서 같은 값을 받는다.</strong> 좌표만 이 파트에서 새로 만드는 것이고,
+            <strong>구간 &#9313;가 통째로 다룬다.</strong>
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>타입</th><th>맡은 일</th></tr>
+              <tr><td><code>CourseSegment</code></td>
+                <td>이 구간이 <strong>몇 미터인지</strong> 들고 있다 <em>(청크 2)</em></td></tr>
+              <tr><td><code>SegmentDistanceAnnotation</code></td>
+                <td>그 값을 <strong>지도에 넣을 형태</strong>로 바꾼 것</td></tr>
+              <tr><td><code>SegmentDistanceAnnotationView</code></td>
+                <td>그것을 <strong>화면에 보이는 글자</strong>로 만든 것</td></tr>
+            </table>
+          </div>
+
+          <p>
+            <code>addAnnotation</code>까지가 <strong>우리가 부르는 코드의 끝</strong>이다. 그다음
+            MapKit이 <code>viewFor</code>를 호출해 셋째 타입을 얻어가고,
+            <strong>그 자리를 구간 &#9314;가 다룬다.</strong>
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>거리 라벨은 <code>MKAnnotation</code>을 채택한 객체이고, 이것은 <strong>지도의 한
+              지점에 내용을 붙이는 데이터</strong>다. 선(오버레이)과 갈리는 지점은 <strong>점이냐
+              영역이냐</strong>여서 라벨은 <strong>좌표 &#183; 글자 &#183; 색 셋</strong>만 들고
+              있으면 되고, <strong>화면의 글자는 다른 타입이 만든다.</strong></p>
+          </div>
+
+        </div>
+      </details>
 
       <a class="backtop" href="#toc">&#8593; 목차로</a>
 
