@@ -2138,7 +2138,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
         <span class="tag">이 파트의 구간</span>
         <table>
           <tr><td><a href="#p3s1">구간 &#9312;</a></td><td>코스가 있을 때 서는 핀 &#8212; 출발&#183;도착, 그리고 둘이 하나로 합쳐지는 조건</td></tr>
-          <tr><td>구간 &#9313;</td><td>아직 코스가 아닐 때 서는 핀 &#8212; 첫 탭 대기와 「확인 중」</td></tr>
+          <tr><td><a href="#p3s2">구간 &#9313;</a></td><td>아직 코스가 아닐 때 표시되는 핀 &#8212; 첫 탭 대기와 「확인 중」</td></tr>
           <tr><td>구간 &#9314;</td><td>핀 하나를 만드는 데 타입이 둘인 이유</td></tr>
           <tr><td>구간 &#9315;</td><td>핀이 바뀌면 통째로 갈아끼운다</td></tr>
           <tr><td>구간 &#9316;</td><td>핀은 애플 기성품이다 &#8212; 기성품이 주는 것과 안 주는 것</td></tr>
@@ -2392,6 +2392,261 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
         </div>
       </details>
 
+
+
+      <details class="seg" id="p3s2" open>
+        <summary>구간 &#9313; &#8212; 아직 코스가 아닐 때 표시되는 핀: 첫 탭 대기와 「확인 중」</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>코스가 아직 없어도 <strong>지도에는 핀이 표시된다.</strong> 종류가 둘이고
+              <strong>둘 다 탭 모드에만</strong> 있다 &#8212; 두 번째 탭을 기다리는
+              <strong>첫 탭 대기 핀</strong>, 그리고 누른 것이 <strong>경로에 지점을 찍는 탭</strong>이
+              맞는지 가리는 동안 표시되는 <strong>「확인 중」 핀</strong>이다.
+              이 둘은 <strong>값이 어디에 있고, 언제 표시되고, 언제 사라지는가</strong>가 전부라
+              그 순서로 본다. <em>구간 &#9312;의 &#128161; 박스에서 <strong>&#8220;앞엣것&#8221;</strong>이라고만
+              부르고 넘어간 핀이 여기 주인공이다.</em></p>
+          </div>
+
+          <h4>1. 뷰모델에 있는 것은 핀이 아니라 좌표 둘이다</h4>
+
+          <p>
+            <strong>확정된 코스는 편집 세션(<code>CourseEditSession</code>)이 들고 있고,
+            아직 확정되지 않은 이 둘은 뷰모델이 들고 있다.</strong> 갈리는 기준은
+            <strong>확정됐느냐</strong>다 &#8212; 두 번째 탭의 길찾기가 끝나 구간이 만들어져야
+            세션에 붙고, 그 순간 뷰모델의 임시 좌표는 비워진다.
+            <strong>세션은 임시 상태를 아예 모른다.</strong>
+          </p>
+
+          <p>
+            <strong>그리고 어느 쪽에도 「핀」은 없다 &#8212; 들고 있는 것은 좌표뿐이다.</strong>
+            색도 아이콘도 제목도 없다. 그것들을 붙여 핀으로 만드는 것은
+            <strong>구간 &#9312;에서 본 핀 목록(<code>mapPins</code>)</strong>이고,
+            핀 목록은 <strong>코스와 이 두 좌표를 모두 읽어</strong> 그때그때 목록을 만든다.
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 600 268" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p3s2-layer-t p3s2-layer-d">
+              <title id="p3s2-layer-t">임시 좌표는 뷰모델에, 확정된 코스는 편집 세션에</title>
+              <desc id="p3s2-layer-d">편집 세션은 확정된 코스만 들고 있고, 아직 확정되지 않은 첫 탭 대기 좌표와 확인 중 좌표는 뷰모델이 들고 있다. 핀 목록은 이 셋을 모두 읽어 핀을 만든다. 뷰모델에는 핀이 아니라 좌표만 있다.</desc>
+              <defs>
+                <marker id="p3s2-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                  <polygon points="0 0, 8 3, 0 6" fill="#A3BFBA"/>
+                </marker>
+              </defs>
+              <rect width="600" height="268" fill="#FFFFFF"/>
+              <rect x="24" y="20" width="250" height="94" rx="10" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="149" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">편집 세션 &#8212; 확정된 것</text>
+              <rect x="52" y="58" width="194" height="38" rx="7" fill="#FFFFFF" stroke="#C7D6D3" stroke-width="1.3"/>
+              <text x="149" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">코스</text>
+              <text x="149" y="91" text-anchor="middle" font-size="12" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">course</text>
+              <rect x="326" y="20" width="250" height="94" rx="10" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="451" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">뷰모델 &#8212; 아직 확정 안 된 것</text>
+              <rect x="340" y="58" width="106" height="38" rx="7" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.3"/>
+              <text x="393" y="75" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">첫 탭 대기 좌표</text>
+              <text x="393" y="90" text-anchor="middle" font-size="11.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">pendingTapStart</text>
+              <rect x="456" y="58" width="106" height="38" rx="7" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.3"/>
+              <text x="509" y="75" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">확인 중 좌표</text>
+              <text x="509" y="90" text-anchor="middle" font-size="11.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">pendingTapMarker</text>
+              <path d="M149 114 V 142 H 290 V 162" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s2-arr)"/>
+              <path d="M451 114 V 142 H 310 V 162" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s2-arr)"/>
+              <rect x="170" y="166" width="260" height="46" rx="8" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="300" y="185" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">핀 목록이 셋을 읽어 핀을 만든다</text>
+              <text x="300" y="203" text-anchor="middle" font-size="12" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">mapPins</text>
+              <text x="300" y="240" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">세션에도 뷰모델에도 「핀」은 없다 &#8212; 좌표만 있다.</text>
+              <text x="300" y="258" text-anchor="middle" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">색&#183;아이콘&#183;제목&#183;역할을 붙여 핀으로 만드는 것은 핀 목록이다.</text>
+            </svg>
+            <figcaption>임시 좌표는 뷰모델에, 확정된 코스는 세션에 &#8212; 핀은 어느 쪽에도 없다</figcaption>
+          </figure>
+          <p>
+            두 좌표가 각각 어떤 핀이 되는지는 이렇다.
+            <strong>첫 탭 대기 좌표(<code>pendingTapStart</code>)</strong>는
+            <strong>초록(<code>AccentColor</code>) + 러너 아이콘(<code>figure.run</code>)</strong>에
+            제목이 <em>&#8220;출발&#8221;</em>인 핀 &#8212; <strong>출발 핀과 완전히 같은 모양</strong>이다.
+            <strong>확인 중 좌표(<code>pendingTapMarker</code>)</strong>는
+            <strong>회색(<code>systemGray</code>) + 점선 동그라미(<code>circle.dashed</code>)</strong>에
+            제목이 <em>&#8220;확인 중&#8221;</em>인 핀이다.
+          </p>
+
+          <div class="fix">
+            <span class="fixtag">코드를 열었을 때 헷갈리는 곳 &#8212; 이름 셋</span><br>
+            <code>pendingTapStart</code>와 <code>pendingTapMarker</code>는
+            <strong>뷰모델의 좌표 프로퍼티</strong>이고, <code>pendingStart</code>는
+            <strong>역할 목록(<code>CoursePinRole</code>)의 값 하나</strong>다.
+            <strong>이름이 비슷한데 종류가 다르고, 서로 변신하는 관계도 아니다.</strong>
+            앞의 둘은 <strong>좌표를 담는 자리</strong>, 뒤의 하나는
+            <strong>핀의 성격을 나타내는 값</strong>이다. 역할값이 무엇에 쓰이는지는 4번에서 본다.
+          </div>
+
+          <h4>2. 첫 탭 대기 핀은 맨 처음 한 번만 표시된다</h4>
+
+          <p>
+            이 핀은 <strong>코스가 없을 때만</strong> 만들어진다. 코스가 생긴 뒤로는 한 번도
+            표시되지 않는다. 갈리는 지점은 탭을 처리할 때
+            <strong>「출발점을 이미 아는가」</strong>다.
+          </p>
+
+          <div class="steps">
+            <div class="st"><span class="n">없다</span><span class="t">
+              <b>코스가 없으면 출발점이 될 만한 것이 아무것도 없다.</b> 그래서 누른 좌표를
+              첫 탭 대기 좌표에 <b>보관해 두고 두 번째 탭을 기다린다</b> &#8212; 그동안 그 자리에
+              핀이 표시된다.</span></div>
+            <div class="st"><span class="n">있다</span><span class="t">
+              <b>코스가 있으면 출발점을 이미 안다</b> &#8212; 기존 코스의 <b>양 끝 중 누른 자리에서
+              가까운 쪽</b>이다. 기다릴 이유가 없으니 <b>탭 한 번이 곧바로 구간 하나</b>가 되고,
+              첫 탭 대기 좌표는 건드리지도 않는다.</span></div>
+          </div>
+
+          <p>
+            <strong>구간 &#9312;에서 「동시에 최대 3개」라고 한 근거가 이것이다</strong> &#8212;
+            코스가 있으면 이 핀이 아예 안 만들어지므로, 출발&#183;도착&#183;확인 중 셋이 최대다.
+          </p>
+
+          <p>
+            <strong>사라지는 순간은 두 번째 탭이 확정될 때인데, 여기에 한 가지가 더 있다.</strong>
+            길찾기에 넘길 좌표를 <strong>먼저 꺼내 두고 그 다음에 프로퍼티를 비운다.</strong>
+            핀 목록이 보는 것은 <strong>프로퍼티 쪽</strong>이라 그 순간 핀은 사라지지만,
+            길찾기는 <strong>꺼내 둔 값</strong>을 그대로 쓴다. 그래서
+            <strong>길찾기가 도는 동안 화면에는 첫 탭 대기 핀이 없는데도 그 좌표로 경로를 찾고 있다.</strong>
+            <em>왜 길찾기 전에 비우는지는 주석에도 설계 문서에도 근거가 없다 &#8212; 순서가 그렇게
+            되어 있다는 것까지만 확인했다.</em>
+          </p>
+
+          <p>
+            <strong>이것이 구간 &#9312;의 &#128161; 박스에서 본 전환의 실제 모습이다.</strong>
+            앞엣것이 사라지고 출발 핀이 새로 만들어지는데, <strong>그 사이에 길찾기 대기가 끼어 있어서
+            두 핀 중 어느 것도 없는 구간이 생긴다.</strong>
+          </p>
+
+          <h4>3. 「확인 중」 핀은 판별 창이 도는 동안만 표시된다</h4>
+
+          <p>
+            <strong>손을 뗀 즉시 표시되지 않고 0.1초를 기다린다.</strong> 그 사이에 취소되면
+            <strong>아예 표시되지 않는다.</strong> 이 지연 덕분에 지도를 확대하려고 빠르게 두 번
+            두드릴 때 <strong>회색 점선이 깜빡이지 않는다.</strong>
+          </p>
+
+          <p>
+            <strong>표시하지 않는 경우가 하나 더 있다 &#8212; 누른 자리에 이미 핀이 있었을 때다.</strong>
+            서 있는 핀을 누른 것은 <strong>새 지점을 찍는 동작이 아니라 다른 동작</strong>
+            (예: 출발 핀을 눌러 왕복을 닫는 것)이라, <strong>찍힐 자리를 미리 보여줄 이유가 없다.</strong>
+          </p>
+
+          <p>
+            <strong>사라지는 자리는 둘이다.</strong> 판별 창을 통과하지 못하면 그 자리에서 지워지고,
+            통과해서 탭 처리로 들어가면 <strong>그 처리가 끝날 때</strong> 지워진다.
+            뒤엣것이 중요한데 <strong>탭 처리 안에는 길찾기 호출이 들어 있어서</strong>,
+            이 핀은 <strong>길찾기가 도는 내내 화면에 남는다</strong> &#8212; 결과적으로
+            <strong>기다리는 중이라는 표시 노릇</strong>을 한다.
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 600 310" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p3s2-life-t p3s2-life-d">
+              <title id="p3s2-life-t">두 번째 탭에서 각 핀이 화면에 표시되는 구간</title>
+              <desc id="p3s2-life-d">손을 뗀 뒤 0.1초가 지나야 확인 중 핀이 표시된다. 0.35초 판별 창을 통과해 확정되면 첫 탭 대기 핀이 사라지고, 길찾기가 도는 동안 확인 중 핀만 남는다. 코스가 생기면 확인 중 핀도 사라지고 출발 핀과 도착 핀이 새로 만들어진다.</desc>
+              <rect width="600" height="310" fill="#FFFFFF"/>
+              <text x="14" y="30" font-size="13" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면에 표시되는 구간</text>
+              <text x="14" y="62" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">첫 탭 대기 핀</text>
+              <rect x="150" y="48" width="140" height="20" rx="5" fill="#06B6A4"/>
+              <text x="220" y="63" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif">초록 &#183; 러너</text>
+              <text x="14" y="102" font-size="13" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">확인 중 핀</text>
+              <rect x="200" y="88" width="220" height="20" rx="5" fill="#9AA8A5"/>
+              <text x="310" y="103" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif">회색 &#183; 점선</text>
+              <text x="14" y="142" font-size="13" font-weight="700" fill="#A33A36" font-family="-apple-system, BlinkMacSystemFont, sans-serif">출발 &#183; 도착 핀</text>
+              <rect x="420" y="128" width="160" height="20" rx="5" fill="#D94A45"/>
+              <text x="500" y="143" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif">코스에서 새로 만듦</text>
+              <path d="M150 172 H 580" stroke="#C7D6D3" stroke-width="1.4" fill="none"/>
+              <path d="M150 166 V 178 M200 166 V 178 M290 166 V 178 M420 166 V 178" stroke="#8FA8A4" stroke-width="1.4"/>
+              <path d="M150 40 V 166 M200 80 V 166 M290 40 V 166 M420 120 V 166" stroke="#DAE6E3" stroke-width="1" stroke-dasharray="3 3"/>
+              <text x="150" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">손 뗌</text>
+              <text x="150" y="213" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">보류 시작</text>
+              <text x="200" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">0.1초</text>
+              <text x="200" y="213" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">표시됨</text>
+              <text x="290" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">0.35초</text>
+              <text x="290" y="213" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">확정 &#183; 길찾기 시작</text>
+              <text x="424" y="196" font-size="13" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">코스 생김</text>
+              <text x="424" y="213" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">탭 처리 끝</text>
+              <rect x="14" y="234" width="572" height="64" rx="8" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="28" y="256" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">0.35초가 지나기 전에</text>
+              <text x="28" y="276" font-size="12.5" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#183; 같은 자리(40pt 안)를 다시 누르면 &#8212; 더블탭&#183;원핑거 줌으로 보고 취소. 0.1초 전이면 확인 중 핀은 아예 안 보인다</text>
+              <text x="28" y="293" font-size="12.5" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#183; 40pt 밖을 누르면 &#8212; 더블탭이 될 수 없으므로 취소가 아니라 그 자리에서 조기 확정</text>
+            </svg>
+            <figcaption>두 번째 탭에서 각 핀이 화면에 표시되는 구간</figcaption>
+          </figure>
+          <p>
+            <strong>취소되는 조건은 하나뿐이다</strong> &#8212; 보류 중에
+            <strong>같은 자리(반경 40pt)에서 두 번째 터치가 시작</strong>되는 것.
+            그것이 뜻하는 것은 <strong>더블탭</strong>(지도 확대)이거나
+            <strong>원핑거 줌</strong>(두 번 두드리되 두 번째는 누른 채 위아래로 끄는 지도 제스처)이다.
+            <strong>팬이나 핀치는 여기로 들어오지도 않는다</strong> &#8212; 탭으로 끝나는 동작이
+            아니라서 보류 자체가 시작되지 않는다. 그리고 <strong>40pt 밖을 누르면 취소가 아니라
+            반대로 조기 확정된다</strong> &#8212; 더블탭이 될 수 없다는 것이 그 순간 확정되므로
+            기다릴 이유가 없어진다.
+            <em>판별기가 무엇을 보고 어떻게 갈리는지는 청크 1의 소관이고, 여기서 쓰는 것은
+            「취소되면 지워진다」까지다.</em>
+          </p>
+
+          <h4>4. 눌러도 둘 다 아무 일이 없다 &#8212; 그래서 모양만 다르고, 그 모양은 버그가 만들었다</h4>
+
+          <p>
+            <strong>핀의 역할값은 그 핀을 눌렀을 때 무엇으로 취급할지를 가르는 데 쓰인다.</strong>
+            지도를 누르면 그 자리에 핀이 있었는지 먼저 보고, 있었으면 역할값에 따라 갈린다 &#8212;
+            <strong>병합 핀</strong>이면 <em>&#8220;이미 닫힌 코스입니다&#8221;</em> 안내로 끝,
+            <strong>도착 핀</strong>이면 <em>&#8220;이미 도착점입니다&#8221;</em> 안내로 끝,
+            <strong>출발 핀</strong>이면 <strong>왕복 만들기</strong>로 간다.
+          </p>
+
+          <p>
+            <strong>그런데 이 구간의 두 핀은 눌러도 할 일이 없다.</strong> 아직 코스가 아니라서
+            왕복을 만들 수도, 안내할 것도 없다. <strong>「눌러도 특수 동작 없음」이라는 같은 답을
+            갖기 때문에 둘은 역할값을 같이 쓴다</strong>(<code>pendingStart</code>).
+            <strong>그러니 둘을 실제로 가르는 것은 색과 아이콘, 즉 모양뿐이다.</strong>
+          </p>
+
+          <p>
+            <strong>그 모양이 지금처럼 갈라진 것은 버그를 고치면서다.</strong>
+          </p>
+
+          <div class="bounds">
+            <div class="bd"><span class="lb">원래</span>
+              <span>「확인 중」에도 <strong>첫 탭이냐 두 번째 탭이냐를 보고 출발 핀 스타일과 도착 핀
+                스타일을 그대로 갖다 썼다</strong> &#8212; 지금처럼 중립 모양이 아니었다</span></div>
+            <div class="bd"><span class="lb">증상</span>
+              <span>탭이 확정된 직후 <strong>짧게 라벨이 뒤바뀌어 보였다</strong>
+                (2026-07-05 실기기 확인)</span></div>
+            <div class="bd"><span class="lb">원인</span>
+              <span>첫/두 번째를 가르는 데 쓰던 것이 <strong>첫 탭 대기 좌표가 비었는지 여부</strong>였는데,
+                <strong>그 값은 길찾기가 끝나기 전에 이미 비워진다</strong> &#8212;
+                2번에서 본 「먼저 꺼내 두고 프로퍼티를 비운다」가 바로 그 자리다</span></div>
+            <div class="bd"><span class="lb">고침</span>
+              <span><strong>중립 스타일</strong>(회색 + 점선 동그라미 + <em>&#8220;확인 중&#8221;</em>)로 바꿨다</span></div>
+            <div class="bd here"><span class="lb">결과</span>
+              <span>중립 스타일은 <strong>출발인지 도착인지 구분할 필요가 없어서 그 판정 자체가
+                사라진다</strong> &#8212; 버그가 <strong>안 나는 것이 아니라 성립하지 않는다</strong></span></div>
+          </div>
+
+          <p>
+            <strong>고친 방식이 이 구간에서 가장 볼 만한 대목이다.</strong> 틀린 판정을 고쳐서 맞게
+            만든 것이 아니라, <strong>판정이 필요 없는 모양으로 바꿔서 판정을 없앴다.</strong>
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>코스가 생기기 전에도 탭 모드에는 핀이 표시된다 &#8212;
+            <strong>코스가 없을 때만 만들어지는 첫 탭 대기 핀</strong>과,
+            <strong>손을 뗀 0.1초 뒤부터 탭 처리가 끝날 때까지 표시되는 「확인 중」 핀</strong>이다.
+            둘은 <strong>눌러도 할 일이 없다는 점에서 같아 역할값을 공유하고 모양만 다른데</strong>,
+            그 모양은 <strong>출발&#183;도착 스타일을 쓰다가 라벨이 뒤바뀌어 보이는 버그가 나서
+            판정이 필요 없는 중립 모양으로 바꾼 결과</strong>다.
+            <span class="aside">뷰모델이 들고 있는 것은 핀이 아니라 <strong>좌표</strong>이고,
+            핀으로 만드는 것은 핀 목록이다.</span></p>
+          </div>
+
+        </div>
+      </details>
 
     </div>
   </details>
