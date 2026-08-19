@@ -1144,15 +1144,70 @@ source"* · `MKOverlay` 정의·필수 둘 · `protocol MKOverlay : MKAnnotation
 🔑 **처방: 다음 파트부터 처음 나오는 이름을 「구간별로」 뽑는다.** 파트 주제(어노테이션)에서
 연상되는 것만 뽑으면 **다른 구간이 끌어오는 이름이 통째로 샌다.**
 
-### 📌 파트 3(핀)이 쓸 재료 — `displayPriority`는 기본값과 같다
+### ✅ `displayPriority` 판정 — **죽은 줄이 아니다. 백로그에 올리지 않는다** (2026-08-19 완료)
 
-`:468-470`은 두 줄(`displayPriority = .required` · `collisionMode = .none`)인데,
-**애플 문서가 `displayPriority`의 기본값을 `.required`라고 명시한다**(*"Defaults to `required`"*).
-게다가 MapKit JS 문서는 **`collisionMode`가 `.none`이면 priority를 무시한다**고 적는다
-(*"The system ignores this priority setting if the collisionMode is set to None"*).
-→ **그 줄은 기본값을 다시 적은 것이고, 겹침을 실제로 막는 것은 `collisionMode` 쪽이다.**
-파트 2 노트에는 *"코드에 한 줄 더 있는데 실제로 막는 것은 `collisionMode`, 나머지는 파트 3에서"*
-한 마디만 넣었다. **파트 3에서 이 판정을 마무리하고, 「죽은 줄」로 판정되면 백로그에 올린다.**
+> 이 항목은 원래 📌 *"`displayPriority`는 기본값과 같다"*였다. **전제가 틀렸다.**
+> **트리거(「죽은 줄이면 백로그에 올린다」)는 발동하지 않았다 — 다시 열지 말 것.**
+
+**무엇이 틀렸나.** 근거였던 *"Defaults to `required`"*는 **`MKAnnotationView`(베이스 클래스)
+문서의 문장**이고, 코드가 실제로 만드는 것은 **`MKMarkerAnnotationView`**(`:464`)다.
+그 클래스 문서는 이렇게 적는다:
+
+> The default `displayPriority` for an instance of this class is `defaultLow`.
+
+→ `view.displayPriority = .required`는 **`.defaultLow`를 `.required`로 올리는 살아 있는 줄이다.**
+애플 문서의 두 문장은 서로 모순이 아니다 — **서브클래스 재정의를 못 보면 죽은 줄로 보인다.**
+
+**🔴 MapKit JS 근거는 폐기한다.** *"collisionMode가 `.none`이면 priority를 무시한다"*는
+**MapKit JS 문서의 문장이고 UIKit MapKit의 근거가 될 수 없다**(다른 프레임워크·다른 구현).
+iOS `.none` 문서는 *"A constant indicating that collisions can't occur."* 한 줄뿐이고
+**priority를 무시한다는 말은 어디에도 없다.**
+
+**따라서 두 줄은 각자 문서화된 것만 적는다:**
+
+| 줄 | 문서가 말하는 것 |
+|---|---|
+| `collisionMode = .none` | 이 뷰를 **어노테이션 겹침 판정에서 뺀다** |
+| `displayPriority = .required` | 표시 순위를 **서브클래스 기본값 `.defaultLow` 위로 올린다** |
+
+⚠️ **둘 중 하나가 다른 하나를 덮는지는 iOS MapKit 문서에 없다.** 「무시된다」고 쓰지 않는다
+(`unverified-is-not-impossible` — 안 해본 것을 단정하지 않는다). **실측 프로브도 돌리지 않는다**:
+학습 스킬은 코드를 건드리지 않고, 의도는 `:467` 주석에 이미 적혀 있다.
+**이것을 대체 백로그 항목으로 올리지도 않는다** — 사용자에게 보이는 증상이 없고 트리거도 없다.
+
+🔑 **재사용할 교훈: 기본값은 베이스 클래스 페이지가 아니라 「실제로 만드는 클래스」의 문서에서
+확인한다.** 이것은 **「재료 전수는 코드에서 다시 뽑는다」와 같은 가족의 실패**다 —
+한 단계 위에서 읽고 끝냈다.
+
+⚠️ **이 판정 때문에 파트 2 발행본 한 줄을 고쳤다** — 바로 아래 참고.
+
+### ✅ 파트 2 발행본 수정 — 두 줄의 역할 배분 (2026-08-19)
+
+발행본이 *"**겹침을 실제로 막는 것은 `collisionMode` 쪽**이고 나머지는 파트 3에서 본다"*라고
+**둘의 우열을 단정하고 있었다.** 위 판정대로 **그 우열은 iOS 문서에 없다**(게다가
+`.required`는 베이스 클래스 문서가 *"always visible on the map"*이라 적는다).
+→ 우열을 빼고 **`displayPriority`가 무엇을 하는 줄인지만** 적는 문장으로 바꿔 재발행했다.
+**「나머지는 파트 3에서」라는 이어받기는 그대로 살렸다.**
+
+### 🔌 `apple-docs` MCP 검증 결과 — **쓴다. 갈아끼우지 않는다** (2026-08-19)
+
+`.mcp.json` 등록 + `settings.local.json` 활성화까지 끝나 `claude mcp list`에서 `✔ Connected`.
+**실제 조회로 검증했고 절반만 동작한다.**
+
+| 도구 | 결과 |
+|---|---|
+| `search_apple_docs` | ❌ **깨졌다.** `"MKAnnotationView"` 같은 **있을 수밖에 없는 이름도 0건**을 준다 |
+| `get_apple_doc_content` | ✅ 정상 — 본문·선언·플랫폼 가용성까지 최신으로 온다 |
+| `search_framework_symbols` | ✅ 정상 — `framework` + `namePattern`으로 심볼과 URL을 준다 |
+
+**판정: 유지한다.** 깨진 것은 자유 검색 한 개뿐이고, **결정적 사실을 가져온 것은 동작하는
+쪽**이었다. `apple-doc-mcp-server`로 갈아끼우면 **사용자 기준이던 「실시간 최신」을 캐시
+스냅샷과 맞바꾸게 된다** — 우회 가능한 절반 때문에 그러지 않는다.
+
+🔑 **우회 경로 (검색이 0건일 때 이 순서로 간다):**
+`search_framework_symbols(framework:"mapkit", namePattern:"MKMarker*")` → **결과의 URL을 받아**
+→ `get_apple_doc_content(url:)`. 심볼 이름을 이미 알면 URL을 직접 조립해 2단계를 건너뛴다.
+⚠️ **`/documentation/mapkitjs/**`는 이 서버로 404다** — MapKit JS 문서는 여기서 못 읽는다.
 
 ### 낮은 우선순위 (고치지 않음 — 판단 근거를 남긴다)
 
@@ -1164,7 +1219,8 @@ source"* · `MKOverlay` 정의·필수 둘 · `protocol MKOverlay : MKAnnotation
 
 ### 다음 — 파트 3 「출발·도착 핀」
 
-파트 2가 넘긴 것 둘: ①**`collisionMode`/`displayPriority` 두 줄의 판정**(위 📌)
+파트 2가 넘긴 것 둘: ①~~`collisionMode`/`displayPriority` 두 줄의 판정~~ → **✅ 2026-08-19 완료**
+(위 「✅ `displayPriority` 판정」 — **살아 있는 줄**. 결과를 파트 3 본문에 그대로 쓴다)
 ②**어노테이션끼리는 층 규칙 밖**이라는 사실(파트 2 구간 ④에서 세웠다 — 다시 세우지 말고 이어받는다).
 
 ---
@@ -1173,7 +1229,11 @@ source"* · `MKOverlay` 정의·필수 둘 · `protocol MKOverlay : MKAnnotation
 
 **파트 3 — 출발·도착 핀** (장면 ③⑤)
 
-### 🔴 먼저 할 것 — `apple-docs` MCP 승인
+### ✅ 먼저 할 것 — `apple-docs` MCP 승인 → **끝났다 (2026-08-19)**
+
+> **승인·연결·실제 조회 검증까지 완료.** 결과와 우회 경로는 위 「🔌 `apple-docs` MCP 검증 결과」에
+> 있다 — 요지는 **`search_apple_docs`만 깨졌고 나머지는 정상, 서버는 유지**다.
+> **아래는 붙일 당시의 기록으로만 남긴다.**
 
 `.mcp.json`에 **`@kimsungwhee/apple-docs-mcp`를 추가했다**(2026-08-19 사용자 요청).
 **세션을 시작하면 승인 프롬프트가 뜬다** — 승인해야 도구가 붙는다(`claude mcp list`에서
@@ -1210,11 +1270,11 @@ source"* · `MKOverlay` 정의·필수 둘 · `protocol MKOverlay : MKAnnotation
 
 ### 파트 2가 넘긴 것 둘 — 이어서 받는다
 
-1. 📌 **`displayPriority = .required`의 판정을 마무리한다.** 애플 문서가 **기본값이
-   `.required`**라 하고(*"Defaults to `required`"*), MapKit JS 문서는 **`collisionMode`가
-   `.none`이면 priority를 무시한다**고 적는다. → **기본값을 다시 적은 죽은 줄로 보인다.**
-   **파트 3에서 판정하고, 죽은 줄이면 `docs/backlog.md`에 올린다.**
-   🔑 **새로 붙인 `apple-docs` MCP로 iOS 문서를 확인하면 이 판정과 MCP 검증이 한 번에 된다.**
+1. ✅ **`displayPriority = .required`의 판정 — 끝났다 (2026-08-19).**
+   **죽은 줄이 아니다.** `MKMarkerAnnotationView`의 기본값이 `.defaultLow`라서 이 줄이
+   `.required`로 올린다. *"Defaults to `required`"*는 **베이스 클래스 쪽 문장**이었다.
+   **백로그 트리거는 발동하지 않았다 — 다시 열지 말 것.** MapKit JS 근거는 폐기.
+   전문과 파트 3 본문에 쓸 표현은 위 「✅ `displayPriority` 판정」에 있다.
 2. **어노테이션끼리는 층 규칙 밖**이라는 사실은 **파트 2 구간 ④에서 이미 세웠다.**
    다시 세우지 말고 **이어받는다** — 핀이 사라졌던 사건의 원인(거리 라벨과의 겹침)도 거기 있다.
    **파트 3은 「핀 쪽에서 무엇을 했나」를 가져간다.**
