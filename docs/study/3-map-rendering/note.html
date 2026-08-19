@@ -659,7 +659,7 @@
           <li><strong>어노테이션끼리는 앞뒤가 보장되지 않는다</strong> &#8212; 흰 점을 오버레이로 옮겨 <strong>보장이 있는 관계</strong>로 바꿔 풀었다</li>
           <li>그 방법이 안 되는 자리가 있다 &#8212; 라벨과 핀은 둘 다 어노테이션이라 <strong>겹침 판정을 끄는 다른 방법</strong>을 썼다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">3</span><div><div class="can">출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 서고 언제 하나로 합쳐지는지</strong> 설명할 수 있다</div></div></li>
+      <li class="pending"><span class="k">3</span><div><div class="can">출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 표시되고, 왜 그 모양이며, 눌렀을 때 무엇이 되는지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">4</span><div><div class="can">구간 경계의 흰 점이 <strong>왜 선이 아니라 따로 만든 오버레이인지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">5</span><div><div class="can">고른 구간이 <strong>왜 굵어지고 후광이 깔리는지, 그 순서가 어떻게 정해지는지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">6</span><div><div class="can">좌표가 같은 두 구간이 <strong>왜 화면에서는 두 줄로 보이는지</strong> 설명할 수 있다</div></div></li>
@@ -2130,35 +2130,32 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
 
       <div class="goal">
         <span class="tag">이 파트를 끝내면</span>
-        <p>출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 서고 언제 하나로 합쳐지는지</strong>
-        설명할 수 있다.</p>
+        <p>출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 표시되고, 왜 그 모양이며,
+        눌렀을 때 무엇이 되는지</strong> 설명할 수 있다.</p>
       </div>
 
       <div class="segmap">
         <span class="tag">이 파트의 구간</span>
         <table>
-          <tr><td><a href="#p3s1">구간 &#9312;</a></td><td>코스가 있을 때 서는 핀 &#8212; 출발&#183;도착, 그리고 둘이 하나로 합쳐지는 조건</td></tr>
+          <tr><td><a href="#p3s1">구간 &#9312;</a></td><td>코스가 있을 때 표시되는 핀 &#8212; 출발&#183;도착, 그리고 둘이 하나로 합쳐지는 조건</td></tr>
           <tr><td><a href="#p3s2">구간 &#9313;</a></td><td>아직 코스가 아닐 때 표시되는 핀 &#8212; 첫 탭 대기와 「확인 중」</td></tr>
-          <tr><td>구간 &#9314;</td><td>핀 하나를 만드는 데 타입이 둘인 이유</td></tr>
-          <tr><td>구간 &#9315;</td><td>핀이 바뀌면 통째로 갈아끼운다</td></tr>
-          <tr><td>구간 &#9316;</td><td>핀은 애플 기성품이다 &#8212; 기성품이 주는 것과 안 주는 것</td></tr>
-          <tr><td>구간 &#9317;</td><td>핀을 누르는 것은 MapKit이 아니다</td></tr>
+          <tr><td>구간 &#9314;</td><td>핀이 바뀌면 통째로 갈아끼운다</td></tr>
+          <tr><td>구간 &#9315;</td><td>핀은 애플 기성품이다 &#8212; 기성품이 주는 것과 안 주는 것</td></tr>
+          <tr><td>구간 &#9316;</td><td>핀을 누르는 것은 MapKit이 아니다</td></tr>
         </table>
         <p class="hint">
           <strong>왜 이 순서인가.</strong> &#9312;&#9313;가 <strong>「몇 개가 어떤 모습으로
-          서는가」를 정하는 자리</strong>다 &#8212; 능력 선언이 직접 묻는 것이 여기 있다.
-          &#9314;&#9315;는 그렇게 정해진 목록이 <strong>화면까지 가는 경로</strong>이고,
-          &#9316;는 <strong>실제로 그려지는 모습</strong>, &#9317;은 <strong>그려진 핀을
-          눌렀을 때</strong>다. &#9314;를 먼저 보면 그 타입들이 무엇을 나르는지 모르는 채로
-          선언만 읽게 된다.<br>
+          표시되는가」를 정하는 자리</strong>다. &#9314;는 그렇게 정해진 목록이
+          <strong>화면에 반영되는 방식</strong>, &#9315;는 <strong>실제로 그려지는 모습</strong>,
+          &#9316;은 <strong>그려진 핀을 눌렀을 때</strong>다.<br>
           <strong>모드가 갈리는 구간이 둘 있다.</strong> &#9313;는 <strong>탭 모드에만</strong>
-          있는 장면이고(그리기에는 첫 탭 대기가 없다), &#9317;은 둘 다 지나가되
+          있는 장면이고(그리기에는 첫 탭 대기가 없다), &#9316;은 둘 다 지나가되
           <strong>받는 쪽이 다르다</strong>.
         </p>
       </div>
 
       <details class="seg" id="p3s1" open>
-        <summary>구간 &#9312; &#8212; 코스가 있을 때 서는 핀: 출발&#183;도착, 그리고 둘이 하나로 합쳐지는 조건</summary>
+        <summary>구간 &#9312; &#8212; 코스가 있을 때 표시되는 핀: 출발&#183;도착, 그리고 둘이 하나로 합쳐지는 조건</summary>
         <div class="segbody">
 
           <div class="segintro">
@@ -2319,7 +2316,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             거기에 초록 핀과 빨강 핀을 그대로 두면 <strong>하나가 다른 하나를 가려서 어느 쪽이
             위인지 알 수 없다.</strong> 그래서 <strong>애초에 하나만 만들고, 그것이 둘을 겸한다는
             표시(체크무늬 깃발 배지)를 그 핀에 붙였다.</strong>
-            <em>배지를 어떻게 붙였는지는 구간 &#9316;에서 본다.</em>
+            <em>배지를 어떻게 붙였는지는 구간 &#9315;에서 본다.</em>
           </p>
 
 
@@ -2594,7 +2591,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
           <p>
             <strong>핀의 역할값은 그 핀을 눌렀을 때 무엇으로 취급할지를 가르는 데 쓰인다.</strong>
             코스에서 나온 핀들은 역할값에 따라 하는 일이 서로 다르다.
-            <em>무엇이 어떻게 갈리는지는 구간 &#9317;에서 본다.</em>
+            <em>무엇이 어떻게 갈리는지는 구간 &#9316;에서 본다.</em>
           </p>
 
           <p>
