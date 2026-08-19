@@ -590,6 +590,7 @@
     <li><span class="k"><i class="kf">소개</i><i class="ks">소3</i></span><a href="#map" data-target="map" title="소개 3 — 장면 ↔ 맡은 부품">장면 ↔ 맡은 부품</a></li>
     <li><span class="k"><i class="kf">복습</i><i class="ks">복</i></span><a href="#recap" data-target="recap" title="3분 복습">3분 복습</a></li>
     <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 구간마다 색이 다른 선">색이 다른 선</a></li>
+    <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 선 한가운데 거리 라벨">거리 라벨</a></li>
     <li><span class="k"><i class="kf">골격</i><i class="ks">골</i></span><a href="#bg1" data-target="bg1" title="골격 — 화면에 안 보이는 부분">SwiftUI 밖으로</a></li>
   </ol>
 </nav>
@@ -611,7 +612,7 @@
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 &#8596; 맡은 부품</a></li>
       <li class="on"><span class="k">1</span><a href="#p1">구간마다 색이 다른 선</a></li>
-      <li class="todo"><span class="k">2</span>선 한가운데 거리 라벨</li>
+      <li class="on"><span class="k">2</span><a href="#p2">선 한가운데 거리 라벨</a></li>
       <li class="todo"><span class="k">3</span>출발&#183;도착 핀</li>
       <li class="todo"><span class="k">4</span>구간 경계의 흰 점</li>
       <li class="todo"><span class="k">5</span>고른 구간이 굵어지고 후광이 깔린다</li>
@@ -644,7 +645,7 @@
           <li>색·굵기를 들고 있는 것은 <strong>오버레이가 아니라 렌더러</strong>다 — 오버레이마다 하나씩 만들어져 <strong>지도가 보관</strong>한다</li>
           <li>선택이 바뀌면 오버레이를 다시 만들지 않고 <strong>보관된 렌더러의 굵기만 고친 뒤</strong> <code>setNeedsDisplay()</code>로 다시 칠하라고 알린다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">2</span><div><div class="can">거리 라벨(선 위의 <em>“320m”</em>)이 <strong>왜 그 자리에 그 색으로 붙는지</strong> 설명할 수 있다</div></div></li>
+      <li><span class="k">2</span><div><div class="can">거리 라벨(선 위의 <em>“320m”</em>)이 <strong>무엇으로 만들어져 왜 그 자리에 그 색으로 붙고, 왜 다른 것에 안 가려지는지</strong> 설명할 수 있다</div><div class="sum">구간 선 한가운데에 <strong>그 선과 같은 색</strong> 배경의 라벨이 붙어 그 구간이 몇 미터인지 보여준다. 그 글자가 <strong>선과는 다른 갈래로</strong> 지도에 얹힌다는 것, 찍는 자리를 <strong>실거리 절반</strong>으로 정한 이유, 화면의 글자로 바꾸는 것이 누구인지, 그리고 <strong>어느 층에 놓여서</strong> 안 가려지는지를 본다.</div></div></li>
       <li class="pending"><span class="k">3</span><div><div class="can">출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 서고 언제 하나로 합쳐지는지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">4</span><div><div class="can">구간 경계의 흰 점이 <strong>왜 선이 아니라 따로 만든 오버레이인지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">5</span><div><div class="can">고른 구간이 <strong>왜 굵어지고 후광이 깔리는지, 그 순서가 어떻게 정해지는지</strong> 설명할 수 있다</div></div></li>
@@ -1578,6 +1579,47 @@ draw 가 렌더러의 굵기·색을 읽어 칠한다          <span class="c">�
 
 
       <a class="backtop" href="#toc">↑ 목차로</a>
+
+    </div>
+  </details>
+
+  <details class="part" id="p2" open>
+    <summary>
+      <span class="part-tag">파트 2</span>
+      <span class="ptitle">선 한가운데 거리 라벨</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트가 만드는 화면</span>
+        구간 선 한가운데에 <strong>작은 색 라벨</strong>이 붙어 그 구간이 몇 미터인지(<em>“320m”</em>)
+        보여준다 &#8212; 라벨의 배경색이 <strong>그 선과 같은 색</strong>이다.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>거리 라벨이 <strong>무엇으로 만들어져 왜 그 자리에 그 색으로 붙고, 왜 다른 것에
+        안 가려지는지</strong> 설명할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr><td><a href="#p2s1">구간 &#9312;</a></td><td>선 위의 글자는 선이 아니라 따로 얹은 것이다</td></tr>
+          <tr><td><a href="#p2s2">구간 &#9313;</a></td><td>라벨을 선의 어디에 찍나 &#8212; 인덱스 절반과 실거리 절반</td></tr>
+          <tr><td><a href="#p2s3">구간 &#9314;</a></td><td>그 데이터를 화면의 글자로 바꾸는 것은 누가 하나</td></tr>
+          <tr><td><a href="#p2s4">구간 &#9315;</a></td><td>라벨이 경유점에 안 가려지는 이유</td></tr>
+        </table>
+        <p class="hint">
+          <strong>순서에 이유가 있다.</strong> &#9312;&#9313;&#9314;는 <strong>라벨 하나를 만드는
+          순서</strong>다 &#8212; &#9312;이 무엇이고 무엇을 담나, &#9313;가 어디에 놓나,
+          &#9314;가 무엇으로 그리나. &#9315;는 <strong>다 만들어 놓은 뒤 다른 것과 겹칠 때</strong>
+          무슨 일이 생기는지라 마지막이다. &#9315;가 필요로 하는 것은
+          <strong>&#9312;(라벨이 어노테이션이라는 것)뿐</strong>이라 &#9314;와는 무관하다.
+        </p>
+      </div>
+
+      <a class="backtop" href="#toc">&#8593; 목차로</a>
 
     </div>
   </details>
@@ -3143,8 +3185,9 @@ Coordinator
   </section>
 
   <div class="next">
-    <strong>다음 — 파트 2 「지도에 추가하는 것을 어떤 타입으로 만드나」.</strong>
-    파트 1은 여기까지다. 링크는 그대로 유지된다.
+    <strong>다음 &#8212; 파트 2 「선 한가운데 거리 라벨」의 구간 &#9312;.</strong>
+    파트 2는 지금 <strong>머리와 구간 표까지</strong> 세워져 있고 본문은 구간마다 붙여 나간다.
+    링크는 그대로 유지된다.
   </div>
 
 </div>
