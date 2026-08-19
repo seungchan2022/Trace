@@ -2213,6 +2213,53 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
               이 구간에서 다룰 <strong>출발 핀</strong>이다.
               <em>앞엣것이 무엇이고 언제 사라지는지는 구간 &#9313;에서 본다.</em>
             </p>
+
+            <figure>
+              <svg viewBox="0 0 600 268" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                   role="img" aria-labelledby="p3-samespot-t p3-samespot-d">
+                <title id="p3-samespot-t">첫 탭 대기 핀과 출발 핀은 다른 핀이다</title>
+                <desc id="p3-samespot-d">첫 탭을 찍으면 누른 자리에 초록 핀이 선다. 코스가 생기는 순간 그 핀은 버려지고, 길찾기가 도로에 붙인 첫 좌표에 출발 핀이 새로 만들어진다. 모양이 같아 한 핀이 계속 서 있는 것처럼 보인다.</desc>
+                <defs>
+                  <marker id="p3-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0, 8 3, 0 6" fill="#A3BFBA"/>
+                  </marker>
+                </defs>
+                <rect width="600" height="268" fill="#FFFFFF"/>
+
+                <rect x="20" y="16" width="240" height="188" rx="10" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+                <text x="140" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">첫 탭을 찍은 뒤</text>
+
+                <path d="M60 150 H 220" stroke="#C7D6D3" stroke-width="2" stroke-dasharray="5 4" fill="none"/>
+                <text x="140" y="170" text-anchor="middle" font-size="13" fill="#93A8A4" font-family="-apple-system, BlinkMacSystemFont, sans-serif">도로</text>
+                <circle cx="140" cy="112" r="11" fill="#06B6A4"/>
+                <circle cx="140" cy="112" r="4.5" fill="#FFFFFF"/>
+                <text x="140" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">첫 탭 대기 핀</text>
+                <text x="140" y="192" text-anchor="middle" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">누른 자리 그대로</text>
+
+                <path d="M266 110 H 328" stroke="#A3BFBA" stroke-width="1.6" fill="none" marker-end="url(#p3-arr)"/>
+                <text x="297" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">코스가</text>
+                <text x="297" y="134" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">생기는 순간</text>
+
+                <rect x="336" y="16" width="244" height="188" rx="10" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.6"/>
+                <text x="458" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">코스가 생긴 뒤</text>
+
+                <path d="M376 150 H 540" stroke="#8FA8A4" stroke-width="2" fill="none"/>
+                <text x="458" y="170" text-anchor="middle" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">도로</text>
+                <circle cx="452" cy="112" r="11" fill="#C7D6D3"/>
+                <text x="452" y="117" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#10005;</text>
+                <text x="452" y="90" text-anchor="middle" font-size="13" fill="#7C8F8B" font-family="-apple-system, BlinkMacSystemFont, sans-serif">버려진다</text>
+
+                <circle cx="452" cy="150" r="11" fill="#06B6A4"/>
+                <circle cx="452" cy="150" r="4.5" fill="#FFFFFF"/>
+                <path d="M452 128 V 136" stroke="#7C8F8B" stroke-width="1.4" stroke-dasharray="3 3" fill="none"/>
+                <text x="516" y="147" text-anchor="middle" font-size="13" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">출발 핀</text>
+                <text x="458" y="192" text-anchor="middle" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">도로에 붙은 자리에 새로 선다</text>
+
+                <text x="300" y="232" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">모양이 같아 한 핀이 계속 서 있는 것처럼 보이지만,</text>
+                <text x="300" y="252" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">앞엣것은 버려지고 다른 핀이 새로 만들어진 것이다.</text>
+              </svg>
+              <figcaption>같은 자리에 같은 모양이어도 같은 핀이 아니다</figcaption>
+            </figure>
           </div>
 
           <p class="later">
@@ -2274,6 +2321,54 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             표시(체크무늬 깃발 배지)를 그 핀에 붙였다.</strong>
             <em>배지를 어떻게 붙였는지는 구간 &#9316;에서 본다.</em>
           </p>
+
+
+          <figure>
+            <svg viewBox="0 0 600 330" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p3-count-t p3-count-d">
+              <title id="p3-count-t">코스가 있을 때 핀이 몇 개 어디에 서는가</title>
+              <desc id="p3-count-d">코스의 첫 좌표와 끝 좌표 사이 거리가 연결 임계값 밖이면 맨 앞에 출발 핀, 맨 뒤에 도착 핀 두 개가 선다. 임계값 안이면 둘 대신 병합 핀 하나만 서고 체크무늬 깃발 배지가 붙는다.</desc>
+              <defs>
+                <marker id="p3-arr2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                  <polygon points="0 0, 8 3, 0 6" fill="#A3BFBA"/>
+                </marker>
+              </defs>
+              <rect width="600" height="330" fill="#FFFFFF"/>
+
+              <rect x="130" y="14" width="340" height="46" rx="8" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="300" y="35" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">첫 좌표와 끝 좌표 사이 거리가</text>
+              <text x="300" y="53" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">연결 임계값 안인가?</text>
+
+              <path d="M210 60 V 82 H 150 V 104" stroke="#A3BFBA" stroke-width="1.6" fill="none" marker-end="url(#p3-arr2)"/>
+              <path d="M390 60 V 82 H 452 V 104" stroke="#A3BFBA" stroke-width="1.6" fill="none" marker-end="url(#p3-arr2)"/>
+              <text x="122" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">아니오</text>
+              <text x="482" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">예</text>
+
+              <rect x="24" y="108" width="252" height="204" rx="10" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="150" y="132" text-anchor="middle" font-size="13" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">열린 코스 &#8212; 핀 2개</text>
+
+              <path d="M62 196 C 100 168, 148 232, 186 196 S 236 172, 238 196" stroke="#06B6A4" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <circle cx="62" cy="196" r="11" fill="#06B6A4"/><circle cx="62" cy="196" r="4.5" fill="#FFFFFF"/>
+              <circle cx="238" cy="196" r="11" fill="#D94A45"/><circle cx="238" cy="196" r="4.5" fill="#FFFFFF"/>
+              <text x="62" y="176" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">출발</text>
+              <text x="238" y="176" text-anchor="middle" font-size="13" font-weight="700" fill="#A33A36" font-family="-apple-system, BlinkMacSystemFont, sans-serif">도착</text>
+              <text x="62" y="240" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">first</text>
+              <text x="238" y="240" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">last</text>
+              <text x="150" y="272" text-anchor="middle" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">좌표 목록의 맨 앞과 맨 뒤 &#8212;</text>
+              <text x="150" y="292" text-anchor="middle" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">경로의 양 끝에 하나씩</text>
+
+              <rect x="324" y="108" width="252" height="204" rx="10" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="450" y="132" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">닫힌 코스 &#8212; 핀 1개</text>
+
+              <path d="M450 168 C 512 168, 522 236, 450 236 C 378 236, 388 168, 450 168 Z" stroke="#06B6A4" stroke-width="3" fill="none"/>
+              <circle cx="450" cy="168" r="11" fill="#06B6A4"/><circle cx="450" cy="168" r="4.5" fill="#FFFFFF"/>
+              <circle cx="464" cy="156" r="7.5" fill="#D94A45"/>
+              <text x="450" y="146" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">출발/도착</text>
+              <text x="450" y="272" text-anchor="middle" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">사실상 같은 자리라 하나로 합치고,</text>
+              <text x="450" y="292" text-anchor="middle" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">깃발 배지로 둘을 겸한다고 표시한다</text>
+            </svg>
+            <figcaption>코스가 있을 때 핀이 몇 개 어디에 서는가</figcaption>
+          </figure>
 
           <p>
             여기까지 오면 <strong>같은 문제에 답이 둘</strong>이라는 것이 보인다. 2번의 방어 조건과
