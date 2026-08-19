@@ -1964,6 +1964,124 @@ uiView.addAnnotation(annotation)</pre>
         </div>
       </details>
 
+      <details class="seg" id="p2s4" open>
+        <summary>구간 &#9315; &#8212; 라벨이 경유점에 안 가려지는 이유</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간 선 위에는 거리 라벨도 있고 <strong>구간 경계의 흰 점</strong>도 있다. 둘이 겹치면
+              <strong>라벨이 위에 온다.</strong> 그것은 우연이 아니라 <strong>MapKit이 보장하는
+              것</strong>이고, 그 보장을 얻으려고 흰 점을 다른 층으로 옮겼다. 어떤 보장이고
+              <strong>어디까지만 적용되는지</strong>를 본다. <em>구간 &#9312;&#9313;&#9314;가
+              「라벨 하나를 만드는 일」이었다면, 여기는 <strong>다 만들어 놓은 뒤 다른 것과 겹칠
+              때</strong>의 이야기다.</em></p>
+          </div>
+
+          <h4>1. 실기기에서 흰 점이 라벨을 가렸고, 두 번 고쳤는데 두 번 다 재발했다</h4>
+
+          <p>
+            2026-07-04 실기기 QA에서 나온 증상이다. 구간을 여러 개 이어 붙이면 경계마다 흰 점이 찍히는데,
+            <strong>그 점이 거리 라벨 위에 올라와 글자를 덮었다.</strong>
+          </p>
+
+          <p>
+            <strong>당시 흰 점은 어노테이션이었다.</strong> 라벨도 어노테이션이니 <strong>둘은 같은 층에
+            있었고</strong>, 고치는 방향도 자연히 <em>&#8220;같은 층 안에서 순서를 정하자&#8221;</em>가 됐다.
+            아래 두 시도는 <strong>전부 어노테이션끼리의 앞뒤를 정해보려던 것</strong>이다.
+          </p>
+
+          <div class="bounds">
+            <div class="bd"><span class="lb">1차</span>
+              <span>그리는 순서 값(<code>zPosition</code>)을 조정했다 &#8212; <strong>실기기에서 재발</strong></span></div>
+            <div class="bd"><span class="lb">2차</span>
+              <span>지도에 추가하는 순서를 바꿨다 &#8212; <strong>또 재발</strong></span></div>
+          </div>
+
+          <p>
+            원인은 <strong>어노테이션끼리의 앞뒤가 안정적으로 보장되지 않는다</strong>는 것이었다.
+            순서를 어떻게 정해도 지도가 그대로 그려준다는 보장이 없으니,
+            <strong>조정으로는 풀리지 않는 문제</strong>였다.
+          </p>
+
+          <h4>2. 세 번째는 순서를 조정하지 않고 층을 옮겼다</h4>
+
+          <p>
+            흰 점을 <strong>어노테이션에서 오버레이로 바꿨다.</strong> 여기서 말하는 오버레이는
+            <strong>파트 1에서 구간 선을 넣던 그 오버레이</strong>다 &#8212; SwiftUI의
+            <code>.overlay { }</code>와는 관계가 없다. 들어가는 통로도 같다.
+          </p>
+
+          <pre class="code">uiView.addOverlay(casing)                                   <span class="c">// 파트 1 — 케이싱</span>
+uiView.addOverlay(polyline)                                 <span class="c">// 파트 1 — 색 선</span>
+uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :288 — 흰 점</span></pre>
+
+          <p>
+            근거는 코드에 주석으로 적혀 있다(<code>:104</code>) &#8212;
+            <em>&#8220;MapKit은 오버레이를 항상 애노테이션보다 아래에 그린다&#8221;</em>.
+            <strong>오버레이와 어노테이션 사이에는 순서 보장이 있다.</strong> 흰 점이 오버레이가 되는
+            순간 <strong>라벨보다 아래라는 것이 구조적으로 정해지고</strong>, 더는 순서를 조정할 일이
+            없어진다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 앱이 고른 지점</span>
+            <p>당시 회고가 이렇게 적었다 &#8212; <em>&#8220;같은 층위 안에서 순서 조정보다
+              <strong>다른 층위로 옮기기</strong>가 더 안정적이다&#8221;</em>.
+              라벨이 안 가려지는 것은 <strong>라벨이 세서가 아니라 상대가 아래 층으로 내려가서</strong>다.</p>
+          </div>
+
+          <p class="later">
+            흰 점을 오버레이로 만드는 이야기 자체는 <strong>파트 4</strong>가 다룬다.
+          </p>
+
+          <h4>3. 그 보장은 어노테이션끼리에는 아무 말도 하지 않는다</h4>
+
+          <p>
+            층 규칙은 <strong>오버레이와 어노테이션 사이</strong>의 이야기다.
+            <strong>어노테이션끼리는 그 규칙 밖</strong>이고, 라벨과 출발&#183;도착 핀은 둘 다
+            어노테이션이라 여전히 같은 층에 있다. 화면에서 이렇게 나타났다.
+          </p>
+
+          <div class="bounds">
+            <div class="bd"><span class="lb">증상</span>
+              <span>짧은 코스를 만들면 <strong>도착 핀이 아예 안 보였다.</strong> 출발점과 도착점이
+                가까운데 거리 라벨은 선 한가운데에 붙으니, 짧으면 셋이 한자리에 몰린다</span></div>
+            <div class="bd"><span class="lb">원인</span>
+              <span>어노테이션끼리 겹치면 <strong>MapKit이 하나를 골라 감춘다.</strong> 지도가 글자
+                범벅이 되지 않게 하는 기본 동작인데, 감춰진 것이 핀이었다 &#8212; 당시 원인을 코스 계산
+                쪽에서 찾다가 <strong>순수한 렌더링 문제</strong>로 밝혀졌다</span></div>
+            <div class="bd"><span class="lb">고침</span>
+              <span><strong>핀 뷰에만</strong> <code>collisionMode = .none</code>을 달았다. 애플 문서
+                그대로 <em>&#8220;Collisions cannot occur for this annotation view&#8221;</em> &#8212;
+                <strong>이 뷰는 겹침 판정에서 아예 빠진다</strong></span></div>
+            <div class="bd here"><span class="lb">결과</span>
+              <span>라벨과 겹쳐도 <strong>핀이 그대로 보인다</strong></span></div>
+          </div>
+
+          <p>
+            핀은 오버레이로 내릴 수 없다 &#8212; <strong>눌러야 하는 것이고 지도 위에 서 있어야</strong>
+            한다. 그래서 <strong>라벨과 핀은 둘 다 어노테이션으로 남을 수밖에 없었고</strong>,
+            2번의 방법을 쓸 수 없는 자리였다.
+          </p>
+
+          <p class="later">
+            핀 이야기 자체는 <strong>파트 3</strong>이 다룬다. 여기서 짚을 것은
+            <strong>원인이 거리 라벨과의 겹침이었다</strong>는 것이다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p><strong>어노테이션끼리는 앞뒤가 보장되지 않는다.</strong> 그래서 흰 점을 어노테이션에서
+              오버레이로 옮겨 <strong>보장이 있는 관계</strong>(오버레이는 항상 어노테이션 아래)로 바꿔
+              풀었다 &#8212; 같은 층 안에서 순서를 조정하는 것으로는 두 번 다 실패했다.
+              <strong>다만 이 방법이 모든 자리에 되는 것은 아니다</strong> &#8212; 라벨과 핀은 둘 다
+              어노테이션으로 남아야 해서, 거기서는 <strong>겹침 판정을 끄는 다른 방법</strong>을 썼다.</p>
+          </div>
+
+        </div>
+      </details>
+
       <a class="backtop" href="#toc">&#8593; 목차로</a>
 
     </div>
