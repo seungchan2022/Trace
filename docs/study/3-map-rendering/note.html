@@ -1667,8 +1667,8 @@ draw 가 렌더러의 굵기·색을 읽어 칠한다          <span class="c">�
 
           <p>
             <strong>여기 없는 것은 생김새다.</strong> 글꼴도, 글자 크기도, 모서리를 얼마나 둥글릴지도
-            없다. 들고 있는 셋은 전부 <strong>무엇을 담을지</strong>(어디에 &#183; 무슨 글자 &#183;
-            무슨 색)이고, <strong>어떻게 보일지</strong>는 하나도 없다.
+            없다. <strong>무슨 색으로 칠할지는 들고 있지만</strong>(<code>color</code>)
+            <strong>어떻게 생길지는 하나도 없다.</strong>
           </p>
 
           <h4>2. 어노테이션은 「이 좌표에 내용이 있다」는 데이터다</h4>
@@ -1737,10 +1737,18 @@ uiView.addAnnotation(annotation)</pre>
 
           <p>
             <code>320.4</code>라는 <strong>숫자</strong>가 여기서 <em>&#8220;320m&#8221;</em>이라는
-            <strong>글자</strong>가 된다. 색은 <strong>파트 1에서 선이 쓰던 그 함수에 그 번호를 그대로
-            넘긴다</strong> &#8212; 라벨 배경색이 선 색과 같은 이유가 이것이다. 맞춘 것이 아니라
-            <strong>같은 곳에서 같은 값을 받는다.</strong> 좌표만 이 파트에서 새로 만드는 것이고,
-            <strong>구간 &#9313;가 통째로 다룬다.</strong>
+            <strong>글자</strong>가 된다. 색은 <strong>파트 1에서 선이 쓰던 그 함수</strong>
+            (<code>SegmentPalette.color(at:)</code>)<strong>에 그 번호를 그대로 넘긴다</strong> &#8212;
+            라벨 배경색이 선 색과 같은 이유가 이것이다. 맞춘 것이 아니라
+            <strong>같은 함수에 같은 번호를 넘겨 같은 색을 얻는다.</strong> 좌표만 이 파트에서 새로
+            만드는 것이고, <strong>구간 &#9313;가 통째로 다룬다.</strong>
+          </p>
+
+          <p>
+            다만 <strong>색을 얻는 시점이 선과 다르다.</strong> 파트 1의 <code>SegmentPolyline</code>은
+            <strong>번호(<code>colorKey</code>)만 싣고 색은 들고 있지 않다</strong> &#8212; 그릴 때
+            렌더러가 그 번호로 색을 얻는다(<em>&#8220;색을 들고 있는 것은 오버레이가 아니라 렌더러&#8221;</em>).
+            라벨은 <strong>만들 때 색을 얻어 들고 간다.</strong> 그래서 선언에 <code>color</code>가 있다.
           </p>
 
           <div class="tablewrap">
@@ -1800,7 +1808,9 @@ uiView.addAnnotation(annotation)</pre>
           <h4>2. 원인은 길찾기가 돌려주는 좌표의 간격이 일정하지 않다는 것이었다</h4>
 
           <p>
-            <code>MKDirections</code>가 돌려주는 좌표는 <strong>일정한 간격으로 찍혀 있지 않다.</strong>
+            <code>MKDirections</code>는 <strong>애플이 준 길찾기</strong>다 &#8212; 출발점과 도착점을
+            주면 <strong>도로를 따라가는 좌표 목록</strong>을 돌려준다(청크 1 파트 2에서 다룬 그것이다).
+            그런데 그 좌표는 <strong>일정한 간격으로 찍혀 있지 않다.</strong>
             길이 휘는 곳에서는 모양을 살리려고 촘촘하게 찍고, 곧게 뻗은 곳에서는 듬성하게 찍는다.
           </p>
 
@@ -2066,7 +2076,9 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             <div class="bd"><span class="lb">고침</span>
               <span><strong>핀 뷰에만</strong> <code>collisionMode = .none</code>을 달았다. 애플 문서
                 그대로 <em>&#8220;Collisions cannot occur for this annotation view&#8221;</em> &#8212;
-                <strong>이 뷰는 겹침 판정에서 아예 빠진다</strong></span></div>
+                <strong>이 뷰는 겹침 판정에서 아예 빠진다.</strong> 코드에는 그 위에 한 줄이 더 달려
+                있는데(<code>displayPriority</code>), <strong>겹침을 실제로 막는 것은
+                <code>collisionMode</code> 쪽</strong>이고 나머지는 <strong>파트 3</strong>에서 본다</span></div>
             <div class="bd here"><span class="lb">결과</span>
               <span>라벨과 겹쳐도 <strong>핀이 그대로 보인다</strong></span></div>
           </div>
