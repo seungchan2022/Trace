@@ -642,7 +642,7 @@
           <li><code>MKPolyline</code>은 <strong>좌표 배열일 뿐</strong>이라 그것만으로는 화면에 안 그려진다 — 칠하는 것은 렌더러</li>
           <li>선 아래에 띠를 까는 이유는 <strong>지도 배경에 묻히지 않게</strong>다 — 목적이 <strong>대비</strong>라서 밝은 지도에선 흰색, 어두운 지도에선 검정</li>
           <li>선 하나가 <strong>폴리라인 둘</strong>이다 — 넓은 케이싱을 <strong>먼저</strong> 추가해 아래에 깔고 색 선을 위에 얹는다. <strong>굵기 차이가 띠</strong>가 된다</li>
-          <li>렌더러를 <strong>직접 만드는 길도 있었다</strong> — 이 앱은 기성품 둘을 겹치는 쪽을 골랐다</li>
+          <li>렌더러를 <strong>직접 만드는 길도 있었다</strong> — 이 앱은 애플이 주는 렌더러 둘을 겹치는 쪽을 골랐다</li>
           <li>색·굵기를 들고 있는 것은 <strong>오버레이가 아니라 렌더러</strong>다 — 오버레이마다 하나씩 만들어져 <strong>지도가 보관</strong>한다</li>
           <li>선택이 바뀌면 오버레이를 다시 만들지 않고 <strong>보관된 렌더러의 굵기만 고친 뒤</strong> <code>setNeedsDisplay()</code>로 다시 칠하라고 알린다</li>
         </ul></div></li>
@@ -655,7 +655,7 @@
           <li>라벨 좌표는 <strong>배열의 가운데 번째가 아니라 실거리로 절반이 되는 지점</strong>이다 &#8212; 길찾기 좌표는 <strong>간격이 일정하지 않다</strong></li>
           <li>그 좌표는 골라낸 것이 아니라 <strong>계산해서 만든 것</strong>이라 좌표 배열에 없다</li>
           <li>화면의 글자는 <code>viewFor</code>가 돌려주는 뷰가 만들고 <strong>우리가 그 함수를 부르지 않는다</strong> &#8212; 어노테이션인 것은 <strong>전부 그 함수 하나로 들어와</strong> 타입으로 갈린다</li>
-          <li>라벨은 <strong>쓸 만한 기성 뷰가 없어서 직접 만들었다</strong> &#8212; 같은 함수에서 <strong>핀은 애플 기성품을 그대로 쓴다</strong></li>
+          <li>라벨은 <strong>쓸 만한 뷰가 없어서 직접 만들었다</strong> &#8212; 같은 함수에서 <strong>핀은 애플이 제공하는 뷰를 그대로 쓴다</strong></li>
           <li><strong>어노테이션끼리는 앞뒤가 보장되지 않는다</strong> &#8212; 흰 점을 오버레이로 옮겨 <strong>보장이 있는 관계</strong>로 바꿔 풀었다</li>
           <li>그 방법이 안 되는 자리가 있다 &#8212; 라벨과 핀은 둘 다 어노테이션이라 <strong>겹침 판정을 끄는 다른 방법</strong>을 썼다</li>
         </ul></div></li>
@@ -1290,10 +1290,10 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
             화면 모드에 따라 뒤집을 이유가 없다.
           </p>
 
-          <h4>3. 길이 둘이었고 이 앱은 「기성품 둘을 겹치는」 쪽을 골랐다</h4>
+          <h4>3. 길이 둘이었고 이 앱은 「애플이 주는 렌더러 둘을 겹치는」 쪽을 골랐다</h4>
 
           <p>
-            MapKit이 주는 기성품 렌더러(<code>MKPolylineRenderer</code>)에는 선 색과 굵기는 있지만
+            MapKit이 주는 렌더러(<code>MKPolylineRenderer</code>)에는 선 색과 굵기는 있지만
             <strong>테두리에 해당하는 것이 없다.</strong> 그렇다고 <strong>불가능한 것은 아니었다</strong> —
             길이 둘이었다.
           </p>
@@ -1308,7 +1308,7 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
               </tr>
               <tr>
                 <td><strong>&#9425;</strong></td>
-                <td><strong>기성품 렌더러 둘</strong>에 폴리라인 둘을 겹친다</td>
+                <td><strong>MapKit이 주는 렌더러 둘</strong>에 폴리라인 둘을 겹친다</td>
                 <td>객체와 렌더러가 <strong>두 배</strong>가 된다</td>
               </tr>
             </table>
@@ -1317,7 +1317,7 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
           <p>
             <strong>이 앱은 &#9425;를 골랐다.</strong> &#9424;가 불가능해서가 아니다 —
             <strong>같은 파일 안에 &#9424;로 만든 것이 실제로 있다</strong>(구간 경계의 흰 점.
-            <strong>파트 4</strong>에서 본다). 그쪽은 점 여러 개라 기성품으로는 안 되는 모양이었고,
+            <strong>파트 4</strong>에서 본다). 그쪽은 점 여러 개라 MapKit이 주는 것으로는 안 되는 모양이었고,
             그 대가로 <strong>반지름을 확대 배율로 직접 나누는</strong> 코드를 떠안았다.
           </p>
 
@@ -1922,19 +1922,19 @@ uiView.addAnnotation(annotation)</pre>
             모양(파란 점과 퍼지는 원)을 쓴다.
           </p>
 
-          <h4>2. 라벨 뷰는 직접 만들었고, 핀은 기성품을 쓴다 &#8212; 같은 함수 안에 둘 다 있다</h4>
+          <h4>2. 라벨 뷰는 직접 만들었고, 핀은 애플이 제공하는 뷰를 쓴다 &#8212; 같은 함수 안에 둘 다 있다</h4>
 
           <p>핀 쪽은 이 한 줄로 뷰를 얻는다.</p>
 
           <pre class="code">let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "coloredPin")   <span class="c">// :464</span></pre>
 
           <p>
-            <code>MKMarkerAnnotationView</code>는 <strong>애플이 만들어 둔 완성품</strong>이다. 지도에서 흔히
+            <code>MKMarkerAnnotationView</code>는 <strong>애플이 제공하는 뷰</strong>다. 지도에서 흔히
             보는 물방울 모양 핀이고, 색과 안쪽 아이콘만 바꿔주면 된다.
           </p>
 
           <p>
-            라벨에는 그런 완성품이 없다. <strong>글자 조각을 지도에 붙이는 기성 뷰는 MapKit에 없다.</strong>
+            라벨에는 그런 것이 없다. <strong>글자 조각을 지도에 붙이는 뷰는 MapKit이 주지 않는다.</strong>
             그래서 이렇게 만들었다.
           </p>
 
@@ -1951,8 +1951,8 @@ uiView.addAnnotation(annotation)</pre>
 
           <div class="takeaway">
             <span class="tag">이 앱이 고른 지점</span>
-            <p>가른 기준은 <strong>쓸 만한 기성품이 있느냐</strong>다. 파트 1에서 선을 그릴 때는 기성
-              렌더러 둘을 겹쳐 썼는데, 여기서는 <strong>한쪽은 기성품을 쓰고 한쪽은 직접 만들었다.</strong></p>
+            <p>가른 기준은 <strong>쓸 만한 것이 이미 있느냐</strong>다. 파트 1에서 선을 그릴 때는 애플이 주는
+              렌더러 둘을 겹쳐 썼는데, 여기서는 <strong>한쪽은 그대로 쓰고 한쪽은 직접 만들었다.</strong></p>
           </div>
 
           <p>
@@ -1980,8 +1980,8 @@ uiView.addAnnotation(annotation)</pre>
             <p>화면의 글자는 <code>SegmentDistanceAnnotationView</code>가 만들고,
               <strong>우리가 그것을 부르지 않는다</strong> &#8212; 지도가 라벨을 보여야 할 때
               <code>viewFor</code>를 호출한다. 어노테이션인 것은 <strong>전부 그 함수 하나로 들어와서</strong>
-              타입으로 갈리고, 라벨은 <strong>쓸 만한 기성품이 없어서 직접 만든 것</strong>이다 &#8212;
-              같은 함수 안에서 <strong>핀은 애플이 만든 기성품을 그대로 쓴다.</strong></p>
+              타입으로 갈리고, 라벨은 <strong>쓸 만한 것이 없어서 직접 만든 것</strong>이다 &#8212;
+              같은 함수 안에서 <strong>핀은 애플이 제공하는 뷰를 그대로 쓴다.</strong></p>
           </div>
 
         </div>
@@ -2140,7 +2140,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
           <tr><td><a href="#p3s1">구간 &#9312;</a></td><td>코스가 있을 때 표시되는 핀 &#8212; 출발&#183;도착, 그리고 둘이 하나로 합쳐지는 조건</td></tr>
           <tr><td><a href="#p3s2">구간 &#9313;</a></td><td>아직 코스가 아닐 때 표시되는 핀 &#8212; 첫 탭 대기와 「확인 중」</td></tr>
           <tr><td><a href="#p3s3">구간 &#9314;</a></td><td>핀이 바뀌면 통째로 갈아끼운다</td></tr>
-          <tr><td>구간 &#9315;</td><td>핀은 애플 기성품이다 &#8212; 기성품이 주는 것과 안 주는 것</td></tr>
+          <tr><td><a href="#p3s4">구간 &#9315;</a></td><td>핀 뷰는 직접 만들지 않았다 &#8212; 애플이 주는 것과 없어서 얹은 것</td></tr>
           <tr><td>구간 &#9316;</td><td>핀을 누르는 것은 MapKit이 아니다</td></tr>
         </table>
         <p class="hint">
@@ -2777,6 +2777,226 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             목록과 비교하는데, 보는 것은 <strong>「고칠 필요가 있는지」뿐</strong>이라
             <strong>다르면 달라진 것만 고르지 않고 전부 지우고 전부 다시 붙인다</strong> &#8212;
             그 대가가 <strong>안 바뀐 핀까지 다시 등장하는 것</strong>이다.</p>
+          </div>
+
+        </div>
+      </details>
+
+
+      <details class="seg" id="p3s4" open>
+        <summary>구간 &#9315; &#8212; 핀 뷰는 직접 만들지 않았다: 애플이 주는 것과 없어서 얹은 것</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>지금까지 <strong>몇 개가 언제 표시되는지</strong>를 봤다면, 여기는
+              <strong>화면에 어떤 모양으로 그려지는지</strong>다. 핀의 물방울 모양은 이 앱이 그린 것이
+              아니라 <strong>애플이 제공하는 뷰를 그대로 쓴 것</strong>이다.
+              <strong>어디까지가 딸려 온 것이고 어디부터가 이 앱이 정한 것인지</strong>, 그 경계를 본다.</p>
+          </div>
+
+          <h4>1. 핀 뷰는 클래스조차 만들지 않았다</h4>
+
+          <p>
+            <strong>어노테이션을 화면의 뷰로 바꿔주는 함수(<code>viewFor</code>)</strong> 안에서 갈린다
+            &#8212; 파트 2에서 본 그 함수다. 거기서 <strong>거리 라벨은 직접 만든 뷰를 돌려주고,
+            핀은 애플이 제공하는 뷰를 그대로 돌려준다.</strong>
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 600 268" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p3s4a-t p3s4a-d">
+              <title id="p3s4a-t">거리 라벨은 클래스를 만들었고 핀은 만들지 않았다</title>
+              <desc id="p3s4a-d">viewFor는 어노테이션을 화면의 뷰로 바꿔준다. 거리 라벨은 MKAnnotationView를 상속한 새 클래스를 만들어 돌려주고, 핀은 애플이 제공하는 MKMarkerAnnotationView를 새 클래스 없이 그대로 만들어 돌려준다.</desc>
+              <defs><marker id="p3s4-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#A3BFBA"/></marker></defs>
+              <rect width="600" height="268" fill="#FFFFFF"/>
+
+              <rect x="200" y="16" width="200" height="46" rx="8" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="300" y="35" text-anchor="middle" font-size="13" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">어노테이션 &#8594; 화면의 뷰</text>
+              <text x="300" y="53" text-anchor="middle" font-size="12" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">viewFor</text>
+
+              <path d="M250 62 V 84 H 150 V 100" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s4-arr)"/>
+              <path d="M350 62 V 84 H 450 V 100" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s4-arr)"/>
+
+              <rect x="24" y="104" width="252" height="146" rx="10" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="150" y="128" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">거리 라벨 (파트 2)</text>
+              <text x="150" y="152" text-anchor="middle" font-size="13" font-weight="700" fill="#A33A36" font-family="-apple-system, BlinkMacSystemFont, sans-serif">새 클래스를 만들었다</text>
+              <text x="150" y="174" text-anchor="middle" font-size="11.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">MKAnnotationView 를 상속</text>
+              <text x="150" y="196" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">쓸 만한 뷰가 없어서</text>
+              <text x="150" y="214" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">직접 그리는 코드가 들어 있다</text>
+              <text x="150" y="238" text-anchor="middle" font-size="12.5" fill="#7C8F8B" font-family="-apple-system, BlinkMacSystemFont, sans-serif">재사용 창고에서 꺼내 쓴다</text>
+
+              <rect x="324" y="104" width="252" height="146" rx="10" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="450" y="128" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">핀 (여기)</text>
+              <text x="450" y="152" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">클래스를 만들지 않았다</text>
+              <text x="450" y="174" text-anchor="middle" font-size="11.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">MKMarkerAnnotationView 그대로</text>
+              <text x="450" y="196" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">원하던 모양이 이미 있어서</text>
+              <text x="450" y="214" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">프로퍼티만 설정한다</text>
+              <text x="450" y="238" text-anchor="middle" font-size="12.5" fill="#7C8F8B" font-family="-apple-system, BlinkMacSystemFont, sans-serif">매번 새로 만든다 (많아야 셋)</text>
+            </svg>
+            <figcaption>같은 함수 안에서 갈린다 &#8212; 라벨은 클래스를 만들었고, 핀은 만들지 않았다</figcaption>
+          </figure>
+          <p>
+            갈리는 정도가 생각보다 크다. 거리 라벨은 <code>MKAnnotationView</code>를
+            <strong>상속해 새 클래스를 하나 만들었고</strong> 그 안에 직접 그리는 코드가 들어 있다.
+            핀은 <strong>새 클래스를 아예 만들지 않았다</strong> &#8212;
+            <strong><code>MKMarkerAnnotationView</code></strong>(애플 지도 앱에서 보는 그 물방울 모양
+            마커를 그려주는 뷰 클래스)를 <strong>그대로 만들어 쓰면서 프로퍼티만 설정한다.</strong>
+          </p>
+
+          <p class="later">
+            한 가지 차이가 더 있다. 라벨은 <strong>재사용 창고에서 꺼내 쓰는데</strong>
+            (<code>dequeueReusableAnnotationView</code>) <strong>핀은 매번 새로 만든다.</strong>
+            라벨은 구간 수만큼 있어서 재사용이 값을 하지만, <strong>핀은 많아야 셋이라 아낄 것이 없다.</strong>
+          </p>
+
+          <h4>2. 정해주는 것은 다섯 개뿐이다</h4>
+
+          <p>
+            물방울 모양은 딸려 오고, 그 위에 <strong>값 몇 개만 정해주면 된다.</strong>
+            <strong>색(<code>markerTintColor</code>)</strong>과
+            <strong>안의 아이콘(<code>glyphImage</code>)</strong>이 눈에 보이는 둘이고,
+            나머지 셋은 <strong>모양이 아니라 동작</strong>을 정한다.
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 600 300" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p3s4b-t p3s4b-d">
+              <title id="p3s4b-t">핀의 어느 부분이 애플이 준 것이고 어느 부분이 이 앱이 정한 것인가</title>
+              <desc id="p3s4b-d">물방울 모양은 애플이 제공하는 뷰가 그린다. 색은 markerTintColor, 안의 아이콘은 glyphImage로 정한다. 등장 동작과 겹침 관련 값도 프로퍼티로 정한다. 병합 핀의 깃발 배지만 이 앱이 직접 얹은 것이다.</desc>
+              <rect width="600" height="300" fill="#FFFFFF"/>
+
+              <path d="M215 60 C 215 34, 245 22, 268 22 C 291 22, 321 34, 321 60 C 321 92, 268 132, 268 132 C 268 132, 215 92, 215 60 Z"
+                    fill="#06B6A4" stroke="#04796E" stroke-width="1.6"/>
+              <circle cx="268" cy="58" r="19" fill="#FFFFFF"/>
+              <text x="268" y="65" text-anchor="middle" font-size="17" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#127939;</text>
+              <circle cx="312" cy="26" r="13" fill="#D94A45" stroke="#FFFFFF" stroke-width="2"/>
+              <text x="312" y="31" text-anchor="middle" font-size="11" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#127937;</text>
+
+              <path d="M330 26 H 396" stroke="#D94A45" stroke-width="1.4" fill="none"/>
+              <rect x="400" y="10" width="184" height="34" rx="7" fill="#FBEFEE" stroke="#D94A45" stroke-width="1.4"/>
+              <text x="492" y="24" text-anchor="middle" font-size="12.5" font-weight="700" fill="#8A3B37" font-family="-apple-system, BlinkMacSystemFont, sans-serif">깃발 배지</text>
+              <text x="492" y="38" text-anchor="middle" font-size="12" fill="#8A3B37" font-family="-apple-system, BlinkMacSystemFont, sans-serif">이 앱이 직접 얹었다</text>
+
+              <path d="M205 60 H 130" stroke="#A3BFBA" stroke-width="1.4" fill="none"/>
+              <rect x="16" y="44" width="112" height="34" rx="7" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="72" y="58" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">물방울 모양</text>
+              <text x="72" y="72" text-anchor="middle" font-size="12" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">딸려 온다</text>
+
+              <path d="M289 58 H 396" stroke="#A3BFBA" stroke-width="1.4" fill="none"/>
+              <rect x="400" y="52" width="184" height="34" rx="7" fill="#F7FAF9" stroke="#C7D6D3" stroke-width="1.2"/>
+              <text x="492" y="66" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">안의 아이콘</text>
+              <text x="492" y="80" text-anchor="middle" font-size="11.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">glyphImage</text>
+
+              <path d="M240 104 H 130" stroke="#A3BFBA" stroke-width="1.4" fill="none"/>
+              <rect x="16" y="88" width="112" height="34" rx="7" fill="#F7FAF9" stroke="#C7D6D3" stroke-width="1.2"/>
+              <text x="72" y="102" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">물방울 색</text>
+              <text x="72" y="116" text-anchor="middle" font-size="11" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">markerTintColor</text>
+
+              <rect x="16" y="152" width="568" height="130" rx="10" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="34" y="176" font-size="13" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">모양 말고 프로퍼티로 정하는 것</text>
+              <text x="34" y="202" font-size="13" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#183; 지도에 붙을 때 등장 동작을 할지</text>
+              <text x="380" y="202" font-size="11.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">animatesWhenAdded</text>
+              <text x="34" y="228" font-size="13" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#183; 겹침 판정에 참여할지 &#8212; 빠진다</text>
+              <text x="380" y="228" font-size="11.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">collisionMode = .none</text>
+              <text x="34" y="254" font-size="13" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#183; 붐빌 때 감춰지는 순위 &#8212; 올린다</text>
+              <text x="380" y="254" font-size="11.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">displayPriority = .required</text>
+              <text x="34" y="274" font-size="12" fill="#7C8F8B" font-family="-apple-system, BlinkMacSystemFont, sans-serif">모양 자체는 값으로 못 바꾼다 &#8212; 바꾸려면 라벨처럼 직접 만들어야 한다</text>
+            </svg>
+            <figcaption>어디까지가 애플이 준 것이고 어디부터가 이 앱이 정한 것인가</figcaption>
+          </figure>
+          <p>
+            <strong>겹침 관련 두 값이 파트 2가 넘긴 자리다.</strong> 파트 2에서
+            <em>&#8220;라벨과 핀이 겹치자 핀이 사라졌다&#8221;</em>고 한 사건의
+            <strong>핀 쪽 처리</strong>가 이 둘이다 &#8212;
+            <strong><code>collisionMode = .none</code></strong>은 이 뷰를
+            <strong>겹침 판정에서 빼고</strong>,
+            <strong><code>displayPriority = .required</code></strong>는
+            <strong>붐빌 때 감춰지는 순위를 올린다.</strong>
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 600 218" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p3s4c-t p3s4c-d">
+              <title id="p3s4c-t">displayPriority는 붐빌 때 누가 감춰지는지를 정한다</title>
+              <desc id="p3s4c-d">어노테이션이 겹치면 MapKit이 일부를 감춘다. required는 절대 감춰지지 않고, defaultHigh와 defaultLow는 감춰질 수 있다. MKMarkerAnnotationView의 기본값은 defaultLow다.</desc>
+              <rect width="600" height="218" fill="#FFFFFF"/>
+              <text x="14" y="26" font-size="13" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">어노테이션이 겹치면 MapKit이 일부를 감춘다 &#8212; 누구를 남길지 정하는 순위</text>
+
+              <text x="14" y="62" font-size="12.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">.required</text>
+              <rect x="150" y="48" width="300" height="20" rx="5" fill="#06B6A4"/>
+              <text x="460" y="63" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">절대 안 감춰진다</text>
+
+              <text x="14" y="98" font-size="12.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">.defaultHigh</text>
+              <rect x="150" y="84" width="170" height="20" rx="5" fill="#9AA8A5"/>
+              <text x="330" y="99" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">감춰질 수 있다</text>
+
+              <text x="14" y="134" font-size="12.5" fill="#52625E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">.defaultLow</text>
+              <rect x="150" y="120" width="70" height="20" rx="5" fill="#C7D6D3"/>
+              <text x="230" y="135" font-size="13" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">감춰질 수 있다</text>
+              <text x="360" y="135" font-size="12.5" font-weight="700" fill="#A33A36" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#9664; 이 뷰의 기본값</text>
+
+              <rect x="14" y="156" width="572" height="50" rx="8" fill="#FFF8EC" stroke="#D98C1F" stroke-width="1.3"/>
+              <text x="30" y="178" font-size="12.5" font-weight="700" fill="#8A5510" font-family="-apple-system, BlinkMacSystemFont, sans-serif">다만 이 앱에서 이 줄이 화면을 실제로 바꾸는지는 확인되지 않았다</text>
+              <text x="30" y="196" font-size="12.5" fill="#8A5510" font-family="-apple-system, BlinkMacSystemFont, sans-serif">collisionMode = .none 으로 겹침 판정에서 이미 빠져 있고, 둘의 관계는 애플 문서에 없다</text>
+            </svg>
+            <figcaption><code>displayPriority</code> &#8212; 붐빌 때 누가 남는지를 정한다</figcaption>
+          </figure>
+          <p>
+            <code>displayPriority</code>에는 볼 것이 하나 더 있다.
+            <strong><code>MKAnnotationView</code>(베이스) 문서는 기본값이 <code>.required</code>라고
+            하는데</strong>, 이 앱이 실제로 만드는
+            <strong><code>MKMarkerAnnotationView</code> 문서는 기본값이 <code>.defaultLow</code></strong>라고
+            적는다. 두 문장 다 애플 문서에 있고 모순이 아니다 &#8212; <strong>실제로 만드는 클래스 쪽이 적용되므로, 이 줄은 기본값을 다시 적은 것이 아니라 순위를 실제로 올리는 줄이다.</strong>
+          </p>
+
+          <h4>3. 하나만 없어서 직접 얹었다 &#8212; 병합 핀의 깃발 배지</h4>
+
+          <p>
+            구간 &#9312;의 <strong>병합 핀</strong>은 초록 러너에 <strong>오른쪽 위 작은 체크무늬 깃발
+            배지</strong>가 붙는다. <strong><code>MKMarkerAnnotationView</code>에는 배지를 붙이는 자리가
+            없다.</strong>
+          </p>
+
+          <p>
+            <code>glyphImage</code>를 깃발로 바꾸는 길도 있었지만 그러면 <strong>러너 아이콘이
+            사라진다.</strong> 병합 핀은 <em>&#8220;출발이면서 동시에 도착&#8221;</em>이라
+            <strong>출발 모양을 유지한 채 닫혔다는 표시만 더해야</strong> 했다.
+            그래서 <strong>뷰 위에 작은 이미지 뷰를 하나 얹었다.</strong>
+            얹을 때 <strong>꼬리표(<code>tag</code>)를 달아 두는데</strong>, 나중에 그 뷰에서
+            <strong>배지만 찾아 지울 수 있게</strong> 하기 위해서다.
+          </p>
+
+          <h4>4. 그래서 경계는 여기다 &#8212; 바꾸려면 어디를 건드리나</h4>
+
+          <p>
+            <strong>어디까지가 딸려 온 것인지 알면 「이 모양을 바꾸려면 어디를 건드리나」가 바로
+            답이 된다.</strong>
+          </p>
+
+          <div class="steps">
+            <div class="st"><span class="n">값</span><span class="t">
+              <b>핀 색 · 안의 아이콘 · 붙을 때 등장 동작</b> &#8212; 프로퍼티 하나씩만 바꾸면 된다.</span></div>
+            <div class="st"><span class="n">코드</span><span class="t">
+              <b>배지의 모양 · 위치 · 붙는 조건</b> &#8212; 이 앱이 직접 얹은 것이라 우리 코드를 고친다.</span></div>
+            <div class="st"><span class="n">불가</span><span class="t">
+              <b>물방울 모양 자체</b> &#8212; 값으로는 못 바꾼다. 바꾸려면 <b>다른 뷰를 쓰거나
+              거리 라벨처럼 직접 만들어야</b> 한다.</span></div>
+          </div>
+
+          <p>
+            <strong>맨 아랫줄이 이 선택의 값이다.</strong> 모양이 맞지 않으면 설정을 바꾸는 것이
+            아니라 <strong>「직접 만들지 않는다」는 선택 자체를 되돌려야</strong> 하고, 그것이
+            <strong>파트 2에서 거리 라벨이 간 길</strong>이다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>핀 뷰는 애플이 제공하는 <code>MKMarkerAnnotationView</code>를
+            <strong>클래스도 만들지 않고 그대로 쓰고</strong>, 색&#183;아이콘&#183;동작 다섯 값만 정해준다.
+            <strong>없는 것은 깃발 배지 하나뿐</strong>이라 그것만 직접 얹었다 &#8212; 그래서
+            <strong>물방울 모양 자체는 값으로 못 바꾼다.</strong></p>
           </div>
 
         </div>
