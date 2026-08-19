@@ -607,7 +607,7 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1·2 완료(검토까지) · 파트 3 진행 중</span></h4>
+    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1·2 완료(검토까지) · 파트 3 5구간 완료</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
@@ -659,7 +659,22 @@
           <li><strong>어노테이션끼리는 앞뒤가 보장되지 않는다</strong> &#8212; 흰 점을 오버레이로 옮겨 <strong>보장이 있는 관계</strong>로 바꿔 풀었다</li>
           <li>그 방법이 안 되는 자리가 있다 &#8212; 라벨과 핀은 둘 다 어노테이션이라 <strong>겹침 판정을 끄는 다른 방법</strong>을 썼다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">3</span><div><div class="can">출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 표시되고, 왜 그 모양이며, 눌렀을 때 무엇이 되는지</strong> 설명할 수 있다</div></div></li>
+      <li><span class="k">3</span><div><div class="can">출발&#183;도착 핀이 <strong>어떤 상태에 몇 개 표시되고, 왜 그 모양이며, 눌렀을 때 무엇이 되는지</strong> 설명할 수 있다</div><div class="sum">지도 위에 <strong>물방울 모양 마커</strong>가 뜬다 &#8212; 시작 지점에 초록 러너, 끝 지점에 빨강 깃발. 코스가 한 바퀴 돌아 제자리로 오면 <strong>둘이 하나로 합쳐지고</strong> 체크무늬 깃발 배지가 붙는다. 탭 모드에서 지도를 한 번 누르면 회색 점선 동그라미가 잠깐 뜬다. 이것들이 <strong>언제 몇 개 뜨고, 왜 그 모양이며, 누르면 무엇이 되는지</strong>를 본다.</div>
+        <ul class="keys">
+          <li>핀 목록은 저장된 것이 아니라 <strong>코스를 보고 매번 새로 만든다</strong> &#8212; 그래서 핀은 이어지지 않는다</li>
+          <li>코스가 있으면 첫 좌표에 출발, 끝 좌표에 도착 <strong>둘</strong>. 첫&#183;끝이 연결 임계값 안이면 <strong>병합 핀 하나</strong></li>
+          <li>같은 자리에 같은 모양이어도 <strong>같은 핀이라는 보장은 없다</strong> &#8212; 첫 탭 대기 핀과 출발 핀이 그렇다</li>
+          <li>첫 탭 대기 핀은 <strong>코스가 없을 때만</strong> 만들어진다 &#8212; 코스가 있으면 탭 한 번이 곧바로 구간이 된다</li>
+          <li>「확인 중」 핀은 <strong>손을 뗀 0.1초 뒤부터 탭 처리가 끝날 때까지</strong> &#8212; 길찾기가 도는 내내 떠 있다</li>
+          <li>「확인 중」이 중립 모양인 것은 <strong>라벨이 뒤바뀌던 버그를 판정 자체를 없애서 고친 결과</strong>다</li>
+          <li>화면의 핀을 <strong>값으로 되돌려</strong> 계산한 목록과 비교하고, <strong>다르면 전부 지우고 전부 다시 붙인다</strong></li>
+          <li>비교에는 <strong>좌표&#183;제목&#183;역할만</strong> 쓴다 &#8212; 역할을 넣은 것은 <strong>좌표가 같은 채로 일어나는 병합 전환</strong>을 잡으려고</li>
+          <li>핀 뷰는 <strong>클래스도 만들지 않고</strong> 애플이 제공하는 것을 그대로 쓴다 &#8212; 라벨은 클래스를 만들었다</li>
+          <li><strong>물방울 모양 자체는 값으로 못 바꾼다</strong> &#8212; 바꾸려면 거리 라벨처럼 직접 만들어야 한다</li>
+          <li>핀을 누르면 역할에 따라 갈리고, <strong>실제로 무언가를 만드는 것은 출발 핀 하나</strong>(왕복 생성)뿐이다</li>
+          <li>누름을 감지하는 것은 MapKit이 아니라 이 앱이고, <strong>화면 24pt</strong>로 재는 것은 줌과 무관하게 하려고</li>
+          <li><code>isEnabled = false</code>는 선택을 안 쓰려는 선언이 아니라 <strong>확대&#183;흔들림 효과를 끈 수정</strong>이다</li>
+        </ul></div></li>
       <li class="pending"><span class="k">4</span><div><div class="can">구간 경계의 흰 점이 <strong>왜 선이 아니라 따로 만든 오버레이인지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">5</span><div><div class="can">고른 구간이 <strong>왜 굵어지고 후광이 깔리는지, 그 순서가 어떻게 정해지는지</strong> 설명할 수 있다</div></div></li>
       <li class="pending"><span class="k">6</span><div><div class="can">좌표가 같은 두 구간이 <strong>왜 화면에서는 두 줄로 보이는지</strong> 설명할 수 있다</div></div></li>
@@ -2125,7 +2140,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
         아이콘</strong>, 끝 지점에 <strong>빨강 깃발 아이콘</strong>. 코스가 한 바퀴 돌아 제자리로
         오면 <strong>둘이 하나로 합쳐지고</strong> 오른쪽 위에 작은 <strong>체크무늬 깃발 배지</strong>가
         붙는다. 탭 모드에서 지도를 한 번 누르면 <strong>회색 점선 동그라미</strong>가 잠깐 뜬다.
-        <em>&#8212; 사용자 장면 &#9314;(코스를 만든다)와 &#9316;(왕복을 닫는다)에 걸쳐 있다.</em>
+        <em>&#8212; 사용자 장면 &#9314;(코스를 만든다)과 &#9316;(왕복을 닫는다)에 걸쳐 있다.</em>
       </div>
 
       <div class="goal">
@@ -2145,11 +2160,11 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
         </table>
         <p class="hint">
           <strong>왜 이 순서인가.</strong> &#9312;&#9313;가 <strong>「몇 개가 어떤 모습으로
-          표시되는가」를 정하는 자리</strong>다. &#9314;는 그렇게 정해진 목록이
+          표시되는가」를 정하는 자리</strong>다. &#9314;은 그렇게 정해진 목록이
           <strong>화면에 반영되는 방식</strong>, &#9315;는 <strong>실제로 그려지는 모습</strong>,
-          &#9316;은 <strong>그려진 핀을 눌렀을 때</strong>다.<br>
+          &#9316;는 <strong>그려진 핀을 눌렀을 때 무엇이 되는가</strong>다.<br>
           <strong>모드가 갈리는 구간이 둘 있다.</strong> &#9313;는 <strong>탭 모드에만</strong>
-          있는 장면이고(그리기에는 첫 탭 대기가 없다), &#9316;은 둘 다 지나가되
+          있는 장면이고(그리기에는 첫 탭 대기가 없다), &#9316;는 둘 다 지나가되
           <strong>받는 쪽이 다르다</strong>.
         </p>
       </div>
@@ -2490,8 +2505,9 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
           </div>
 
           <p>
-            <strong>구간 &#9312;에서 「동시에 최대 3개」라고 한 근거가 이것이다</strong> &#8212;
-            코스가 있으면 이 핀이 아예 안 만들어지므로, 출발&#183;도착&#183;확인 중 셋이 최대다.
+            <strong>여기서 화면에 동시에 뜰 수 있는 핀의 최대 개수도 정해진다.</strong>
+            코스가 있으면 이 핀이 아예 안 만들어지므로, <strong>한 번에 뜰 수 있는 것은
+            출발&#183;도착&#183;확인 중 셋이 최대</strong>다.
           </p>
 
           <p>
@@ -2671,8 +2687,10 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
 
           <p>
             <strong>A는 「현재 화면 상태」이고 B는 「있어야 할 상태」다.</strong> 그런데
-            <strong>타입이 달라 그대로는 못 비교한다.</strong> 그래서 <strong>A에서 좌표&#183;제목&#183;색&#183;아이콘&#183;역할을
+            <strong>타입이 달라 그대로는 비교할 수 없다.</strong> 그래서 <strong>A에서 좌표&#183;제목&#183;색&#183;아이콘&#183;역할을
             그대로 꺼내 값으로 되돌려 만든 다음</strong>, 값끼리 비교한다.
+            <em>이때 만드는 값은 <strong>비교하려고 잠깐 만드는 것</strong>이라 화면에 뜨지 않는다 &#8212;
+            앞에서 말한 「두 번」에는 들어가지 않는다.</em>
           </p>
 
           <h4>2. 다섯 값 중 셋만 비교한다</h4>
@@ -2696,7 +2714,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             <strong>깃발 배지가 안 붙는다.</strong>
           </p>
 
-          <h4>3. 견준 결과는 「고칠 필요가 있나」 하나뿐이다</h4>
+          <h4>3. 비교 결과는 「고칠 필요가 있나」 하나뿐이다</h4>
 
           <p>
             🔑 <strong>비교하는 목적이 「무엇을 고칠지 고르려는 것」이 아니다.</strong>
@@ -2735,7 +2753,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
               <path d="M149 84 V 108" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s3-arr)"/>
               <rect x="24" y="112" width="250" height="44" rx="8" fill="#FFFFFF" stroke="#C7D6D3" stroke-width="1.3"/>
               <text x="149" y="130" text-anchor="middle" font-size="13" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">값으로 되돌려 만든다</text>
-              <text x="149" y="147" text-anchor="middle" font-size="12" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">타입이 달라 그대로는 못 비교한다</text>
+              <text x="149" y="147" text-anchor="middle" font-size="12" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">타입이 달라 그대로는 비교할 수 없다</text>
 
               <path d="M149 156 V 184 H 288" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s3-arr)"/>
               <path d="M451 84 V 184 H 312" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s3-arr)"/>
