@@ -2141,7 +2141,7 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
           <tr><td><a href="#p3s2">구간 &#9313;</a></td><td>아직 코스가 아닐 때 표시되는 핀 &#8212; 첫 탭 대기와 「확인 중」</td></tr>
           <tr><td><a href="#p3s3">구간 &#9314;</a></td><td>핀이 바뀌면 통째로 갈아끼운다</td></tr>
           <tr><td><a href="#p3s4">구간 &#9315;</a></td><td>핀 뷰는 직접 만들지 않았다 &#8212; 애플이 주는 것과 없어서 얹은 것</td></tr>
-          <tr><td>구간 &#9316;</td><td>핀을 누르는 것은 MapKit이 아니다</td></tr>
+          <tr><td><a href="#p3s5">구간 &#9316;</a></td><td>핀을 누르면 무엇이 되나, 그리고 그것을 누가 감지하나</td></tr>
         </table>
         <p class="hint">
           <strong>왜 이 순서인가.</strong> &#9312;&#9313;가 <strong>「몇 개가 어떤 모습으로
@@ -2997,6 +2997,185 @@ uiView.addOverlay(WaypointDotsOverlay(points: waypoints))   <span class="c">// :
             <strong>클래스도 만들지 않고 그대로 쓰고</strong>, 색&#183;아이콘&#183;동작 다섯 값만 정해준다.
             <strong>없는 것은 깃발 배지 하나뿐</strong>이라 그것만 직접 얹었다 &#8212; 그래서
             <strong>물방울 모양 자체는 값으로 못 바꾼다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
+
+      <details class="seg" id="p3s5" open>
+        <summary>구간 &#9316; &#8212; 핀을 누르면 무엇이 되나, 그리고 그것을 누가 감지하나</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간 &#9315;까지가 <strong>어떤 모양으로 그려지는지</strong>였다면, 여기는
+              <strong>그 핀을 눌렀을 때 무슨 일이 일어나는지</strong>다. <strong>핀마다 하는 일이
+              다르고</strong>, 그 누름을 <strong>감지하는 것은 MapKit이 아니라 이 앱</strong>이다.
+              무엇이 되는지부터 보고, 그다음 누가 감지하는지를 본다.</p>
+          </div>
+
+          <h4>1. 핀을 누르면 역할에 따라 갈린다</h4>
+
+          <p>
+            구간 &#9313;에서 <em>&#8220;역할값은 눌렀을 때 무엇으로 취급할지를 가르는 데 쓰인다&#8221;</em>고
+            하고 여기로 넘겼는데, 그 갈림이 이것이다.
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 600 288" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p3s5a-t p3s5a-d">
+              <title id="p3s5a-t">핀을 누르면 역할에 따라 하는 일이 갈린다</title>
+              <desc id="p3s5a-d">출발 핀을 누르면 도착점에서 출발점으로 경로를 이어 붙여 왕복이 만들어진다. 도착 핀과 병합 핀은 안내 문구만 뜬다. 첫 탭 대기 핀과 확인 중 핀은 아무 일도 하지 않고 새 지점을 찍는 탭으로 진행한다.</desc>
+              <defs><marker id="p3s5-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#A3BFBA"/></marker></defs>
+              <rect width="600" height="288" fill="#FFFFFF"/>
+
+              <rect x="16" y="16" width="150" height="40" rx="8" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="91" y="41" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">핀을 누름</text>
+              <path d="M91 56 V 240" stroke="#C7D6D3" stroke-width="1.4" fill="none"/>
+
+              <path d="M91 82 H 208" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s5-arr)"/>
+              <circle cx="130" cy="82" r="8" fill="#06B6A4"/>
+              <text x="152" y="87" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">출발</text>
+              <rect x="212" y="62" width="372" height="42" rx="8" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="228" y="80" font-size="13.5" font-weight="700" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">왕복이 만들어진다</text>
+              <text x="228" y="96" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">도착점에서 출발점으로 경로를 이어 붙인다</text>
+
+              <path d="M91 132 H 208" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s5-arr)"/>
+              <circle cx="130" cy="132" r="8" fill="#D94A45"/>
+              <text x="152" y="137" font-size="13" font-weight="700" fill="#A33A36" font-family="-apple-system, BlinkMacSystemFont, sans-serif">도착</text>
+              <rect x="212" y="116" width="372" height="32" rx="8" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="228" y="137" font-size="13" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#8220;이미 도착점입니다&#8221; 안내만 뜨고 끝난다</text>
+
+              <path d="M91 178 H 208" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s5-arr)"/>
+              <circle cx="130" cy="178" r="8" fill="#06B6A4"/>
+              <circle cx="137" cy="171" r="4.5" fill="#D94A45"/>
+              <text x="152" y="183" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">병합</text>
+              <rect x="212" y="162" width="372" height="32" rx="8" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="228" y="183" font-size="13" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#8220;이미 닫힌 코스입니다&#8221; 안내만 뜨고 끝난다</text>
+
+              <path d="M91 240 H 208" stroke="#A3BFBA" stroke-width="1.5" fill="none" marker-end="url(#p3s5-arr)"/>
+              <circle cx="130" cy="240" r="8" fill="#C7D6D3"/>
+              <text x="152" y="245" font-size="13" font-weight="700" fill="#7C8F8B" font-family="-apple-system, BlinkMacSystemFont, sans-serif">임시</text>
+              <rect x="212" y="220" width="372" height="42" rx="8" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="228" y="238" font-size="13" fill="#0E1817" font-family="-apple-system, BlinkMacSystemFont, sans-serif">아무 일도 하지 않는다</text>
+              <text x="228" y="254" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">그냥 새 지점을 찍는 탭으로 계속 진행한다</text>
+            </svg>
+            <figcaption>핀을 누르면 역할에 따라 하는 일이 갈린다</figcaption>
+          </figure>
+          <p>
+            <strong>실제로 무언가를 만드는 것은 출발 핀 하나뿐이다.</strong> 출발 핀을 누르면
+            <strong>도착점에서 출발점으로 경로를 이어 붙여 왕복을 만든다</strong> &#8212; 코스를
+            한 바퀴 닫는 지름길이고, 그 결과가 구간 &#9312;에서 본 <strong>병합 핀</strong>이다.
+          </p>
+
+          <p>
+            나머지 셋은 <strong>만드는 것이 없다.</strong> 도착 핀과 병합 핀은 <strong>이미 그
+            상태라는 것을 알려주고 끝나고</strong>, 임시 핀 둘은 <strong>아무 일도 하지 않아서</strong>
+            그냥 새 지점을 찍는 탭으로 계속 간다. <strong>임시 핀 둘이 역할값을 같이 쓸 수 있었던
+            이유가 여기서 보인다</strong> &#8212; 갈 곳이 같은 칸이다.
+          </p>
+
+          <h4>2. 누른 것을 감지하는 것은 MapKit이 아니다</h4>
+
+          <p>
+            MapKit에는 어노테이션을 눌렀을 때 알려주는 기능이 있는데, <strong>이 앱은 그것을 쓰지
+            않는다.</strong> 대신 <strong>누른 지점에 핀이 있었는지 직접 찾는 함수(<code>pinHit</code>)</strong>가
+            있다. <strong>누른 화면 좌표에서 24pt 반경 안에 있는 핀</strong>을 찾고,
+            <strong>여러 개면 가장 가까운 것</strong>을 고른다.
+          </p>
+
+          <p>
+            <strong>화면 좌표로 재는 것이 이 구간의 결정이다.</strong> 처음에는 지도 거리(미터)로
+            쟀는데, <strong>그러면 줌에 따라 판정 범위가 달라진다.</strong> 커밋 메시지에 이유가
+            그대로 적혀 있다 &#8212; <em>&#8220;지도거리 기반 판정의 줌 종속 문제를 피한다&#8221;</em>
+            (<code>feat: 화면 24pt 핀 히트 판정을 탭에 연결</code>, 2026-07-03).
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 600 258" width="100%" style="max-width:600px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p3s5b-t p3s5b-d">
+              <title id="p3s5b-t">지도 거리로 재면 줌에 따라 달라지고 화면 좌표로 재면 일정하다</title>
+              <desc id="p3s5b-d">누른 자리와 핀 사이 거리를 미터로 재면 줌인했을 때는 판정 범위가 화면에서 크게, 줌아웃했을 때는 아주 작게 보인다. 화면 좌표 24포인트로 재면 어느 줌에서든 범위가 같아 손가락 기준이 일정하다.</desc>
+              <rect width="600" height="258" fill="#FFFFFF"/>
+
+              <text x="150" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#A33A36" font-family="-apple-system, BlinkMacSystemFont, sans-serif">지도 거리(미터)로 재면</text>
+              <text x="450" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면 좌표(24pt)로 재면</text>
+
+              <text x="16" y="76" font-size="12.5" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">줌인</text>
+              <rect x="60" y="42" width="180" height="66" rx="8" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <circle cx="150" cy="75" r="30" fill="#FBEFEE" stroke="#D94A45" stroke-width="1.3" stroke-dasharray="4 3"/>
+              <circle cx="150" cy="75" r="7" fill="#06B6A4"/>
+              <text x="360" y="76" font-size="12.5" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">줌인</text>
+              <rect x="400" y="42" width="180" height="66" rx="8" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <circle cx="490" cy="75" r="18" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.3" stroke-dasharray="4 3"/>
+              <circle cx="490" cy="75" r="7" fill="#06B6A4"/>
+
+              <text x="16" y="166" font-size="12.5" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">줌아웃</text>
+              <rect x="60" y="132" width="180" height="66" rx="8" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <circle cx="150" cy="165" r="9" fill="#FBEFEE" stroke="#D94A45" stroke-width="1.3" stroke-dasharray="3 2"/>
+              <circle cx="150" cy="165" r="7" fill="#06B6A4"/>
+              <text x="360" y="166" font-size="12.5" font-weight="700" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">줌아웃</text>
+              <rect x="400" y="132" width="180" height="66" rx="8" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+              <circle cx="490" cy="165" r="18" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.3" stroke-dasharray="4 3"/>
+              <circle cx="490" cy="165" r="7" fill="#06B6A4"/>
+
+              <text x="150" y="222" text-anchor="middle" font-size="13" font-weight="700" fill="#A33A36" font-family="-apple-system, BlinkMacSystemFont, sans-serif">줌에 따라 범위가 달라진다</text>
+              <text x="150" y="240" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">줌아웃하면 거의 안 눌린다</text>
+              <text x="450" y="222" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">어느 줌에서나 범위가 같다</text>
+              <text x="450" y="240" text-anchor="middle" font-size="12.5" fill="#52625E" font-family="-apple-system, BlinkMacSystemFont, sans-serif">손가락 크기가 줌과 무관하기 때문</text>
+            </svg>
+            <figcaption>판정을 화면 좌표로 재는 이유</figcaption>
+          </figure>
+          <p>
+            <strong>이 판정은 탭과 그리기가 같이 쓰는데 받는 쪽이 다르다</strong> &#8212;
+            이 파트에서 모드가 갈리는 두 번째 자리다(첫 번째는 구간 &#9313;의 임시 핀).
+            <strong>탭 모드</strong>는 손가락이 닿는 순간 판정해 <strong>역할값을 그대로 넘기고</strong>,
+            <strong>그리기 모드</strong>는 롱프레스가 인식된 순간 판정하되
+            <strong>첫 탭 대기 핀이면 버린다</strong>(없었던 것으로 친다). 1번에서 본 대로
+            <strong>그 핀은 눌러도 할 일이 없어서</strong> 획을 그 위에서 시작했다고 달라질 것이 없다.
+          </p>
+
+          <p class="later">
+            판정 결과는 <strong>좌표와 함께 밖으로 넘어간다.</strong> 지도를 감싼 쪽이 뷰모델에 알릴 때
+            <em>&#8220;어디를 눌렀나&#8221;</em>만이 아니라 <em>&#8220;그 자리에 어떤 핀이 있었나&#8221;</em>까지
+            같이 넘긴다.
+          </p>
+
+          <h4>3. <code>isEnabled = false</code>는 선택을 안 쓰려고 넣은 줄이 아니다</h4>
+
+          <p>
+            핀 뷰를 만들 때 <strong><code>isEnabled = false</code></strong> 한 줄이 있다.
+            <strong>이것을 「MapKit 선택 대신 직접 판정하기로 한 선언」으로 읽기 쉬운데, 이력을 보면
+            아니다.</strong> 직접 판정은 <strong>그 줄이 생기기 전부터 이미 하고 있었다.</strong>
+          </p>
+
+          <div class="bounds">
+            <div class="bd"><span class="lb">증상</span>
+              <span>핀을 누르면 <strong>MapKit 기본 선택 효과(확대 + 흔들림)</strong>가 나왔다
+                (2026-07-04 실기기 QA)</span></div>
+            <div class="bd"><span class="lb">원인</span>
+              <span>핀 판정은 이 앱이 따로 하고 있는데, <strong>MapKit도 같은 누름에 자기 선택 처리를
+                하고 있었다</strong> &#8212; 원하지 않는 효과가 겹쳐 나왔다</span></div>
+            <div class="bd here"><span class="lb">고침</span>
+              <span><code>isEnabled = false</code>로 <strong>MapKit 쪽 선택 처리를 껐다.</strong>
+                커밋 메시지 그대로 &#8212; <em>&#8220;핀 탭 시 나오던 MapKit 기본 선택 애니메이션(확대+흔들림)을
+                비활성화한다&#8221;</em></span></div>
+          </div>
+
+          <p>
+            <strong>그래서 이 줄은 「길을 고른 결정」이 아니라 「부작용을 끈 수정」이다.</strong>
+            <em>애초에 왜 MapKit 선택 기능으로 만들지 않았는지는 커밋에도 설계 문서에도 기록이 없다 &#8212;
+            선택 델리게이트(<code>didSelect</code>)는 이 저장소에서 한 번도 쓰인 적이 없다.</em>
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>핀을 누르면 <strong>역할에 따라 갈린다</strong> &#8212; 출발 핀이면
+            <strong>왕복이 만들어지고</strong>, 도착&#183;병합 핀이면 안내만 뜨고, 임시 핀이면
+            아무 일도 없다. <strong>그 누름을 감지하는 것은 MapKit이 아니라 이 앱</strong>이고,
+            <strong>화면 24pt 반경</strong>으로 재는 것은 줌이 바뀌어도 손가락 기준이 일정하기 때문이다.</p>
           </div>
 
         </div>
