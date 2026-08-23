@@ -593,6 +593,7 @@
     <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 선 한가운데 거리 라벨">거리 라벨</a></li>
     <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 출발·도착 핀">출발·도착 핀</a></li>
     <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 구간 경계의 흰 점">구간 경계의 흰 점</a></li>
+    <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — 고른 구간이 표시되는 법: 카메라가 옮겨가고 후광이 깔린다">고른 구간 표시</a></li>
     <li><span class="k"><i class="kf">골격</i><i class="ks">골</i></span><a href="#bg1" data-target="bg1" title="골격 — 화면에 안 보이는 부분">SwiftUI 밖으로</a></li>
   </ol>
 </nav>
@@ -608,7 +609,7 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1·2 완료(검토까지) · 파트 3 5구간 완료 · 파트 4 4구간 완료</span></h4>
+    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1·2 완료(검토까지) · 파트 3 5구간 완료 · 파트 4 4구간 완료 · 파트 5 5구간 완료</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
@@ -617,7 +618,7 @@
       <li class="on"><span class="k">2</span><a href="#p2">선 한가운데 거리 라벨</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">출발&#183;도착 핀</a></li>
       <li class="on"><span class="k">4</span><a href="#p4">구간 경계의 흰 점</a></li>
-      <li class="todo"><span class="k">5</span>고른 구간이 굵어지고 후광이 깔린다</li>
+      <li class="on"><span class="k">5</span><a href="#p5">고른 구간이 표시되는 법 &#8212; 카메라가 옮겨가고 후광이 깔린다</a></li>
       <li class="todo"><span class="k">6</span>되짚어 그리면 두 줄로 보인다</li>
       <li class="on"><span class="k">골격</span><a href="#bg1">SwiftUI 밖으로 나가기 — 지도를 올리는 뼈대</a> <em>(화면에 안 보이는 부분)</em></li>
       <li class="todo"><span class="k">골격</span>언제 다시 그리나</li>
@@ -693,7 +694,24 @@
           <li><code>coordinate</code>는 <strong>어노테이션에서 물려받은 요구</strong>라 그리기에는 안 쓰인다 &#8212; 오버레이가 더한 것은 박스 하나</li>
           <li>겹침을 조정하는 값은 없다 &#8212; 핀&#183;라벨보다 아래인 것은 <strong>구조가 보장</strong>하고 흰 점끼리는 양보하지 않는다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">5</span><div><div class="can">고른 구간이 <strong>왜 굵어지고 후광이 깔리는지, 그 순서가 어떻게 정해지는지</strong> 설명할 수 있다</div></div></li>
+      <li><span class="k">5</span><div><div class="can">구간 하나를 고른 것이 <strong>어디에 값으로 남아, 무엇을 바꾸고, 언제 풀리는지</strong>(카메라 &#183; 후광) 설명할 수 있고, <strong>후광만 왜 매번 지웠다 새로 만들어 케이싱 바로 아래에 끼워지는지</strong> 설명할 수 있다</div><div class="sum">아래 구간 패널에서 <strong>한 줄을 누르면</strong> 그 행에 테두리가 생기고, <strong>카메라가 그 구간에 맞춰 옮겨가며</strong>, 지도의 그 선 아래에 <strong>옅은 초록 띠</strong>가 깔린다. 다른 줄을 누르면 띠가 그쪽으로 옮겨 가고, 구간을 새로 이으면 저절로 풀린다.</div>
+        <ul class="keys">
+          <li>고른다는 것은 <strong>뷰모델에 「배열의 몇 번째」 번호 하나</strong>가 정해지는 것이고, 시트&#183;카메라&#183;지도가 <strong>각자 읽어 간다</strong></li>
+          <li>그 값에 바깥에서 직접 대입하지 못하게 막아둔 것은 <strong>함께 바뀔 것들을 동작 하나로 묶으려고</strong>다</li>
+          <li>카메라를 옮기는 것은 <strong>지도가 아니라 페이지</strong>이고, 시키는 게 아니라 <strong>값이 바뀐 것을 보고 따라 움직인다</strong></li>
+          <li>지도는 좌표 목록을 못 받는다 &#8212; <strong>「중심 하나 + 크기 하나」로 줄여야</strong> 하고 그 일을 <code>regionFitting</code>이 한다</li>
+          <li>크기는 구간을 감싸는 네모보다 <strong>조금 넓게</strong> 잡는다 &#8212; 딱 맞추면 구간 양 끝이 화면 가장자리에 붙는다</li>
+          <li><strong>카메라를 되돌리는 코드는 없다</strong> &#8212; 선택이 풀려도 카메라는 그 자리에 남는다</li>
+          <li>후광은 <strong>고른 구간에만 하나 더 그리는 세 번째 선</strong>이고, <strong>삐져나온 만큼</strong>이 후광으로 보인다(케이싱과 같은 원리)</li>
+          <li>후광 색은 구간 색이 아니라 <strong>앱 강조색 하나로 고정</strong>이라 어느 구간을 골라도 같다</li>
+          <li>처음부터 있던 것이 아니라 <strong>굵기&#183;카메라만으로는 고른 구간을 알아보기 어렵다는 판단</strong>에서 나중에 더해졌다</li>
+          <li>굵기는 렌더러 값만 고치지만 <strong>후광은 매번 지웠다 새로 만든다</strong> &#8212; 자리가 통째로 달라지는데 <strong>좌표는 만든 뒤에 못 바꾼다</strong></li>
+          <li>좌표는 계산하지 않고 <strong>얹혀 있는 케이싱에서 복사</strong>한다 &#8212; 화면의 선과 안 어긋나고 계산도 겹치지 않는다</li>
+          <li><strong>오버레이끼리는 순서 보장이 없어서</strong> 케이싱 바로 아래를 코드가 직접 지정한다(파트 4는 구조가 보장했다)</li>
+          <li>선택은 <strong>구간 배열이 바뀔 때마다 풀린다</strong> &#8212; 배열이 안 바뀌는 실패에서는 그대로 유지된다</li>
+          <li>밀려도 안 변하는 번호(<code>colorKey</code>)가 이미 있어서 <strong>따라가게 만들 수도 있었지만</strong> 그러지 않았다</li>
+          <li><strong>사용자가 직접 푸는 방법은 없다</strong> &#8212; 한 번 고르면 다음 편집 때까지 후광이 남는다</li>
+        </ul></div></li>
       <li class="pending"><span class="k">6</span><div><div class="can">좌표가 같은 두 구간이 <strong>왜 화면에서는 두 줄로 보이는지</strong> 설명할 수 있다</div></div></li>
       <li><span class="k">골격</span><div><div class="can">SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에 남아야 하는지</strong> 가를 수 있다</div><div class="sum">지도를 SwiftUI 밖(UIKit)에 두고 감쌌더니 <strong>값이 두 곳으로 갈라졌다.</strong> 어느 값이 SwiftUI에 남고 어느 값이 감싼 쪽으로 넘어갔는지, 그리고 왜 그렇게 갈렸는지를 정한다. <em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다.</em></div>
         <ul class="keys">
@@ -3879,6 +3897,672 @@ MKOverlay         coordinate + boundingMapRect   <span class="c">← 오버레�
             그리는 코드를 실행한다. 그 박스는 점들을 감싼 뒤 <strong>사방에 여유(<code>2000</code>)를
             더해</strong> 만드는데, 딱 맞게 잡으면 <strong>화면 가장자리에 걸친 점이 통째로 안 그려지기</strong>
             때문이다.</p>
+          </div>
+
+        </div>
+      </details>
+
+    </div>
+  </details>
+
+  <details class="part" id="p5" open>
+    <summary>
+      <span class="part-tag">파트 5</span>
+      <span class="ptitle">고른 구간이 표시되는 법 &#8212; 카메라가 옮겨가고 후광이 깔린다</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트가 만드는 화면</span>
+        아래 구간 패널에서 <strong>한 줄을 누르면</strong> 그 행에 테두리가 생기고,
+        <strong>카메라가 그 구간에 맞춰 옮겨가며</strong>, 지도의 그 선 아래에
+        <strong>옅은 초록 띠</strong>가 깔린다. 다른 줄을 누르면 띠가 그쪽으로 옮겨 가고,
+        구간을 새로 이으면 저절로 풀린다.
+        <em>&#8212; 사용자 장면 &#9317;(고른 구간이 굵어지고 후광 + 카메라 이동).</em>
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>구간 하나를 고른 것이 <strong>어디에 값으로 남아, 무엇을 바꾸고, 언제 풀리는지</strong>
+        (카메라 &#183; 후광) 설명할 수 있고, <strong>후광만 왜 매번 지웠다 새로 만들어
+        케이싱 바로 아래에 끼워지는지</strong> 설명할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr><td><a href="#p5s1">구간 &#9312;</a></td><td>구간 패널의 한 줄을 누르면 정해지는 것 &#8212; 고른 구간 번호 하나가 세 곳으로 간다</td></tr>
+          <tr><td><a href="#p5s2">구간 &#9313;</a></td><td>카메라가 고른 구간에 맞춰 옮겨가는 법 &#8212; 구간을 감싸는 네모를 조금 넓게 잡는다</td></tr>
+          <tr><td><a href="#p5s3">구간 &#9314;</a></td><td>후광이라는 세 번째 선 &#8212; 왜 나중에 더해졌고 어떤 색&#183;굵기로 그려지나</td></tr>
+          <tr><td><a href="#p5s4">구간 &#9315;</a></td><td>후광을 지도에 얹는 일 &#8212; 매번 지웠다 새로 만들어 케이싱 바로 아래에 끼운다</td></tr>
+          <tr><td><a href="#p5s5">구간 &#9316;</a></td><td>고른 구간 번호가 언제 저절로 풀리나 &#8212; 배열이 바뀌면 같은 번호가 다른 구간을 가리킨다</td></tr>
+        </table>
+        <p class="hint">
+          <strong>왜 이 순서인가.</strong> &#9312;은 값이 <strong>생기는</strong> 자리이고,
+          &#9313;&#9314;&#9315;는 그 값이 <strong>화면을 바꾸는</strong> 자리다.
+          그 셋의 순서는 <strong>실제로 만들어진 순서 그대로</strong>다 &#8212; 카메라 이동이 먼저
+          있었고(2026-07-01), <strong>그것만으로는 어느 구간을 골랐는지 알기 어렵다는 판단이
+          후광을 불렀다</strong>(2026-07-12). &#9313;를 건너뛰면 &#9314;가 왜 필요했는지가 사라진다.<br>
+          <strong>&#9316;가 맨 뒤인 이유가 있다</strong> &#8212; 그 번호가 <strong>배열의 몇 번째인지를
+          가리킨다</strong>는 사실은 &#9313;&#9314;&#9315;에서 실제로 배열을 뒤져 본 뒤에야 손에 잡힌다.<br>
+          <strong>앞 파트에서 이어받는 것이 셋 있다.</strong> 고른 구간의 <strong>선이 굵어지는 것</strong>은
+          <a href="#p1s3"><strong>파트 1 구간 &#9314;</strong></a>가 이미 다뤘으므로
+          (색 선 5.5 &#8594; 7, 케이싱 9.5 &#8594; 11) 이 파트는 <strong>나머지 셋</strong>을 맡는다.
+          선택이 바뀐 것을 알아채는 게이트는 <a href="#bg1"><strong>골격</strong></a>이 갖고,
+          <code>rendererFor</code>의 네 갈래 중 <strong>후광이 이 파트 몫</strong>이라고
+          거기 이미 적혀 있다.
+        </p>
+      </div>
+
+      <details class="seg" id="p5s1" open>
+        <summary>구간 &#9312; &#8212; 구간 패널의 한 줄을 누르면 정해지는 것: 고른 구간 번호 하나가 세 곳으로 간다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>한 줄을 누르면 화면 세 곳이 동시에 바뀌는데, <strong>바뀌는 것을 세 번 정하는 것이
+            아니라 값 하나가 정해질 뿐</strong>이다. 그 값이 무엇이고, 왜 바깥에서 직접 못 바꾸게
+            막아뒀고, 누가 읽어 가는지를 본다.<br>
+            <em>이 파트의 첫 조각이라, 여기서 정해지는 값을 구간 &#9313;&#9314;&#9315;&#9316;가 전부 받아 쓴다.</em></p>
+          </div>
+
+          <h4>1. 누르면 실행되는 것은 함수 하나이고, 받은 번호를 값에 넣는 것이 전부다</h4>
+
+          <p>
+            구간 패널의 행 하나는 <code>Button</code>이고, 눌리면
+            <code>viewModel.selectSegment(at: row.index)</code>를 부른다.
+          </p>
+
+          <div class="card hero">
+            <div class="nm">selectSegment(at:)</div>
+            <div class="ro"><code>CoursePlannerPageViewModel</code>의 함수. 하는 일은 하나다 &#8212;
+              <strong>받은 번호를 <code>selectedSegmentIndex</code>에 대입한다.</strong>
+              계산도 없고, 지도를 건드리지도 않고, 카메라를 옮기지도 않는다. 본문이 대입 한 줄이다.</div>
+          </div>
+
+          <p>
+            <strong>이 함수가 없으면 누른 것이 어디에도 안 남는다.</strong> 행 강조도, 카메라 이동도,
+            후광도 전부 이 값 하나를 보고 있어서, 값이 정해지지 않으면 셋 다 일어날 수 없다.
+          </p>
+
+          <h4>2. 대입 한 줄인데 왜 함수인가 &#8212; 페이지는 값을 읽기만 하고 바꾸지는 않는다</h4>
+
+          <p>
+            값의 선언이 <code>private(set) var selectedSegmentIndex: Int?</code>이고,
+            <code>private(set)</code>은 <strong>읽기는 어디서나 되지만 쓰기는 이 타입 안에서만</strong>
+            된다는 뜻이다. 그래서 시트 쪽에서
+            <code>viewModel.selectedSegmentIndex = row.index</code>라고 쓰면 <strong>컴파일이 안 된다.</strong>
+            <strong>함수는 그 제약의 결과다</strong> &#8212; 함수를 쓰려고 <code>private(set)</code>을
+            붙인 것이 아니라, 값을 바깥에서 못 바꾸게 정하고 나니 대입할 자리가 뷰모델 안밖에 안 남은 것이다.
+          </p>
+
+          <p>
+            <strong>막혀 있는 것은 대입뿐이고 읽기는 그대로 열려 있다.</strong> 시트는
+            <code>viewModel.selectedSegmentIndex</code>를 직접 읽어서 어느 행에 테두리를 그릴지 정한다.
+            그래서 갈리는 자리는 이렇게 된다 &#8212; <strong>페이지는 값을 읽어서 그리기만 하고,
+            값을 어떻게 바꿔야 하는지는 모른다.</strong>
+          </p>
+
+          <p>
+            <strong>그 이득은 <code>selectSegment(at:)</code>에서는 잘 안 보인다</strong> &#8212;
+            바꿀 것이 하나뿐이라 함수가 밋밋하다. 같은 뷰모델의 <code>clear()</code>(전체 지우기)를 보면
+            달라진다 &#8212; 한 번 부르면 <strong>일곱 가지가 함께</strong> 바뀐다(편집 세션을 비우고,
+            대기 중인 탭을 버리고, <strong>고른 구간 번호를 되돌리고</strong>, 안내&#183;에러 문구를 비우고,
+            로딩 표시를 끄고, 재계산 세대 번호를 올린다). 페이지가 이걸 직접 하려면 일곱 줄을 다 알아야
+            하고, <strong>하나만 빠뜨리면 값이 실제 상태와 어긋난 채 남는다.</strong> 그래서 이 뷰모델이
+            지키는 것은 <strong>&#8220;동작 하나를 부르면 함께 바뀌어야 할 것이 전부 같이 바뀐다&#8221;</strong>
+            이고, <code>selectSegment(at:)</code>는 마침 함께 바뀔 것이 없어서 한 줄로 끝난 경우다.
+          </p>
+
+          <p>
+            <strong>이 뷰모델에
+            <code>private(set)</code>이 11개</strong>이고 다른 뷰모델 둘
+            (<code>RunPageViewModel</code> &#183; <code>RunHistoryViewModel</code>)도 같은 방식이라
+            <strong>이 프로젝트의 관례</strong>인데, <code>docs/agent-rules/</code>에는 규칙으로
+            적혀 있지 않다 &#8212; <strong>코드에만 있다.</strong>
+          </p>
+
+          <h4>3. 그 번호는 「구간 배열의 몇 번째」다 &#8212; 파트 1에서 본 번호 둘 중 배열 자리 쪽이다</h4>
+
+          <p>
+            타입이 <code>Int?</code>인 것은 <strong>아무것도 안 고른 상태가 정상 상태</strong>이기 때문이다.
+            앱을 켜면 골라진 구간이 없고, 코스를 새로 이어도 없는 상태로 돌아간다(구간 &#9316;).
+            그래서 「없음」을 표현할 수 있어야 한다.
+          </p>
+
+          <p>
+            그리고 <strong>그 번호가 무엇의 번호인지</strong>가 이 파트 내내 걸린다 &#8212;
+            <code>course.segments</code> <strong>배열의 몇 번째</strong>다.
+            <a href="#p1s1">파트 1 구간 &#9312;</a>에서 본 번호 둘 중
+            <strong><code>segmentIndex</code>(배열 자리)</strong> 쪽이고, 색을 정하는
+            <strong><code>colorKey</code>(만들어진 순서)</strong>가 아니다.
+          </p>
+
+          <p>
+            <strong>패널의 행 하나가 그 두 번호를 다 들고 있다.</strong> 행의 정체성(<code>id</code>)은
+            <code>colorKey</code>이고 <strong>선택에 넘기는 것은 배열 자리</strong>다. 코드 주석이
+            이유를 적어뒀다 &#8212; 코스 앞쪽에 구간이 붙어 배열 자리가 밀려도 <strong>행 자체는 같은
+            행으로 유지되어야</strong> 스크롤 위치가 안 튀기 때문이다. 그런데 <strong>선택은 밀리는 쪽
+            번호를 쓴다.</strong> 이것이 구간 &#9316;에서 값을 치른다.
+          </p>
+
+          <h4>4. 그 값 하나를 세 곳이 각자 읽어 간다</h4>
+
+          <p>
+            값이 정해진 뒤에 일어나는 일은 <strong>한 곳에서 세 가지를 시키는 것이 아니라, 세 곳이
+            같은 값을 각자 보는 것</strong>이다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>어디가</th><th>무엇을 하나</th><th>어디서 다루나</th></tr>
+              <tr><td><strong>시트</strong><br>(같은 파일)</td><td>그 행에 강조 테두리와 배경을 준다. 헤더의 &#8220;구간 N&#8221; 칩도 이 값을 읽는다(안 골랐으면 마지막 구간 번호)</td><td>여기까지</td></tr>
+              <tr><td><strong>카메라</strong><br>(<code>CoursePlannerPage</code>)</td><td>값이 바뀌는 것을 보고 그 구간에 맞춰 카메라를 옮긴다</td><td>구간 &#9313;</td></tr>
+              <tr><td><strong>지도</strong><br>(<code>MapViewRepresentable</code>)</td><td>선을 굵게 하고, 후광을 그 구간으로 옮긴다</td><td>굵기는 <a href="#p1s3">파트 1 구간 &#9314;</a>, 후광은 구간 &#9314;&#9315;</td></tr>
+            </table>
+          </div>
+
+          <p>
+            지도로 가는 길은 <strong>값을 통째로 넘기는 것</strong>이다 &#8212;
+            <code>CoursePlannerPage</code>가 지도를 만들 때
+            <code>selectedSegmentIndex: viewModel.selectedSegmentIndex</code>로 넣어 준다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>구간을 고른다는 것은 <strong>뷰모델에 「구간 배열의 몇 번째인가」라는 번호 하나
+            (<code>selectedSegmentIndex</code>)가 정해지는 것</strong>이고, 화면이 세 곳에서 바뀌는 것은
+            <strong>그 값 하나를 시트&#183;카메라&#183;지도가 각자 읽어 가기 때문</strong>이다.
+            그 값에 바깥에서 직접 대입하지 못하게 막아둔 것은, <strong>함께 바뀌어야 할 것들이
+            빠짐없이 같이 바뀌도록 동작 하나로 묶기 위해서</strong>다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p5s2" open>
+        <summary>구간 &#9313; &#8212; 카메라가 고른 구간에 맞춰 옮겨가는 법: 구간을 감싸는 네모를 조금 넓게 잡는다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간 패널에서 한 줄을 누르면 지도가 그 구간 쪽으로 옮겨간다. 그런데 <strong>그 일을 하는
+            코드는 지도 안에 없고 화면 쪽에 있다.</strong> 좌표 수백 개가 어떻게 지도에 줄 수 있는 값으로
+            줄어드는지, 그리고 한 번 옮겨간 카메라가 그다음에 어떻게 되는지를 본다.<br>
+            <em>구간 &#9312;이 정한 번호를 처음으로 실제로 써 보는 자리다.</em></p>
+          </div>
+
+          <h4>1. 카메라를 옮기는 코드는 지도가 아니라 페이지에 있다</h4>
+
+          <p>
+            구간 &#9312;에서 본 <code>selectSegment(at:)</code>는 <strong>카메라를 건드리지 않는다.</strong>
+            번호를 대입하는 것이 전부였다.
+          </p>
+
+          <p>
+            카메라를 옮기는 코드는 <strong><code>CoursePlannerPage</code></strong>에 있다 &#8212;
+            지도와 구간 패널 시트를 함께 얹고 있는 화면이다. 그 안에
+            <code>.onChange(of: viewModel.selectedSegmentIndex) { ... }</code>가 붙어 있어서,
+            <strong>고른 구간 번호가 바뀔 때마다 중괄호 안이 실행된다.</strong>
+          </p>
+
+          <p>
+            이름이 붙은 함수가 아니라 <code>.onChange</code>에 넘긴 블록이라, <strong>이 앱의 어느 코드도
+            이것을 부르지 않는다.</strong> 값이 바뀌는 것을 SwiftUI가 보고 실행한다.
+          </p>
+
+          <h4>2. 지도에 「어디를 보여줄지」 말하려면 값 둘이 필요하다 &#8212; 그것을 만드는 함수가 <code>regionFitting</code>이다</h4>
+
+          <div class="oneline">
+            <span class="tag">이것만 알고 넘어가도 된다</span>
+            카메라는 <strong>고른 구간의 한가운데로, 그 구간보다 조금 넓게</strong> 옮겨간다.
+            한가운데인 것은 <strong>구간 전체가 화면에 들어와야</strong> 해서이고, 조금 넓게인 것은
+            <strong>딱 맞추면 구간 양 끝이 화면 가장자리에 붙어서</strong>다.
+            <em>아래는 그 한 줄을 코드가 어떻게 만들어내는지다.</em>
+          </div>
+
+          <p>
+            구간 하나는 <strong>좌표 수백 개</strong>다. 그런데 <strong>지도에 좌표 목록을 그대로 줄 수는
+            없다.</strong> 지도가 받는 것은 <code>MKCoordinateRegion</code>이라는 값이고, 그 안에 든 것은
+            딱 둘이다.
+          </p>
+
+          <aside class="concept">
+            <h3>&#128161; <code>MKCoordinateRegion</code>이란?</h3>
+            <p>
+              지도의 <strong>「보이는 범위」</strong>를 나타내는 애플의 타입이다.
+              <strong>중심 좌표</strong>(어디를) 하나와 <strong>크기</strong>(얼마나 넓게) 하나로 되어 있고,
+              크기 쪽은 <code>MKCoordinateSpan</code>이라는 별도 타입이다.
+              크기 단위는 미터가 아니라 <strong>위도&#183;경도의 도(degree)</strong>다.
+            </p>
+          </aside>
+
+          <p>
+            그래서 <em>&#8220;이 구간이 보이게 해줘&#8221;</em>라고 하려면 <strong>좌표 수백 개를
+            「중심 하나 + 크기 하나」로 줄여야</strong> 한다.
+          </p>
+
+          <div class="card hero">
+            <div class="nm">regionFitting(_:)</div>
+            <div class="ro"><code>CoursePlannerPage</code> 안에 있는 함수.
+              <strong>구간의 좌표 목록을 받아 <code>MKCoordinateRegion</code>을 돌려준다.</strong>
+              카메라 범위를 만드는 코드는 이 화면에 넷 있는데(앱 시작&#183;내 위치 등),
+              <strong>좌표 목록 전체를 감싸는 범위를 만드는 것은 여기뿐</strong>이라
+              <strong>이 함수가 없으면 「고른 구간으로 카메라를 옮긴다」 자체가 안 된다.</strong>
+              좌표 목록이 비어 있으면 값을 못 만들고 「없음」을 돌려준다.</div>
+          </div>
+
+          <p>
+            <strong>중심을 정하는 법 &#8212; 구간을 감싸는 네모의 한가운데.</strong>
+            좌표 전부에서 가장 북쪽&#183;남쪽&#183;동쪽&#183;서쪽을 찾는다. 그 넷이 구간 전체를 감싸는
+            네모 하나를 만들고, 그 네모의 한가운데가 중심이 된다.
+          </p>
+
+          <pre class="code">   가장 북쪽 ─┌───────────────┐
+              │      ∿∿∿      │   <span class="c">← 구간의 좌표들</span>
+              │   ∿∿∿   ∿∿    │
+              │  ∿        ∿∿∿ │
+   가장 남쪽 ─└───────────────┘
+              ↑               ↑
+         가장 서쪽        가장 동쪽</pre>
+
+          <p>
+            <strong>크기를 정하는 법 &#8212; 그 네모보다 조금 넓게.</strong>
+            네모의 폭을 그대로 쓰면 <strong>구간이 화면에 꽉 차서 양 끝이 가장자리에 붙는다.</strong>
+            그래서 <strong>1.6배로 넓혀</strong> 잡는다. 아주 짧은 구간은 네모가 거의 0이라 지도가
+            극단적으로 확대되므로 <strong>최소 <code>0.003</code>도</strong>(위도로 약 330m)를 밑에 깐다.
+            <strong>두 숫자의 근거는 기록에 없다</strong> &#8212; MVP7 설계는
+            <em>&#8220;해당 구간이 보이도록 카메라를 이동한다&#8221;</em>까지만 적었고, 그 플랜은 이 함수를
+            숫자까지 그대로 적어 넣었을 뿐이다. 잰 기록도, 기각한 대안도 없다.
+          </p>
+
+          <h4>3. 계산한 범위가 지도에 닿는 길 &#8212; 그리고 이 계산은 시트 높이를 모른다</h4>
+
+          <p>
+            만들어진 범위를 지도에 주는 방법은 <strong>대입 한 줄</strong>이다. <code>cameraRegion</code>은
+            페이지가 들고 있는 값이고 지도에 묶여 있어서, 거기에 새 범위를 넣으면 <strong>지도가 따라
+            옮겨간다.</strong> 지도를 직접 부르는 코드는 없다.
+          </p>
+
+          <p>
+            <strong>선택이 풀렸을 때는 세 곳의 반응이 다르다</strong> &#8212; 후광은 지우는 코드가 따로
+            있고(구간 &#9315;), 선 굵기는 되돌아가고, <strong>카메라는 그대로 남는다.</strong> 이 블록은
+            고른 번호가 있을 때만 실행되므로, 번호가 「없음」이 되면 아무 일도 하지 않는다.
+            <strong>카메라를 되돌리는 코드는 없다.</strong>
+          </p>
+
+          <p>
+            <strong>그리고 이 계산은 화면에서 무엇이 지도를 덮고 있는지를 모른다.</strong>
+            <code>regionFitting</code>은 좌표만 보고 시트 높이를 참조하지 않는다. 그래서 시트가 화면
+            아래쪽을 상당히 덮는 중간 단계에서는 <strong>맞춰 놓은 구간이 시트 뒤에 가릴 수 있다.</strong>
+            시트가 지금 어느 단계인지는 <strong>이 계산이 들어 있는 바로 그 화면이 들고 있는 값</strong>이라
+            <strong>못 봐서가 아니라 안 보는 것</strong>이다. 2026-07-27 실기기 QA에서 발견돼
+            <code>docs/backlog.md</code>에 <code>open</code>으로 있다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>카메라 이동은 지도가 아니라 <strong>페이지가</strong> 하고, 하는 일은 <strong>구간의 좌표
+            수백 개를 「중심 하나 + 크기 하나」로 줄여 지도에 넘기는 것</strong>이다. 중심은 구간을 감싸는
+            네모의 한가운데이고, 크기는 그 네모보다 <strong>조금 넓게</strong> 잡아 구간이 화면 가장자리에
+            붙지 않게 한다. <strong>옮기는 코드만 있고 되돌리는 코드는 없어서, 선택이 풀려도 카메라는
+            그 자리에 남는다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p5s3" open>
+        <summary>구간 &#9314; &#8212; 후광이라는 세 번째 선: 왜 나중에 더해졌고 어떤 색&#183;굵기로 그려지나</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간을 고르면 그 선 아래에 옅은 초록 띠가 깔린다. 그것이 <strong>화면에서 무엇이고,
+            왜 처음부터 있지 않았고, 어떤 값으로 그려지는지</strong>를 본다.<br>
+            <em>구간 &#9313;가 카메라 쪽이었다면, 여기부터는 지도에 그려지는 쪽이다.</em></p>
+          </div>
+
+          <div class="oneline">
+            <span class="tag">이것만 알고 넘어가도 된다</span>
+            후광은 <strong>고른 구간에만 생기는 세 번째 선</strong>이다. 있던 선을 굵게 하거나 색을 바꾼
+            것이 아니라, <strong>같은 자리에 훨씬 넓고 옅은 선을 하나 더 그린 것</strong>이다. 그 선이
+            원래 선보다 넓어서 <strong>옆으로 삐져나온 만큼</strong>이 후광으로 보인다.
+          </div>
+
+          <h4>1. 화면에서 무엇인가 &#8212; 고른 구간만 선이 세 겹이 된다</h4>
+
+          <p>
+            파트 1에서 <strong>구간 선 하나가 실은 두 겹</strong>이라고 했다 &#8212; 넓은 케이싱(흰 띠) 위에
+            좁은 색 선을 겹쳐 그리고, <strong>굵기 차이만큼이 띠로 보인다.</strong> 구간을 고르면 그 아래에
+            <strong>세 번째 층</strong>이 깔리는데, 방식이 똑같다 &#8212; 더 넓은 선을 하나 더 아래에 그리고
+            <strong>삐져나온 만큼</strong>이 후광으로 보인다.
+          </p>
+
+          <p>
+            <strong>구간을 고르면 세 층이 함께 바뀐다.</strong> 앞의 둘은 <strong>있던 선이
+            굵어지는 것</strong>이고, 후광만 <strong>없던 선이 새로 생기는 것</strong>이다. 성격이 달라서
+            파트가 갈린다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th></th><th>평소</th><th>고른 구간</th><th>어디서 다루나</th></tr>
+              <tr><td><strong>색 선</strong></td><td>5.5</td><td><strong>7</strong> &#8212; 굵어진다</td><td><a href="#p1s3">파트 1 구간 &#9314;</a></td></tr>
+              <tr><td><strong>케이싱</strong>(흰 띠)</td><td>9.5</td><td><strong>11</strong> &#8212; 굵어진다</td><td><a href="#p1s3">파트 1 구간 &#9314;</a></td></tr>
+              <tr><td><strong>후광</strong></td><td>없음</td><td><strong>18</strong> &#8212; 새로 생긴다</td><td><strong>여기</strong></td></tr>
+            </table>
+          </div>
+
+          <pre class="code">        평소                              고른 구간
+
+  ├──── 9.5 ────┤  케이싱      ├──────── 18 ────────┤  후광   <span class="c">← 없던 것이 생긴다</span>
+     ├─ 5.5 ─┤    색 선            ├──── 11 ────┤       케이싱  <span class="c">← 굵어진다</span>
+                                      ├─ 7 ─┤          색 선   <span class="c">← 굵어진다</span></pre>
+
+          <p>
+            <strong>흰 띠 두께는 양쪽 다 2로 그대로다</strong> &#8212; 케이싱과 색 선이 같이 굵어져 차이가
+            유지되기 때문이다(파트 1). 그래서 띠가 두꺼워지는 것이 아니라 <strong>선 전체가 굵어지는
+            것</strong>으로 보인다. <strong>후광이 밖으로 나오는 폭은 양옆 3.5씩</strong>이다
+            (18과 11의 차이 7의 절반).
+          </p>
+
+          <div class="card hero">
+            <div class="nm">SegmentHaloPolyline</div>
+            <div class="ro">이 프로젝트가 만든 타입. 애플의 <code>MKPolyline</code>(좌표 배열)을 상속한 것이라
+              <strong>하는 일은 좌표를 들고 있는 것뿐</strong>이고, 다른 점은 <strong>이름이 다르다는 것
+              하나</strong>다. 이름이 달라야 그리는 쪽에서 <em>&#8220;이건 후광이다&#8221;</em>를 알아보고
+              다른 색&#183;굵기를 줄 수 있다. 파트 1의 <code>SegmentCasingPolyline</code>과
+              <strong>똑같은 방식</strong>이다.</div>
+          </div>
+
+          <h4>2. 왜 나중에 더해졌나 &#8212; 굵기와 카메라만으로는 어느 구간인지 알기 어렵다는 판단이 있었다</h4>
+
+          <p>
+            <strong>후광은 처음부터 있던 것이 아니다.</strong> 기록이 세 단계로 남아 있다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>언제</th><th>무슨 일</th></tr>
+              <tr><td><strong>2026-07-01</strong><br>MVP7</td><td>구간 패널을 만들면서 강조를 <strong>굵기</strong>로, 그리고 <strong>카메라 이동</strong>으로 정했다. 설계 문서는 <em>&#8220;하이라이트(예: 강조 lineWidth 또는 <strong>채도 상승</strong>)&#8221;</em>이라고 <strong>둘을 열어뒀고</strong>, 구현이 굵기를 골랐다</td></tr>
+              <tr><td><strong>2026-07-10</strong><br>MVP12</td><td>「구간 선택 시 지도 위 halo 하이라이트」가 후보로 올랐지만 <strong>미뤘다.</strong> 대신 <strong>당길 조건</strong>을 적어뒀다 &#8212; <em>&#8220;카메라 핏만으로 선택 구간 식별이 어렵다는 피드백이 나오면&#8221;</em></td></tr>
+              <tr><td><strong>2026-07-12</strong></td><td><strong>그 조건이 충족돼</strong> 당겨서 구현했다</td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>이것이 이 구간의 「왜」다.</strong> 후광은 <strong>먼저 있던 둘(굵기&#183;카메라)이
+            부족하다는 판단</strong>에서 나왔다. 그래서 구간 &#9313;(카메라)를 먼저 보고 여기로 온다.
+          </p>
+
+          <h4>3. 어떻게 그려지나 &#8212; 앱 강조색 35%, 굵기 18, 끝이 둥글다</h4>
+
+          <p>
+            색과 굵기를 정하는 곳은 <strong><code>rendererFor</code></strong>다 &#8212; 지도가 오버레이를
+            그릴 때가 되면 <em>&#8220;이건 어떻게 그리냐&#8221;</em>고 물어오는 함수이고, 이 앱은
+            <strong>타입을 보고 갈래를 나눈다</strong>(<a href="#bg1">골격</a> 구간 &#9318;).
+            후광 갈래가 정하는 것은 셋이다.
+          </p>
+
+          <p>
+            <strong>색은 앱 강조색에 투명도 35%</strong>이고, 구간 색(여섯 색이 돌아가는 것)이
+            <strong>아니다</strong> &#8212; 그래서 <strong>어느 구간을 골라도 후광은 같은 초록</strong>이다.
+            <strong>굵기는 18</strong>이라 케이싱 11보다 7 넓고, 그 차이가 밖으로 나와 후광이 된다.
+            <strong>끝과 이음매는 둥글게</strong> 한다(<code>lineCap</code>&#183;<code>lineJoin</code>) &#8212;
+            기본값은 각진 끝이라, 18짜리 굵은 선을 그대로 끝내면 구간 끝에 <strong>네모난 덩어리</strong>가
+            생긴다.
+          </p>
+
+          <p>
+            <strong>이 세 값을 그렇게 고른 이유는 어디에도 적혀 있지 않다.</strong> 남아 있는 것은 코드
+            주석 한 줄뿐이다 &#8212; <em>&#8220;케이싱보다 더 아래, 훨씬 넓고 옅은 accent 스트로크&#8221;</em>.
+            의도가 <strong>「더 아래 &#183; 더 넓게 &#183; 더 옅게」</strong>였다는 것까지가 기록이고,
+            왜 18인지 왜 35%인지는 없다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>후광은 <strong>고른 구간에만 하나 더 그리는 세 번째 선</strong>이고, 원래 선보다 넓어서
+            <strong>삐져나온 만큼</strong>이 후광으로 보인다(케이싱과 같은 원리). 색은 구간 색이 아니라
+            <strong>앱 강조색 하나로 고정</strong>이라 어느 구간을 골라도 같다. 처음부터 있던 것이 아니라
+            <strong>굵기와 카메라만으로는 고른 구간을 알아보기 어렵다는 판단</strong>에서 나중에 더해졌다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p5s4" open>
+        <summary>구간 &#9315; &#8212; 후광을 지도에 얹는 일: 매번 지웠다 새로 만들어 케이싱 바로 아래에 끼운다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간 &#9314;가 후광을 <strong>어떻게 그리는지</strong>였다면, 여기는 그 후광이
+            <strong>언제 지도에 올라가고 언제 내려가는지</strong>다. 얹는 일과 그리는 방법이 갈라져 있다는
+            것은 <a href="#bg1">골격</a> 구간 &#9318;에서 본 그대로다.</p>
+          </div>
+
+          <div class="oneline">
+            <span class="tag">이것만 알고 넘어가도 된다</span>
+            후광은 선택이 바뀔 때마다 <strong>지웠다 새로 만든다.</strong> 좌표는 계산하지 않고
+            <strong>지도에 이미 얹혀 있는 케이싱에서 복사해 온다.</strong> 그리고 그냥 얹으면 선을
+            덮으므로 <strong>케이싱 바로 아래에 끼운다.</strong>
+          </div>
+
+          <h4>1. <code>syncHalo</code> &#8212; 다섯 단계가 전부 이 함수 본문이다</h4>
+
+          <div class="card hero">
+            <div class="nm">syncHalo(in:coordinator:)</div>
+            <div class="ro"><code>MapViewRepresentable</code>의 함수. <strong>지금 고른 구간에 맞게 후광을
+              맞춘다.</strong> 이게 없으면 후광이 <strong>한 번 깔린 자리에 영영 남는다</strong> &#8212;
+              다른 구간을 골라도 안 옮겨 가고, 선택이 풀려도 안 사라진다.</div>
+          </div>
+
+          <pre class="code">syncHalo 본문 ─┬─ ① 지난 후광이 있으면 <b>지운다</b>
+               ├─ ② 고른 구간이 없으면 <b>여기서 끝</b>
+               ├─ ③ 그 구간의 <b>케이싱을 찾는다</b>
+               ├─ ④ 케이싱에서 <b>좌표를 꺼내 후광을 만든다</b>
+               └─ ⑤ <b>케이싱 아래에 끼우고</b>, 만든 것을 기억해둔다</pre>
+
+          <p>
+            <strong>단계 &#9313;가 구간 &#9313;에서 예고한 자리다</strong> &#8212; 선택이 풀리면 지우기만 하고
+            새로 안 만든다. 카메라 쪽에는 이런 코드가 없어서 카메라만 그대로 남았다.
+          </p>
+
+          <p>
+            「지난 후광」을 기억하는 것은 <code>currentHaloOverlay</code>(단계 &#9316;에서 적어둔 것)다 &#8212;
+            지도에 오버레이가 여럿 얹혀 있어 <strong>어느 것이 후광인지</strong> 알아야 지울 수 있다.
+            <code>Coordinator</code>에 두는 이유는 <a href="#bg1">골격</a> 구간 &#9316;과 같다.
+            <strong>함수 밖에 있는 것은 「언제 부르나」뿐</strong>이고 두 자리다 &#8212; 선택이 바뀌었을 때,
+            그리고 구간 목록이 바뀌었을 때(그때 오버레이를 전부 지우면서 후광도 함께 지워지므로,
+            남아 있는 기록을 정리한다).
+          </p>
+
+          <h4>2. 왜 굵기처럼 값만 고치지 않나 &#8212; 자리가 달라지고, 좌표는 못 바꾼다</h4>
+
+          <p>
+            파트 1에서 본 대로 <strong>굵기는 보관된 렌더러의 숫자만 고친다.</strong> 선 자체는 그대로 둔다.
+            후광은 그럴 수 없고, 이유가 둘이다.
+          </p>
+
+          <p>
+            <strong>구간 선은 모든 구간에 항상 있고 굵기만 다르지만, 후광은 고른 구간에만 있다</strong> &#8212;
+            선택이 2번에서 5번으로 옮겨가면 <strong>완전히 다른 좌표</strong>에 있어야 한다. 그리고
+            <strong>애플 문서에 좌표를 바꾸는 API가 없다</strong> &#8212; <code>MKPolyline</code>은 만들 때
+            좌표를 받고 그 뒤로는 <code>getCoordinates</code>로 <strong>읽는 것만</strong> 있다.
+            <strong>그래서 옮기는 방법은 새로 만드는 것뿐이다.</strong>
+          </p>
+
+          <h4>3. 좌표는 계산하지 않는다 &#8212; 케이싱에서 복사해 온다</h4>
+
+          <p>
+            같은 「고른 구간」을 카메라와 후광이 함께 쓰는데, <strong>좌표를 가져오는 곳이 다르다.</strong>
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>어디</th><th>좌표를 어디서 가져오나</th></tr>
+              <tr><td><strong>카메라</strong>(구간 &#9313;)</td><td>구간(<code>CourseSegment</code>)의 좌표를 그대로 쓴다</td></tr>
+              <tr><td><strong>후광</strong>(여기)</td><td>지도에 얹힌 <strong>케이싱</strong>에서 꺼낸다</td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>필요한 정확도가 다르기 때문이다.</strong> 카메라는 수백 미터짜리 범위를 정하는 것이라
+            몇 미터 차이가 영향을 주지 않는다. <strong>후광은 선과 정확히 겹쳐야 한다</strong> &#8212;
+            지도에 그려지는 선은 도메인 좌표 그대로가 아니라 <strong>겹치는 구간을 옆으로 밀어 그린
+            좌표</strong>이고(파트 6), 구간 좌표를 쓰면 후광만 그만큼 어긋난다.
+          </p>
+
+          <p>
+            <strong>그리고 이 방식은 계산을 다시 하지 않는다.</strong> 비켜 그릴 좌표는 구간 목록이 바뀔 때
+            <strong>케이싱을 만들면서 이미 계산돼 있다.</strong> <code>syncHalo</code>는 그 결과를
+            <strong>꺼내 쓸 뿐</strong>이다.
+          </p>
+
+          <pre class="code">구간 목록이 바뀔 때   비켜 그릴 좌표를 <b>계산</b> → 케이싱·색 선을 만들어 얹는다   <span class="c">← 계산은 여기 한 번</span>
+구간을 고를 때        얹혀 있는 케이싱에서 좌표를 <b>복사</b> → 후광을 끼운다        <span class="c">← 복사만 한다</span></pre>
+
+          <p>
+            <strong>다만 객체는 선택할 때마다 새로 만들어지고 버려진다.</strong> 그것이 부담이 되는지는 잰
+            기록이 없다. <strong>그리고 좌표를 케이싱에서 가져오기로 한 이유도 기록에 없다</strong> &#8212;
+            후광이 들어온 커밋 메시지는 <em>&#8220;P2였으나 트리거 조건이 충족돼 당겼다&#8221;</em>까지만
+            적었다. 확인되는 것은 비켜 그린 좌표가 후광보다 <strong>아홉 날 먼저</strong> 있었다는 것까지다.
+          </p>
+
+          <h4>4. 어디에 끼우나 &#8212; 순서를 코드가 직접 지정하는 자리</h4>
+
+          <p>
+            그냥 얹으면 <strong>맨 위에 올라간다.</strong> 18짜리 옅은 초록이 색 선 위에 오면 선이 흐려진다.
+            그래서 <code>insertOverlay(_:below:)</code>로 <strong>케이싱 바로 아래</strong>를 지정한다.
+          </p>
+
+          <p>
+            <strong>파트 4와 정확히 대비된다</strong> &#8212; 흰 점이 핀&#183;라벨보다 아래인 것은
+            「오버레이는 항상 어노테이션보다 아래」라는 <strong>구조가 보장</strong>해서 정하는 코드가
+            없었다. 여기는 <strong>둘 다 오버레이</strong>라 그런 보장이 없어서 <strong>코드가 직접
+            지정한다.</strong>
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>후광은 선택이 바뀔 때마다 <strong>지웠다 새로 만든다</strong> &#8212; 고른 구간에만 있어서
+            자리가 통째로 달라지는데 <strong>좌표는 만든 뒤에 못 바꾸기</strong> 때문이다. 좌표는 다시
+            계산하지 않고 <strong>이미 얹혀 있는 케이싱에서 복사해</strong> 화면의 선과 어긋나지 않게 하고,
+            <strong>오버레이끼리는 순서 보장이 없어서 케이싱 바로 아래를 코드가 직접 지정한다.</strong></p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p5s5" open>
+        <summary>구간 &#9316; &#8212; 고른 구간 번호가 언제 저절로 풀리나: 배열이 바뀌면 같은 번호가 다른 구간을 가리킨다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>구간을 골라두고 코스를 계속 편집하면 <strong>선택이 저절로 풀린다.</strong> 그 규칙이
+            무엇이고, 왜 그렇게 정해졌는지를 본다.<br>
+            <em>구간 &#9312;~&#9315;가 「번호가 정해지면 무엇이 일어나나」였다면, 여기는 「그 번호가 언제
+            없어지나」다.</em></p>
+          </div>
+
+          <div class="oneline">
+            <span class="tag">이것만 알고 넘어가도 된다</span>
+            규칙은 하나다 &#8212; <strong>구간 배열이 바뀌면 선택을 푼다.</strong> 번호가
+            <strong>「배열의 몇 번째」</strong>(구간 &#9312;)라서, 배열이 바뀌면 같은 번호가
+            <strong>다른 구간을 가리키거나 아무것도 안 가리킨다.</strong>
+          </div>
+
+          <h4>1. 번호가 어긋나는 모양은 둘이다</h4>
+
+          <pre class="code">        고른 것 = 2번째 칸
+
+원래       [1]구간A   [2]구간B   [3]구간C
+                         ↑ 구간B를 고른 것
+
+앞에 붙으면 [1]새것    [2]구간A   [3]구간B   [4]구간C
+                         ↑ 같은 2번째 칸인데 이제 구간A를 가리킨다   <span class="c">← 밀림</span>
+
+되돌리면   [1]구간A
+                      2번째 칸이 아예 없다                        <span class="c">← 사라짐</span></pre>
+
+          <p>
+            <strong>밀림</strong>은 코스 <strong>앞쪽에 구간이 붙을 때</strong> 생긴다. 뒤에 붙으면 기존
+            번호가 그대로지만, 앞에 붙으면 <strong>전부 한 칸씩 밀린다.</strong> 앞에 붙는 경우는 실제로
+            있다 &#8212; 출발점 쪽에서 바깥으로 그으면 그 구간이 코스 맨 앞에 들어간다.
+            <strong>사라짐</strong>은 구간이 줄어들 때 생긴다 &#8212; 되돌리기, 전부 지우기.
+          </p>
+
+          <h4>2. 그래서 배열이 바뀌는 자리마다 푼다 &#8212; 여덟 곳</h4>
+
+          <p>
+            <code>selectedSegmentIndex</code>를 「없음」으로 되돌리는 곳이 <strong>여덟 군데</strong>이고,
+            <strong>여덟이 전부 구간 배열을 바꾸는 자리</strong>다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>무슨 일</th><th>배열이 어떻게</th></tr>
+              <tr><td>탭으로 구간을 이었다 / 그려서 이었다</td><td>하나 늘어난다</td></tr>
+              <tr><td>되돌리기 / 다시 하기</td><td>하나 줄고, 하나 늘어난다</td></tr>
+              <tr><td>전부 지우기</td><td>비워진다</td></tr>
+              <tr><td>구간 왕복 / 전체 왕복 넣기</td><td>늘어난다</td></tr>
+              <tr><td>저장한 코스 불러오기</td><td>통째로 바뀐다</td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>여덟 곳 모두 배열을 바꾸는 코드와 같은 함수 안에서 번호를 지운다.</strong>
+            그리고 <strong>배열이 안 바뀌면 안 푼다</strong> &#8212; 구간을 이으려다 길찾기가 실패하면
+            배열이 그대로이므로 <strong>골라둔 번호도 그대로 남는다.</strong> 테스트가 이것을 못박아 두고
+            있다. <strong>규칙이 「무슨 일이 있으면 푼다」가 아니라 「배열이 바뀌면 푼다」</strong>인 것이
+            여기서 드러난다.
+          </p>
+
+          <p>
+            <strong>구간 &#9313;의 확인 한 줄이 여기에 걸린다.</strong> 카메라 블록에
+            <code>newIndex &lt; segments.count</code>가 있었다 &#8212; 번호가 배열 밖이면 아무것도 안 한다.
+            <strong>여덟 곳이 규칙을 지키는 한 그 상황은 안 생기고</strong>, 그 확인은
+            <strong>여덟 중 하나라도 빠졌을 때 앱이 죽는 것</strong>을 막는다.
+          </p>
+
+          <p>
+            <strong>푸는 길은 이 여덟뿐이고, 사용자가 직접 푸는 방법은 없다.</strong> 구간 행을 누르는 것은
+            <strong>토글이 아니라 그 행의 번호를 넣는 것</strong>이라, 같은 행을 다시 눌러도 값이 안 바뀌어
+            아무 일도 일어나지 않는다. 시트를 접거나 지도 빈 곳을 눌러도 안 풀린다. 그래서
+            <strong>한 번 고르면 다음에 코스를 편집할 때까지 후광이 계속 깔려 있다.</strong>
+            <em>이것이 실사용에서 거슬리는지는 재본 적이 없다 &#8212; <code>docs/backlog.md</code>에
+            확인 항목으로 올려뒀다.</em>
+          </p>
+
+          <h4>3. 밀린 번호를 따라가게 할 수도 있었다 &#8212; 밀려도 안 변하는 번호가 이미 있다</h4>
+
+          <p>
+            구간 &#9312;에서 본 대로 이 앱에는 번호가 <strong>둘</strong>이다 &#8212;
+            <strong>배열 자리</strong>(<code>segmentIndex</code>)와 <strong>만들어진 순서</strong>
+            (<code>colorKey</code>). 그리고 <code>colorKey</code>는 <strong>앞에 구간이 붙어도 안 변한다.</strong>
+          </p>
+
+          <p>
+            <strong>실제로 구간 패널의 행 정체성이 이미 <code>colorKey</code>로 되어 있다</strong> &#8212;
+            앞에 구간이 붙어도 행이 같은 행으로 유지돼야 스크롤이 안 튀기 때문이다. 그러니
+            <strong>선택도 <code>colorKey</code>로 기억했다면 밀려도 따라갈 수 있었다.</strong>
+          </p>
+
+          <p>
+            <strong>그런데 선택은 그렇게 하지 않고 푸는 쪽을 골랐고, 그렇게 정한 이유는 기록에 없다</strong>
+            &#8212; 테스트에 <em>&#8220;기존 인덱스가 가리키는 세그먼트가 바뀌므로 선택은 초기화되어야
+            함&#8221;</em>이라고 <strong>규칙만</strong> 적혀 있고, 따라가기를 검토했는지는 어디에도 없다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>선택은 <strong>구간 배열이 바뀔 때마다 풀린다.</strong> 번호가 배열 자리라서 배열이 바뀌면
+            <strong>다른 구간을 가리키거나 아무것도 안 가리키기</strong> 때문이고, 그래서
+            <strong>배열이 안 바뀌는 실패에서는 선택이 유지된다.</strong> 밀려도 안 변하는 번호
+            (<code>colorKey</code>)가 이미 있어서 <strong>따라가게 만들 수도 있었지만 그러지 않았다.</strong></p>
           </div>
 
         </div>
