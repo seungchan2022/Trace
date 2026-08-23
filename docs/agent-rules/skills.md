@@ -26,6 +26,22 @@
 직접 `/<name>`으로 실행해야 한다. compound-engineering 3.19.0에서는 8개가 여기 해당하며,
 그중 `ce-test-xcode`(iOS 빌드·테스트)가 Trace와 관련이 있다.
 
+## Output Style
+
+- `trace-korean` (`.claude/output-styles/trace-korean.md`, 활성화 2026-08-23) — 한국어 문장의
+  조사·어미·서술어를 생략하지 않게 하는 지침이다. `.claude/settings.local.json`의 `outputStyle`로 켠다.
+  원본은 [fluent-korean](https://github.com/snflkd/fluent-korean)(MIT)이고, 세 곳을 고쳐서 넣었다.
+  무엇을 왜 고쳤는지와 되돌리는 조건은 `docs/agent-rules/project-decisions.md`에 있다.
+- **플러그인으로 설치하지 않았다.** 업스트림이 갱신되면 우리 수정본이 덮어써지기 때문이다.
+  업스트림 개선을 반영하려면 원본과 직접 대조해서 손으로 옮긴다.
+- **output-style은 시스템 프롬프트를 바꾸므로 세션 시작 시 한 번만 읽힌다.** 파일을 고쳐도
+  `/clear` 또는 새 세션 전에는 적용되지 않는다.
+- **서브에이전트에는 적용되지 않는다**(공식 문서 — 서브에이전트는 자기 시스템 프롬프트로 돈다).
+  `Explore`·`/code-review`·구현 에이전트·팩트체크 에이전트가 낸 한국어는 이 지침을 거치지 않으므로,
+  그 결과를 사용자에게 옮길 때 메인 에이전트가 지침을 적용한다.
+- **Codex에는 적용되지 않는다.** output-style은 Claude Code 전용 기능이다. 두 도구에 함께
+  걸어야 할 필요가 관측되면 그때 규칙 파일로 옮긴다(`docs/agent-rules/dual-tool.md`).
+
 ## Trace-Specific Shared Skills
 
 - `trace-init`: restore Trace session state at the start of a new chat.

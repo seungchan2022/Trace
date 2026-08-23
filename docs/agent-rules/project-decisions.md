@@ -93,6 +93,34 @@ This file records defaults until the user chooses otherwise.
   - **되돌리는 조건:** 구현체 3곳의 멤버 `@MainActor`는 Swift가 이 자리를 채우면 지울 수 있다. **확인법은 지우고 빌드하는 것** — 통과하면 지워도 된다. 더 근본적으로는 `CLLocationManager`를 actor로 감싸 요구사항에서 `async`를 없애면 문제 자체가 소멸하나, 이는 마일스톤 규모다.
   - 검증 매트릭스·최소 재현·기각한 대안 전체: `docs/solutions/conventions/mainactor-witness-inference-overrides-class-isolation.md`
 
+- **한국어 출력 지침을 output-style로 건다 — 플러그인이 아니라 수정본 파일로** (결정 2026-08-23).
+  [fluent-korean](https://github.com/snflkd/fluent-korean)(MIT, 마크다운 2개뿐이고 실행 코드는 없음)을
+  검토해서 `fluent-korean.md`를 `.claude/output-styles/trace-korean.md`로 복사하고
+  `.claude/settings.local.json`의 `outputStyle`로 켰다. 이 지침이 채우는 자리는
+  **문장을 어떻게 끝맺을 것인가**(조사·어미·서술어 생략 금지)이고, 기존 메모리와 `trace-study`
+  「절대 원칙」이 이미 덮고 있던 자리는 **무엇을 어떤 순서로 말할 것인가**여서 서로 층이 다르다.
+  - **플러그인 설치를 기각한 이유:** 지침 본문이 실제로 개정되고 있고(2026-08-18·08-21),
+    README가 갱신 시 수정본이 덮어써진다고 직접 경고한다. 얻는 것이 텍스트 6KB뿐이라
+    자동 갱신보다 우리가 고칠 수 있는 쪽의 가치가 크다. 전역(`~/.claude`)이 아니라
+    프로젝트에만 거는 것도 같은 이유다.
+  - **`fluent-korean-not-coding` 변형은 쓰지 않는다.** `keep-coding-instructions`가 없어서
+    Claude Code의 소프트웨어 엔지니어링 지침(변경 범위 잡기, 주석, 검증)이 통째로 빠진다.
+  - **원본에서 고친 세 곳:**
+    ① **엠대시 조항 삭제.** 원본 구 단위 4번은 엠대시를 콜론이나 접속사로 바꾸라고 한다.
+       그런데 학습 노트 4개에 엠대시가 **1,204개**(각 113 / 440 / 443 / 208) 들어 있고,
+       부연과 근거를 붙이는 주력 장치다. 그대로 켜면 앞으로 쓰는 노트가 기존과 다른 문체가 된다.
+    ② **한자어 조항 완화.** 원본 구 단위 2번의 *"맥락에 적합한 한자어를 적극적으로 활용"*이
+       메모리 `explain-simply`의 목표 난이도(*"비전공자 중학생"*, 같은 지적을 세 번 받음)와
+       반대 방향이다. "한자어"를 "어휘"로 바꾸고, README의 저빈도 어휘 자제 블록을 구 단위 3번으로
+       새로 넣었다. 조사·어미로 의미 관계를 밝히라는 부분은 그대로 살렸다.
+    ③ **적용 제외 조항 추가**(동작 범위 5번). 문체 지침이 따로 있는 산출물에는 적용하지 않는다.
+       학습 노트가 여기 해당하며 `.claude/skills/trace-study/SKILL.md`의 「절대 원칙」을 따른다.
+  - **관측할 것:** 노트와 문서의 문체가 나빠지지 않는지. 특히 **종결형**을 본다. 지침 본문이
+    전부 `~합니다`체인데 학습 노트는 문장 1,028개가 전부 `~다`체이고, README가 어휘 priming을
+    의도한 설계라고 밝히고 있어서 존댓말로 끌려갈 수 있다.
+  - **되돌리는 조건:** 노트 문체가 흔들리거나 설명이 어려워지면 `outputStyle` 한 줄을 지운다.
+    지침 파일을 지울 필요는 없다. 한 마일스톤 동안 관찰한 뒤 유지 여부를 판단한다.
+
 ## Decisions the User May Need to Make Later
 
 - Whether data is local-only or synced

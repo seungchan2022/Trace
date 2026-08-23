@@ -55,6 +55,9 @@ Ask: does the agent need this *before* it would naturally open the detail file?
   their original language.
 - Use English only when the document is primarily for external tooling or when
   the user explicitly asks for English.
+- 한국어 문장 자체의 품질 지침(조사·어미·서술어를 생략하지 않는다)은 여기에 두지 않는다.
+  `.claude/output-styles/trace-korean.md`가 그 집이고, 색인은 `docs/agent-rules/skills.md`의
+  「Output Style」 절에 있다.
 
 ## Adding a new rule or skill file
 
