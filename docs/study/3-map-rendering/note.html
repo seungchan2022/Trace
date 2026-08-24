@@ -948,7 +948,7 @@
         <div class="st"><span class="n">④</span><span class="t">구간 경계마다 <b>흰 점</b>이 찍혀 어디서 끊겼는지 보인다</span></div>
       </div>
       <div class="seen">&#9312;색이 다른 선은 <strong>파트 1</strong>, &#9313;거리 라벨은 <strong>파트 2</strong>.
-        <strong>&#9315;의 흰 점은 파트 4</strong> — 선이 아니라서 오버레이를 처음부터 만든 유일한 경우다. 지도를 SwiftUI에 올리는 뼈대는 화면에 안 보여서 뒤쪽 「골격」에 있다.</div>
+        <strong>&#9315;의 흰 점은 파트 4</strong> — 그리는 코드를 이 앱이 직접 만든 유일한 경우다. 지도를 SwiftUI에 올리는 뼈대는 화면에 안 보여서 뒤쪽 「골격」에 있다.</div>
     </div>
 
     <div class="scene">
@@ -1083,7 +1083,8 @@
     <p>
       <strong>레이어 순서(z-order)는 둘로 나뉜다</strong> —
       <em>“오버레이는 항상 어노테이션보다 아래”</em>라는 <strong>보장</strong>은
-      <strong>파트 4</strong>(경계의 흰 점을 어노테이션에서 오버레이로 옮긴 사건),
+      <a href="#p2s4"><strong>파트 2 구간 &#9315;</strong></a>(거리 라벨이 경유점에
+      안 가려지는 이유 &#8212; 그 보장을 얻으려고 흰 점을 오버레이로 옮겼다),
       <code>insertOverlay(_:below:)</code>로 <strong>순서를 직접 지정</strong>하는 것은
       <strong>파트 5</strong>(후광을 케이싱 아래에 끼워 넣는다).
     </p>
@@ -1363,8 +1364,9 @@ SegmentPolyline         <span class="c">← 위에 얹을 자리   (색으로 �
           <p>
             <strong>이 앱은 &#9425;를 골랐다.</strong> &#9424;가 불가능해서가 아니다 —
             <strong>같은 파일 안에 &#9424;로 만든 것이 실제로 있다</strong>(구간 경계의 흰 점.
-            <strong>파트 4</strong>에서 본다). 그쪽은 점 여러 개라 MapKit이 주는 것으로는 안 되는 모양이었고,
-            그 대가로 <strong>반지름을 확대 배율로 직접 나누는</strong> 코드를 떠안았다.
+            <strong>파트 4</strong>에서 본다). <strong>그쪽이 &#9424;로 간 것은 점이 여러 개라서가 아니다</strong> &#8212;
+            애플이 주는 원(<code>MKCircle</code>)은 반지름이 <strong>미터</strong>라
+            <strong>화면에서 고정 크기를 낼 수 없었다.</strong> 그 대가로 <strong>반지름을 확대 배율로 직접 나누는</strong> 코드를 떠안았다.
           </p>
 
           <p>
@@ -5975,6 +5977,44 @@ Coordinator
       <strong>파트를 하나 끝낼 때마다 내용이 맞는지 한 번 더 검토한다.</strong> 이미 읽은 내용이
       바뀐 것이 있으므로 무엇을 어떻게 고쳤는지 남긴다.
     </p>
+
+    <h3>파트 1 — 2026-08-24 · 파트 4를 쓰다 발견</h3>
+
+    <p>
+      <strong>파트 4를 쓰면서 파트 1의 문장 셋이 걸렸다</strong> — 하나는 원인이 틀렸고,
+      하나는 파트 번호가 틀렸고, 하나는 두 갈래로 읽혔다.
+      셋 다 <strong>이미 발행돼 읽은 뒤에</strong> 고친 것이다.
+    </p>
+
+    <div class="fix">
+      <span class="fixtag">고침 1 · 구간 &#9313; — 틀린 원인</span>
+      <p>흰 점이 <strong>렌더러를 직접 만드는 쪽</strong>으로 간 이유를 <em>&#8220;점 여러 개라
+        MapKit이 주는 것으로는 안 되는 모양이었고&#8221;</em>라고 썼는데 <strong>틀렸다.</strong>
+        개수가 막은 것이 아니다 &#8212; <code>MKCircle</code>을 여러 개 올리는 길이 있고,
+        <strong>그리는 렌더러(<code>MKCircleRenderer</code>)까지 애플이 준다.</strong>
+        막은 것은 <strong>반지름의 단위</strong>다 &#8212; 애플 문서 그대로
+        <em>&#8220;The radius of the circular area, in meters.&#8221;</em>이라
+        <strong>화면에서 고정 크기를 낼 수 없다.</strong> 그렇게 바로잡았고,
+        같은 사실을 <a href="#p4s3">파트 4 구간 &#9314;</a>이 자세히 다룬다.</p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">고침 2 · 소개 「골격」 안내 — 잘못 붙은 파트 번호</span>
+      <p><em>&#8220;오버레이는 항상 어노테이션보다 아래&#8221;</em>라는 보장을 쓴 사건을
+        <strong>파트 4</strong>에 귀속했는데, 그 사건을 다루는 것은
+        <a href="#p2s4"><strong>파트 2 구간 &#9315;</strong></a>다. 파트 4는
+        <strong>그 뒤에 점 쪽에서 무엇을 만들어야 했나</strong>를 맡는다.
+        <strong>파트 4 본문은 처음부터 파트 2를 가리키고 있었고 소개만 낡아 있었다.</strong></p>
+    </div>
+
+    <div class="fix">
+      <span class="fixtag">고침 3 · 사용자 장면 — 두 갈래로 읽히던 것</span>
+      <p>흰 점을 <em>&#8220;선이 아니라서 오버레이를 처음부터 만든 유일한 경우&#8221;</em>라고
+        썼는데, <strong>「밑바닥부터 직접 만들었다」(맞음)와 「처음부터 오버레이였다」(틀림)</strong>
+        두 갈래로 읽혔다. 흰 점은 <strong>어노테이션이던 시절이 있었고</strong>, 라벨을 가려서
+        오버레이로 옮긴 것이다. <em>&#8220;그리는 코드를 이 앱이 직접 만든 유일한 경우&#8221;</em>로
+        바꿔 시간 순서를 뜻하지 않게 했다.</p>
+    </div>
 
     <h3>파트 1 — 2026-08-18 · advisor 팩트체크</h3>
 
