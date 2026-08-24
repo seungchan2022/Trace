@@ -594,6 +594,7 @@
     <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 출발·도착 핀">출발·도착 핀</a></li>
     <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 구간 경계의 흰 점">구간 경계의 흰 점</a></li>
     <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — 고른 구간이 표시되는 법: 카메라가 옮겨가고 후광이 깔린다">고른 구간 표시</a></li>
+    <li><span class="k"><i class="kf">6</i><i class="ks">6</i></span><a href="#p6" data-target="p6" title="파트 6 — 되짚어 그리면 두 줄로 보인다">겹친 선 갈라 그리기</a></li>
     <li><span class="k"><i class="kf">골격</i><i class="ks">골</i></span><a href="#bg1" data-target="bg1" title="골격 — 화면에 안 보이는 부분">SwiftUI 밖으로</a></li>
   </ol>
 </nav>
@@ -609,7 +610,7 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1·2 완료(검토까지) · 파트 3 5구간 완료 · 파트 4 4구간 완료 · 파트 5 5구간 완료</span></h4>
+    <h4>목차 <span class="tocnote">— 구성 개편 2026-08-18 · 파트 1·2 완료(검토까지) · 파트 3 5구간 완료 · 파트 4 4구간 완료 · 파트 5 5구간 완료 · 파트 6 골격</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
@@ -619,7 +620,7 @@
       <li class="on"><span class="k">3</span><a href="#p3">출발&#183;도착 핀</a></li>
       <li class="on"><span class="k">4</span><a href="#p4">구간 경계의 흰 점</a></li>
       <li class="on"><span class="k">5</span><a href="#p5">고른 구간이 표시되는 법 &#8212; 카메라가 옮겨가고 후광이 깔린다</a></li>
-      <li class="todo"><span class="k">6</span>되짚어 그리면 두 줄로 보인다</li>
+      <li class="on"><span class="k">6</span><a href="#p6">되짚어 그리면 두 줄로 보인다</a></li>
       <li class="on"><span class="k">골격</span><a href="#bg1">SwiftUI 밖으로 나가기 — 지도를 올리는 뼈대</a> <em>(화면에 안 보이는 부분)</em></li>
       <li class="todo"><span class="k">골격</span>언제 다시 그리나</li>
       <li class="todo"><span class="k">마무리</span>어디를 열면 되나 — 파일 경로</li>
@@ -712,7 +713,7 @@
           <li>밀려도 안 변하는 번호(<code>colorKey</code>)가 이미 있어서 <strong>따라가게 만들 수도 있었지만</strong> 그러지 않았다</li>
           <li><strong>사용자가 직접 푸는 방법은 없다</strong> &#8212; 한 번 고르면 다음 편집 때까지 후광이 남는다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">6</span><div><div class="can">좌표가 같은 두 구간이 <strong>왜 화면에서는 두 줄로 보이는지</strong> 설명할 수 있다</div></div></li>
+      <li><span class="k">6</span><div><div class="can">같은 길을 되짚어 지나는 두 구간을 <strong>화면에서만 갈라 보이게 하는 방법</strong>을 정할 수 있다</div><div class="sum">왔던 길을 되짚어 그으면 <strong>좌표가 완전히 같은데도 두 선이 나란히</strong> 보인다. 무엇을 「겹쳤다」로 보는지, <strong>둘 중 누가 도로 위에 남는지</strong>, 얼마나 어느 쪽으로 밀고 어디는 안 미는지, 그리고 <strong>그렇게 만든 좌표를 누가 쓰고 누가 안 쓰는지</strong>를 본다.</div></div></li>
       <li><span class="k">골격</span><div><div class="can">SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에 남아야 하는지</strong> 가를 수 있다</div><div class="sum">지도를 SwiftUI 밖(UIKit)에 두고 감쌌더니 <strong>값이 두 곳으로 갈라졌다.</strong> 어느 값이 SwiftUI에 남고 어느 값이 감싼 쪽으로 넘어갔는지, 그리고 왜 그렇게 갈렸는지를 정한다. <em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다.</em></div>
         <ul class="keys">
           <li>「감싼다」는 <strong><code>UIViewRepresentable</code>을 채택한 <code>struct</code>를 사이에 두는 것</strong> — <code>MKMapView</code>와 둘이 따로 있고 수명이 다르다</li>
@@ -4574,6 +4575,65 @@ MKOverlay         coordinate + boundingMapRect   <span class="c">← 오버레�
     </div>
   </details>
 
+  <details class="part" id="p6" open>
+    <summary>
+      <span class="part-tag">파트 6</span>
+      <span class="ptitle">되짚어 그리면 두 줄로 보인다</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트가 만드는 화면</span>
+        왔던 길을 <strong>되짚어 그으면</strong>, 좌표가 완전히 같은데도 지도에는
+        <strong>두 선이 나란히</strong> 보인다. 같은 자리를 세 번 지나면 더 벌어지고,
+        <strong>출발&#183;도착 핀 자리에서는 다시 한 점으로 모인다.</strong>
+        <em>&#8212; 사용자 장면 &#9318;(되짚어 그리면 두 줄로 보인다).</em>
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>같은 길을 되짚어 지나는 두 구간을 <strong>화면에서만 갈라 보이게 하는 방법</strong>을
+        정할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr><td><a href="#p6s1">구간 &#9312;</a></td><td>왜 겹친 선을 옆으로 밀게 됐나 &#8212; 그리고 기각된 길 넷</td></tr>
+          <tr><td><a href="#p6s2">구간 &#9313;</a></td><td>어디까지를 「겹쳤다」로 보나 &#8212; 10m를 점이 아니라 선분으로 잰다</td></tr>
+          <tr><td><a href="#p6s3">구간 &#9314;</a></td><td>겹쳤을 때 누가 도로 위에 남나 &#8212; 순서를 무엇으로 정했나</td></tr>
+          <tr><td><a href="#p6s4">구간 &#9315;</a></td><td>얼마나 &#183; 어느 쪽으로 밀고, 어디는 안 미나</td></tr>
+          <tr><td><a href="#p6s5">구간 &#9316;</a></td><td>밀어 놓은 좌표를 누가 쓰고 누가 안 쓰나</td></tr>
+        </table>
+        <p class="hint">
+          <strong>왜 이 순서인가.</strong> &#9312;이 <strong>왜 이 일을 하게 됐는지</strong>를 세우고,
+          &#9313;&#9314;&#9315;가 <strong>실제로 미는 세 가지 판단</strong>(어디까지가 겹침인가 &#183;
+          누가 밀리나 &#183; 얼마나 어느 쪽으로)을 하나씩 맡는다. &#9316;은 <strong>그렇게 만든 좌표가
+          어디까지 퍼지는지</strong>다.<br>
+          <strong>&#9313;를 &#9314;보다 앞에 둔 이유가 있다</strong> &#8212; <strong>코드가 도는 순서는 이와 반대다.</strong>
+          코드는 <strong>순서부터 정해 놓고</strong> 겹침을 세는데, 읽는 쪽에서는
+          <em>&#8220;밀린다는 것이 무엇인지&#8221;</em>를 모르는 채로 <em>&#8220;누가 밀리나&#8221;</em>를 읽을 수 없다.
+          그래서 &#9313;에서 <strong>비교 대상이 「앞서 처리한 구간」</strong>이라는 것만 밝히고,
+          <strong>무엇이 앞선 것인지는 &#9314;로 넘긴다.</strong><br>
+          <strong>앞 파트에서 이어받는 것이 둘 있다.</strong> 파트 5가
+          <em>&#8220;후광은 좌표를 케이싱에서 그대로 복사한다&#8221;</em>까지 적고
+          <strong>그 케이싱의 좌표가 어디서 온 것인지는 열어뒀는데</strong>, 그것을 &#9316;에서 닫는다.
+          그리고 파트 5에서 <strong>숫자를 낮춰 넘긴 「옆으로 밀어 그린」</strong>의 정확한 뜻이
+          &#9315;에서 처음 밝혀진다.<br>
+          <strong>이 파트의 동기는 파트 2다</strong> &#8212; 문제의 출발점이 선이 아니라
+          <a href="#p2"><strong>거리 라벨</strong></a>이었다(&#9312;).
+        </p>
+      </div>
+
+      <p class="later">
+        <strong>구간 본문은 아직 없다.</strong> 구간 &#9312;부터 하나씩 채워 나가며,
+        채울 때마다 같은 링크가 갱신된다.
+      </p>
+
+      <a class="backtop" href="#toc">&#8593; 목차로</a>
+    </div>
+  </details>
+
   <details class="part" id="bg1">
     <summary>
       <span class="part-tag">골격</span>
@@ -6253,9 +6313,8 @@ Coordinator
   </section>
 
   <div class="next">
-    <strong>다음 &#8212; 파트 6 「되짚어 그리면 두 줄로 보인다」.</strong>
-    왔던 길을 되짚어 그으면 <strong>좌표가 같은데도 지도에 두 선이 나란히</strong> 보인다 &#8212;
-    그 처리를 다룬다. 파트 1~5와 골격 1은 본문까지 채워져 있고,
+    <strong>다음 &#8212; 파트 6의 구간 &#9312; 「왜 겹친 선을 옆으로 밀게 됐나」.</strong>
+    파트 6은 지금 <strong>머리와 구간 표까지</strong> 세워져 있고 본문은 구간마다 붙여 나간다.
     <strong>링크는 그대로 유지된다.</strong>
   </div>
 
