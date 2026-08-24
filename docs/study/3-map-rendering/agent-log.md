@@ -2691,6 +2691,28 @@ advisor 방침: **문장을 압축하지 말고 「주장을 뺀다」.** 고침
 여기서도 **파트가 실제로 다룰 것과 맞는지** 먼저 본다. 후보로 걸리는 것:
 **「도메인 좌표는 안 건드린다」는 경계**와 **「줌아웃하면 다시 겹친다」는 한계**가 문장에 안 들어 있다.
 
+## ✅ 재료 전수 — 코드에서 다시 뽑았다 (2026-08-24)
+
+**메모의 재료 표와 대조한 결과: 빠진 것 없음, 어긋난 것 하나.** 호출부는 `:262-272`가 아니라
+**`MapViewRepresentable.swift:261`부터**다. 그 밖의 숫자는 전부 맞았다(152줄 · 파라미터 4 · 테스트 10).
+
+| 표면 | 확인 |
+|---|---|
+| 공개 함수 | `displayCoordinates(segments:colorKeys:parameters:)` **하나뿐** |
+| private 함수 **여섯** | `key(at:colorKeys:)` · `isWithin(_:point:ofPolyline:)` · `suppressShortRuns(_:minimumRun:)` · `exemptPins(_:coords:courseFirst:courseLast:)` · `taperedOffsets(counts:coords:step:taperLength:)` · `applyOffsets(_:to:)` |
+| `Parameters` 넷 | `detectionThresholdMeters 10` · `offsetStepMeters 4` · `taperLengthMeters 15` · `minimumRunPointCount 3` |
+| 앱 호출부 | **`MapViewRepresentable.swift:261` 한 곳뿐** — 스냅샷 게이트 안 |
+| 테스트 10개 | `NonOverlappingSegmentsUnchanged` · `OutAndBackOffsetsLaterCreatedSegmentOnly` · `PrependKeepsEarlierCreatedSegmentOnRoad` · `TripleOverlapUsesMultipliedOffset` · `SparseVertexPolylineStillDetected` · `ShortNoiseCrossingIgnored` · `OriginalSegmentsUntouched` · `TaperRampsUpFromRunBoundary` · `NTransitionHasNoStep` · `CourseEndpointsStayPinned` |
+
+🔑 **메모에 없던 「왜」 재료 둘을 코드에서 새로 찾았다.**
+1. **파일 헤더 주석(`:3-5`)이 「왜 생성 순서인가」를 직접 적어뒀다** — *"처리 순서는 생성(attach)
+   순서 — 먼저 만든 구간이 도로 위에 남는다 (**prepend 표시 안정성**)"*. **파트 1의 `colorKey`와
+   같은 뿌리**이고, 테스트 이름(`PrependKeepsEarlierCreatedSegmentOnRoad`)이 그것을 못박는다.
+2. **미는 방향이 한쪽으로 고정이다** — `applyOffsets`가 `offset(**rightOfHeading:**)`을 부른다.
+   진행 방향 기준 **오른쪽으로만** 밀고, 방향은 **이웃 두 점**으로 정한다(양 끝은 한쪽 이웃만).
+   ⚠️ **되짚어 온 구간은 진행 방향이 반대라 「오른쪽」도 반대편이 된다** — 두 선이 갈라지는
+   이유가 여기 있을 수 있다. **아직 확인 안 했다.**
+
 ## 재료 경로 (2026-08-21 코드에서 확인 · ⚠️ 전수는 `(b-4)`에서 다시 뽑는다)
 
 | 무엇 | 어디 |
