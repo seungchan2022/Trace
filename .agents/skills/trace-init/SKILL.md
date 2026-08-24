@@ -41,7 +41,13 @@ git log --oneline -5
 
 ### 3. 미결 결정 스캔
 
-`docs/agent-rules/project-decisions.md`를 읽고:
+🔴 **통째로 읽지 않는다** — 이 파일은 142줄인데 **52KB**다(줄이 길다). 필요한 것은 두 곳뿐이다.
+
+```bash
+grep -n -i "undecided" docs/agent-rules/project-decisions.md          # 없으면 미결 없음
+sed -n "$(grep -n 'May Need to Make Later' docs/agent-rules/project-decisions.md | cut -d: -f1),+25p" \
+  docs/agent-rules/project-decisions.md
+```
 
 - `Current Defaults`에서 **`undecided`**로 남은 항목 (예: Persistence, 그 외)
 - `Decisions the User May Need to Make Later` 중 지금 작업과 관련돼 곧 정해야 할 것
@@ -65,8 +71,17 @@ git log --oneline -5
   착수 메모(`🔑`·`⚠️`·`📌`)가 있으면 함께 싣는다.** 학습은 MVP가 아니라서 `roadmap.md`에 안 잡히고,
   이 파일을 안 보면 **"진행 중인 것 없음"으로 잘못 보고된다.**
   산출물은 `docs/study/<번호>-<슬러그>/` 폴더이고 그 안에 `note.html`(사용자)과 `agent-log.md`(에이전트)가 있다.
+  - ⚙️ **진행 이력은 현재 청크·현재 파트 것만 이 파일에 남긴다**(2026-08-25 정리). 완료된 파트의
+    이력은 그 청크 `agent-log.md`의 「📦 진행 요약 아카이브」로 밀어낸다. **이 파일이 341줄까지
+    자란 원인이 그것이었고**(청크 3 줄 하나가 297줄), init이 매 세션 그걸 다 읽고 있었다.
+  - ⚠️ **학습 재개를 안내할 때 `trace-study`의 파일 구성을 함께 알린다**(2026-08-25 분리).
+    `SKILL.md`에는 목표 깊이·절대 원칙·절차 뼈대만 있고, **청크를 열 때 `session-cycle.md` ·
+    노트를 쓸 때 `note-format.md` · 저장할 때 `saving.md`**를 읽는다. 옛 구성으로 열면 절차를 놓친다.
 - 미커밋 파일 + 최근 변경된 `docs/superpowers/specs/*`, `history/*`를 연결해 "직전에 뭘 하고 있었는지" 한 문장으로 재구성한다.
-- **MVP/마일스톤 위치 복원**: `docs/roadmap.md`를 읽어 현재 어느 MVP의 어느 마일스톤 단계인지 (진행 중/완료/아카이빙 대기) 파악한다. 마일스톤이 전부 `[x]`인데 아카이빙 안 된 MVP가 있으면 "**trace-archive 대기**"로 보고한다. 단위·흐름 규칙은 `docs/agent-rules/workflow.md`.
+- **MVP/마일스톤 위치 복원**: `docs/roadmap.md`에서 현재 어느 MVP의 어느 마일스톤 단계인지 (진행 중/완료/아카이빙 대기) 파악한다. 마일스톤이 전부 `[x]`인데 아카이빙 안 된 MVP가 있으면 "**trace-archive 대기**"로 보고한다. 단위·흐름 규칙은 `docs/agent-rules/workflow.md`.
+  - 🔴 **통째로 읽지 않는다** — 270줄에 **33KB**이고, 뒤쪽 대부분이 **완료·아카이빙된 MVP 기록**이다.
+    필요한 것은 앞부분(`## 진행 중 / 예정`)뿐이다: `sed -n '1,60p' docs/roadmap.md`.
+    거기가 *"현재 진행 중인 MVP 없음"*이면 **그 아래는 볼 필요가 없다.**
 
 ### 5. 훅 배선 점검
 
@@ -113,6 +128,18 @@ C. 사이클 '<슬러그>' 목록·분류    — 정비. 설계 문서 불필요
 ### 6. 백로그 확인 + 사용 가능한 도구 + 다음 단계 제안
 
 - **먼저 `docs/backlog.md`의 open 항목을 확인**한다. 새 마일스톤은 backlog에서 다룰 항목을 고르는 것으로 시작한다(작고 명확하면 spec/plan 바로, 결정·모호하면 brainstorm). backlog 항목은 마일스톤 후보이며, 묶어서 MVP를 구성하거나 기존 MVP에 편입한다(`docs/agent-rules/workflow.md`). 단 강제 큐가 아니라 **메뉴** — 사용자가 새 기능을 먼저 하자고 하면 그쪽으로 간다. backlog가 없거나 비어 있으면 넘어간다.
+  - 🔴 **init이 읽는 파일 중 가장 크다 — 305줄에 `136KB`다.** 항목 하나가 한 줄인데 그 한 줄에
+    *what · 영향 · 미검증 · 확인 방법 · why deferred · trigger*가 전부 들어 있기 때문이다.
+    **통째로 읽으면 안 된다.** 건수와 제목만 뽑는다:
+
+    ```bash
+    grep -c '^- \[ \].*`open`$' docs/backlog.md              # open 건수
+    grep -o '^- \[ \] \*\*[^*]*\*\*' docs/backlog.md | head -8   # 제목만
+    ```
+
+    ⚠️ **건수를 셀 때 상태 범례 줄과 본문 언급이 섞이지 않게 한다** — `grep -c '`open`'`으로 세면
+    머리말의 범례와 다른 항목의 *관련:* 주석까지 잡혀 실제보다 많이 나온다(2026-08-24에 55 대 50으로 어긋났다).
+  - 사용자가 특정 항목을 고르면 **그때 그 줄만** `grep -n`으로 찾아 편다.
 - 설치된 워크플로: Superpowers(브레인스토밍·플랜·TDD·디버깅·리뷰·검증), Compound Engineering, Build iOS Apps, XcodeBuildMCP.
 - 호출 방식은 도구마다 다를 수 있으나(스킬/프롬프트/MCP), **개념은 동일**하다. 재개한 작업 성격에 맞는 다음 단계를 제안한다:
   - 새 기능/제품 고민 → 브레인스토밍 (`superpowers:brainstorming` 등)
