@@ -713,7 +713,7 @@
           <li>밀려도 안 변하는 번호(<code>colorKey</code>)가 이미 있어서 <strong>따라가게 만들 수도 있었지만</strong> 그러지 않았다</li>
           <li><strong>사용자가 직접 푸는 방법은 없다</strong> &#8212; 한 번 고르면 다음 편집 때까지 후광이 남는다</li>
         </ul></div></li>
-      <li><span class="k">6</span><div><div class="can">같은 길을 되짚어 지나는 두 구간을 <strong>화면에서만 갈라 보이게 하는 방법</strong>을 정할 수 있다</div><div class="sum">왔던 길을 되짚어 그으면 <strong>좌표가 완전히 같은데도 두 선이 나란히</strong> 보인다. 무엇을 「겹쳤다」로 보는지, <strong>둘 중 누가 도로 위에 남는지</strong>, 얼마나 어느 쪽으로 밀고 어디는 안 미는지, 그리고 <strong>그렇게 만든 좌표를 누가 쓰고 누가 안 쓰는지</strong>를 본다.</div></div></li>
+      <li><span class="k">6</span><div><div class="can">같은 길을 되짚어 지나는 두 구간을 <strong>화면에서만 갈라 보이게 하는 방법</strong>을 정할 수 있다</div><div class="sum">왔던 길을 되짚어 그으면 <strong>좌표가 완전히 같은데도 두 선이 나란히</strong> 보인다. 무엇을 「겹쳤다」로 보는지, <strong>둘 중 누가 도로 위에 남는지</strong>, 얼마나 어느 쪽으로 미는지, <strong>밀기를 어디서 거두는지</strong>, 그리고 <strong>그렇게 만든 좌표를 누가 쓰고 누가 안 쓰는지</strong>를 본다.</div></div></li>
       <li><span class="k">골격</span><div><div class="can">SwiftUI로 안 되는 화면을 감쌀 때 <strong>무엇을 구현해야 하고, 어떤 값이 어디에 남아야 하는지</strong> 가를 수 있다</div><div class="sum">지도를 SwiftUI 밖(UIKit)에 두고 감쌌더니 <strong>값이 두 곳으로 갈라졌다.</strong> 어느 값이 SwiftUI에 남고 어느 값이 감싼 쪽으로 넘어갔는지, 그리고 왜 그렇게 갈렸는지를 정한다. <em>이 파트만 유독 길다 — 이 청크에서 <strong>유일하게 UIKit 골격을 다루는 파트</strong>라서다.</em></div>
         <ul class="keys">
           <li>「감싼다」는 <strong><code>UIViewRepresentable</code>을 채택한 <code>struct</code>를 사이에 두는 것</strong> — <code>MKMapView</code>와 둘이 따로 있고 수명이 다르다</li>
@@ -4602,14 +4602,18 @@ MKOverlay         coordinate + boundingMapRect   <span class="c">← 오버레�
           <tr><td><a href="#p6s1">구간 &#9312;</a></td><td>왜 겹친 선을 옆으로 밀게 됐나 &#8212; 그리고 기각된 길 넷</td></tr>
           <tr><td><a href="#p6s2">구간 &#9313;</a></td><td>어디까지를 「겹쳤다」로 보나 &#8212; 10m를 점이 아니라 선분으로 잰다</td></tr>
           <tr><td><a href="#p6s3">구간 &#9314;</a></td><td>겹쳤을 때 누가 도로 위에 남나 &#8212; 순서를 무엇으로 정했나</td></tr>
-          <tr><td><a href="#p6s4">구간 &#9315;</a></td><td>얼마나 &#183; 어느 쪽으로 밀고, 어디는 안 미나</td></tr>
-          <tr><td><a href="#p6s5">구간 &#9316;</a></td><td>밀어 놓은 좌표를 누가 쓰고 누가 안 쓰나</td></tr>
+          <tr><td><a href="#p6s4">구간 &#9315;</a></td><td>겹친 선을 얼마나, 어느 쪽으로 미나</td></tr>
+          <tr><td><a href="#p6s5">구간 &#9316;</a></td><td>밀기를 어디서 시작하고 어디서 거두나 &#8212; 겹침 경계와 핀 자리</td></tr>
+          <tr><td><a href="#p6s6">구간 &#9317;</a></td><td>밀어 놓은 좌표를 누가 쓰고 누가 안 쓰나</td></tr>
         </table>
         <p class="hint">
           <strong>왜 이 순서인가.</strong> &#9312;이 <strong>왜 이 일을 하게 됐는지</strong>를 세우고,
-          &#9313;&#9314;&#9315;가 <strong>실제로 미는 세 가지 판단</strong>(어디까지가 겹침인가 &#183;
-          누가 밀리나 &#183; 얼마나 어느 쪽으로)을 하나씩 맡는다. &#9316;은 <strong>그렇게 만든 좌표가
-          어디까지 퍼지는지</strong>다.<br>
+          &#9313;&#9314;&#9315;&#9316;이 <strong>실제로 미는 네 가지 판단</strong>(어디까지가 겹침인가 &#183;
+          누가 밀리나 &#183; 얼마나 어느 쪽으로 &#183; 어디서 시작하고 거두나)을 하나씩 맡는다.
+          &#9317;은 <strong>그렇게 만든 좌표가 어디까지 퍼지는지</strong>다.<br>
+          <strong>&#9316;을 &#9315;에서 갈라낸 이유</strong> &#8212; 겹침이 시작&#183;끝나는 자리와
+          핀 자리는 <strong>둘 다 「밀린 양을 0으로 되돌리는」 한 가지 일</strong>이라, 설계 문서도
+          그 둘을 한 문장에 묶어뒀다.<br>
           <strong>&#9313;를 &#9314;보다 앞에 둔 이유가 있다</strong> &#8212; <strong>코드가 도는 순서는 이와 반대다.</strong>
           코드는 <strong>순서부터 정해 놓고</strong> 겹침을 세는데, 읽는 쪽에서는
           <em>&#8220;밀린다는 것이 무엇인지&#8221;</em>를 모르는 채로 <em>&#8220;누가 밀리나&#8221;</em>를 읽을 수 없다.
@@ -4617,7 +4621,7 @@ MKOverlay         coordinate + boundingMapRect   <span class="c">← 오버레�
           <strong>무엇이 앞선 것인지는 &#9314;로 넘긴다.</strong><br>
           <strong>앞 파트에서 이어받는 것이 둘 있다.</strong> 파트 5가
           <em>&#8220;후광은 좌표를 케이싱에서 그대로 복사한다&#8221;</em>까지 적고
-          <strong>그 케이싱의 좌표가 어디서 온 것인지는 열어뒀는데</strong>, 그것을 &#9316;에서 닫는다.
+          <strong>그 케이싱의 좌표가 어디서 온 것인지는 열어뒀는데</strong>, 그것을 &#9317;에서 닫는다.
           그리고 파트 5에서 <strong>숫자를 낮춰 넘긴 「옆으로 밀어 그린」</strong>의 정확한 뜻이
           &#9315;에서 처음 밝혀진다.<br>
           <strong>이 파트의 동기는 파트 2다</strong> &#8212; 문제의 출발점이 선이 아니라
