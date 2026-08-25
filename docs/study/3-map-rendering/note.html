@@ -622,10 +622,10 @@
       <li class="on"><span class="k">5</span><a href="#p5">고른 구간이 표시되는 법 &#8212; 카메라가 옮겨가고 후광이 깔린다</a></li>
       <li class="on"><span class="k">6</span><a href="#p6">되짚어 그리면 두 줄로 보인다</a></li>
       <li class="on"><span class="k">골격</span><a href="#bg1">SwiftUI 밖으로 나가기 — 지도를 올리는 뼈대</a> <em>(화면에 안 보이는 부분)</em></li>
-      <li class="todo"><span class="k">마무리</span>어디를 열면 되나 — 파일 경로</li>
-      <li class="todo"><span class="k">마무리</span>왜 이렇게 됐나 — 버려진 것과 고쳐진 것</li>
+      <li class="on"><span class="k">마무리</span><a href="#where">어디를 열면 되나 — 파일 경로</a></li>
+      <li class="on"><span class="k">마무리</span><a href="#why">왜 이렇게 됐나 — 버려진 것과 고쳐진 것</a></li>
       <li class="on"><span class="k">마무리</span><a href="#factcheck">팩트체크 수정 내역</a></li>
-      <li class="todo"><span class="k">마무리</span>확인 문제 기록</li>
+      <li class="on"><span class="k">마무리</span><a href="#quiz">확인 문제 기록</a></li>
     </ol>
   </nav>
 
@@ -6675,6 +6675,110 @@ Coordinator
 
   <section id="factcheck">
     <div class="part-tag">마무리</div>
+    <h2 id="where">어디를 열면 되나</h2>
+
+    <p>
+      잊었을 때 <strong>10분이면 복원</strong>하기 위한 절이다. 이 청크가 다룬 것은
+      <strong>파일 넷</strong>에 거의 다 들어 있고, 그중 하나가 압도적으로 크다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>무엇이 궁금하면</th><th>여기를 연다</th><th>파트</th></tr>
+        <tr>
+          <td><strong>지도를 SwiftUI에 올리는 뼈대 · 무엇을 다시 그릴지 정하는 비교 ·
+            카메라 저장&#183;복원 · 선&#183;라벨&#183;핀&#183;흰 점&#183;후광을 얹고 그리는 코드</strong>
+            &#8212; 이 청크의 본체</td>
+          <td><strong><code>Trace/Pages/CoursePlannerPage/MapViewRepresentable.swift</code></strong>
+            <em>(688줄)</em></td>
+          <td><span class="pt">골격</span><span class="pt">1</span><span class="pt">2</span><span class="pt">3</span><span class="pt">4</span><span class="pt">5</span></td>
+        </tr>
+        <tr>
+          <td>구간 색을 번호로 고르는 자리</td>
+          <td><code>…/CoursePlannerPage/SegmentPalette.swift</code> <em>(13줄)</em></td>
+          <td><span class="pt">1</span></td>
+        </tr>
+        <tr>
+          <td><strong>겹친 선을 얼마나 어느 쪽으로 미나</strong> &#8212; 겹침 판정 &#183; 배수 &#183;
+            비스듬히 잇기 &#183; 핀 예외</td>
+          <td><strong><code>…/CoursePlannerPage/OverlapOffsetResolver.swift</code></strong>
+            <em>(152줄)</em></td>
+          <td><span class="pt">6</span></td>
+        </tr>
+        <tr>
+          <td>두 좌표 사이 거리 &#183; 점에서 선분까지의 거리 &#183; 진행 방향 기준 오른쪽으로 옮기기</td>
+          <td><code>Trace/Domain/CoursePlanning/CourseCoordinate+Geo.swift</code> <em>(63줄)</em></td>
+          <td><span class="pt">6</span></td>
+        </tr>
+        <tr>
+          <td><strong>파트 6의 결정 전부</strong> &#8212; 기각한 대안 넷 &#183; 왜 생성 순서인가 &#183;
+            왜 실거리 기준인가 &#183; 알려진 한계</td>
+          <td><code>history/mvp8/2026-07-02-overlap-offset-design.md</code></td>
+          <td><span class="pt">6</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <p>
+      <strong>`MapViewRepresentable`이 688줄인 것은 이 청크 내용의 대부분이 한 파일에 있다는 뜻이다.</strong>
+      파트를 나눈 축이 파일이 아니라 <strong>화면에 보이는 것</strong>이었기 때문이고, 그래서
+      파트 1~5와 골격이 전부 이 파일의 다른 자리를 본다. <strong>겹침 계산만 따로 떼어져 있다</strong>
+      (<code>OverlapOffsetResolver</code>) &#8212; MapKit에 기대지 않는 순수 계산이라 그렇게 나눴다.
+    </p>
+
+    <a class="backtop" href="#toc">&#8593; 목차로</a>
+
+    <h2 id="why">왜 이렇게 됐나 &#8212; 버려진 것과 고쳐진 것</h2>
+
+    <p>
+      코드에는 <strong>지금 모양만</strong> 남는다. 여기 적는 것은 <strong>남지 않은 절반</strong>이다 &#8212;
+      한 번 골랐다가 버린 길, 그리고 실기기에서 깨져서 고친 것.
+    </p>
+
+    <h3>1. SwiftUI 지도를 버리고 UIKit 지도를 감쌌다</h3>
+    <p>
+      그림이 부족해서가 아니라 <strong>터치를 누가 받을지 정하는 자리</strong>가 SwiftUI
+      <code>Map</code> 안쪽이라 손댈 수 없었기 때문이다. 그리기 중에 두 손가락으로 지도를 옮기려면
+      그 자리가 필요했다. <strong>대가는 이 청크 전체다</strong> &#8212; 감싸는 골격, 값이 두 곳으로
+      갈라지는 것, 다시 그릴지 직접 판정하는 비교가 전부 그 선택에서 나왔다. 자세한 것은 골격 파트.
+    </p>
+
+    <h3>2. 색을 「배열에서 몇 번째」에서 「만들어진 순서」로 바꿨다 (MVP7)</h3>
+    <p>
+      코스 앞쪽에 구간을 붙이면 뒤 구간들의 자리가 전부 한 칸씩 밀리는데, 색을 자리로 정하고 있어서
+      <strong>손대지 않은 구간의 색이 통째로 바뀌어 보였다.</strong> 만들어진 순서(<code>colorKey</code>)로
+      바꿔서 끊었다. <strong>이 결정이 파트 6에서 다시 쓰인다</strong> &#8212; 겹쳤을 때 누가 도로 위에
+      남는지도 같은 번호로 정한다(구간 &#9314;). 자세한 것은 파트 1.
+    </p>
+
+    <h3>3. 겹친 선을 갈라 보이게 하는 길 넷을 버렸다 (MVP8)</h3>
+    <p>
+      문제의 출발점은 선이 아니라 <strong>거리 라벨</strong>이었다. 실기기에서 나중 구간이 앞 구간을
+      완전히 덮는데 라벨은 원래 자리에 남아, <strong>라벨 색과 눈에 보이는 선 색이 어긋났다.</strong>
+      <strong>라벨에 구간 번호 붙이기</strong>는 번호가 공간 순서라 2번과 같은 문제를 되풀이해서 버렸고,
+      <strong>점선&#183;반투명</strong>은 두 구간이 동시에 안 보이는 뿌리를 못 건드려서 버렸다.
+      <strong>방향 화살표</strong>와 <strong>화면 크기 기준으로 밀기</strong>는 버린 것이 아니라
+      <strong>조건을 달아 백로그로 보냈고 지금도 열려 있다.</strong> 자세한 것은 파트 6 구간 &#9312;.
+    </p>
+
+    <h3>4. 흰 점을 그리려고 렌더러를 직접 만들었다</h3>
+    <p>
+      구간 경계의 점이 <strong>줌과 무관하게 같은 크기로 보여야</strong> 했는데, 애플이 주는 렌더러로는
+      선 굵기만 정할 수 있었다. 그래서 그리는 코드를 직접 썼다. <strong>다만 다시 그리는 시점까지는
+      가져오지 못해서</strong>, 핀치 중에는 크기가 단계적으로 변한다(백로그에 열려 있다).
+      자세한 것은 파트 4.
+    </p>
+
+    <h3>5. 실기기에서 「겹침이 안 된다」고 보고됐는데 알고리즘은 처음부터 맞았다 (MVP8)</h3>
+    <p>
+      되짚어 그어도 두 선이 안 갈라진다는 보고를 받고 한참 뒤졌는데, <strong>원인이 겹침 계산이
+      아니었다.</strong> 탭으로 이어 그릴 때 자동 연결이 <strong>짧은 연결 구간</strong>을 만들어서,
+      겹칠 만큼 긴 선 자체가 안 생기고 있었다. 임시 로그 한 번으로 갈렸다 &#8212;
+      <strong>코드 리뷰로는 확신할 수 없던 것을 실기기 로그가 가렸다.</strong>
+    </p>
+
+    <a class="backtop" href="#toc">&#8593; 목차로</a>
+
     <h2>팩트체크 수정 내역</h2>
 
     <p>
@@ -6970,6 +7074,124 @@ Coordinator
 
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
+
+    <h2 id="quiz">확인 문제 기록</h2>
+
+    <p>
+      2026-08-25에 푼 것이다. <strong>7문제 전부 맞혔고</strong>, 마지막 하나에서 답이 흔들려
+      같은 개념으로 한 문제 더 냈다. <strong>고른 답과 정답을 그 자리에 표시</strong>해 두었으니,
+      나중에 다시 읽을 때 <strong>선택지까지 같이</strong> 보면 무엇을 확인한 문제였는지가 복원된다.
+    </p>
+
+    <div class="fix">
+      <span class="fixtag">출제 쪽 결함 &#8212; 먼저 밝힌다</span>
+      <p><strong>정답이 일곱 문제 내리 B였다.</strong> 패턴만 보고 찍을 수 있는 배치라 문제로서는
+        나빴다. 다만 4&#183;5&#183;6번에서 <strong>이유와 백로그 항목까지 함께 말했으므로</strong>
+        실제로 알고 있는 것이 확인됐다. <strong>다음 청크에서는 정답 위치를 섞는다.</strong></p>
+    </div>
+
+    <h3>문제 1 &#8212; 코스 앞에 구간을 붙이면 원래 구간들의 색은? <em>(파트 1)</em></h3>
+    <p>
+      A. 새 구간이 첫 번째 색을 가져가고 나머지 색이 한 칸씩 밀린다 /
+      <strong>B. 새 구간만 안 쓴 색을 갖고 나머지는 그대로다 &#8212; 고른 답 &#183; 정답</strong> /
+      C. 전체가 한 색으로 다시 칠해진다 / D. 회색으로 붙고 나중에 정해진다
+    </p>
+    <p>
+      색은 <strong>배열에서 몇 번째인가</strong>가 아니라 <strong>만들어진 순서</strong>로 정하므로
+      앞에 붙여도 기존 번호가 안 변한다. <strong>A가 함정</strong>이다 &#8212; 배열 자리로 정했다면
+      정확히 A가 되고, <strong>실제로 MVP7에 그 문제가 있었다.</strong> C&#183;D는 코드에 그런 처리가 없다.
+    </p>
+
+    <h3>문제 2 &#8212; 거리 라벨 자리를 원본 좌표로 되돌리면? <em>(파트 2)</em></h3>
+    <p>
+      A. 거리가 4m씩 길어진다 /
+      <strong>B. 라벨이 다른 색 선 위에 얹혀 어느 구간 것인지 헷갈린다 &#8212; 고른 답 &#183; 정답</strong> /
+      C. 라벨이 겹쳐 찍혀 안 읽힌다 / D. 화면 밖으로 밀려난다
+    </p>
+    <p>
+      <strong>파트 6이 시작된 이유 그 자체</strong>다. MVP7 실기기에서 나온 문제가 정확히 이것이었다.
+      <strong>A는 반대로 알기 쉬운 자리</strong>인데, 라벨은 <strong>자리만</strong> 밀린 선을 따라가고
+      <strong>숫자는 원래 좌표로</strong> 재므로 되돌려도 거리는 안 변한다.
+    </p>
+
+    <h3>문제 3 &#8212; 출발점과 도착점이 30m 떨어진 왕복 코스의 핀은? <em>(파트 3)</em></h3>
+    <p>
+      A. 하나로 합쳐져 가운데 선다 /
+      <strong>B. 출발 핀과 도착 핀이 각각 따로 선다 &#8212; 고른 답 &#183; 정답</strong> /
+      C. 도착 핀만 보인다 / D. 흰 점으로 바뀐다
+    </p>
+    <p>
+      합치는 기준은 <strong>20m</strong>다. <strong>판정 기준이 거리라는 것은 바로 나왔고 숫자만
+      기억나지 않았다</strong> &#8212; 노트가 맡는 몫이다.
+      ⚠️ <strong>같은 20m가 두 뜻으로 쓰인다</strong> &#8212; 여기는 핀 합치기, 파트 6 구간 &#9313;은
+      <em>&#8220;나란한 옆 도로는 보통 20m 이상&#8221;</em>이다. 다시 읽을 때 문맥을 봐야 한다.
+    </p>
+
+    <h3>문제 4 &#8212; 지도를 축소하면 구간 경계 흰 점의 크기는? <em>(파트 4)</em></h3>
+    <p>
+      A. 선이 얇아지는 만큼 함께 작아진다 /
+      <strong>B. 화면에서 늘 비슷한 크기로 보인다 &#8212; 고른 답 &#183; 정답</strong> /
+      C. 상대적으로 커져 선을 덮는다 / D. 일정 배율 아래에서 사라진다
+    </p>
+    <p>
+      점을 화면 고정 크기로 그리려고 <strong>렌더러를 직접 만든 것</strong>이 파트 4의 결정이다.
+      <strong>답과 함께 그 한계까지 나왔다</strong> &#8212; *&#8220;줌인/아웃에 따라 크기가 약간씩
+      달라지더라&#8221;*. 다시 그리는 시점은 MapKit이 정해서 핀치 중에는 단계적으로 변하고,
+      그 건은 백로그에 열려 있다.
+    </p>
+
+    <h3>문제 5 &#8212; 후광이 깔린 상태에서 새 구간을 이어 그리면? <em>(파트 5)</em></h3>
+    <p>
+      A. 그대로 남는다 /
+      <strong>B. 풀려서 아무 구간에도 안 깔린다 &#8212; 고른 답 &#183; 정답</strong> /
+      C. 새 구간으로 옮겨간다 / D. 둘 다에 깔린다
+    </p>
+    <p>
+      푸는 조건이 <strong>구간 배열이 바뀌는 것</strong>이라, 배열이 안 바뀌는 실패에서는 후광이 그대로
+      남는다. <strong>답과 함께 백로그 항목까지 나왔다</strong> &#8212;
+      *&#8220;후광을 없애는 방법이 코스가 변경되는 시점밖에 없어서 추후에 수정해야 한다&#8221;*.
+    </p>
+
+    <h3>문제 6 &#8212; 먼저 그은 구간을 지우면 남은 구간은? <em>(파트 6)</em></h3>
+    <p>
+      A. 밀린 자리에 그대로 있는다 /
+      <strong>B. 원래 도로 위로 돌아온다 &#8212; 고른 답 &#183; 정답</strong> /
+      C. 반대편으로 옮겨간다 / D. 함께 사라진다
+    </p>
+    <p>
+      🔑 <strong>이유를 세 파트에 걸쳐 이어서 설명했다</strong> &#8212;
+      *&#8220;코스가 바뀌었으니 다시 계산하면서 그려지는데(<strong>골격</strong>의 비교),
+      이때 비교할 것이 없어졌고(<strong>구간 &#9313;</strong>의 「앞서 처리한 구간」이 빔),
+      겹친 선이 사라졌으니 원래 좌표로 표현된다(<strong>구간 &#9315;</strong>의 겹친 수 0 → 0m)&#8221;*.
+      원래 좌표는 처음부터 안 바뀌고 있었고 <strong>그리기 직전에 만들던 밀린 좌표만 없어지는 것</strong>이다.
+    </p>
+
+    <h3>문제 7 &#8212; 지난번 구간 모양의 기억을 <code>MapViewRepresentable</code>이 들면? <em>(골격)</em></h3>
+    <p>
+      <strong>A. 기억이 매번 없어져 늘 「달라졌다」가 되어 전부 다시 그린다 &#8212; 정답</strong> /
+      <strong>B. 기억이 두 벌 생겨 최신을 알 수 없다 &#8212; A와 헷갈림</strong> /
+      C. SwiftUI가 변경을 감지 못 해 화면이 안 바뀐다 / D. 카메라 위치만 복원 안 된다
+    </p>
+    <p>
+      <strong>구조는 정확히 알고 있었다</strong> &#8212; *&#8220;Coordinator가 이전 값을 기억하고
+      최신값을 든 MapViewRepresentable과 비교해 화면이 갱신된다&#8221;*. 한 걸음이 빠져 있었다:
+      <strong><code>MapViewRepresentable</code>은 값이 바뀔 때마다 통째로 새로 만들어진다.</strong>
+      그래서 거기 적어 둬도 다음번엔 <strong>그 기록이 없는 새 물건</strong>이다.
+      <strong>B가 틀린 이유</strong>는 두 벌이 생기는 게 아니라 <strong>아예 안 남기</strong> 때문이다.
+    </p>
+
+    <h3>문제 7-2 &#8212; 구간을 하나 더 그리면 무엇이 새로 만들어지나? <em>(골격 &#183; 같은 개념 재확인)</em></h3>
+    <p>
+      <strong>A. <code>MapViewRepresentable</code>만 새로 만들어지고 <code>Coordinator</code>는 그대로다
+      &#8212; 고른 답 &#183; 정답</strong> /
+      B. 반대다 / C. 둘 다 새로 만들어진다 / D. 둘 다 그대로다
+    </p>
+    <p>
+      <code>Coordinator</code>는 <strong>처음 한 번만 만들어지고 계속 살아 있다.</strong> 그래서 기억을
+      거기에 맡긴다. <strong>이 문제로 7번의 흔들림이 해소됐다.</strong>
+    </p>
+
+    <a class="backtop" href="#toc">&#8593; 목차로</a>
 
   <div class="next">
     <strong>파트는 전부 끝났다</strong>(2026-08-25) &#8212; 기능 파트 여섯과 골격 하나.
