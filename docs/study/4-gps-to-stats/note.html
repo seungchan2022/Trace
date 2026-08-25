@@ -1,0 +1,2108 @@
+<title>Trace 학습 4 — GPS가 거리·페이스가 되는 법</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --accent:   #06B6A4;
+    --deep:     #04796E;
+    --ground:   #FAFCFB;
+    --surface:  #EFF6F4;
+    --tint:     #E3F1EE;
+    --rule:     #DAE6E3;
+    --ink:      #0E1817;
+    --muted:    #52625E;
+    --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
+            system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 37rem; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+  p { margin-bottom: 1rem; }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 700; }
+  em { font-style: normal; color: var(--muted); }
+  code {
+    font-family: var(--mono); font-size: .84em;
+    color: var(--deep); word-break: break-word;
+  }
+
+  /* ── 머리말 ───────────────────────── */
+  .kicker {
+    font-size: .85rem; font-weight: 700;
+    letter-spacing: .04em;
+    color: var(--deep); margin-bottom: .5rem;
+  }
+  h1 {
+    font-size: 2.2rem; font-weight: 800; line-height: 1.15;
+    letter-spacing: -.03em; margin-bottom: .5rem;
+    text-wrap: balance;
+  }
+  .sub { color: var(--muted); font-size: .95rem; margin-bottom: 2rem; }
+
+  /* ── 목차 ─────────────────────────── */
+  .toc {
+    border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1rem 1.2rem; margin-bottom: 3rem;
+    background: #fff;
+  }
+  .toc h4 {
+    font-size: .88rem; font-weight: 800; letter-spacing: -.005em;
+    color: var(--muted); margin-bottom: .8rem;
+  }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .38rem; }
+  .toc li {
+    font-size: .96rem; color: var(--muted);
+    display: flex; gap: .7rem; align-items: baseline;
+  }
+  .toc li .k {
+    font-family: var(--mono); font-size: .88rem; font-weight: 600;
+    color: #B9CCC8; min-width: 1.2rem;
+  }
+  .toc h4 .tocnote { font-weight: 500; font-size: .82rem; color: #93A8A4; }
+  .toc a {
+    color: var(--ink); text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .toc a:hover, .toc a:focus-visible {
+    color: var(--deep); border-bottom-color: var(--accent);
+  }
+  .toc .todo { color: #97A9A5; }
+
+  details.part { scroll-margin-top: 1.5rem; }
+  #toc { scroll-margin-top: 1.5rem; }
+
+  /* ── 접히는 파트 ───────────────────── */
+  details.part {
+    border-top: 1px solid var(--rule);
+    margin-top: 0;
+    padding-top: .2rem;
+  }
+  details.part > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.15rem .3rem 1.15rem 2rem;
+    position: relative;
+    border-radius: 8px;
+  }
+  details.part > summary::-webkit-details-marker { display: none; }
+  details.part > summary::before {
+    content: "▸";
+    position: absolute; left: .5rem; top: 1.15rem;
+    color: var(--accent); font-size: 1rem; line-height: 1.5;
+    transition: transform .15s ease;
+  }
+  details.part[open] > summary::before { content: "▾"; }
+  details.part > summary:hover { background: var(--surface); }
+  details.part > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  details.part > summary .part-tag { margin-bottom: .45rem; }
+  details.part > summary .ptitle {
+    display: block;
+    font-size: 1.45rem; font-weight: 800;
+    letter-spacing: -.025em; line-height: 1.25;
+    text-wrap: balance;
+  }
+  details.part:not([open]) > summary .ptitle { color: var(--muted); font-weight: 700; }
+  .pbody { padding: 0 .3rem 1rem; }
+  .pbody > h3:first-child { margin-top: .6rem; }
+
+  /* ── 오른쪽 고정 목차 ──────────────── */
+  .floating-toc {
+    position: fixed; top: 50%; right: 1.2rem;
+    transform: translateY(-50%);
+    z-index: 20;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--rule); border-radius: 10px;
+    padding: .7rem .8rem;
+    max-height: 82vh; overflow-y: auto;
+    font-size: .82rem; line-height: 1.5;
+  }
+  .floating-toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .3rem; }
+  .floating-toc li { display: flex; gap: .45rem; align-items: baseline; position: relative; }
+  .floating-toc .k {
+    font-family: var(--mono); font-size: .78rem; font-weight: 700;
+    color: #B9CCC8; min-width: 1.6rem;
+  }
+  .floating-toc a {
+    color: var(--muted); text-decoration: none;
+    border-bottom: 1px solid transparent;
+    max-width: 11rem; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .floating-toc a:hover { color: var(--deep); border-bottom-color: var(--accent); }
+  .floating-toc li.active .k { color: var(--accent); }
+  .floating-toc li.active a { color: var(--ink); font-weight: 700; }
+  .floating-toc .ft-head {
+    font-size: .74rem; font-weight: 800; color: var(--deep);
+    margin-bottom: .5rem; padding-bottom: .35rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .floating-toc .k i { font-style: normal; }
+  .floating-toc .ks { display: none; }
+
+  /* 좁아지면 본문과 겹치므로 번호만 남긴다 (제목은 마우스 올리면 뜬다) */
+  @media (max-width: 1079px) {
+    .floating-toc { right: .5rem; padding: .55rem .4rem; }
+    .floating-toc .ft-head { display: none; }
+    .floating-toc ol { gap: .45rem; }
+    .floating-toc li { justify-content: center; }
+    /* 링크가 항목 전체를 덮게 해서 동그라미를 눌러도 이동하게 한다 */
+    .floating-toc a {
+      position: absolute; inset: 0; max-width: none;
+      text-indent: -9999px; overflow: hidden;
+      border-bottom: none;
+    }
+    .floating-toc .k {
+      min-width: 0; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.85rem; height: 1.85rem; border-radius: 50%;
+      background: var(--surface); color: var(--muted);
+      font-size: .74rem; font-weight: 700;
+    }
+    .floating-toc .kf { display: none; }
+    .floating-toc .ks { display: inline; }
+    .floating-toc li.active .k { background: var(--accent); color: #fff; }
+    .floating-toc li:hover .k { background: var(--tint); color: var(--deep); }
+    .floating-toc li.active:hover .k { background: var(--accent); color: #fff; }
+  }
+
+  @media (max-width: 700px) { .floating-toc { display: none; } }
+
+  .backtop {
+    display: inline-block; margin-top: 1.8rem;
+    font-size: .86rem; color: var(--muted);
+    text-decoration: none; border-bottom: 1px solid var(--rule);
+  }
+  .backtop:hover, .backtop:focus-visible { color: var(--deep); border-bottom-color: var(--accent); }
+  .toc li.on { color: var(--ink); font-weight: 700; }
+  .toc li.on .k { color: var(--accent); }
+
+  /* ── 3분 복습 / 로드맵 ─────────────── */
+  .recap {
+    border: 2px solid var(--accent); border-radius: 12px;
+    padding: 1.2rem 1.35rem; margin-bottom: 3rem; background: #fff;
+  }
+  .recap h3 {
+    font-size: 1.15rem; font-weight: 800; margin: 0 0 .3rem;
+    border: none; padding: 0;
+  }
+  .recap .hint { font-size: .88rem; color: var(--muted); margin-bottom: 1rem; }
+  .recap ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .85rem; }
+  .recap li { display: grid; grid-template-columns: 1.5rem 1fr; gap: .55rem; }
+  .recap .k {
+    font-family: var(--mono); font-size: .92rem; font-weight: 700; color: var(--accent);
+  }
+  .recap .can { font-weight: 700; font-size: .96rem; line-height: 1.55; }
+  .recap .sum { font-size: .92rem; color: var(--muted); line-height: 1.6; margin-top: .1rem; }
+
+  .recap .keys {
+    list-style: none; margin: .5rem 0 0; padding: .5rem 0 0;
+    border-top: 1px dashed var(--rule);
+    display: flex; flex-direction: column; gap: .3rem;
+  }
+  .recap .keys li {
+    display: block; margin: 0; padding: 0; text-indent: 0;
+    font-size: .9rem; line-height: 1.6; color: var(--muted);
+  }
+  .recap .keys li::before {
+    content: "· "; color: var(--accent); font-weight: 700;
+  }
+  .recap .keys strong { color: var(--ink); }
+  .recap li.pending .can { color: var(--muted); font-weight: 600; }
+
+  /* ── 파트 헤더 ─────────────────────── */
+  .part { margin-top: 3.5rem; }
+  .part-tag {
+    display: inline-block;
+    font-size: .82rem; font-weight: 700; letter-spacing: .02em;
+    color: #fff; background: var(--deep);
+    padding: .26rem .68rem; border-radius: 5px;
+    margin-bottom: .85rem;
+  }
+  h2 {
+    font-size: 1.6rem; font-weight: 800;
+    letter-spacing: -.025em; line-height: 1.25;
+    margin-bottom: 1.1rem;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 1.1rem; font-weight: 800; letter-spacing: -.005em;
+    margin: 2.3rem 0 .8rem;
+    padding-bottom: .4rem; border-bottom: 1px solid var(--rule);
+  }
+
+  /* 구간 안의 소제목 (.concept 안의 h4와는 별개) */
+  .pbody > h4 {
+    font-size: .97rem; font-weight: 800; letter-spacing: -.005em;
+    color: var(--deep);
+    margin: 1.8rem 0 .6rem;
+  }
+
+  /* ── 이 파트를 끝내면 (능력 선언) ──────── */
+  .goal {
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: .9rem 1.2rem;
+    margin-bottom: 1.1rem;
+    background: #fff;
+  }
+  .goal .tag {
+    display: block;
+    font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .3rem;
+  }
+  .goal p { font-size: 1.05rem; font-weight: 700; line-height: 1.6; margin: 0; }
+
+  /* ── 한 줄 요약 (파트 시작) ───────────── */
+  .oneline {
+    background: var(--tint);
+    border-radius: 10px;
+    padding: .95rem 1.2rem;
+    margin-bottom: 1.6rem;
+    font-weight: 700; line-height: 1.65;
+  }
+  .oneline .tag {
+    display: block;
+    font-size: .84rem; font-weight: 800; letter-spacing: .01em;
+    color: var(--deep); margin-bottom: .35rem;
+  }
+
+  /* ── 등장인물 명패 ──────────────────── */
+  .roster { display: flex; flex-direction: column; gap: .5rem; margin: 1.4rem 0; }
+  .card {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 9px; padding: .75rem 1rem;
+    display: grid; grid-template-columns: 1fr; gap: .15rem;
+  }
+  .card .nm {
+    font-family: var(--mono); font-size: .98rem;
+    font-weight: 700; color: var(--deep); letter-spacing: -.01em;
+    margin-bottom: .1rem;
+  }
+  .card .ro { font-size: .93rem; line-height: 1.65; }
+  .card.hero { border-color: var(--accent); border-width: 2px; background: var(--tint); }
+
+  /* ── 개념 박스 ─────────────────────── */
+  .concept {
+    background: #fff; border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 1.1rem 1.3rem; margin: 1.7rem 0;
+  }
+  .concept h4 {
+    font-size: 1.2rem; font-weight: 800; letter-spacing: -.015em;
+    line-height: 1.4; margin-bottom: .75rem;
+  }
+  .concept p { font-size: .95rem; line-height: 1.75; margin-bottom: .75rem; }
+  .concept p:last-child { margin-bottom: 0; }
+
+  /* ── 순서 ─────────────────────────── */
+  .steps { margin: 1.4rem 0; display: flex; flex-direction: column; gap: .9rem; }
+  .st { display: grid; grid-template-columns: 1.9rem 1fr; gap: .6rem; }
+  .st .n {
+    font-family: var(--mono); font-size: 1.05rem;
+    color: var(--accent); font-weight: 700; line-height: 1.65;
+  }
+  .st .t { font-size: .96rem; line-height: 1.7; }
+  .st .t b { font-weight: 700; }
+
+  /* ── 사용자 장면 묶음 ──────────────── */
+  .scene {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.15rem 1.3rem; margin: 1.4rem 0;
+  }
+  .scene .who {
+    font-size: .84rem; font-weight: 800; color: var(--deep);
+    margin-bottom: .2rem;
+  }
+  .scene .steps { margin: .7rem 0 0; }
+  .scene .seen {
+    margin-top: .9rem; padding-top: .8rem;
+    border-top: 1px solid var(--rule);
+    font-size: .89rem; color: var(--muted); line-height: 1.65;
+  }
+
+  /* ── 경계선 ───────────────────────── */
+  .bounds { display: flex; flex-direction: column; gap: .55rem; margin: 1.4rem 0; }
+  .bd {
+    display: grid; grid-template-columns: 4.6rem 1fr; gap: .7rem;
+    align-items: baseline;
+    font-size: .95rem; line-height: 1.7;
+  }
+  .bd .lb {
+    font-size: .8rem; font-weight: 800; text-align: center;
+    padding: .16rem .3rem; border-radius: 5px;
+    background: var(--surface); color: var(--muted);
+  }
+  .bd.here .lb { background: var(--accent); color: #fff; }
+
+  /* ── 도식 ─────────────────────────── */
+  figure {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.3rem .5rem .85rem;
+    margin: 1.8rem 0; overflow-x: auto;
+  }
+  figcaption {
+    font-size: .86rem; font-weight: 600; letter-spacing: -.005em;
+    color: var(--muted);
+    text-align: center; margin-top: .9rem;
+  }
+  pre.mermaid { background: transparent; text-align: center; }
+
+  figure .node rect, figure .node polygon,
+  figure .node circle, figure .node path {
+    fill: #FFFFFF !important;
+    stroke: var(--accent) !important;
+    stroke-width: 1.7px !important;
+  }
+  figure .nodeLabel, figure .nodeLabel p, figure .node .label {
+    color: var(--ink) !important;
+    fill: var(--ink) !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.5 !important;
+  }
+  figure .edgeLabel, figure .edgeLabel * {
+    color: #0E1817 !important;
+    fill: #0E1817 !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.5 !important;
+    background-color: #FFFFFF !important;
+  }
+  figure .edgeLabel rect,
+  figure .edgeLabel .background,
+  figure rect.edgeLabelBackground,
+  figure .edgeLabels rect {
+    fill: #FFFFFF !important;
+    stroke: none !important;
+    opacity: 1 !important;
+  }
+  figure .edgePath path, figure .flowchart-link, figure path.path {
+    stroke: #A3BFBA !important;
+    stroke-width: 1.7px !important;
+  }
+  figure marker path, figure .marker {
+    fill: #A3BFBA !important;
+    stroke: #A3BFBA !important;
+  }
+
+  /* ── 코드 ─────────────────────────── */
+  pre.code {
+    background: #fff; border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem 1.15rem; margin: 1.5rem 0;
+    overflow-x: auto; font-family: var(--mono);
+    font-size: .79rem; line-height: 1.7;
+  }
+  pre.code .c { color: var(--accent); }
+
+  /* ── 실측 표 (수치 전용) ─────────────── */
+  .tablewrap { overflow-x: auto; margin: 1.5rem 0; }
+  table {
+    border-collapse: collapse; width: 100%;
+    font-size: .92rem; background: #fff;
+    border: 1px solid var(--rule); border-radius: 10px;
+  }
+  th, td {
+    text-align: left; padding: .65rem .85rem;
+    border-bottom: 1px solid var(--rule); vertical-align: top;
+    line-height: 1.6;
+  }
+  tr:last-child td { border-bottom: none; }
+  th {
+    font-size: .84rem; font-weight: 700;
+    color: var(--muted); background: var(--surface);
+  }
+  td em { font-size: .87rem; }
+  td .pt {
+    display: inline-block; min-width: 1.35rem; text-align: center;
+    font-family: var(--mono); font-weight: 700;
+    color: var(--deep);
+  }
+
+  /* ── 정정 ─────────────────────────── */
+  .fix {
+    margin: 1.1rem 0; padding: .85rem 1rem;
+    background: #fff8ec; border-left: 3px solid #d98c1f;
+    border-radius: 0 8px 8px 0;
+    font-size: .92rem; line-height: 1.72;
+  }
+  .fix strong { color: #8a5510; }
+  .fixtag { color: #8a5510; font-size: .85em; }
+
+  /* ── 구간 머리 — 보는 이유 ─────────────── */
+  .segintro {
+    margin: .2rem 0 1.5rem;
+    padding: .9rem 1.15rem;
+    background: #FFFFFF;
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--deep);
+    border-radius: 0 10px 10px 0;
+  }
+  .segintro .tag {
+    display: block;
+    font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .3rem;
+  }
+  .segintro p { line-height: 1.7; margin: 0; }
+
+  /* ── 구간 마무리 — 알고 갈 것 ─────────── */
+  .takeaway {
+    margin: 1.5rem 0 2rem;
+    padding: .9rem 1.15rem;
+    background: var(--tint);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+  }
+  .takeaway .tag {
+    display: block;
+    font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .3rem;
+  }
+  .takeaway p { font-weight: 700; line-height: 1.7; margin: 0; }
+  .takeaway .aside {
+    display: block; margin-top: .55rem;
+    font-size: .89rem; font-weight: 500; color: var(--muted);
+  }
+
+  /* ── 나중에 ───────────────────────── */
+  .later {
+    font-size: .88rem; color: var(--muted);
+    border-left: 2px solid var(--rule); padding-left: .85rem;
+    margin: 1.2rem 0;
+  }
+
+  .next {
+    margin-top: 3.5rem; padding: 1.2rem 1.3rem;
+    background: var(--surface); border-radius: 12px;
+    font-size: .94rem; color: var(--muted);
+  }
+  .next strong { color: var(--ink); }
+
+  /* ── 접히는 구간 ─────────────────── */
+  details.seg {
+    border: 1px solid var(--rule); border-radius: 10px;
+    margin: .55rem 0; background: #fff;
+  }
+  details.seg > summary {
+    list-style: none; cursor: pointer;
+    padding: .8rem 1rem .8rem 2.1rem; position: relative;
+    font-size: 1.0rem; font-weight: 800; letter-spacing: -.01em;
+    line-height: 1.5; border-radius: 10px;
+  }
+  details.seg > summary::-webkit-details-marker { display: none; }
+  details.seg > summary::before {
+    content: "▸"; position: absolute; left: .8rem; top: .8rem;
+    color: var(--accent); font-size: .95rem; line-height: 1.5;
+  }
+  details.seg[open] > summary::before { content: "▾"; }
+  details.seg > summary:hover { background: var(--surface); }
+  details.seg > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  details.seg[open] > summary {
+    border-bottom: 1px solid var(--rule);
+    border-radius: 10px 10px 0 0;
+  }
+  .segbody { padding: .3rem 1.1rem 1.1rem; }
+  .segbody > *:first-child { margin-top: .8rem; }
+  .pbody > h4, .segbody > h4 {
+    font-size: 1.02rem; font-weight: 800; letter-spacing: -.01em;
+    color: var(--ink); line-height: 1.45;
+    margin: 2.6rem 0 .85rem;
+    padding: .15rem 0 .15rem .8rem;
+    border-left: 4px solid var(--accent);
+  }
+  .pbody > h4:first-child, .segbody > h4:first-child { margin-top: 1.1rem; }
+  .segbody > p { margin-bottom: 1.15rem; }
+
+  /* ── 파트 머리 구간 표 ─────────────── */
+  .segmap {
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: .95rem 1.2rem 1.05rem; margin: 1.8rem 0 2.2rem;
+    background: var(--surface);
+  }
+  .segmap .tag {
+    display: block; font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .55rem;
+  }
+  .segmap table { border: none; background: transparent; font-size: .93rem; }
+  .segmap td {
+    border-bottom: 1px solid var(--rule); padding: .42rem .5rem .42rem 0;
+    vertical-align: baseline;
+  }
+  .segmap tr:last-child td { border-bottom: none; }
+  .segmap td:first-child {
+    white-space: nowrap; font-weight: 800; width: 4.2rem;
+  }
+  .segmap td:first-child a { color: var(--deep); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .segmap td:first-child a:hover { border-bottom-color: var(--accent); }
+  .segmap td:last-child { color: var(--muted); font-size: .88rem; white-space: nowrap; }
+  .segmap .hint {
+    margin: .7rem 0 0; padding-top: .6rem; border-top: 1px dashed var(--rule);
+    font-size: .89rem; color: var(--muted); line-height: 1.65;
+  }
+
+  /* ── 확인 문제 한 덩어리 ───────────── */
+  .qa {
+    border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1.1rem 1.25rem; margin: 1.6rem 0;
+    background: #fff;
+  }
+  .qa > .qhead {
+    display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline;
+    padding-bottom: .6rem; margin-bottom: .85rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .qa .qn {
+    font-size: .82rem; font-weight: 800; letter-spacing: .02em;
+    color: #fff; background: var(--deep);
+    padding: .2rem .6rem; border-radius: 5px;
+  }
+  .qa .qres {
+    font-size: .84rem; font-weight: 700; color: var(--deep);
+  }
+  .qa .qsrc { font-size: .82rem; color: var(--muted); margin-left: auto; }
+  .qa p { font-size: .95rem; line-height: 1.72; }
+  .qa .why {
+    margin-top: .9rem; padding-top: .8rem;
+    border-top: 1px dashed var(--rule);
+  }
+  .qa .why .lb {
+    display: block; font-size: .8rem; font-weight: 800;
+    color: var(--deep); margin-bottom: .35rem;
+  }
+
+  @media (max-width: 480px) {
+    body { font-size: 16px; }
+    .wrap { padding: 2.2rem 1.1rem 4rem; }
+    h1 { font-size: 1.8rem; } h2 { font-size: 1.35rem; }
+    details.part > summary .ptitle { font-size: 1.28rem; }
+    .bd { grid-template-columns: 4.2rem 1fr; }
+  }
+</style>
+
+<nav class="floating-toc" aria-label="파트 바로가기">
+  <div class="ft-head">파트 바로가기</div>
+  <ol>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소1</i></span><a href="#intro" data-target="intro" title="소개 1 — 이 청크가 만드는 것">이 청크가 만드는 것</a></li>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소2</i></span><a href="#scenes" data-target="scenes" title="소개 2 — 사용자가 겪을 장면">사용자가 겪을 장면</a></li>
+    <li><span class="k"><i class="kf">소개</i><i class="ks">소3</i></span><a href="#map" data-target="map" title="소개 3 — 장면 ↔ 맡은 부품">장면 &#8596; 맡은 부품</a></li>
+    <li><span class="k"><i class="kf">1</i><i class="ks">1</i></span><a href="#p1" data-target="p1" title="파트 1 — 거리: 뛴 만큼만 쌓인다">거리</a></li>
+    <li><span class="k"><i class="kf">2</i><i class="ks">2</i></span><a href="#p2" data-target="p2" title="파트 2 — 시간: 멈춘 동안은 안 흐른다">시간</a></li>
+    <li><span class="k"><i class="kf">3</i><i class="ks">3</i></span><a href="#p3" data-target="p3" title="파트 3 — 페이스: 지금과 평균이 따로 있다">페이스</a></li>
+    <li><span class="k"><i class="kf">4</i><i class="ks">4</i></span><a href="#p4" data-target="p4" title="파트 4 — 고도 상승: 평지에서 0이 된다">고도 상승</a></li>
+    <li><span class="k"><i class="kf">5</i><i class="ks">5</i></span><a href="#p5" data-target="p5" title="파트 5 — km별 페이스: 기록 상세의 스플릿 표">km별 페이스</a></li>
+    <li><span class="k"><i class="kf">6</i><i class="ks">6</i></span><a href="#p6" data-target="p6" title="파트 6 — 목표 진행률: 절반과 달성">목표 진행률</a></li>
+    <li><span class="k"><i class="kf">7</i><i class="ks">7</i></span><a href="#p7" data-target="p7" title="파트 7 — 주·달 합계: 기록 탭 숫자">주&#183;달 합계</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="kicker">따라잡기 4 / 9</div>
+  <h1>GPS가 거리&#183;페이스가<br>되는 법</h1>
+  <p class="sub">
+    폰이 <strong>5m를 움직일 때마다</strong> 받아오는 점 하나를, 러닝 화면의
+    <strong>거리 &#183; 시간 &#183; 페이스 &#183; 고도 상승 &#183; km별 페이스</strong>로 바꾸는 층.
+    여기서부터 <strong>앱의 두 번째 기둥</strong>이다 &#8212; 앞의 세 청크는 전부 뛰기 전에 그리는
+    <strong>코스</strong>였고, 이번부터는 실제로 뛴 <strong>기록</strong>이다.
+    <strong>화면에 보이는 숫자 하나하나를 파트로 나눴다</strong> &#8212; 7파트.
+  </p>
+
+  <nav class="toc" id="toc">
+    <h4>목차 <span class="tocnote">&#8212; 소개 3절 + 파트 1 구간 나누기 완료 2026-08-25 &#183; 구간을 하나씩 채우는 중</span></h4>
+    <ol>
+      <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
+      <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
+      <li class="on"><span class="k">소개</span><a href="#map">장면 &#8596; 맡은 부품</a></li>
+      <li class="on"><span class="k">1</span><a href="#p1">거리 — 뛴 만큼만 쌓인다</a></li>
+      <li class="todo"><span class="k">2</span>시간 — 멈춘 동안은 안 흐른다</li>
+      <li class="todo"><span class="k">3</span>페이스 — 지금과 평균이 따로 있다</li>
+      <li class="todo"><span class="k">4</span>고도 상승 — 평지에서 0이 된다</li>
+      <li class="todo"><span class="k">5</span>km별 페이스 — 기록 상세의 스플릿 표</li>
+      <li class="todo"><span class="k">6</span>목표 진행률 — 절반과 달성</li>
+      <li class="todo"><span class="k">7</span>주&#183;달 합계 — 기록 탭 숫자</li>
+      <li class="todo"><span class="k">마무리</span>어디를 열면 되나 &#183; 왜 이렇게 됐나 &#183; 확인 문제</li>
+    </ol>
+  </nav>
+
+  <section id="intro">
+    <div class="part-tag">소개 1</div>
+    <h2>이 청크가 만드는 것</h2>
+
+    <div class="oneline">
+      <span class="tag">한 문장</span>
+      폰이 <strong>5m를 움직일 때마다</strong> 받아오는 GPS 점을 받아, 러닝 화면에 뜨는
+      <strong>거리 &#183; 시간 &#183; 페이스 &#183; 고도 상승 &#183; km별 페이스</strong>로 바꾸는 층을 만든다 &#8212;
+      무엇을 버리고 무엇을 쌓을지, 쌓은 것을 어떤 기준으로 나눠 숫자를 낼지를 정한다.
+    </div>
+
+    <h3>여기서 기둥이 바뀐다 — 코스에서 러닝으로</h3>
+
+    <p>
+      앞의 세 청크는 전부 <strong>같은 화면</strong> 이야기였다. 손가락으로 그은 선이 도로 경로가 되고
+      (청크 1), 그 구간들이 이어져 코스가 되고(청크 2), 그 코스가 지도 위에 그려졌다(청크 3).
+      셋 다 <strong>뛰기 전에 그리는 계획</strong>이다.
+    </p>
+
+    <p>
+      청크 4부터는 다른 탭이다. <strong>코스 없이 그냥 뛰어도 되는</strong> 러닝 화면이고,
+      들어오는 재료도 다르다 &#8212; 손가락이 아니라 <strong>GPS가 알아서 보내오는 점</strong>이다.
+      설계 문서는 이 둘을 <em>&#8220;두 기둥&#8221;</em>이라고 부르면서, 러닝이 코스의 부속 단계가 아니라
+      독립적으로 서는 기능이라고 못박아 뒀다
+      (<code>history/mvp13/2026-07-13-run-tracking-design.md</code> §0).
+      코스를 한 번도 안 그린 사람도 러닝 탭만 쓰면 되고, 그래서 이 청크는 앞의 셋을 몰라도 읽힌다.
+    </p>
+
+    <p>
+      남은 청크 다섯(4~8)이 전부 이 러닝 기둥이다. 이번 청크는 그중 <strong>숫자를 만드는 부분</strong>을 맡는다.
+    </p>
+
+    <h3>GPS 점 하나에 무엇이 들어 있나</h3>
+
+    <p>
+      이 청크의 입력은 <strong>점 하나</strong>가 전부다. 실제로 이렇게 생긴 것이 5m를 움직일 때마다 들어온다 &#8212; 뛰는 속도면 1~2초에 하나쯤이다.
+    </p>
+
+    <div class="oneline">
+      <span class="tag">점 하나</span>
+      2026-07-14 09:12:03 &#183; 위도 37.5665 &#183; 경도 126.9780 &#183; 고도 38.2m &#183;
+      속도 초속 2.9m &#183; 수평 정확도 &#177;5m &#183; 수직 정확도 &#177;3m
+    </div>
+
+    <p>
+      일곱 가지다 &#8212; <strong>언제 &#183; 어디 &#183; 얼마나 높이 &#183; 얼마나 빠르게</strong>가 다섯이고,
+      나머지 둘은 <strong>그 값을 얼마나 믿을 수 있는지</strong>다. 앞의 다섯이 숫자를 만드는 재료이고,
+      뒤의 둘은 이 점을 버릴지 말지 판정하는 데만 쓴다 &#8212; 판정이 끝나면 쓸 일이 없어서
+      저장할 때는 빼고 넣는다(<code>RunSample</code>).
+    </p>
+
+    <p>
+      <strong>이 일곱 가지 말고는 아무것도 안 들어온다.</strong> 심박도, 케이던스도, 걸음 수도 없다 &#8212;
+      워치가 있어야 나오는 값이라 범위 밖으로 미뤄둔 것이다.
+      화면에 뜨는 숫자 다섯은 전부 <strong>이 일곱 가지에서만</strong> 나온다.
+    </p>
+
+    <div class="bounds">
+      <div class="bd">
+        <span class="lb">앞</span>
+        <span>손가락&#183;탭이 <strong>구간 하나</strong>가 되고, 그것이 <strong>이어지고 재어지고</strong>,
+          <strong>지도에 그려지는</strong> 것 &#8212; <em>청크 1&#183;2&#183;3, 전부 코스 기둥</em></span>
+      </div>
+      <div class="bd here">
+        <span class="lb">여기</span>
+        <span>들어온 GPS 점 중 <strong>무엇을 버리고 무엇을 쌓나</strong> &#183;
+          쌓은 것이 <strong>거리&#183;시간&#183;페이스&#183;고도 상승</strong>이 되는 규칙 &#183;
+          러닝 상태 여섯이 <strong>거리와 시간이 쌓이는 것을 켜고 끄는</strong> 방식 &#183;
+          다 뛴 뒤 저장된 점으로 <strong>km별 페이스를 다시 계산</strong>하는 규칙 &#183;
+          권한이 없거나 &#8220;정확한 위치&#8221;가 꺼져 있을 때 <strong>러닝을 시작할지 말지</strong> &#183;
+          기록 탭의 <strong>주&#183;달 합계</strong> &#8212; <em>청크 4</em></span>
+      </div>
+      <div class="bd">
+        <span class="lb">밖</span>
+        <span>그 점을 <strong>끊기지 않게 받아오는 법</strong> &#8212; 위치 권한을 시스템에
+          <strong>어떻게 요청하나</strong> &#183; &#8220;정확한 위치&#8221;를 <strong>어떻게 다시 물어보나</strong> &#183;
+          화면을 꺼도 계속 오게 하는 설정 &#8212; <em>청크 5</em></span>
+      </div>
+      <div class="bd">
+        <span class="lb">밖</span>
+        <span>그 숫자를 <strong>소리로 읽는 법</strong>(<em>청크 6</em>) &#183;
+          <strong>잠금화면에 띄우는 법</strong>(<em>청크 7</em>) &#183;
+          <strong>디스크에 남기는 법</strong>(<em>청크 8</em>)</span>
+      </div>
+      <div class="bd">
+        <span class="lb">밖</span>
+        <span>화면 배치 &#183; 버튼 스타일 &#183; 목표 입력창의 문자 파싱 &#8212;
+          <em>UI 레이아웃, 스터디 전체의 범위 밖</em></span>
+      </div>
+    </div>
+
+    <p>
+      경계가 <strong>「점이 들어온 다음 &#8596; 점이 들어오기 전」</strong>이다.
+      청크 5는 <strong>그 점이 끊기지 않고 나오게 만드는 쪽</strong>이고, 이 청크는
+      나온 점으로 무엇을 하는가다. 신호가 나빠 못 쓰는 점이 오는 상황도
+      여기서 다룬다 &#8212; 나쁜 점을 버리고 &#8220;GPS 약함&#8221;을 띄우는 것이 파트 1이다.
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 600 630" width="100%" style="max-width:600px;display:block;margin:0 auto"
+           role="img" aria-labelledby="ch4-scope-title ch4-scope-desc">
+        <title id="ch4-scope-title">청크 4의 범위 — GPS 점이 들어온 다음부터 화면 숫자가 되기까지</title>
+        <desc id="ch4-scope-desc">청크 5는 위치를 켜고 권한을 받아 화면이 꺼져도 점이 계속 들어오게 만든다. 청크 4는 그 점이 무엇으로 이뤄져 있는지에서 시작해, 쓸 만한 것을 고르고, 남은 점을 쌓아 거리·시간·페이스·고도 상승·km별 페이스 다섯 숫자를 만든다. 그 숫자를 소리로 읽거나 잠금화면에 띄우거나 저장하는 것은 청크 6·7·8이다.</desc>
+        <defs>
+          <marker id="ch4-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#A3BFBA"/>
+          </marker>
+        </defs>
+        <rect width="600" height="630" fill="#FFFFFF"/>
+
+        <rect x="60" y="14" width="480" height="124" rx="10" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+        <text x="78" y="38" font-size="13" font-weight="700" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">청크 5 &#8212; 끊기지 않게 받아오는 법</text>
+        <rect x="140" y="52" width="320" height="64" rx="8" fill="#FFFFFF" stroke="#C7D6D3" stroke-width="1.4"/>
+        <text x="300" y="78" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">위치를 켜고 &#183; 권한을 받고</text>
+        <text x="300" y="99" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면이 꺼져도 계속 돌게 한다</text>
+
+        <path d="M300 138 V 168" stroke="#A3BFBA" stroke-width="1.4" fill="none" marker-end="url(#ch4-arrow)"/>
+        <text x="316" y="159" font-size="12" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">5m마다 하나씩 흘러 나온다</text>
+
+        <rect x="60" y="172" width="480" height="328" rx="10" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.8"/>
+        <text x="78" y="196" font-size="13" font-weight="700" fill="#04796E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">청크 4 &#8212; 여기</text>
+
+        <rect x="140" y="210" width="320" height="52" rx="8" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.4"/>
+        <text x="300" y="232" text-anchor="middle" font-size="14" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">GPS 점 하나에 무엇이 들어 있나</text>
+        <text x="300" y="251" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">시각 &#183; 좌표 &#183; 고도 &#183; 속도 &#183; 정확도 둘</text>
+
+        <path d="M300 262 V 288" stroke="#A3BFBA" stroke-width="1.4" fill="none" marker-end="url(#ch4-arrow)"/>
+
+        <rect x="140" y="290" width="320" height="56" rx="8" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.4"/>
+        <text x="300" y="313" text-anchor="middle" font-size="14" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">쓸 만한 점인가 &#8212; 거르는 자리</text>
+        <text x="300" y="333" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">정확도가 나쁘면 &#183; 시작 전 것이면 &#183; 멈춰 있으면 버린다</text>
+
+        <path d="M300 346 V 372" stroke="#A3BFBA" stroke-width="1.4" fill="none" marker-end="url(#ch4-arrow)"/>
+
+        <rect x="140" y="374" width="320" height="52" rx="8" fill="#FFFFFF" stroke="#06B6A4" stroke-width="1.4"/>
+        <text x="300" y="396" text-anchor="middle" font-size="14" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">남은 점이 쌓인다</text>
+        <text x="300" y="415" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">직전 점과의 거리를 더해 나간다</text>
+
+        <path d="M300 426 V 448" stroke="#A3BFBA" stroke-width="1.4" fill="none" marker-end="url(#ch4-arrow)"/>
+
+        <rect x="140" y="450" width="320" height="44" rx="8" fill="#FFFFFF" stroke="#04796E" stroke-width="1.8"/>
+        <text x="300" y="470" text-anchor="middle" font-size="14" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면에 뜨는 숫자 다섯</text>
+        <text x="300" y="487" text-anchor="middle" font-size="12" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">거리 &#183; 시간 &#183; 페이스 &#183; 고도 상승 &#183; km별 페이스</text>
+
+        <path d="M300 500 V 526" stroke="#A3BFBA" stroke-width="1.4" fill="none" marker-end="url(#ch4-arrow)"/>
+
+        <rect x="60" y="530" width="480" height="86" rx="10" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.2"/>
+        <text x="78" y="554" font-size="13" font-weight="700" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">그 숫자를 쓰는 쪽 &#8212; 다음 청크들</text>
+        <rect x="78" y="566" width="144" height="38" rx="7" fill="#FFFFFF" stroke="#C7D6D3" stroke-width="1.2"/>
+        <text x="150" y="582" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">소리로 읽기</text>
+        <text x="150" y="597" text-anchor="middle" font-size="11" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">청크 6</text>
+        <rect x="232" y="566" width="136" height="38" rx="7" fill="#FFFFFF" stroke="#C7D6D3" stroke-width="1.2"/>
+        <text x="300" y="582" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">잠금화면</text>
+        <text x="300" y="597" text-anchor="middle" font-size="11" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">청크 7</text>
+        <rect x="378" y="566" width="144" height="38" rx="7" fill="#FFFFFF" stroke="#C7D6D3" stroke-width="1.2"/>
+        <text x="450" y="582" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">저장</text>
+        <text x="450" y="597" text-anchor="middle" font-size="11" fill="#52625E"
+              font-family="-apple-system, BlinkMacSystemFont, sans-serif">청크 8</text>
+      </svg>
+      <figcaption><strong>점이 무엇으로 이뤄져 있는지부터가 이 청크다</strong> &#8212; 청크 5는 그 점이
+        끊기지 않고 흘러 나오게 만드는 쪽이고, 점의 생김새는 여기서 다룬다</figcaption>
+    </figure>
+
+    <h3>뛰는 동안 쌓는 것과, 다 뛴 뒤에 다시 계산하는 것</h3>
+
+    <p>
+      이 청크에는 계산이 <strong>두 종류</strong> 있다. 뛰는 동안 점이 도착할 때마다 조금씩 더해 나가는 것
+      (거리 &#183; 시간 &#183; 페이스 &#183; 고도 상승)과, <strong>다 뛰고 저장된 점 전체를 한꺼번에 훑어</strong>
+      만드는 것(km별 페이스 &#183; 주&#183;달 합계)이다.
+    </p>
+
+    <p>
+      두 번째 종류가 있는 이유는 이 앱이 <strong>계산된 숫자를 저장하지 않기 때문</strong>이다.
+      저장하는 것은 <strong>점 자체</strong>이고, 표시할 때마다 거기서 다시 뽑는다.
+      설계 문서의 표현으로는 <em>&#8220;기록 = 타임스탬프가 붙은 점들의 묶음&#8221;</em>이다
+      (<code>history/mvp13/2026-07-13-run-tracking-design.md</code> §2).
+      덕분에 km별 페이스 기능이 나중에 생겼는데도 예전 기록에 그대로 적용됐다 &#8212;
+      점이 남아 있으니 새 계산기를 만들어 돌리기만 하면 됐다.
+    </p>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <section id="scenes">
+    <div class="part-tag">소개 2</div>
+    <h2>이렇게 되게 만들 거다 — 사용자가 겪을 장면</h2>
+
+    <p>
+      아래는 <strong>만들기 전에 &#8220;이렇게 되기로&#8221; 정한 것</strong>들이다. 뒤 파트는 전부
+      <em>이 목표를 어떻게 이뤘나</em>로 읽으면 된다. 어긋난 지점도 그때 드러난다.
+    </p>
+
+    <div class="scene">
+      <div class="who">시작하기까지</div>
+      <div class="steps">
+        <div class="st"><span class="n">①</span><span class="t">러닝 탭에서 <b>목표를 고른다</b> &#8212; 자유 / 거리 / 시간 셋 중 하나. 그냥 뛰려면 자유를 두면 된다</span></div>
+        <div class="st"><span class="n">②</span><span class="t">시작을 누르면 <b>3&#183;2&#183;1 카운트다운</b>이 돈다. 이 사이에 GPS는 이미 켜져 돌고 있다</span></div>
+        <div class="st"><span class="n">③</span><span class="t"><b>&#8220;GPS 신호 찾는 중&#8221;</b> &#8212; 쓸 만한 첫 점이 올 때까지 기다린다. 여기서 <b>취소</b>하면 기록 없이 대기 화면으로 돌아간다</span></div>
+      </div>
+      <div class="seen">&#9313;의 카운트다운이 <strong>파트 1</strong>에 걸린다 &#8212; <b>어느 순간부터를 이번 러닝으로 칠지</b>가 여기서 정해지고, 그 이전에 들어온 점은 전부 버려진다. &#9314;의 &#8220;찾는 중&#8221;도 <strong>파트 1</strong>이다 &#8212; <b>쓸 만한 점의 기준</b>을 통과한 것이 하나도 없는 상태가 곧 이 화면이다.</div>
+    </div>
+
+    <div class="scene">
+      <div class="who">뛰는 중에 보이는 것</div>
+      <div class="steps">
+        <div class="st"><span class="n">④</span><span class="t"><b>거리</b>가 쌓인다. 신호가 잠깐 끊겼다 돌아와도 그 사이 이동한 만큼은 <b>직선으로 이어</b> 더한다</span></div>
+        <div class="st"><span class="n">⑤</span><span class="t"><b>시간</b>이 흐른다</span></div>
+        <div class="st"><span class="n">⑥</span><span class="t"><b>현재 페이스</b>와 <b>평균 페이스</b>가 나란히 뜬다 &#8212; 둘은 재는 방식이 다르다</span></div>
+        <div class="st"><span class="n">⑦</span><span class="t">거리나 시간 목표를 걸었으면 <b>목표 진행률</b>이 함께 보인다. 자유 러닝이면 이 자리가 없다</span></div>
+        <div class="st"><span class="n">⑧</span><span class="t">신호가 계속 나쁘면 <b>&#8220;GPS 약함&#8221;</b>이 뜬다 &#8212; 기록이 멈춘 것은 아니고, 지금 들어오는 점을 못 쓰고 있다는 뜻이다</span></div>
+        <div class="st"><span class="n">⑨</span><span class="t"><b>포인트</b>를 찍으면 그 자리가 기록되고 <b>직전 포인트에서 여기까지 몇 미터인지</b>가 잠깐 뜬다. 기록 상세에도 구간 표로 남는다</span></div>
+      </div>
+      <div class="seen">&#9315;는 <strong>파트 1</strong>, &#9316;는 <strong>파트 2</strong>, &#9317;은 <strong>파트 3</strong>, &#9318;은 <strong>파트 6</strong>, &#9319;&#9320;는 <strong>파트 1</strong>.</div>
+    </div>
+
+    <div class="scene">
+      <div class="who">멈췄다 다시 뛴다</div>
+      <div class="steps">
+        <div class="st"><span class="n">⑩</span><span class="t"><b>일시정지</b>를 누르면 시간이 멈춘다. 멈춰 있는 동안 이동해도 <b>거리에 안 들어간다</b></span></div>
+        <div class="st"><span class="n">⑪</span><span class="t"><b>재개</b>하면 다시 흐른다. 멈춘 자리와 다시 뛰기 시작한 자리가 떨어져 있어도 <b>그 사이는 거리로 치지 않는다</b></span></div>
+      </div>
+      <div class="seen">둘 다 <strong>파트 2</strong>. 다만 &#9322;의 <em>&#8220;그 사이는 거리로 치지 않는다&#8221;</em>는 <strong>파트 1</strong>이 만든 거리 규칙에 <b>예외를 하나 뚫는 것</b>이라, 두 파트가 여기서 맞물린다. GPS 신호가 끊겼던 것과 사용자가 멈춘 것은 <b>점만 봐서는 구별되지 않는데</b>, 처리가 정반대다 &#8212; 앞은 이어 붙이고 뒤는 끊는다.</div>
+    </div>
+
+    <div class="scene">
+      <div class="who">끝나고 나서</div>
+      <div class="steps">
+        <div class="st"><span class="n">⑫</span><span class="t">길게 눌러 종료하면 <b>요약</b>이 뜬다 &#8212; 총거리 &#183; 시간 &#183; 평균 페이스 &#183; 고도 상승</span></div>
+        <div class="st"><span class="n">⑬</span><span class="t">기록 상세를 열면 <b>km별 페이스 표</b>가 있다 &#8212; 1km마다 몇 분 몇 초였는지</span></div>
+        <div class="st"><span class="n">⑭</span><span class="t">기록 탭에 <b>이번 주 &#183; 이번 달 &#183; 전체 합계</b>와 <b>주간 막대</b>가 있다</span></div>
+      </div>
+      <div class="seen">&#9323;의 고도 상승이 <strong>파트 4</strong>, &#9324;이 <strong>파트 5</strong>, &#9325;가 <strong>파트 7</strong>. &#9323;의 나머지 셋은 앞 파트에서 만든 숫자를 <b>종료 시점에 붙잡아 둔 것</b>이라 파트 2&#183;3에서 함께 본다.</div>
+    </div>
+
+    <h3>정한 것과 어긋난 지점</h3>
+
+    <p>
+      다섯 개가 있고, 성격이 셋으로 갈린다 &#8212; <strong>뜻이 바뀌어 뒤집힌 것</strong> 하나,
+      <strong>안 만들기로 했다가 나중에 들어온 것</strong> 하나,
+      지금도 열려 있는 것 셋이다.
+    </p>
+
+    <div class="scene">
+      <div class="who">뜻이 바뀌어 뒤집힌 것</div>
+      <div class="steps">
+        <div class="st"><span class="n">1</span><span class="t"><b>&#8220;시간&#8221;의 뜻이 도중에 바뀌었다</b> &#8212; 처음에는 <b>시작부터 지금까지의 벽시계 시간</b>이었는데, 일시정지가 생기면서 <b>멈춘 시간을 뺀 시간</b>으로 바뀌었다(MVP13 → MVP14). 페이스도 스플릿도 목표 판정도 전부 이 시간을 쓰기 때문에, <b>정의 하나가 바뀌자 그 위에 있던 것이 전부 따라 바뀌었다</b></span></div>
+      </div>
+      <div class="seen"><strong>파트 2</strong>에서 다루고, <strong>파트 3</strong>에서 그 대가를 본다 &#8212; 평균 페이스를 계산하는 자리가 코드에 <b>다섯 군데</b> 있는데 그중 <b>하나만 옛 기준으로 남아 있고, 지금은 쓰면 안 되는 것</b>이 됐다. 지워지지도 않았다.</div>
+    </div>
+
+    <div class="scene">
+      <div class="who">안 만들기로 했다가 나중에 들어온 것</div>
+      <div class="steps">
+        <div class="st"><span class="n">2</span><span class="t"><b>일시정지</b>는 처음 설계에서 <b>일부러 뺀 기능</b>이었다 &#8212; <em>&#8220;러닝앱 표준 기능이지만 첫 슬라이스는 시작/종료만. 실제로 뛰어본 뒤 필요성을 확인하고 결정한다&#8221;</em>. 실제로 뛰어보고 나서 다음 MVP에 들어왔다</span></div>
+      </div>
+      <div class="seen"><strong>파트 2</strong>. 이 순서가 남긴 흔적이 코드에 있다 &#8212; 일시정지를 <b>나중에 얹을 수 있게</b> 만들려고 어떤 선택을 했는지가 그 파트의 내용이다.</div>
+    </div>
+
+    <div class="scene">
+      <div class="who">지금도 열려 있는 것</div>
+      <div class="steps">
+        <div class="st"><span class="n">3</span><span class="t"><b>GPS가 순간이동해도 막는 장치가 없다</b> &#8212; 정확도만 보고 <b>얼마나 멀리 튀었는지는 안 본다</b>. 테스트용 위치 재생이 되감길 때 6km가 11km로 부푸는 것으로 드러났다. <b>실제로 뛰면서 겪은 적은 아직 없다</b></span></div>
+        <div class="st"><span class="n">4</span><span class="t"><b>일시정지한 구간이 지도에서 구별되지 않는다</b> &#8212; 멈춘 동안 이동한 자리가 뛴 것과 같은 선으로 이어져 보인다</span></div>
+        <div class="st"><span class="n">5</span><span class="t"><b>주석 두 곳이 지금 코드와 반대말을 한다</b> &#8212; 저장되는 시간을 <em>&#8220;벽시계 경과 시간&#8221;</em>이라고 적어뒀는데 실제로 들어가는 값은 <b>멈춘 시간을 뺀 시간</b>이다. 위 1번의 뜻 변경을 따라가지 못한 자리다</span></div>
+      </div>
+      <div class="seen">3번은 <strong>파트 1</strong>, 4번은 <strong>파트 2</strong>, 5번은 <strong>파트 2&#183;3</strong>에서 각각 그 자리에 나온다.</div>
+    </div>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <section id="map">
+    <div class="part-tag">소개 3</div>
+    <h2>장면 &#8596; 맡은 부품</h2>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>장면</th><th>맡은 부품</th><th>파트</th></tr>
+        <tr>
+          <td>&#9313;&#9314;&#9315;&#9319;&#9320; 시작 시점 &#183; 거르기 &#183; 거리 &#183; &#8220;GPS 약함&#8221; &#183; 포인트 구간 거리</td>
+          <td><code>RunSample</code> · <code>RunSession.prepareStart</code> ·
+            <code>ingest</code> · <code>streamEnded</code> · <code>RunTrack.append</code> ·
+            <code>updateWeakSignal</code> · <code>RunWaypoint</code></td>
+          <td><span class="pt">1</span></td>
+        </tr>
+        <tr>
+          <td>&#9316;&#9321;&#9322; 시간 &#183; 일시정지 &#183; 재개</td>
+          <td><code>RunPauseInterval</code> · <code>RunSession.pause</code>/<code>resume</code> ·
+            <code>activeElapsedSeconds</code> · <code>RunTrack.markGap</code></td>
+          <td><span class="pt">2</span></td>
+        </tr>
+        <tr>
+          <td>&#9317; 현재 페이스 &#183; 평균 페이스</td>
+          <td><code>RunTrack.currentPaceSecondsPerKm</code> ·
+            <code>RunPageViewModel.liveAveragePaceSecondsPerKm</code> · <code>summaryAveragePaceSecondsPerKm</code></td>
+          <td><span class="pt">3</span></td>
+        </tr>
+        <tr>
+          <td>&#9323; 고도 상승</td>
+          <td><code>RunTrack.accumulateElevation</code> · <code>RunSample.verticalAccuracyMeters</code></td>
+          <td><span class="pt">4</span></td>
+        </tr>
+        <tr>
+          <td>&#9324; km별 페이스 표</td>
+          <td><code>RunSplitCalculator</code> · <code>RunSplit</code> · <code>RunSplitPartial</code></td>
+          <td><span class="pt">5</span></td>
+        </tr>
+        <tr>
+          <td>&#9312;&#9318; 목표 고르기 &#183; 진행률 &#183; 절반&#183;달성</td>
+          <td><code>RunGoal</code> · <code>RunSession.updateGoalProgress</code></td>
+          <td><span class="pt">6</span></td>
+        </tr>
+        <tr>
+          <td>&#9325; 주 &#183; 달 합계와 주간 막대</td>
+          <td><code>RunStatsCalculator</code> · <code>RunStats</code> · <code>RunWeeklyBar</code></td>
+          <td><span class="pt">7</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <p>
+      <strong>파트 하나가 화면 숫자 하나다.</strong> 화면 단위로 자르지 않은 것은,
+      <strong>뛰는 중 화면 한 판에 네 파트가 동시에 나와 있기 때문</strong>이다 &#8212;
+      거리와 시간과 페이스와 목표 진행률이 나란히 떠 있는데, 이 넷은 만들어지는 규칙이 서로 다르다.
+    </p>
+
+    <h3>순서는 「앞의 숫자를 재료로 쓰는가」로 정했다</h3>
+
+    <p>
+      거리가 먼저인 것은 <strong>나머지가 전부 거리를 쓰기 때문</strong>이다. 페이스는 거리를 시간으로 나눈 것이고,
+      km별 페이스는 거리가 1000m를 넘는 자리를 찾는 것이고, 목표 진행률은 거리를 목표로 나눈 것이다.
+      시간이 그다음인 것도 같은 이유다 &#8212; <strong>페이스 &#183; km별 페이스 &#183; 시간 목표가 전부
+      「시간」의 뜻에 기대고 있어서</strong>, 그 뜻을 정하지 않으면 나머지를 설명할 수 없다.
+    </p>
+
+    <p>
+      그래서 <strong>파트 1&#183;2가 재료를 만들고, 파트 3&#183;5&#183;6이 그것을 가져다 쓴다.</strong>
+      중간의 파트 4(고도 상승)만 이 사슬에서 벗어나 있다 &#8212; 거리도 시간도 안 쓰고
+      <strong>고도 값만 따로 본다.</strong> 독립적이라 어디에 놓아도 되지만,
+      같은 「걸러내기」 이야기(정확도가 나쁜 값을 어떻게 버리나)를 파트 1과 나눠 갖고 있어서
+      그 근처에 뒀다.
+    </p>
+
+    <p>
+      마지막 파트 7만 입력이 다르다. 앞의 여섯이 <strong>지금 들어오는 점</strong>을 다루는 반면,
+      여기는 <strong>이미 저장이 끝난 러닝들의 요약</strong>을 받아 주&#183;달로 묶는다.
+      화면도 러닝 탭이 아니라 기록 탭이다.
+    </p>
+
+    <h3>여러 파트에 나오는 것 — 소유권을 미리 정해둔다</h3>
+
+    <p>
+      <strong>러닝 상태 여섯</strong>(대기 &#183; 카운트다운 &#183; 신호 확보 &#183; 트래킹 &#183; 일시정지 &#183; 요약)은
+      <strong>파트로 세우지 않는다.</strong> 이 여섯이 하는 일은 <em>&#8220;지금 점을 쌓을 때인가&#8221;</em>를 정하는 것뿐이라,
+      따로 떼어 설명하면 무엇을 위한 상태인지가 안 보인다. 대신 필요한 파트가 필요한 만큼 가져간다 &#8212;
+      카운트다운과 신호 확보는 파트 1(어디서부터를 이번 러닝으로 칠지),
+      일시정지는 파트 2(시간이 멈추는 자리),
+      요약은 파트 2&#183;3(종료 시점에 숫자를 붙잡아 두는 자리)이다.
+    </p>
+
+    <p>
+      <strong>세 파일이 여러 파트에 걸쳐 나온다.</strong> 파트마다 <strong>그 파일의 다른 부분</strong>을 보는 것이라,
+      어디서 무엇을 다루는지 미리 적어둔다.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>파일</th><th>어느 파트에서 무엇을</th></tr>
+        <tr>
+          <td><code>RunSession</code><br><em>(393줄)</em></td>
+          <td><strong>파트 1</strong> 점을 받아 거르는 자리 · <strong>파트 2</strong> 상태 전이와 일시정지 ·
+            <strong>파트 6</strong> 목표 판정. 저장 쪽(<code>startRecordSave</code> 계열)은 <strong>청크 8</strong>,
+            스트림을 켜고 끄는 쪽은 <strong>청크 5</strong></td>
+        </tr>
+        <tr>
+          <td><code>RunTrack</code><br><em>(71줄)</em></td>
+          <td><strong>파트 1</strong> 거리 누적 · <strong>파트 3</strong> 페이스 두 종류 ·
+            <strong>파트 4</strong> 고도 상승</td>
+        </tr>
+        <tr>
+          <td><code>RunPageViewModel</code><br><em>(233줄)</em></td>
+          <td><strong>파트 2</strong> 종료 시점의 시간 · <strong>파트 3</strong> 화면에 실제로 쓰는 평균 페이스 ·
+            <strong>파트 6</strong> 진행률 표시. 목표 입력창의 문자 파싱은 <strong>범위 밖</strong></td>
+        </tr>
+      </table>
+    </div>
+
+    <p>
+      마지막으로 <strong>「활동 시간」이라는 말이 이 청크 내내 나온다.</strong>
+      <strong>파트 2에서 뜻을 정하고, 파트 3&#183;5&#183;6이 그것을 그대로 가져다 쓴다.</strong>
+      파트 2를 건너뛰면 뒤의 셋에서 <em>&#8220;그 시간이 무슨 시간이지&#8221;</em>가 계속 걸린다.
+    </p>
+
+    <a class="backtop" href="#toc">↑ 목차로</a>
+  </section>
+
+  <details class="part" id="p1" open>
+    <summary>
+      <span class="part-tag">파트 1</span>
+      <span class="ptitle">거리 &#8212; 뛴 만큼만 쌓인다</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트가 만드는 화면</span>
+        뛰는 동안 화면에 <strong>거리 숫자</strong>가 올라간다 &#8212; <em>5.24 km</em>처럼.
+        이 숫자 하나가 이 파트가 만드는 전부다. 그런데 그 숫자 뒤에는
+        <strong>무엇을 세고 무엇을 안 셀지</strong>에 대한 판단이 여럿 들어 있다.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>그 거리 숫자가 <strong>어떤 점으로 만들어지고 어떤 점은 왜 빠졌는지</strong>,
+          그리고 신호가 끊겼던 구간을 어떻게 처리하기로 했는지 짚을 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr><td><a href="#p1s1">구간 &#9312;</a></td><td>러닝을 시작해도 되는 상태인가</td></tr>
+          <tr><td><a href="#p1s2">구간 &#9313;</a></td><td>어디부터를 이번 러닝으로 칠까</td></tr>
+          <tr><td><a href="#p1s3">구간 &#9314;</a></td><td>들어온 점 중 무엇을 쓸 만하다고 볼까</td></tr>
+          <tr><td><a href="#p1s4">구간 &#9315;</a></td><td>거리를 더할 때 무엇을 검사하나</td></tr>
+          <tr><td><a href="#p1s5">구간 &#9316;</a></td><td>포인트의 구간 거리는 어디서 오나</td></tr>
+          <tr><td><a href="#p1s6">구간 &#9317;</a></td><td>뛰다가 못 받게 되면 쌓은 것을 어떻게 하나</td></tr>
+        </table>
+        <p class="hint">
+          <strong>순서에 이유가 있다.</strong> &#9312;&#9313;는 <strong>시작을 정하는</strong> 자리다 &#8212;
+          시작해도 되는지(&#9312;), 어디부터 셀지(&#9313;). &#9314;&#9315;는 <strong>쌓는</strong> 자리다 &#8212;
+          무엇을 쓸지 고르고(&#9314;) 더한다(&#9315;). &#9316;은 &#9315;가 만든 누적 거리를
+          <strong>그대로 꺼내 쓰는</strong> 자리이고, &#9317;은 앞의 넷이 쌓아둔 것을
+          <strong>어떻게 처분할지</strong>라 마지막이다.<br>
+          <em>여섯 구간을 다 채웠다.</em>
+        </p>
+      </div>
+
+
+      <details class="seg" id="p1s1" open>
+        <summary>구간 &#9312; &#8212; 러닝을 시작해도 되는 상태인가</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>러닝은 시작 버튼을 누른다고 바로 시작되지 않는다. 그 앞에
+              <strong>&#8220;정확한 위치를 쓸 수 있나&#8221;를 확인하는 단계</strong>가 하나 있고,
+              여기서 막히면 <strong>3-2-1 카운트다운조차 돌지 않는다.</strong>
+              왜 이 확인을 넣었고, 막혔을 때 어떻게 처리하기로 했는지를 본다.
+              <em>이 파트의 첫 조각이라, 여기를 통과해야 구간 &#9313;의 &#8220;어디부터 셀까&#8221;가 시작된다.</em></p>
+          </div>
+
+          <h4>1. 카운트다운보다 먼저 일어나는 일</h4>
+
+          <p>
+            시작을 누르면 세션이 가장 먼저 하는 것은 <strong>지금 정확한 위치를 쓸 수 있는지 묻는 것</strong>이다
+            (<code>RunSession.prepareStart</code>). 이 확인이 통과해야 카운트다운으로 넘어간다.
+          </p>
+
+          <aside class="concept">
+            <h3>💡 &#8220;정확한 위치&#8221;란?</h3>
+            <p>
+              iOS에는 위치 권한(허용/거부)과 <strong>별개인 스위치</strong>가 하나 더 있다.
+              권한은 허용인데 이 스위치가 꺼져 있으면 위치는 오되 <strong>오차가 1~2km</strong>로 뭉개진다.
+              동네 날씨에는 충분하지만 러닝 기록에는 쓸 수 없다 &#8212;
+              100m를 뛴 것과 5km를 뛴 것이 구별되지 않는다.
+            </p>
+            <p>
+              앱이 이 상태를 두 값으로 구분해서 들고 있고(<code>RunLocationAccuracy</code>의
+              <code>full</code>/<code>reduced</code>), 그 정확도 값을 어떻게 얻어 오는지는
+              <strong>위치를 맡은 쪽</strong>의 일이라 청크 5에서 본다.
+            </p>
+          </aside>
+
+          <h4>2. 설정 앱으로 보내지 않고 그 자리에서 묻기로 했다</h4>
+
+          <p>
+            꺼져 있을 때 어떻게 할지에 갈림길이 있었다. 흔한 처리는
+            <strong>&#8220;설정에서 켜주세요&#8221;라는 알림을 띄우고 설정 앱으로 보내는 것</strong>인데,
+            이 앱은 그 길을 <strong>두 번째 수단으로 밀어냈다.</strong>
+          </p>
+
+          <p>
+            먼저 하는 것은 iOS가 주는 <strong>임시 허락 요청</strong>이다 &#8212;
+            <em>&#8220;이번 한 번만 정확한 위치를 쓰게 해줄래?&#8221;</em>를 화면 안에서 묻고,
+            허락은 <strong>이 세션에만</strong> 유효하다. 앱을 껐다 켜면 원래대로 돌아간다.
+          </p>
+
+          <p>
+            고른 이유는 설계 문서에 있다 &#8212; <strong>허락의 유효 범위가 러닝 1회와 정확히 맞아떨어진다.</strong>
+            설정 앱으로 보내면 사용자는 앱을 나갔다가, 스위치를 찾아 켜고, 다시 돌아와야 하고,
+            그렇게 켠 설정은 <strong>러닝이 끝나도 계속 켜져 있다.</strong> 그 자리에서 묻는 쪽은
+            화면을 안 벗어나고 끝나면 저절로 원상복구된다.
+          </p>
+
+          <h4>3. 거부되면 시작 버튼을 누른 것이 없던 일이 된다</h4>
+
+          <p>
+            임시 허락까지 거부하면 <strong>러닝이 아예 시작되지 않는다.</strong>
+            카운트다운이 안 돌고, 화면은 대기 화면 그대로이며,
+            <strong>거리 0짜리 기록조차 남지 않는다.</strong> 세션은 왜 실패했는지만 기록해 둔다
+            (<code>lastStartFailure</code>).
+          </p>
+
+          <p>
+            그리고 <strong>이때 비로소</strong> 설정 앱으로 보내는 안내가 나온다 &#8212;
+            <em>&#8220;정확한 위치가 꺼져 있어요 / 러닝 경로를 기록하려면 설정 &gt; 개인정보 보호 &gt;
+            위치 서비스에서 정확한 위치를 켜 주세요&#8221;</em>에 <strong>설정 열기</strong>와
+            취소 버튼이 붙는다. 2번에서 밀어낸 그 길이 여기서 폴백으로 쓰인다.
+          </p>
+
+          <p>
+            눈여겨볼 것은 <strong>거부를 「그래도 뛰게 해준다」로 처리하지 않았다</strong>는 점이다.
+            부정확한 기록이라도 남기는 선택지가 있었지만, 1~2km 오차로 만든 기록은
+            <strong>쌓일수록 기록 탭의 합계와 주간 막대를 망가뜨린다</strong>(파트 7).
+            거리가 틀린 기록은 나중에 걸러낼 방법도 없다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>
+              <strong>&#8220;정확한 위치&#8221;가 꺼져 있으면 러닝을 시작하지 않는다.</strong>
+              그 상태의 오차가 1~2km라 기록이 무의미하기 때문이고,
+              설정 앱으로 보내는 대신 <strong>그 자리에서 이번 러닝에만 쓰는 허락</strong>을 먼저 묻는다 &#8212;
+              허락의 유효 범위가 러닝 1회와 맞아떨어져서다.
+            </p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p1s2" open>
+        <summary>구간 &#9313; &#8212; 어디부터를 이번 러닝으로 칠까</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p><strong>시작 버튼을 누른 순간과 이번 러닝이 시작되는 순간은 다르다.</strong>
+              그 사이에 카운트다운 3초가 있고, GPS는 그 3초 동안 이미 돌고 있는데
+              <strong>그때 들어온 점은 하나도 쓰지 않는다.</strong>
+              왜 미리 켜면서 안 쓰는지, 그리고 안 쓰게 만드는 장치가 왜 두 자리에 나뉘어 있는지를 본다.
+              <em>구간 &#9312;이 &#8220;시작해도 되나&#8221;였다면 여기는 &#8220;그래서 어디부터가 이번 러닝인가&#8221;다.</em></p>
+          </div>
+
+          <h4>1. 시작을 누르고 나서 거리가 올라가기까지</h4>
+
+          <p>
+            시작 버튼 한 번에 네 토막이 지나간다. 각 토막에서 점이 들어오는지와 그 점을 어떻게 하는지가 다르다.
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 620 252" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p1s2-title p1s2-desc">
+              <title id="p1s2-title">시작 탭부터 거리가 올라가기까지의 네 토막</title>
+              <desc id="p1s2-desc">대기 화면에서 시작을 누르면 카운트다운이 돈다. GPS는 이때 이미 켜져 점을 보내지만 전부 버려진다. 카운트다운이 끝나는 순간이 이번 러닝의 시작 시각이고, 그때부터 GPS 신호 찾는 중 화면이 되며 측정 오차가 반경 30m를 넘는 점만 버려진다. 쓸 만한 첫 점이 들어오면 뛰는 중 화면으로 바뀌고 거리가 쌓이기 시작한다.</desc>
+              <rect width="620" height="252" fill="#FFFFFF"/>
+
+              <text x="172" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">시작 탭</text>
+              <text x="332" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">카운트다운 끝</text>
+              <text x="442" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">첫 쓸 만한 점</text>
+
+              <path d="M172 24 V 232" stroke="#C7D6D3" stroke-width="1" stroke-dasharray="3 3"/>
+              <path d="M332 24 V 232" stroke="#06B6A4" stroke-width="1.6"/>
+              <path d="M442 24 V 232" stroke="#C7D6D3" stroke-width="1" stroke-dasharray="3 3"/>
+
+              <text x="66" y="62" text-anchor="end" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면</text>
+              <rect x="75" y="40" width="95" height="36" rx="6" fill="#F7FAF9" stroke="#DAE6E3"/>
+              <text x="122" y="63" text-anchor="middle" font-size="12" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">대기</text>
+              <rect x="174" y="40" width="156" height="36" rx="6" fill="#F7FAF9" stroke="#DAE6E3"/>
+              <text x="252" y="63" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">삼 &#183; 이 &#183; 일</text>
+              <rect x="334" y="40" width="106" height="36" rx="6" fill="#F7FAF9" stroke="#DAE6E3"/>
+              <text x="387" y="63" text-anchor="middle" font-size="11" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">GPS 신호 찾는 중…</text>
+              <rect x="444" y="40" width="168" height="36" rx="6" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.4"/>
+              <text x="528" y="57" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중</text>
+              <text x="528" y="71" text-anchor="middle" font-size="11" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">0.00 km 부터 올라간다</text>
+
+              <text x="66" y="105" text-anchor="end" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">GPS</text>
+              <rect x="75" y="90" width="95" height="24" rx="5" fill="#FFFFFF" stroke="#DAE6E3" stroke-dasharray="3 3"/>
+              <text x="122" y="106" text-anchor="middle" font-size="11" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">꺼짐</text>
+              <rect x="174" y="90" width="438" height="24" rx="5" fill="#06B6A4"/>
+              <text x="393" y="106" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">켜져서 계속 점을 보낸다</text>
+
+              <text x="66" y="142" text-anchor="end" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">들어온 점</text>
+              <circle cx="200" cy="138" r="5" fill="#C7D6D3"/><circle cx="250" cy="138" r="5" fill="#C7D6D3"/><circle cx="300" cy="138" r="5" fill="#C7D6D3"/>
+              <circle cx="360" cy="138" r="5" fill="#C7D6D3"/><circle cx="410" cy="138" r="5" fill="#C7D6D3"/>
+              <circle cx="470" cy="138" r="5" fill="#06B6A4"/><circle cx="520" cy="138" r="5" fill="#06B6A4"/><circle cx="570" cy="138" r="5" fill="#06B6A4"/>
+
+              <text x="66" y="176" text-anchor="end" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">그 점을</text>
+              <text x="66" y="191" text-anchor="end" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">어떻게 하나</text>
+              <rect x="174" y="158" width="156" height="44" rx="6" fill="#FFFFFF" stroke="#C7D6D3"/>
+              <text x="252" y="177" text-anchor="middle" font-size="12" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">전부 버린다</text>
+              <text x="252" y="192" text-anchor="middle" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">시작 시각이 아직 없다</text>
+              <rect x="334" y="158" width="106" height="44" rx="6" fill="#FFFFFF" stroke="#C7D6D3"/>
+              <text x="387" y="175" text-anchor="middle" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">오차가 큰 것만 버린다</text>
+              <text x="387" y="189" text-anchor="middle" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">반경 30m 초과</text>
+              <text x="387" y="200" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">구간 &#9314;</text>
+              <rect x="444" y="158" width="168" height="44" rx="6" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.4"/>
+              <text x="528" y="177" text-anchor="middle" font-size="12" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">쌓는다</text>
+              <text x="528" y="192" text-anchor="middle" font-size="10.5" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">직전 점과의 거리를 더한다</text>
+
+              <path d="M332 216 H 612" stroke="#06B6A4" stroke-width="1.4"/>
+              <path d="M332 212 V 220" stroke="#06B6A4" stroke-width="1.4"/>
+              <text x="340" y="234" font-size="11.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">여기부터가 「이번 러닝」 &#8212; 시작 시각이 여기서 찍힌다</text>
+            </svg>
+            <figcaption>시작 탭과 「이번 러닝의 시작」 사이에 카운트다운 3초가 들어 있다</figcaption>
+          </figure>
+
+          <h4>2. GPS는 카운트다운보다 먼저 켜지는데, 그때 받은 점은 하나도 안 쓴다</h4>
+
+          <p>
+            위 그림에서 GPS는 시작 탭과 동시에 켜지는데, 카운트다운 구간의 점 세 개는 회색이다 &#8212; <strong>전부 버려진다.</strong>
+            (그림의 <em>&#8220;첫 쓸 만한 점&#8221;</em>은 오차 반경이 30m 이하인 첫 점을 말하는데,
+            그 기준은 구간 &#9314;에서 본다.)
+          </p>
+
+          <p>
+            그러면 왜 켜두나. <strong>남기려는 것이 점이 아니라 GPS 자체의 상태이기 때문</strong>이다.
+            GPS는 켠 직후 곧바로 정확한 위치를 내놓지 못한다. 위성을 찾고 오차를 좁히는 데 몇 초가 걸린다.
+            카운트다운이 끝난 다음에 켜면 그 몇 초가 <em>&#8220;GPS 신호 찾는 중…&#8221;</em> 화면으로
+            고스란히 보인다.
+          </p>
+
+          <p>
+            그래서 순서를 뒤집었다. 사용자가 숫자를 세는 3초 동안 GPS는 준비를 마친다.
+            그 3초 동안 들어온 점은 버려도 <strong>위성을 잡아둔 상태는 남는다</strong> &#8212;
+            그게 예열이 남기는 전부다.
+          </p>
+
+          <h4>3. 이번 러닝의 시작은 카운트다운이 끝나는 순간이다</h4>
+
+          <p>
+            시작 시각은 버튼을 누른 순간이 아니라 카운트다운이 끝나는 순간에 찍힌다(위 그림의 초록 세로선).
+          </p>
+
+          <p>
+            버튼 누른 순간으로 잡지 않은 이유는 그 3초 동안 사용자가 움직일 수 있기 때문이다.
+            폰을 주머니에 넣거나, 출발선까지 몇 걸음 옮기거나 한다.
+            <strong>그 이동은 러닝이 아니다.</strong> 시작 시각을 앞당기면 그 몇 걸음이 거리에 들어간다.
+          </p>
+
+          <h4>4. 시작 전 점은 두 자리에서 걸러진다</h4>
+
+          <p>
+            버리는 장치가 하나가 아니라 둘이고, <strong>둘이 막는 것이 다르다.</strong>
+          </p>
+
+          <p>
+            <strong>첫째는 &#8220;시작 시각이 아직 없으면 버린다&#8221;다.</strong> 그림의 회색 점 세 개가
+            여기서 걸린다 &#8212; 카운트다운 중에는 시작 시각이 비어 있다.
+            <em>언제 도착했는지</em>로 거르는 장치다.
+          </p>
+
+          <p>
+            <strong>둘째는 &#8220;점에 찍힌 시각이 시작 시각보다 이르면 버린다&#8221;다.</strong>
+            초록 세로선을 넘어간 뒤에도 이 검사가 필요한 이유는, 위치가 여러 개 쌓였다가
+            한꺼번에 넘어올 수 있기 때문이다. 그러면 앞쪽 것은 <em>지금보다 과거에 측정된 점</em>이다.
+            설계 문서는 이것을 <em>&#8220;시작 직후 캐시된 옛 샘플&#8221;</em>이라고 부른다.
+            다만 이 앱에서 그 일이 실제로 일어난 기록은 없고, 막는 값이 싸서 미리 넣어둔 쪽에 가깝다.
+          </p>
+
+          <p>
+            둘째 장치가 없으면 <strong>시작하자마자 거리가 크게 뛴다.</strong>
+            과거에 측정된 위치와 지금 위치 사이가 통째로 더해지기 때문이다.
+          </p>
+
+          <h4>5. 카운트다운 중에 그만두면 켜둔 GPS도 함께 내린다</h4>
+
+          <p>
+            카운트다운이 도는 동안 화면을 누르면 취소된다. 이때 <strong>켜둔 GPS를 다시 끄고,
+            시작 시각을 비우고, 대기 화면으로 돌아간다.</strong> 예열은 시작을 전제로 켠 것이라
+            시작을 안 하면 남겨둘 이유가 없다.
+          </p>
+
+          <p>
+            다만 <strong>다른 앱으로 나가는 것은 취소가 아니다.</strong> 카운트다운 중에 화면을 벗어나도
+            숫자는 계속 세어지고 러닝은 시작된다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>
+              <strong>이번 러닝의 시작은 &#8220;시작 버튼을 누른 순간&#8221;이 아니라 &#8220;카운트다운이 끝나는 순간&#8221;이다.</strong>
+              GPS는 그보다 먼저 켜지만 그때 들어온 점은 쓰지 않는다 &#8212;
+              남기는 것은 점이 아니라 위성을 잡아둔 GPS의 상태다.
+              시작 전 점은 두 자리에서 걸러지는데, 하나는 시작 시각이 없어서이고
+              다른 하나는 점에 찍힌 시각이 시작보다 일러서다.
+            </p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p1s3" open>
+        <summary>구간 &#9314; &#8212; 들어온 점 중 무엇을 쓸 만하다고 볼까</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>러닝이 시작되면 GPS는 <strong>5m를 움직일 때마다 점을 보낸다</strong>(뛰는 속도면 1~2초에 하나쯤).
+              종료할 때까지 내내 그렇다. 점이 하나 들어올 때마다 앱은 쓸지 버릴지를 정한다.
+              기준은 점에 함께 붙어 오는 오차 반경이고, 30m가 선이다.
+              왜 오차 반경으로 거르기로 했는지, 버린 점이 이어지면 화면에 무엇이 뜨는지를 본다.
+              <em>구간 &#9313;이 &#8220;어디부터 셀까&#8221;였다면 여기는 &#8220;그중 무엇을 셀까&#8221;다.</em></p>
+          </div>
+
+          <h4>1. 점은 러닝 내내 들어오고, 매번 쓸지 버릴지를 정한다</h4>
+
+          <figure>
+            <svg viewBox="0 0 620 246" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p1s3-title p1s3-desc">
+              <title id="p1s3-title">러닝 내내 점이 들어오고 매번 판정이 내려진다</title>
+              <desc id="p1s3-desc">카운트다운이 끝난 뒤 GPS 신호 찾는 중 화면에서 점 몇 개가 버려지다가 첫 통과가 나오면 뛰는 중 화면으로 바뀐다. 뛰는 중에 점이 연달아 버려지면 10초 뒤 GPS 신호 약함이 뜨고 거리는 멈춘다. 신호가 돌아오면 버려진 동안 이동한 만큼이 직선으로 한 번에 더해져 거리가 점프한다.</desc>
+              <rect width="620" height="246" fill="#FFFFFF"/>
+
+              <text x="90" y="16" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">카운트다운 끝</text>
+              <text x="596" y="16" text-anchor="end" font-size="11" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">종료</text>
+              <path d="M88 22 V 214" stroke="#06B6A4" stroke-width="1.4"/>
+              <path d="M600 22 V 214" stroke="#C7D6D3" stroke-width="1" stroke-dasharray="3 3"/>
+
+              <text x="66" y="46" text-anchor="end" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면</text>
+              <rect x="90" y="30" width="118" height="26" rx="5" fill="#FFF7ED" stroke="#E0B27A"/>
+              <text x="149" y="43" text-anchor="middle" font-size="10" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">GPS 신호 찾는 중…</text>
+              <text x="149" y="53" text-anchor="middle" font-size="9.5" font-weight="700" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">+ 약함 (첫 ✕부터)</text>
+              <rect x="210" y="30" width="148" height="26" rx="5" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.3"/>
+              <text x="284" y="47" text-anchor="middle" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중</text>
+              <rect x="360" y="30" width="76" height="26" rx="5" fill="#FFF7ED" stroke="#E0B27A" stroke-width="1.3"/>
+              <text x="398" y="47" text-anchor="middle" font-size="10.5" font-weight="700" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">약함</text>
+              <rect x="438" y="30" width="160" height="26" rx="5" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.3"/>
+              <text x="518" y="47" text-anchor="middle" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중</text>
+
+              <text x="66" y="80" text-anchor="end" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">들어온 점</text>
+              <text x="66" y="104" text-anchor="end" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">판정</text>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="middle">
+                <circle cx="105" cy="76" r="4.5" fill="#C7D6D3"/><text x="105" y="108" font-size="12" fill="#93A8A4">✕</text>
+                <circle cx="135" cy="76" r="4.5" fill="#C7D6D3"/><text x="135" y="108" font-size="12" fill="#93A8A4">✕</text>
+                <circle cx="165" cy="76" r="4.5" fill="#C7D6D3"/><text x="165" y="108" font-size="12" fill="#93A8A4">✕</text>
+                <circle cx="195" cy="76" r="4.5" fill="#06B6A4"/><text x="195" y="108" font-size="12" font-weight="700" fill="#04796E">○</text>
+                <circle cx="240" cy="76" r="4.5" fill="#06B6A4"/><text x="240" y="108" font-size="12" font-weight="700" fill="#04796E">○</text>
+                <circle cx="275" cy="76" r="4.5" fill="#06B6A4"/><text x="275" y="108" font-size="12" font-weight="700" fill="#04796E">○</text>
+                <circle cx="310" cy="76" r="4.5" fill="#C7D6D3"/><text x="310" y="108" font-size="12" fill="#93A8A4">✕</text>
+                <circle cx="345" cy="76" r="4.5" fill="#C7D6D3"/><text x="345" y="108" font-size="12" fill="#93A8A4">✕</text>
+                <circle cx="380" cy="76" r="4.5" fill="#C7D6D3"/><text x="380" y="108" font-size="12" fill="#93A8A4">✕</text>
+                <circle cx="415" cy="76" r="4.5" fill="#C7D6D3"/><text x="415" y="108" font-size="12" fill="#93A8A4">✕</text>
+                <circle cx="455" cy="76" r="4.5" fill="#06B6A4"/><text x="455" y="108" font-size="12" font-weight="700" fill="#04796E">○</text>
+                <circle cx="495" cy="76" r="4.5" fill="#06B6A4"/><text x="495" y="108" font-size="12" font-weight="700" fill="#04796E">○</text>
+                <circle cx="535" cy="76" r="4.5" fill="#06B6A4"/><text x="535" y="108" font-size="12" font-weight="700" fill="#04796E">○</text>
+                <circle cx="575" cy="76" r="4.5" fill="#06B6A4"/><text x="575" y="108" font-size="12" font-weight="700" fill="#04796E">○</text>
+              </g>
+              <text x="195" y="124" text-anchor="middle" font-size="10" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">첫 통과</text>
+              <text x="380" y="124" text-anchor="middle" font-size="10" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">10초 지나 「약함」</text>
+
+              <text x="66" y="152" text-anchor="end" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">거리</text>
+              <path d="M90 148 H 596" stroke="#DAE6E3" stroke-width="1"/>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="middle" font-size="11" fill="#52625E">
+                <text x="105" y="166">0.00</text>
+                <text x="240" y="166">0.12</text>
+                <text x="310" y="166">0.31</text>
+                <text x="400" y="166" fill="#8a5510">그대로 0.31</text>
+                <text x="470" y="166" font-weight="700" fill="#04796E">0.46</text>
+                <text x="575" y="166">0.58</text>
+              </g>
+              <path d="M455 138 V 128" stroke="#06B6A4" stroke-width="1.4"/>
+              <path d="M430 176 L 462 176" stroke="#06B6A4" stroke-width="1.4"/>
+              <path d="M446 176 V 172" stroke="#06B6A4" stroke-width="1.4"/>
+              <text x="446" y="196" text-anchor="middle" font-size="10.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">버려진 동안 이동한 만큼이</text>
+              <text x="446" y="209" text-anchor="middle" font-size="10.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">여기서 직선으로 한 번에 더해진다</text>
+
+              <circle cx="200" cy="230" r="4.5" fill="#06B6A4"/>
+              <text x="212" y="234" font-size="11" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">○ 쓴 점 (거리에 더한다)</text>
+              <circle cx="380" cy="230" r="4.5" fill="#C7D6D3"/>
+              <text x="392" y="234" font-size="11" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">✕ 버린 점</text>
+            </svg>
+            <figcaption>판정은 점 하나마다 따로 내려지고, 한 번 버렸다고 그다음도 버리는 것이 아니다</figcaption>
+          </figure>
+
+          <p>
+            <strong>판정은 점 하나마다 따로 내린다.</strong> 한 번 버렸다고 그다음도 버리는 것이 아니고,
+            신호가 돌아오면 곧바로 다시 쓴다.
+          </p>
+
+          <h4>2. 점에는 좌표와 함께 “반경 몇 m 안”이라는 오차가 붙어 온다</h4>
+
+          <p>
+            Apple 문서가 오차 반경을 이렇게 설명한다 &#8212;
+            <em>&#8220;위치의 위도와 경도가 원의 중심이고, 이 값이 그 원의 반지름이다&#8221;</em>
+            (<code>CLLocation.horizontalAccuracy</code>).
+          </p>
+
+          <p>
+            그러니까 점이 틀린 좌표를 주장하는 것이 아니라,
+            <strong>자기가 얼마나 확신하는지를 스스로 밝히는 것</strong>이다.
+            &#177;5m짜리 점은 <em>&#8220;내 위치는 이 동그라미 안 어딘가인데 그 동그라미가 반경 5m다&#8221;</em>라는 말이고,
+            &#177;80m짜리는 같은 말인데 동그라미가 훨씬 크다.
+          </p>
+
+          <p>
+            같은 문서에 <em>&#8220;음수는 위도와 경도가 유효하지 않다는 뜻&#8221;</em>이라는 문장도 있다.
+            이 앱은 한 칸 더 엄격해서 <strong>0도 버린다</strong> &#8212;
+            오차가 정확히 0인 위치란 현실에 없으니 그것도 못 믿을 값으로 본다.
+          </p>
+
+          <h4>3. 오차 반경 30m를 선으로 잡았고, 30이라는 값의 근거는 기록에 없다</h4>
+
+          <p>
+            오차 반경이 30m인 점을 그대로 쓰면, 실제로는 제자리에 서 있어도
+            <strong>점이 최대 60m 떨어진 두 자리로 찍힐 수 있다.</strong>
+            그 둘 사이를 이으면 가만히 서 있는데도 거리가 60m 늘어난다.
+            그래서 선을 어딘가에는 그어야 한다.
+          </p>
+
+          <p>
+            문제는 왜 하필 30m인가다. 계획 문서를 찾아보면 이렇게 적혀 있다.
+          </p>
+
+          <blockquote>
+            <p><em>&#8220;상수 기본값(전부 구현 중 튜닝 가능): 수평 정확도 필터 30m, 약신호 타임아웃 10초,
+              현재 페이스 윈도 30초, 고도 임계 3m, 지도 폴리라인 스로틀 3초/20m, distanceFilter 5m&#8221;</em></p>
+          </blockquote>
+
+          <p>
+            <strong>여섯 개가 한 줄에 함께 정해졌고, 문서 스스로 &#8220;구현 중 튜닝 가능&#8221;이라고 적었다.</strong>
+            30이라는 값을 고른 근거도, 나중에 실제로 튜닝했다는 기록도 없다.
+          </p>
+
+          <h4>4. 버린 점이 이어져도 러닝은 계속 돌아간다</h4>
+
+          <p>
+            버린다는 것은 <strong>그 점을 안 쓴다는 뜻일 뿐</strong>이다.
+            세션을 끝내지도, 화면을 대기로 되돌리지도 않는다.
+          </p>
+
+          <p>
+            버려지는 동안 거리는 0.31에 멈춰 있다. 그런데 신호가 돌아오는 순간 0.46으로
+            <strong>한 번에 뛴다.</strong> 버려진 동안 이동한 만큼이 사라지지 않고,
+            마지막으로 쓴 점에서 새로 쓴 점까지를 직선으로 이어 한꺼번에 더하기 때문이다.
+          </p>
+
+          <p>
+            직선으로 잇는 탓에 굽어서 뛴 만큼은 못 잡아 실제보다 짧게 나온다.
+            설계 문서가 이것을 알면서 그대로 두기로 적어뒀는데, 그 판단은 구간 &#9315;에서 다룬다.
+          </p>
+
+          <p>
+            화면에는 <em>&#8220;GPS 신호 약함&#8221;</em>이 뜬다. 이 문구가 하는 말은
+            <strong>&#8220;기록이 멈췄다&#8221;가 아니라 &#8220;지금 들어오는 점을 못 쓰고 있다&#8221;</strong>이다.
+            쓸 만한 점이 하나라도 오면 문구는 곧바로 사라진다.
+          </p>
+
+          <h4>5. 첫 점을 받기 전이면 곧바로, 받은 뒤라면 10초를 참았다가 「약함」을 띄운다</h4>
+
+          <p>
+            같은 &#8220;버림&#8221;인데 화면에 알리는 시점이 둘로 갈린다.
+          </p>
+
+          <p>
+            <strong>아직 쓸 만한 점을 하나도 못 받았다면 첫 버림에서 바로 띄운다.</strong>
+            이때 화면은 <em>&#8220;GPS 신호 찾는 중…&#8221;</em>이고 사용자는 러닝이 시작되기를 기다리는 중이다.
+            여기서 참아 봐야 <em>&#8220;왜 안 시작되지&#8221;</em>라는 시간만 길어진다.
+          </p>
+
+          <p>
+            <strong>이미 쓸 만한 점을 받은 뒤라면 10초를 참는다.</strong>
+            뛰는 중에는 점 하나가 잠깐 나빠지는 일이 흔한데, 그때마다 문구를 띄우면
+            떴다 사라졌다를 반복해서 오히려 못 믿게 된다.
+            재는 기준은 마지막으로 쓴 점에서 10초가 지났는지다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>
+              거르는 기준은 좌표가 아니라 점에 함께 오는 <strong>오차 반경</strong>이고 선은 30m다.
+              30이라는 값은 여러 상수와 함께 &#8220;구현 중 튜닝 가능한 기본값&#8221;으로 정해졌고 근거는 기록에 없다.
+              버린 점은 러닝을 멈추지 않고, 버려진 동안 이동한 거리도 신호가 돌아올 때 직선으로 한 번에 더해진다.
+              「GPS 신호 약함」이 뜨는 시점은 <strong>첫 점을 받기 전이면 곧바로, 받은 뒤라면 10초 뒤</strong>다.
+            </p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p1s4" open>
+        <summary>구간 &#9315; &#8212; 거리를 더할 때 무엇을 검사하나</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>점 하나가 오차 반경 판정(30m 이하 &#8212; 구간 &#9314;)을 통과하면, 앱은 <strong>직전에 쓴 점과 방금 쓴 점 사이를 재서
+              거리에 더한다.</strong> 러닝 내내 그것만 반복한다. 여기서 검사는 <strong>두 단계로 나뉜다</strong> &#8212;
+              앞 구간이 &#8220;이 점을 쓸 것인가&#8221;였다면 여기는 &#8220;쓰기로 한 점으로 거리를 더할 것인가&#8221;다.
+              더하기 전에 무엇을 보고 무엇은 안 보는지, 안 봐서 생기는 결과 둘을 본다.</p>
+          </div>
+
+          <h4>1. 거리는 직선 조각의 합이고, 조각 길이는 「5m마다 한 점」으로 정해진다</h4>
+
+          <p>
+            앱에는 곡선을 재는 방법이 없다. 있는 것은 <strong>좌표 두 개 사이의 직선거리</strong>뿐이라,
+            총 거리는 언제나 직선 조각을 이어 붙인 합이다.
+          </p>
+
+          <p>
+            조각이 얼마나 촘촘한지는 <strong>앱이 정한다.</strong> 위치를 켤 때
+            <em>&#8220;5m 이상 움직였을 때만 새 점을 달라&#8221;</em>고 설정해 두었다.
+            가만히 서 있으면 점이 안 오고, 뛰면 대략 5m마다 온다.
+            (이 설정이 어디서 어떻게 정해지는지는 청크 5에서 본다.)
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 620 214" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p1s4-title p1s4-desc">
+              <title id="p1s4-title">조각이 촘촘할 때와 길어질 때 거리가 어떻게 달라지나</title>
+              <desc id="p1s4-desc">평소에는 5m마다 점이 들어와 조각이 촘촘하므로 실제 곡선과 거의 같은 거리가 나온다. 신호가 끊기면 양 끝만 남아 조각 하나가 길어지고 굽은 만큼을 못 잡아 실제보다 짧게 나온다. GPS가 튀면 제자리에 서 있어도 안 뛴 거리가 더해져 갑자기 늘어난다.</desc>
+              <rect width="620" height="214" fill="#FFFFFF"/>
+
+              <text x="100" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">평소</text>
+              <text x="310" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">신호가 끊겼을 때</text>
+              <text x="520" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">GPS가 튀었을 때</text>
+              <path d="M205 24 V 196" stroke="#DAE6E3" stroke-width="1"/>
+              <path d="M415 24 V 196" stroke="#DAE6E3" stroke-width="1"/>
+
+              <text x="12" y="48" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">실제로 뛴 길</text>
+              <path d="M30 74 Q 60 44, 92 68 T 152 62 T 190 78" stroke="#A3BFBA" stroke-width="2.4" fill="none"/>
+              <path d="M240 74 Q 270 44, 302 68 T 362 62 T 400 78" stroke="#A3BFBA" stroke-width="2.4" fill="none"/>
+              <circle cx="520" cy="70" r="5" fill="#A3BFBA"/>
+              <text x="520" y="90" text-anchor="middle" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">제자리에 서 있다</text>
+
+              <text x="12" y="118" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">앱이 재는 길</text>
+              <path d="M30 144 L 62 128 L 92 138 L 122 130 L 152 132 L 190 148"
+                    stroke="#06B6A4" stroke-width="2" fill="none"/>
+              <g fill="#06B6A4">
+                <circle cx="30" cy="144" r="3.6"/><circle cx="62" cy="128" r="3.6"/><circle cx="92" cy="138" r="3.6"/>
+                <circle cx="122" cy="130" r="3.6"/><circle cx="152" cy="132" r="3.6"/><circle cx="190" cy="148" r="3.6"/>
+              </g>
+              <text x="110" y="166" text-anchor="middle" font-size="10.5" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">조각이 촘촘해 곡선과 거의 같다</text>
+
+              <path d="M240 144 L 400 148" stroke="#E0B27A" stroke-width="2" fill="none"/>
+              <circle cx="240" cy="144" r="3.6" fill="#E0B27A"/><circle cx="400" cy="148" r="3.6" fill="#E0B27A"/>
+              <text x="320" y="166" text-anchor="middle" font-size="10.5" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">양 끝만 남아 굽은 만큼을 못 잡는다</text>
+
+              <path d="M450 144 L 592 138" stroke="#E0B27A" stroke-width="2" fill="none"/>
+              <circle cx="450" cy="144" r="3.6" fill="#E0B27A"/><circle cx="592" cy="138" r="3.6" fill="#E0B27A"/>
+              <text x="520" y="166" text-anchor="middle" font-size="10.5" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">안 뛴 거리가 더해진다</text>
+
+              <rect x="30" y="178" width="160" height="26" rx="6" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.3"/>
+              <text x="110" y="195" text-anchor="middle" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면 0.58 km &#183; 거의 정확</text>
+              <rect x="240" y="178" width="160" height="26" rx="6" fill="#FFF7ED" stroke="#E0B27A" stroke-width="1.3"/>
+              <text x="320" y="195" text-anchor="middle" font-size="11" font-weight="700" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면 0.46 km &#183; 짧게 나온다</text>
+              <rect x="440" y="178" width="160" height="26" rx="6" fill="#FFF7ED" stroke="#E0B27A" stroke-width="1.3"/>
+              <text x="520" y="195" text-anchor="middle" font-size="11" font-weight="700" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면 거리가 갑자기 는다</text>
+            </svg>
+            <figcaption>조각이 촘촘할수록 실제 곡선에 가깝고, 길어질수록 벌어진다</figcaption>
+          </figure>
+
+          <p>
+            다만 <strong>조절되는 것과 안 되는 것이 갈린다.</strong> 얼마나 자주 받을지의 하한은 앱이 정하지만,
+            신호가 나빠 쓸 만한 점(오차 반경 30m 이하 &#8212; 구간 &#9314;)이 안 오는 것은 어쩔 수 없다. 터널 안에서는 어떻게 설정해도 조각이 길어진다.
+          </p>
+
+          <h4>2. 통과한 점으로 하는 일은 넷이고, 그중 거리만 조건이 붙는다</h4>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>하는 일</th><th>조건</th></tr>
+              <tr><td>점 목록에 넣는다</td><td>없음 &#8212; 통과했으면 무조건</td></tr>
+              <tr><td><strong>거리에 더한다</strong></td><td>직전에 쓴 점이 있고, <strong>일시정지 직후가 아닐 때만</strong></td></tr>
+              <tr><td>고도 상승에 쌓는다</td><td>수직 정확도가 좋을 때만 (파트 4)</td></tr>
+              <tr><td>화면을 갱신한다</td><td>「약함」 끄기, 첫 점이면 「뛰는 중」으로</td></tr>
+            </table>
+          </div>
+
+          <p>
+            거리에 붙은 조건 둘 중 앞은 당연하다 &#8212; 러닝의 첫 점은 잴 상대가 없다.
+            뒤는 <strong>일부러 건너뛰는 것</strong>으로, 멈춰 있는 동안 이동한 것을 거리로 치지 않기
+            위해서다(구간 &#9317;).
+          </p>
+
+          <p>
+            검사는 거기까지다. <strong>그 밖에는 아무것도 안 본다.</strong> 두 점이 얼마나 떨어져 있는지도,
+            사이에 시간이 얼마나 흘렀는지도, 사람이 낼 수 있는 속도인지도 재지 않는다.
+            거리가 나오면 그대로 더한다.
+          </p>
+
+          <h4>3. 조각이 길어지면 굽은 만큼을 못 잡아 실제보다 짧게 나온다</h4>
+
+          <p>
+            터널에 들어가 신호가 끊기면 그 안에서 찍힌 점이 전부 버려진다. 빠져나와 신호가 돌아오면,
+            <strong>입구에서 마지막으로 쓴 점과 출구에서 처음 쓴 점을 직선으로 잇는다.</strong>
+          </p>
+
+          <p>
+            터널 안에서 굽은 길을 200m 뛰었어도 입구와 출구 사이 직선이 160m라면, 앱은
+            <strong>160m로 센다.</strong> 40m가 사라진다.
+          </p>
+
+          <p>
+            설계 문서는 이것을 알면서 그대로 두기로 했고, 그 결정을
+            <strong>&#8220;과소 계상 수용 &#8212; 러닝앱 관례&#8221;</strong>라고 적었다.
+            실제보다 짧게 나오는 것을 알지만, 없는 구간을 추측해서 채우는 것보다는 낫다고 본 것이다.
+          </p>
+
+          <h4>4. 점이 튀어도 그대로 더해진다 — 못 막는 게 아니라 안 막은 것이다</h4>
+
+          <p>
+            3번과 반대 방향의 문제가 있다. <strong>정확도는 멀쩡한데 좌표만 엉뚱한 점</strong>이 오면
+            오차 반경 판정을 그대로 통과하고, 거리 검사가 없으니 그 점프가 통째로 더해진다.
+          </p>
+
+          <p>
+            일시정지와 GPS 튐은 갈라 봐야 한다. 둘 다 「거리를 더할까」에 걸리지만 성격이 다르다.
+          </p>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th></th><th>일시정지 재개</th><th>GPS 튐</th></tr>
+              <tr>
+                <td>앱이 그 상황을 아는가</td>
+                <td><strong>안다</strong> &#8212; 사용자가 버튼을 눌렀다</td>
+                <td><strong>모른다</strong> &#8212; 점만 봐서는 진짜 이동인지 오류인지 구별이 안 된다</td>
+              </tr>
+              <tr>
+                <td>그래서 어떻게 하나</td>
+                <td>표시를 남겨두고 확실히 건너뛴다</td>
+                <td>추측해서 자를지 말지가 문제가 된다</td>
+              </tr>
+            </table>
+          </div>
+
+          <p>
+            일시정지는 <strong>사실</strong>이라 막을 수 있고, 튐은 <strong>추측</strong>이라
+            기준을 잘못 잡으면 정상 기록이 잘려 나간다. 그래서 하나는 막았고 하나는 안 막았다.
+          </p>
+
+          <p>
+            <strong>GPS가 튀는 것 자체는 못 막는다.</strong> 위성 신호 문제다.
+            그런데 튄 점을 걸러내는 것은 할 수 있다 &#8212; 두 점 사이 거리나 속도를 재서
+            사람이 낼 수 없는 값이면 버리면 된다. <strong>안 넣은 것이지 못 넣는 것이 아니다.</strong>
+          </p>
+
+          <p>
+            안 넣기로 한 이유는 <strong>기준을 정하기가 까다롭기 때문</strong>이다.
+            <em>&#8220;얼마나 빨라야 비정상인가&#8221;</em>를 근거 없이 정하면 전력 질주 구간이나
+            신호가 잠깐 튄 정상 구간이 잘려 나간다. 실제로 뛰다가 겪은 사례는 아직 없다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>
+              거리는 <strong>직선 조각의 합</strong>이고 조각 길이는 「5m마다 한 점」 설정으로 정해진다.
+              더할 때 보는 것은 일시정지 직후인지 하나뿐이고, 두 점이 얼마나 떨어졌는지는 안 본다.
+              그래서 신호가 끊긴 구간은 직선으로 이어져 실제보다 짧게 나오고(알면서 수용),
+              튄 점은 <strong>그대로 더해진다</strong>(막을 수는 있으나 기준을 잘못 잡는 대가가 더 크다고 보고 미뤄둔 것).
+            </p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p1s5" open>
+        <summary>구간 &#9316; &#8212; 포인트의 구간 거리는 어디서 오나</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>뛰는 중에 포인트 버튼을 누르는 순간, 앱은 그 지점에 <strong>무엇을 남길지</strong>를 정한다.
+              남기는 것은 셋인데 쓰임이 다 다르다. 무엇을 남기고, 그것으로 나중에 구간 거리를 어떻게 만들며,
+              그 방식 때문에 지도의 마커가 어디에 꽂히는지를 본다.
+              <em>구간 &#9315;가 &#8220;거리를 어떻게 더하나&#8221;였다면 여기는 &#8220;쌓인 거리를 어떻게 나눠 보나&#8221;다.</em></p>
+          </div>
+
+          <h4>1. 포인트는 시각·좌표·누적 거리 셋을 남기고, 좌표는 마커에 누적 거리는 구간 계산에 쓴다</h4>
+
+          <div class="tablewrap">
+            <table>
+              <tr><th>남기는 것</th><th>무엇에 쓰나</th></tr>
+              <tr><td>누른 시각</td><td>기록에 남는 사실</td></tr>
+              <tr><td><strong>좌표</strong></td><td><strong>지도 화면에 마커를 꽂는 데</strong></td></tr>
+              <tr><td><strong>그때까지의 누적 거리</strong></td><td><strong>구간 거리를 만드는 데</strong></td></tr>
+            </table>
+          </div>
+
+          <p>
+            <strong>좌표와 누적 거리는 쓰이는 곳이 갈려 있다.</strong> 지도에 핀을 꽂으려면 좌표가 있어야 하고,
+            구간이 몇 km인지 알려면 누적 거리가 있어야 한다. 둘 중 하나로 나머지를 대신하지 않는다.
+          </p>
+
+          <p>
+            그리고 누적 거리가 담는 것은 <em>&#8220;직전 포인트에서 여기까지&#8221;</em>가 아니라
+            <strong>&#8220;러닝 시작부터 여기까지&#8221;</strong>다.
+          </p>
+
+          <h4>2. 구간 거리는 누적 거리를 빼서 만들고, 좌표는 쓰지 않는다</h4>
+
+          <figure>
+            <svg viewBox="0 0 620 230" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p1s5a-title p1s5a-desc">
+              <title id="p1s5a-title">포인트가 남긴 누적 거리를 빼서 구간 거리를 만든다</title>
+              <desc id="p1s5a-desc">러닝 중 포인트를 세 번 찍으면 각각 그때까지의 누적 거리를 남긴다. 기록 상세의 구간 표는 이웃한 두 누적 거리를 빼서 만들고, 구간을 다 더하면 총 거리와 정확히 같아진다.</desc>
+              <rect width="620" height="230" fill="#FFFFFF"/>
+
+              <text x="16" y="30" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 &#8212; 누적 거리</text>
+              <path d="M40 56 H 590" stroke="#06B6A4" stroke-width="2"/>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="middle">
+                <circle cx="40" cy="56" r="4" fill="#06B6A4"/>
+                <text x="40" y="76" font-size="11" fill="#52625E">0.00</text>
+                <text x="40" y="90" font-size="10" fill="#93A8A4">출발</text>
+                <circle cx="190" cy="56" r="5.5" fill="#04796E"/>
+                <text x="190" y="42" font-size="11" font-weight="700" fill="#04796E">포인트 &#9312;</text>
+                <text x="190" y="76" font-size="11" font-weight="700" fill="#0E1817">1.24</text>
+                <circle cx="330" cy="56" r="5.5" fill="#04796E"/>
+                <text x="330" y="42" font-size="11" font-weight="700" fill="#04796E">포인트 &#9313;</text>
+                <text x="330" y="76" font-size="11" font-weight="700" fill="#0E1817">2.11</text>
+                <circle cx="430" cy="56" r="5.5" fill="#04796E"/>
+                <text x="430" y="42" font-size="11" font-weight="700" fill="#04796E">포인트 &#9314;</text>
+                <text x="430" y="76" font-size="11" font-weight="700" fill="#0E1817">2.53</text>
+                <circle cx="590" cy="56" r="4" fill="#06B6A4"/>
+                <text x="590" y="76" font-size="11" fill="#52625E">2.95</text>
+                <text x="590" y="90" font-size="10" fill="#93A8A4">종료</text>
+              </g>
+
+              <text x="16" y="120" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">기록 상세 화면의 구간 표 &#8212; 전부 뺄셈이다</text>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5" fill="#52625E">
+                <text x="40" y="142">시작 → &#9312;</text><text x="150" y="142" fill="#93A8A4">1.24 − 0.00 =</text><text x="270" y="142" font-weight="700" fill="#0E1817">1.24 km</text>
+                <text x="40" y="162">&#9312; → &#9313;</text><text x="150" y="162" fill="#93A8A4">2.11 − 1.24 =</text><text x="270" y="162" font-weight="700" fill="#0E1817">0.87 km</text>
+                <text x="40" y="182">&#9313; → &#9314;</text><text x="150" y="182" fill="#93A8A4">2.53 − 2.11 =</text><text x="270" y="182" font-weight="700" fill="#0E1817">0.42 km</text>
+                <text x="40" y="202">&#9314; → 종료</text><text x="150" y="202" fill="#93A8A4">2.95 − 2.53 =</text><text x="270" y="202" font-weight="700" fill="#0E1817">0.42 km</text>
+              </g>
+              <path d="M150 210 H 340" stroke="#DAE6E3" stroke-width="1"/>
+              <text x="40" y="224" font-size="11.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">합계</text>
+              <text x="270" y="224" text-anchor="middle" font-size="11.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">2.95 km</text>
+              <text x="350" y="224" font-size="11" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">= 총 거리와 정확히 같다</text>
+            </svg>
+            <figcaption>포인트는 누적 거리를 남기고, 구간은 이웃한 두 값을 빼서 만든다</figcaption>
+          </figure>
+
+          <p>
+            <em>&#8220;&#9312;에서 &#9313;까지 몇 미터인가&#8221;</em>를 구하는 코드는 <strong>뺄셈 하나</strong>다.
+            포인트를 찍을 때 구간 거리를 계산해 두지 않고, <strong>볼 때마다 두 누적 거리를 뺀다.</strong>
+            뛰는 중 화면에 잠깐 뜨는 카드도, 기록 상세의 표도 같은 방식으로 만들어진다(계산하는 자리는 서로 다르다).
+          </p>
+
+          <p>
+            <strong>좌표로는 재지 않는다.</strong> 포인트 &#9312;과 &#9313;의 좌표 사이 거리를 재면
+            <strong>두 지점을 잇는 직선 길이</strong>가 나오는데, 그 사이를 빙 돌아 뛰었다면
+            실제로 뛴 거리와 전혀 다르다. 뛴 길을 따라간 거리는
+            점들을 하나씩 이어 붙인 누적 거리에만 들어 있다.
+          </p>
+
+          <h4>3. 빼서 만든 덕에 거리 규칙을 물려받고 합계가 총 거리와 맞는다</h4>
+
+          <p>
+            누적 거리는 앞 구간들의 규칙을 다 거쳐 나온 값이다 &#8212; 오차가 큰 점은 빠졌고,
+            일시정지 중 이동은 안 들어갔고, 신호가 끊긴 구간은 직선으로 이어졌다.
+          </p>
+
+          <p>
+            <strong>누적 거리를 빼서 구간을 만들면 규칙들이 그대로 따라온다.</strong>
+            포인트 쪽에서 <em>&#8220;일시정지는 빼야 하나&#8221;</em>를 다시 판단할 일이 없다.
+            코드 주석이 이것을 <em>&#8220;기존 적산 규칙을 자동 상속&#8221;</em>이라고 적었다.
+          </p>
+
+          <p>
+            합계가 어긋나지 않는 것도 같은 이유다. 구간을 다 더하면 중간값이 서로 지워지고
+            <strong>마지막 값만 남는다.</strong>
+          </p>
+
+          <p>
+            포인트를 지울 때도 뺄셈 방식이 값을 한다. 기록 상세에서 포인트 하나를 지우면
+            <strong>같은 뺄셈을 다시 돌리기만</strong> 하면 된다. 구간 거리를 저장해 뒀다면
+            지운 자리의 <strong>앞뒤 구간을 찾아 다시 계산해 고쳐 써야</strong> 한다.
+          </p>
+
+          <h4>4. 마커는 버튼 누른 자리가 아니라 마지막으로 쓴 점에 꽂힌다</h4>
+
+          <p>
+            버튼을 눌러도 앱은 <strong>GPS에 위치를 새로 물어보지 않는다.</strong>
+            그때까지 마지막으로 쓴 점의 좌표를 그대로 복사한다.
+            신호가 나빠 점이 계속 버려지는 중이면 이 차이가 눈에 띈다.
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 620 216" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p1s5b-title p1s5b-desc">
+              <title id="p1s5b-title">신호가 나쁜 구간에서 포인트를 누르면 마커가 어디에 꽂히나</title>
+              <desc id="p1s5b-desc">지도를 위에서 본 모습이다. 점 3까지는 정상으로 쌓이다가 점이 계속 버려지고 점 4에서 회복된다. 그 사이 어딘가에서 버튼을 눌러도 마커는 마지막으로 쓴 점 3에 꽂히며, 신호가 회복된 뒤에도 움직이지 않는다.</desc>
+              <rect width="620" height="216" fill="#FFFFFF"/>
+              <text x="16" y="20" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">지도 화면을 위에서 본 모습</text>
+
+              <path d="M50 70 H 200" stroke="#06B6A4" stroke-width="2.6"/>
+              <path d="M200 70 H 400" stroke="#C7D6D3" stroke-width="2.6" stroke-dasharray="5 5"/>
+              <path d="M400 70 H 580" stroke="#06B6A4" stroke-width="2.6"/>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="middle">
+                <circle cx="50" cy="70" r="5" fill="#06B6A4"/><text x="50" y="92" font-size="10.5" fill="#93A8A4">1</text>
+                <circle cx="125" cy="70" r="5" fill="#06B6A4"/><text x="125" y="92" font-size="10.5" fill="#93A8A4">2</text>
+                <circle cx="200" cy="70" r="6.5" fill="#04796E"/><text x="200" y="92" font-size="10.5" font-weight="700" fill="#04796E">3</text>
+                <circle cx="400" cy="70" r="6.5" fill="#06B6A4"/><text x="400" y="92" font-size="10.5" font-weight="700" fill="#04796E">4</text>
+                <circle cx="490" cy="70" r="5" fill="#06B6A4"/><text x="490" y="92" font-size="10.5" fill="#93A8A4">5</text>
+                <circle cx="580" cy="70" r="5" fill="#06B6A4"/><text x="580" y="92" font-size="10.5" fill="#93A8A4">6</text>
+                <text x="50" y="50" font-size="10.5" fill="#93A8A4">출발</text>
+                <text x="580" y="50" font-size="10.5" fill="#93A8A4">종료</text>
+              </g>
+              <text x="300" y="50" text-anchor="middle" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">점이 계속 버려진 구간 &#8212; 이 길을 뛰었지만 점이 안 남았다</text>
+
+              <text x="200" y="118" text-anchor="middle" font-size="22">📍</text>
+              <text x="200" y="140" text-anchor="middle" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">마커가 꽂히는 자리</text>
+              <text x="200" y="153" text-anchor="middle" font-size="10.5" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">마지막으로 쓴 점</text>
+
+              <text x="300" y="118" text-anchor="middle" font-size="18">🚩</text>
+              <text x="300" y="140" text-anchor="middle" font-size="11" font-weight="700" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">실제로 누른 자리</text>
+              <text x="300" y="153" text-anchor="middle" font-size="10.5" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">앱은 이 자리를 모른다</text>
+
+              <text x="400" y="140" text-anchor="middle" font-size="11" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">신호가 회복된 점</text>
+              <text x="400" y="153" text-anchor="middle" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">마커는 여기로 안 옮겨진다</text>
+
+              <rect x="50" y="172" width="530" height="32" rx="7" fill="#F7FAF9" stroke="#DAE6E3"/>
+              <text x="66" y="192" font-size="11" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">점 3 &#8594; 점 4 사이 이동한 거리는 신호가 회복될 때 한 번에 더해지고, <tspan font-weight="700" fill="#04796E">다음 구간에 붙는다</tspan></text>
+            </svg>
+            <figcaption>마커 자리는 한 번 정해지면 나중에도 안 움직인다</figcaption>
+          </figure>
+
+          <p>
+            <strong>나중에 신호가 회복돼도 마커는 안 움직인다.</strong> 버튼을 누른 순간 앱이 아는 위치는
+            점 3뿐이고, 점 4는 그때 아직 존재하지 않기 때문이다. 한 번 꽂히면 그대로 남는다.
+          </p>
+
+          <p>
+            <strong>거리는 다르게 흘러간다.</strong> 점 3에서 점 4까지 이동한 거리는 신호가 회복될 때
+            한 번에 더해지는데, 그 거리는 다음 포인트의 누적 거리에 들어간다.
+            그래서 이번 구간이 아니라 다음 구간에 붙는다.
+          </p>
+
+          <p>
+            평소에는 5m마다 점이 오므로 어긋남도 5m쯤이다. <strong>신호가 나쁠 때만 벌어진다.</strong>
+          </p>
+
+          <p>
+            그리고 버튼은 <strong>뛰는 중일 때만</strong> 눌린다. 신호를 찾는 중에는 쓸 만한 점(오차 반경 30m 이하 &#8212; 구간 &#9314;)이 하나도 없어
+            복사할 좌표가 없고, 일시정지 중에는 거리가 안 쌓여 구간을 나눌 것이 없다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>
+              포인트는 시각·좌표·누적 거리 셋을 남기고 쓰임이 갈린다. 좌표는 지도 마커용이고,
+              <strong>구간 거리는 두 누적 거리의 뺄셈</strong>으로 만든다.
+              그래서 거리 규칙을 그대로 물려받고 합계가 총 거리와 맞는다.
+              마커가 꽂히는 자리는 버튼 누른 자리가 아니라 <strong>마지막으로 쓴 점</strong>이며,
+              그 사이 이동한 거리는 다음 구간에 붙는다.
+            </p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p1s6" open>
+        <summary>구간 &#9317; &#8212; 뛰다가 못 받게 되면 쌓은 것을 어떻게 하나</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>러닝이 끝나는 방식은 종료 버튼만이 아니다. 뛰는 도중에 설정에서 위치 권한을 꺼버리거나,
+              신호를 찾는 중에 사용자가 취소하면 <strong>세션이 밖에서 끝난다.</strong>
+              그때 쌓아둔 것을 버릴지 남길지를 정해야 하는데, 갈리는 기준은
+              <strong>쓸 만한 점</strong>(오차 반경 30m 이하 &#8212; 구간 &#9314;) 하나다.
+              무엇으로 가르고 각각 어느 화면으로 가는지를 본다.
+              <em>파트 1의 마지막 조각이라, 앞의 다섯이 쌓아둔 것을 어떻게 처분하는지가 여기서 정해진다.</em></p>
+          </div>
+
+          <h4>1. 위치를 못 받게 되는 경우는 여럿이고, 갈리는 기준은 「쓸 만한 점이 하나라도 있나」다</h4>
+
+          <figure>
+            <svg viewBox="0 0 620 258" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p1s6-title p1s6-desc">
+              <title id="p1s6-title">러닝이 밖에서 끝났을 때 어느 화면으로 가나</title>
+              <desc id="p1s6-desc">사용자 취소든 권한 회수든 위치 서비스 종료든, 묻는 것은 쓸 만한 점이 하나라도 쌓였는가 하나다. 있으면 요약 화면으로 가고 기록이 자동 저장되며, 없으면 대기 화면으로 돌아간다. 밖에서 끊긴 경우에만 권한 알림이 뜬다.</desc>
+              <defs>
+                <marker id="p1s6-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                  <polygon points="0 0, 8 3, 0 6" fill="#A3BFBA"/>
+                </marker>
+              </defs>
+              <rect width="620" height="258" fill="#FFFFFF"/>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="middle" font-size="11" fill="#52625E">
+                <rect x="40" y="14" width="150" height="30" rx="6" fill="#F7FAF9" stroke="#DAE6E3"/>
+                <text x="115" y="33">신호 찾는 중 취소</text>
+                <rect x="235" y="14" width="150" height="30" rx="6" fill="#F7FAF9" stroke="#DAE6E3"/>
+                <text x="310" y="33">설정에서 권한 끔</text>
+                <rect x="430" y="14" width="150" height="30" rx="6" fill="#F7FAF9" stroke="#DAE6E3"/>
+                <text x="505" y="33">위치 서비스 꺼짐</text>
+              </g>
+              <path d="M115 44 V 56 H 310 V 68" stroke="#A3BFBA" stroke-width="1.3" fill="none"/>
+              <path d="M505 44 V 56 H 310" stroke="#A3BFBA" stroke-width="1.3" fill="none"/>
+              <path d="M310 44 V 68" stroke="#A3BFBA" stroke-width="1.3" fill="none" marker-end="url(#p1s6-a)"/>
+
+              <rect x="180" y="72" width="260" height="38" rx="8" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="310" y="96" text-anchor="middle" font-size="12.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">쓸 만한 점이 하나라도 쌓였나?</text>
+
+              <path d="M310 110 V 124 H 160 V 146" stroke="#A3BFBA" stroke-width="1.3" fill="none" marker-end="url(#p1s6-a)"/>
+              <path d="M310 110 V 124 H 460 V 146" stroke="#A3BFBA" stroke-width="1.3" fill="none" marker-end="url(#p1s6-a)"/>
+              <text x="160" y="139" text-anchor="middle" font-size="11.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">있다</text>
+              <text x="460" y="139" text-anchor="middle" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">없다</text>
+
+              <rect x="55" y="150" width="210" height="62" rx="8" fill="#E3F1EE" stroke="#06B6A4" stroke-width="1.6"/>
+              <text x="160" y="172" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">요약 화면</text>
+              <text x="160" y="190" text-anchor="middle" font-size="11" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">총거리 &#183; 시간 &#183; 평균 페이스</text>
+              <text x="160" y="205" text-anchor="middle" font-size="11" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">고도 상승</text>
+              <path d="M160 212 V 228" stroke="#06B6A4" stroke-width="1.4" fill="none" marker-end="url(#p1s6-a)"/>
+              <text x="160" y="246" text-anchor="middle" font-size="11.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">기록이 자동 저장된다</text>
+
+              <rect x="355" y="150" width="210" height="62" rx="8" fill="#F7FAF9" stroke="#DAE6E3" stroke-width="1.4"/>
+              <text x="460" y="172" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0E1817"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">대기 화면</text>
+              <text x="460" y="190" text-anchor="middle" font-size="10.5" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">밖에서 끊겼으면 권한 알림</text>
+              <text x="460" y="205" text-anchor="middle" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">취소한 것이면 알림 없이 조용히</text>
+            </svg>
+            <figcaption>어쩌다 끝났는지는 처분을 가르지 않는다 &#8212; 묻는 것은 하나뿐이다.
+              다만 취소 쪽은 코드가 따로인데, 그 상태에는 쓸 만한 점이 0이라 같은 결론이 된다</figcaption>
+          </figure>
+
+          <p>
+            <strong>어쩌다 끝났는지는 처리를 가르지 않는다.</strong> 사용자가 취소했든, 설정에서 권한이 꺼졌든,
+            위치 서비스 자체가 꺼졌든 묻는 것은 하나뿐이다 &#8212;
+            <em>&#8220;지금까지 쓸 만한 점이 하나라도 들어왔나.&#8221;</em>
+          </p>
+
+          <h4>2. 하나라도 있으면 요약으로 보내고 저장까지 한다</h4>
+
+          <p>
+            뛰는 중에 권한이 꺼지면 GPS가 멈추지만, <strong>그때까지 뛴 것은 그대로 남는다.</strong>
+            화면은 요약으로 넘어가고 총거리&#183;시간&#183;평균 페이스&#183;고도 상승이 뜬다.
+            그리고 기록으로 저장까지 된다.
+          </p>
+
+          <p>
+            설계 문서가 이것을 못박아 뒀다 &#8212;
+            <em>&#8220;러닝 도중 권한 회수(설정에서 끔&#183;위치 서비스 오프): 세션을 자동 종료하고
+            그때까지 수집분으로 요약 화면 표시(데이터를 버리지 않는다).&#8221;</em>
+          </p>
+
+          <p>
+            <strong>5km를 뛰고 나서 권한이 꺼졌다고 5km가 사라지면 안 된다</strong>는 것이다.
+            사고로 끝난 러닝도 러닝이다.
+          </p>
+
+          <h4>3. 하나도 없으면 대기로 돌아가고, 밖에서 끊긴 경우에만 알림이 뜬다</h4>
+
+          <p>
+            쓸 만한 점이 하나도 없다면 남길 것이 없다. 거리 0, 시간 0짜리 요약을 보여줄 이유가 없으니
+            <strong>대기 화면으로 되돌린다.</strong>
+          </p>
+
+          <p>
+            대기로 돌아가는 것은 같고, 갈리는 것은 알림뿐이다.
+            <strong>사용자가 &#8220;GPS 신호 찾는 중&#8221;에서 직접 취소한 것이라면</strong>
+            스스로 그만둔 것이니 아무 말 없이 돌아간다.
+            <strong>밖에서 끊긴 것이라면</strong> 왜 시작이 안 됐는지 알려야 하므로
+            <em>&#8220;위치 권한이 필요해요&#8221;</em> 알림이 뜬다.
+          </p>
+
+          <p>
+            돌아갈 때는 이번 러닝에 딸린 것을 전부 지운다 &#8212; 쌓던 점, 시작 시각, 일시정지 기록,
+            목표, 찍어둔 포인트까지. <strong>다음 러닝이 이전 것을 물려받지 않게</strong> 하기 위해서다.
+          </p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>
+              러닝이 밖에서 끝났을 때 가르는 기준은 <strong>쓸 만한 점이 하나라도 쌓였는가</strong> 하나다.
+              있으면 요약으로 보내고 저장까지 한다(데이터를 버리지 않는다는 결정).
+              없으면 대기로 돌아가고, 밖에서 끊긴 경우에만 권한 알림이 뜬다.
+              <strong>어쩌다 끝났는지는 처리를 가르지 않는다.</strong>
+            </p>
+          </div>
+
+        </div>
+      </details>
+      <a class="backtop" href="#toc">↑ 목차로</a>
+    </div>
+  </details>
+
+</div>
