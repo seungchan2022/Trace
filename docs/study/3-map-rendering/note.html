@@ -606,7 +606,7 @@
   <p class="sub">
     좌표가 다 정해진 코스를 <strong>무슨 색으로 · 어느 자리에 · 몇 겹으로 · 언제 다시</strong>
     그릴지 정하는 층. 이 화면은 SwiftUI가 아니라 <code>MKMapView</code>를 감싼 것이라,
-    <strong>감싸는 법부터</strong> 시작한다. <strong>화면에 보이는 것 하나하나를 파트로 나눴다</strong> — 6파트 + 골격 2.
+    <strong>감싸는 법부터</strong> 시작한다. <strong>화면에 보이는 것 하나하나를 파트로 나눴다</strong> — 6파트 + 골격 1.
   </p>
 
   <nav class="toc" id="toc">
@@ -622,7 +622,6 @@
       <li class="on"><span class="k">5</span><a href="#p5">고른 구간이 표시되는 법 &#8212; 카메라가 옮겨가고 후광이 깔린다</a></li>
       <li class="on"><span class="k">6</span><a href="#p6">되짚어 그리면 두 줄로 보인다</a></li>
       <li class="on"><span class="k">골격</span><a href="#bg1">SwiftUI 밖으로 나가기 — 지도를 올리는 뼈대</a> <em>(화면에 안 보이는 부분)</em></li>
-      <li class="todo"><span class="k">골격</span>언제 다시 그리나</li>
       <li class="todo"><span class="k">마무리</span>어디를 열면 되나 — 파일 경로</li>
       <li class="todo"><span class="k">마무리</span>왜 이렇게 됐나 — 버려진 것과 고쳐진 것</li>
       <li class="on"><span class="k">마무리</span><a href="#factcheck">팩트체크 수정 내역</a></li>
@@ -733,7 +732,6 @@
           <li><code>Coordinator</code>의 값은 앱 상태가 아니라 <strong>「지도에 어디까지 반영했나」는 기록</strong>이다</li>
           <li><strong>추가하는 코드와 그리는 방법을 정하는 코드가 갈라져 있고</strong>, 뒤엣것(<code>rendererFor</code>)은 우리가 부르지 않는다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">골격</span><div><div class="can">SwiftUI 값이 바뀔 때 <strong>무엇을 다시 그리고 무엇을 그대로 두는지</strong> 설명할 수 있다</div></div></li>
     </ol>
   </div>
 
@@ -1002,7 +1000,7 @@
         <div class="st"><span class="n">4</span><span class="t"><b>핀이 하나만 바뀌어도 전부 지웠다 다시 떨어진다</b></span></div>
         <div class="st"><span class="n">5</span><span class="t"><b>회색 “확인 중” 마커가 느린 더블탭에서 깜빡인다</b></span></div>
       </div>
-      <div class="seen">&#9313;는 파트 6, &#9314;는 파트 5, &#9315;는 골격(언제 다시 그리나), &#9316;는 파트 3에서 각각 그 자리에 나온다. 넷 다 <code>docs/backlog.md</code>에 <code>open</code>으로 있다.</div>
+      <div class="seen">&#9313;는 파트 6, &#9314;는 파트 5, &#9315;는 골격(구간 &#9315; &#8212; 하나가 걸리면 전량을 다시 만든다), &#9316;는 파트 3에서 각각 그 자리에 나온다. 넷 다 <code>docs/backlog.md</code>에 <code>open</code>으로 있다.</div>
     </div>
 
     <a class="backtop" href="#toc">↑ 목차로</a>
@@ -1051,13 +1049,9 @@
         <tr>
           <td><em>(화면에 안 보이는 것)</em> 지도를 SwiftUI에 올리는 뼈대</td>
           <td><code>MapViewRepresentable</code> 골격 · <code>Coordinator</code> ·
-            <code>rendererFor</code> · 카메라 저장·복원</td>
+            <code>rendererFor</code> · 카메라 저장·복원 · <code>updateUIView</code> ·
+            <code>SegmentSnapshot</code></td>
           <td><span class="pt">골 1</span></td>
-        </tr>
-        <tr>
-          <td><em>(화면에 안 보이는 것)</em> 언제 다시 그리나</td>
-          <td><code>updateUIView</code> · <code>SegmentSnapshot</code></td>
-          <td><span class="pt">골 2</span></td>
         </tr>
       </table>
     </div>
@@ -6239,8 +6233,7 @@ if 모드 달라졌나?    → 아니오 → 건너뛴다          ┘</pre>
               것만으로도). 그래서 안이 전부 <strong>「달라졌나」 비교</strong>이고,
               <strong>비교들 사이에서는 해당하는 것만 실행되지만 하나가 걸리면 그 안에서는 전량을
               다시 만든다.</strong>
-              <span class="aside">카메라만 값이 양쪽에서 와서, 비교가 중복 이동을 막는다 —
-              각 비교가 정확히 무엇을 다시 그리는지는 파트 8.</span></p>
+              <span class="aside">카메라만 값이 양쪽에서 와서, 비교가 중복 이동을 막는다.</span></p>
           </div>
 
         </div>
