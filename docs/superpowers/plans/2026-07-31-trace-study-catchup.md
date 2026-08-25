@@ -44,6 +44,35 @@
         내리 B였다) ②**파트를 닫을 때 목차 부제와 노트 맨 아래 「다음」 안내를 함께 고친다**
         (본문 고칠 때 눈에 안 들어오는 자리라 여러 세션 낡아 있었다).
 - [ ] **4. GPS가 거리·페이스가 되는 법** → `docs/study/4-gps-to-stats/`
+      · 🔑 **재료는 2026-08-25에 존재를 확인해 뒀다**(전수는 `(b-4)`에서 코드로 다시 뽑는다 —
+        메모에 기대 실패한 것이 세 번이다). **Domain** `RunTrack`(71줄) · `RunSample`(18) ·
+        `RunStats`(97) · `RunPauseInterval`(9) · `RunSplit`(107) — 전부
+        `Trace/Domain/RunTracking/Entity/`. **Application** `RunSession`(393줄) —
+        `Trace/Application/RunTracking/`. ⚠️ **같은 폴더에 스펙 목록에 없는 것이 더 있다**
+        (`RunGoal` · `RunWaypoint` · `RunPathSegment` · `SavedRun` 등) — **청크 4에 넣을지
+        `(b)` 파트 나누기에서 판정한다.**
+        **테스트**(이름만 읽는다) `RunTrackTests` · `RunSessionTests` · `RunPauseIntervalTests` ·
+        `RunSplitCalculatorTests` · `RunStatsCalculatorTests` (+스펙에 없던 `RunSessionGoalTests` ·
+        `RunSessionWaypointTests`). **설계 문서** `history/mvp13/2026-07-13-run-tracking-design.md` ·
+        `history/mvp14/2026-07-15-run-experience-design.md` · `…/2026-07-15-run-pause-resume.md` ·
+        `…/2026-07-16-run-splits-audio.md` · `…/2026-07-17-run-goal.md` · 실기기 체크리스트 셋.
+      · 🔴 **청크 3에서 바뀐 규칙 셋을 그대로 적용한다**(2026-08-25):
+        ①**목표 깊이가 내려가 있다** — 「무엇을 왜 정했나 · 무엇을 기준으로 삼았나 · 어떤 순서로
+        이어지나」까지이고 **계산 방식과 함수 입출력은 안 쓴다**. ②**「파트당 구간 3개 이하」는
+        폐기됐다** — 구간은 **결정 단위로 묶되 개수로 재지 않는다**. ③**노트의 팩트체크 절에는
+        「이미 발행된 것이 무엇으로 바뀌었나」만** 쓰고 검증 과정은 `agent-log.md`로 보낸다.
+      · ⚠️ **청크 3에서 값을 치른 것 넷 — 같은 실수를 반복하지 않는다:**
+        ①**확인 문제 정답 위치를 섞는다**(청크 3은 일곱 문제가 내리 B였다).
+        ②**파트를 닫을 때 목차 부제와 노트 맨 아래 「다음」 안내를 함께 고친다** — 본문을 고칠 때
+        눈에 안 들어오는 자리라 여러 세션 낡아 있었다.
+        ③🔴 **공간·자세를 머릿속에서 돌리게 하는 설명은 통하지 않는다** — 청크 3에서 「오른손 쪽」이
+        **세 번 반려**됐고, **화살표 대응표(시계 방향 90도)**로 바꾸자 통했다.
+        ④**`(d)` 팩트체크를 advisor 한 번으로 끝내지 않는다** — advisor는 **마지막에 읽은 구간**을
+        가장 세게 본다. 사용자가 *"전체적으로 꼼꼼히 봐줘야돼"*로 잡았고, 그 뒤 앞 구간에서
+        오류가 하나 더 나왔다. **앞 구간부터 차례로 훑는 단계를 따로 둔다.**
+      · 🔑 **`trace-study` 파일 구성**(2026-08-25 분리) — `SKILL.md`에는 **목표 깊이 · 절대 원칙 ·
+        절차 뼈대**만 있다. **청크를 열 때 `session-cycle.md` · 노트를 쓸 때 `note-format.md` ·
+        저장·발행할 때 `saving.md`**를 읽는다. 뒤집힌 결정 이력은 `decision-log.md`.
 - [ ] **5. 백그라운드에서 계속 도는 법** → `docs/study/5-background-execution/`
 - [ ] **6. 소리 내는 법** → `docs/study/6-audio-coaching/`
 - [ ] **7. 잠금화면 위젯** → `docs/study/7-live-activity/`
