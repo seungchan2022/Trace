@@ -53,6 +53,14 @@ OFF_NOTE = [
      '판정·처방 — 백로그로'),
 ]
 
+# 어느 화면인지 안 밝힌 맨 「화면」 — 2026-08-26 사용자 지적
+# ("여기서 말하는 화면 보조행이 실제 앱 화면인지 잠금화면인지에 대해서 표현들을 명확하게 해줘")
+# 청크 4는 같은 숫자가 러닝 탭 화면과 잠금화면에 따로 뜨므로, 그냥 「화면」이면 어느 쪽인지 안 잡힌다.
+# 화면 이름이 이미 나온 문단에서만 재서 "화면에 뜬다" 같은 일반 표현까지 잡지 않는다.
+SCREEN_NAMES = ['러닝 탭 화면', '러닝 탭', '잠금화면', '요약 화면', '기록 탭', '기록 상세',
+                '대기 화면', '뛰는 중 화면', '코스 탭']
+BARE_SCREEN = re.compile(r'(?<![가-힣])화면')
+
 # 그림이 화면 흐름인지 재는 근사 — 화면 상태 이름이 그림 안에 있는가
 SCREEN_WORDS = ['대기', '카운트다운', '신호', '뛰는 중', '일시정지', '요약', '기록 탭', '화면']
 
@@ -135,6 +143,13 @@ def check(text, seg_id=None):
             if mm:
                 hits.append(('볼 필요 없는 것', mm.group(0), why))
                 break
+        if any(nm in outside for nm in SCREEN_NAMES):
+            rest = outside
+            for nm in SCREEN_NAMES:
+                rest = rest.replace(nm, '')
+            if BARE_SCREEN.search(rest):
+                hits.append(('어느 화면인지', plain[:40],
+                             '화면이 여럿인 문단이다 — 그냥 「화면」이면 어느 쪽인지 안 잡힌다'))
 
     for term, home in DEFINED_TERMS.items():
         if seg_id and seg_id.startswith(home):
