@@ -153,6 +153,16 @@ def check(text, seg_id=None):
     else:
         hits.append(('그림', '(없음)', '흐름이 있는 설명이면 그림을 먼저 놓는다'))
 
+    # 그림이 구간 머리에만 몰리는 것 — 2026-08-26 사용자 지적
+    # ("맨 처음 부분만 그렇게 하는데 중간 부분에 대해서도 시각적으로 표현하면 더 좋을 것들이 훨씬 많다")
+    # ⚠️ 무조건 넣으라는 뜻이 아니다 — 사용자가 그날 바로 좁혔다:
+    #   "특정 시나리오 및 흐름에 대해서 설명하는 구간이면 넣으라고 한거였는데".
+    #   값 하나의 정의·선언만 있는 소제목은 그림 없이 넘어가는 것이 맞다.
+    subheads = len(re.findall(r'<h4[\s>]', text)) or len(re.findall(r'^###\s', text, re.M))
+    if subheads >= 3 and len(figs) <= 1:
+        hits.append(('그림 배치', f'소제목 {subheads}개에 그림 {len(figs)}개',
+                     '머리에만 몰렸다 — 시나리오·흐름을 설명하는 소제목이 있으면 거기에도 붙인다'))
+
     head = re.search(r'(📌[^\n]*(?:\n(?!\n)[^\n]*)*)', text)
     if head is None:
         head = re.search(r'<div class="segintro">(.*?)</div>', text, re.S)
@@ -161,6 +171,14 @@ def check(text, seg_id=None):
     elif not any(w in strip_tags(head.group(1)) for w in WHEN_WORDS):
         hits.append(('구간 머리', strip_tags(head.group(1))[:50],
                      '「언제 일어나는 일인가」가 없다 — 러닝의 어느 시점인지 한 줄 넣는다'))
+
+    # 구간 머리가 코드 동작이 아니라 사용자 장면으로 열리는가 — 2026-08-26 사용자 요청
+    # ("유저 입장에서해야 해당 화면과 기능 흐름이 자연스럽잖아 … 다른 설명에도 반영을 해줬으면")
+    if head is not None:
+        htext = strip_tags(head.group(1))
+        if not any(w in htext for w in SCREEN_WORDS + ['버튼', '누르', '탭', '보인다', '뜬다', '장면']):
+            hits.append(('구간 머리', htext[:50],
+                         '사용자 장면이 없다 — 어느 화면에서 무엇을 하는 순간인지로 연다'))
 
     return hits
 
