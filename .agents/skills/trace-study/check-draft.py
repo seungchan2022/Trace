@@ -185,10 +185,15 @@ def check(text, seg_id=None):
     # 값이 흘러가는 그림이 하나는 있는가 — 2026-08-30 사용자 지적
     # ("이 상황이 실제로 어떻게 이루어지고 그 안에서 계산이 어떻게 되는지를 이해하지 못하고 있는데")
     # 값 하나만 있으면 상태이지 변화가 아니다. 숫자 셋 + 이어주는 기호를 근사로 쓴다.
-    if figs and not any(
-        len(re.findall(r'\d+(?:\.\d+)?', f)) >= 3 and any(c in f for c in '→↓─╱╲')
-        for f in figs
-    ):
+    def _flows(f):
+        # SVG는 화살표를 도형으로 그리므로 기호로 재면 오탐이 난다 — <text>의 값만 센다
+        if f.lstrip().startswith('<svg'):
+            labels = ' '.join(re.findall(r'<text[^>]*>(.*?)</text>', f, re.S))
+            return len(re.findall(r'\d+(?:\.\d+)?', labels)) >= 3
+        return (len(re.findall(r'\d+(?:\.\d+)?', f)) >= 3
+                and any(c in f for c in '→↓─╱╲'))
+
+    if figs and not any(_flows(f) for f in figs):
         hits.append(('값 흐름', f'그림 {len(figs)}개',
                      '그 순간에 값이 어떻게 움직이는지를 숫자로 따라가는 그림이 없다'))
 
