@@ -66,7 +66,8 @@ DEPTH_NO = ['그 기준을 어떤 계산으로 재나', '무엇을 받아 무엇
 # ("여기서 말하는 화면 보조행이 실제 앱 화면인지 잠금화면인지에 대해서 표현들을 명확하게 해줘")
 # 청크 4는 같은 숫자가 러닝 탭 화면과 잠금화면에 따로 뜨므로, 그냥 「화면」이면 어느 쪽인지 안 잡힌다.
 # 화면 이름이 이미 나온 문단에서만 재서 "화면에 뜬다" 같은 일반 표현까지 잡지 않는다.
-SCREEN_NAMES = ['러닝 탭 화면', '러닝 탭', '잠금화면', '요약 화면', '기록 탭', '기록 상세',
+SCREEN_NAMES = ['러닝 탭 화면', '러닝 탭', '잠금화면', '요약 화면', '기록 탭',
+                '기록 상세 화면', '기록 상세', '상세 화면',
                 '대기 화면', '뛰는 중 화면', '코스 탭']
 BARE_SCREEN = re.compile(r'(?<![가-힣])화면')
 
@@ -154,11 +155,35 @@ def check(text, seg_id=None):
                 break
         if any(nm in outside for nm in SCREEN_NAMES):
             rest = outside
-            for nm in SCREEN_NAMES:
+            for nm in sorted(SCREEN_NAMES, key=len, reverse=True):
                 rest = rest.replace(nm, '')
             if BARE_SCREEN.search(rest):
                 hits.append(('어느 화면인지', plain[:40],
                              '화면이 여럿인 문단이다 — 그냥 「화면」이면 어느 쪽인지 안 잡힌다'))
+
+    for label in svg_labels(text):
+        outside = re.sub(r'[“”"]|&#82[12][01];', '"', label)
+        outside = re.sub(r'"[^"]*"', '', outside)
+        for w in VAGUE:
+            if w in outside:
+                hits.append(('도식 라벨', f'{label[:40]} — {w}', '실제로 무슨 일이 일어나는지로 쓴다'))
+                break
+        m = DEICTIC.search(outside)
+        if m:
+            hits.append(('도식 라벨', f'{label[:40]} — {m.group(0)}',
+                         '무엇의 것인지 그 자리에 이름으로 적는다'))
+        for pat, why in OFF_NOTE:
+            mm = re.search(pat, outside)
+            if mm:
+                hits.append(('도식 라벨', f'{label[:40]} — {mm.group(0)}', why))
+                break
+        if any(nm in outside for nm in SCREEN_NAMES):
+            rest = outside
+            for nm in sorted(SCREEN_NAMES, key=len, reverse=True):
+                rest = rest.replace(nm, '')
+            if BARE_SCREEN.search(rest):
+                hits.append(('도식 라벨', label[:40],
+                             '화면이 여럿인 라벨이다 — 그냥 「화면」이면 어느 쪽인지 안 잡힌다'))
 
     for term, home in DEFINED_TERMS.items():
         if seg_id and seg_id.startswith(home):
@@ -239,6 +264,20 @@ def _strip_note_chrome(html):
 def html_paragraphs(html):
     """HTML 노트에서 <p>·<li> 본문만 뽑는다 (markdown 문단 추출이 HTML에서는 부정확하다)."""
     return [strip_tags(m) for m in re.findall(r'<(?:p|li)(?=[\s>])[^>]*>(.*?)</(?:p|li)>', html, re.S)]
+
+
+def svg_labels(html):
+    """도식 안의 <text> 라벨 — 2026-08-30 `(d)`에서 사각지대로 드러났다.
+    문단 검사가 <p>·<li>만 뽑아서 SVG 글자는 어떤 검사도 안 지나고 있었다.
+    ⚠️ 문단 규칙(첫머리 지시어·굵은 글씨)은 안 건다 — 라벨은 문단이 아니라 조각이라
+       *"이 한 칸만 안 더한다"* 같은 정상 라벨이 전부 걸린다. 어휘 검사만 돈다."""
+    out = []
+    for svg in re.findall(r'<svg.*?</svg>', html, re.S):
+        for m in re.findall(r'<text[^>]*>(.*?)</text>', svg, re.S):
+            label = strip_tags(m).strip()
+            if label:
+                out.append(label)
+    return out
 
 
 def check_note_by_segment(path):
