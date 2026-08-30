@@ -641,6 +641,7 @@
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
       <li class="on"><span class="k">소개</span><a href="#map">장면 &#8596; 맡은 부품</a></li>
+      <li class="on"><span class="k">복습</span><a href="#recap">3분 복습 &#8212; 파트별 능력 선언과 붙들 것</a></li>
       <li class="on"><span class="k">1</span><a href="#p1">거리 — 뛴 만큼만 쌓인다</a></li>
       <li class="on"><span class="k">2</span><a href="#p2">시간 — 멈춘 동안은 안 흐른다</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">페이스 &#8212; 지금과 평균이 따로 있다</a></li>
@@ -672,7 +673,7 @@
     </p>
 
     <p>
-      청크 4부터는 다른 탭이다. <strong>코스 없이 그냥 뛰어도 되는</strong> 러닝 화면이고,
+      청크 4부터는 다른 탭이다. <strong>코스 없이 그냥 뛰어도 되는</strong> 러닝 탭 화면이고,
       들어오는 재료도 다르다 &#8212; 손가락이 아니라 <strong>GPS가 알아서 보내오는 점</strong>이다.
       설계 문서는 이 둘을 <em>&#8220;두 기둥&#8221;</em>이라고 부르면서, 러닝이 코스의 부속 단계가 아니라
       독립적으로 서는 기능이라고 못박아 뒀다
@@ -917,7 +918,7 @@
       <div class="who">정한 것이 나중에 뒤집힌 것</div>
       <div class="steps">
         <div class="st"><span class="n">1</span><span class="t"><b>&#8220;시간&#8221;의 뜻이 도중에 바뀌었다</b> &#8212; 처음에는 <b>시작부터 지금까지의 벽시계 시간</b>이었는데, 일시정지가 생기면서 <b>멈춘 시간을 뺀 시간</b>으로 바뀌었다(MVP13 → MVP14). 페이스도 스플릿도 목표 판정도 전부 이 시간을 쓰기 때문에, <b>정의 하나가 바뀌자 그 위에 있던 것이 전부 따라 바뀌었다</b></span></div>
-        <div class="st"><span class="n">2</span><span class="t"><b>&#8220;현재 페이스&#8221;가 앱 화면에서 잠금화면으로 밀려났다</b> &#8212; 트래킹 화면에 <b>현재 페이스</b>를 두기로 정했는데(MVP13), 화면을 거리 중심으로 다시 짜면서 그 자리가 <b>평균 페이스</b>로 바뀌었다(MVP16). 현재 페이스는 사라지지 않고 <b>잠금화면에만</b> 남았다 &#8212; 그래서 지금 이 앱에는 페이스가 두 종류인데 <b>한 화면에 같이 뜨는 자리는 없다</b></span></div>
+        <div class="st"><span class="n">2</span><span class="t"><b>&#8220;현재 페이스&#8221;가 러닝 탭 화면에서 잠금화면으로 밀려났다</b> &#8212; 뛰는 중 러닝 탭 화면에 <b>현재 페이스</b>를 두기로 정했는데(MVP13), 그 화면을 거리 중심으로 다시 짜면서 자리가 <b>평균 페이스</b>로 바뀌었다(MVP16). 현재 페이스는 사라지지 않고 <b>잠금화면에만</b> 남았다 &#8212; 그래서 지금 이 앱에는 페이스가 두 종류인데 <b>한자리에 같이 뜨는 곳은 없다</b></span></div>
       </div>
       <div class="seen"><strong>파트 2</strong>에서 다루고, <strong>파트 3</strong>에서 그 대가를 본다 &#8212; 평균 페이스를 <b>네 자리가 같은 숫자로 내게 만드는 데 세 번이 걸렸고</b>, 안 고른 옛 기준이 코드에 그대로 남아 있다. 2번도 <strong>파트 3</strong>이다 &#8212; 평균 페이스와 현재 페이스가 <b>각각 어디에 뜨고 무엇을 재료로 쓰는지</b>가 그 파트의 전부다.</div>
     </div>
@@ -993,7 +994,7 @@
     </div>
 
     <p>
-      <strong>파트 하나가 화면 숫자 하나다.</strong> 화면 단위로 자르지 않은 것은,
+      <strong>파트 하나가 러닝 탭 화면의 숫자 하나다.</strong> 한 판을 통째로 자르지 않은 것은,
       <strong>뛰는 중 화면 한 판에 네 파트가 동시에 나와 있기 때문</strong>이다 &#8212;
       거리와 시간과 페이스와 목표 진행률이 나란히 떠 있는데, 이 넷은 만들어지는 규칙이 서로 다르다.
     </p>
@@ -1018,7 +1019,7 @@
     <p>
       마지막 파트 7만 입력이 다르다. 앞의 여섯이 <strong>지금 들어오는 점</strong>을 다루는 반면,
       여기는 <strong>이미 저장이 끝난 러닝들의 요약</strong>을 받아 주&#183;달로 묶는다.
-      화면도 러닝 탭이 아니라 기록 탭이다.
+      쓰는 탭도 러닝 탭이 아니라 기록 탭이다.
     </p>
 
     <h3>여러 파트에 나오는 것 — 소유권을 미리 정해둔다</h3>
@@ -1067,6 +1068,63 @@
 
     <a class="backtop" href="#toc">↑ 목차로</a>
   </section>
+
+  <div class="recap" id="recap">
+    <h3>3분 복습</h3>
+    <p class="hint"><strong>&#9888; 이 절은 한 번 읽은 뒤에 쓰는 것이다.</strong>
+      처음이라면 <a href="#intro">소개 1</a>부터 읽는다 &#8212; 여기에는 <strong>아직 안 쓴 파트</strong>도
+      섞여 있다.<br><br>
+      <strong>굵은 줄에서 걸리면 그 파트만 연다.</strong> 굵은 줄이
+      <strong>그 파트를 끝내면 할 수 있게 되는 것</strong>, 그 아래가 <strong>그 파트가 만드는 화면</strong>,
+      점선 아래가 <strong>붙들 것</strong>이다.</p>
+    <ol>
+      <li><span class="k">1</span><div>
+        <div class="can">거리 숫자가 <strong>어떤 점으로 만들어지고 어떤 점은 왜 빠졌는지</strong>,
+          그리고 신호가 끊겼던 구간을 어떻게 처리하기로 했는지 짚을 수 있다</div>
+        <div class="sum">뛰는 동안 화면에 <strong>거리 숫자</strong>가 올라간다 &#8212; <em>5.24 km</em>처럼.
+          거리 숫자 하나 뒤에 <strong>무엇을 세고 무엇을 안 셀지</strong>에 대한 판단이 여럿 들어 있다.</div>
+        <ul class="keys">
+          <li>&#8220;정확한 위치&#8221;가 꺼져 있으면 <strong>러닝을 아예 시작하지 않는다</strong> &#8212; 그 상태의 오차가 1~2km라 기록이 무의미해서다</li>
+          <li>이번 러닝의 시작은 시작 버튼이 아니라 <strong>카운트다운이 끝나는 순간</strong>. GPS는 먼저 켜지만 그때 점은 다 버린다</li>
+          <li>거르는 기준은 좌표가 아니라 <strong>점에 함께 오는 오차 반경</strong>이고 선은 30m &#8212; <strong>30이라는 값의 근거는 기록에 없다</strong></li>
+          <li>&#8220;GPS 신호 약함&#8221;은 <strong>첫 점을 받기 전이면 곧바로, 받은 뒤라면 10초 뒤</strong>에 뜬다</li>
+          <li>거리는 <strong>직선 조각의 합</strong>이다. 신호가 끊긴 구간은 직선으로 이어 <strong>짧게 나오고</strong>(알면서 수용), 튄 점은 <strong>그대로 더해진다</strong>(안 막은 것)</li>
+          <li>포인트의 구간 거리는 <strong>두 누적 거리의 뺄셈</strong>이라 거리 규칙을 그대로 물려받는다</li>
+          <li>러닝이 밖에서 끝났을 때 가르는 기준은 <strong>&#8220;쓸 만한 점이 하나라도 있나&#8221;</strong> 하나다</li>
+        </ul></div></li>
+      <li><span class="k">2</span><div>
+        <div class="can">화면의 시간이 <strong>언제 멈추고 언제 다시 흐르는지</strong>, 멈춘 구간을 왜 따로
+          저장하기로 했는지, 그리고 종료 순간 그 시간이 어떤 값으로 굳는지 짚을 수 있다</div>
+        <div class="sum">뛰는 동안 시간 숫자가 올라간다 &#8212; <em>28:15</em>처럼. 일시정지를 누르면
+          그 자리에 서고 재개하면 이어서 흐른다. 그냥 세지 않고 <strong>멈춰 있던 동안을 빼고</strong> 센다.</div>
+        <ul class="keys">
+          <li>일시정지는 <strong>점에서 파생할 수 없다</strong> &#8212; 신호 공백과 생김새가 같은데 <strong>거리 처리는 정반대</strong>라서 누를 때 따로 적는다</li>
+          <li>멈춰 있는 동안은 끝 시각이 없어 목록에 못 넣으므로 <code>pausedAt</code>이 그 몫을 대신한다</li>
+          <li>화면의 시간은 <strong>활동 시간</strong>이다 &#8212; 벽시계 경과도, GPS 샘플 구간도 아니다</li>
+          <li>신호를 찾던 <strong>앞뒤 22초는 그냥 둔다</strong> &#8212; 정확도를 조금 내주고 <strong>모든 자리가 같은 기준</strong>을 쓰게 됐다</li>
+          <li>일시정지 버튼이 직접 바꾸는 것은 <strong>둘뿐</strong>이고 화면 넷은 그것을 보고 따라온다. <strong>GPS는 안 끈다</strong> &#8212; 재개가 즉각적이어야 해서</li>
+          <li>거리에서 빠지는 것은 <strong>멈추기 전 마지막 점과 재개 후 첫 점 사이 한 칸</strong>뿐이다</li>
+          <li>종료 버튼은 일시정지 뒤에만 나타나므로 <strong>버튼으로 끝낼 때는 언제나 멈춘 상태</strong>다</li>
+        </ul></div></li>
+      <li><span class="k">3</span><div>
+        <div class="can"><strong>평균 페이스</strong>와 <strong>현재 페이스</strong>가 각각 무엇을 재료로
+          쓰는지 가르고, 평균 페이스가 뜨는 <strong>네 자리에서 왜 같은 숫자가 나오는지</strong>를 짚을 수 있다</div>
+        <div class="sum">페이스라는 이름으로 뜨는 값이 둘이고, <strong>둘은 서로 다른 것을 재는
+          별개의 지표다.</strong> 평균은 러닝 전체를, 현재는 최근 30초만 본다.</div>
+        <ul class="keys">
+          <li>평균 페이스는 <strong>활동 시간 &#247; 킬로미터 수</strong>다. GPS 첫&#183;마지막 간격 대신 활동 시간을 고른 것은 <strong>네 자리가 같은 숫자를 내야 해서</strong>다</li>
+          <li>네 자리가 <strong>처음부터 같았던 것은 아니다</strong> &#8212; MVP14의 <em>&#8220;자동으로 활동 기준이 된다&#8221;</em>가 틀렸고 자리마다 따로 맞췄다</li>
+          <li>안 고른 옛 기준(<code>RunTrack.duration</code>)은 <strong>지금도 코드에 그대로 남아 있다</strong></li>
+          <li>현재 페이스는 <strong>최근 30초의 GPS 속도를 평균 내 뒤집은 값</strong>이라 누적 거리와 활동 시간을 하나도 안 쓴다</li>
+          <li>뜨는 자리는 <strong>잠금화면 하나뿐</strong>이다 &#8212; 원래 러닝 탭 화면 몫이던 것이 MVP16에서 밀려났다</li>
+          <li>30초는 <strong>근거 없는 잠정값</strong>이고, 파트 1의 오차 반경 30m와 <strong>같은 줄에서 같은 방식</strong>으로 정해졌다</li>
+        </ul></div></li>
+      <li class="pending"><span class="k">4</span><div><div class="can">고도 상승 &#8212; 아직 안 썼다</div></div></li>
+      <li class="pending"><span class="k">5</span><div><div class="can">km별 페이스 &#8212; 아직 안 썼다</div></div></li>
+      <li class="pending"><span class="k">6</span><div><div class="can">목표 진행률 &#8212; 아직 안 썼다</div></div></li>
+      <li class="pending"><span class="k">7</span><div><div class="can">주&#183;달 합계 &#8212; 아직 안 썼다</div></div></li>
+    </ol>
+  </div>
 
   <details class="part" id="p1" open>
     <summary>
@@ -3642,7 +3700,7 @@
             오르막 30초가 평균 페이스를 3초밖에 못 움직인다. 지금 속도를 보려면 지금 것만 봐야 한다.
           </p>
 
-          <h4>3. 30초라는 창은 잠정값이고 근거가 기록에 없다</h4>
+          <h4>3. 최근 30초라는 범위는 잠정값이고 근거가 기록에 없다</h4>
 
           <p>
             30초는 이 앱이 정한 값이고 바깥의 표준을 따라간 것이 아니다. 러닝 트래킹을 만든 MVP13의
@@ -3672,5 +3730,12 @@
 
     </div>
   </details>
+
+  <div class="next">
+    <strong>파트 3까지 썼다</strong>(2026-08-30) &#8212; 거리 &#183; 시간 &#183; 페이스.
+    다음은 <strong>파트 4 고도 상승</strong>이고, 그 뒤로 km별 페이스 &#183; 목표 진행률 &#183;
+    주&#183;달 합계가 남았다. 확인 문제와 마무리 절은 <strong>일곱 파트가 다 찬 뒤</strong>에 붙는다.
+    <strong>링크는 그대로 유지된다.</strong>
+  </div>
 
 </div>

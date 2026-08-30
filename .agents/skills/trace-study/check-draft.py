@@ -234,7 +234,34 @@ def check_note_by_segment(path):
     if not segs:
         print('구간을 찾지 못했다 — 파일 경로를 확인한다')
         return 1
+
+    # 구간 밖도 본다 — 소개 절 · 파트 골격 · 3분 복습 (2026-08-30 `(d)`에서 사각지대로 드러났다.
+    # 소개 절을 그날 세 번 고쳤는데 어떤 검사도 안 지나갔다.)
+    outside = [(f'소개 {sid}', body) for sid, body
+               in re.findall(r'<section id="(\w+)">(.*?)</section>', html, re.S)]
+    outside += [(f'골격 {pid}', body) for pid, body
+                in re.findall(r'<details class="part" id="(p\d+)"[^>]*>(.*?)<details class="seg"', html, re.S)]
+    outside += [('3분 복습', m) for m in re.findall(r'<div class="recap"[^>]*>(.*?)</ol>', html, re.S)]
+
     total = 0
+    for name, body in outside:
+        hits = check(body)
+        # 구간용 검사는 여기 안 걸린다 — 그림도 구간 머리도 없는 자리다
+        skip = {'그림', '그림 배치', '구간 머리'}
+        # 3분 복습은 파트를 가로지르는 요약이라 「앞에서 정한 말」이 구조적으로 걸린다
+        if name == '3분 복습':
+            skip.add('앞에서 정한 말')
+        hits = [h for h in hits if h[0] not in skip]
+        print(f'── {name}')
+        if not hits:
+            print('   통과\n')
+            continue
+        total += len(hits)
+        for kind, what, why in hits:
+            print(f'   [{kind}] {what[:52]}')
+            print(f'       → {why}')
+        print()
+
     for sid, body in segs:
         title = re.search(r'<summary>(.*?)</summary>', body, re.S)
         name = strip_tags(title.group(1)).strip() if title else sid
