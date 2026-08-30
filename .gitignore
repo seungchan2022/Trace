@@ -29,3 +29,7 @@ xcuserdata/
 *.pem
 *.key
 *.mobileprovision
+
+# Python 바이트코드 캐시 (스킬의 검사 스크립트를 모듈로 부를 때 생긴다)
+__pycache__/
+*.pyc
