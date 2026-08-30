@@ -53,6 +53,15 @@ OFF_NOTE = [
      '판정·처방 — 백로그로'),
 ]
 
+# 이력 나열 — 커밋 해시가 여럿이면 「무엇을 왜 정했나」가 아니라 작업 기록이다
+# (2026-08-30 사용자 지적 — "굳이 내가 이것을 기능을 위해서 알아야될 필요가 없지 않아?
+#  특히 3,4번은 「다 만들었다고 여긴 뒤」 이런것들이 왜 있어야 하는지 모르겠어")
+COMMIT_HASH = re.compile(r'`[0-9a-f]{7}`')
+
+# 목표 깊이 표 — 자동 판정이 안 되므로 소제목을 뽑아 되묻는다 (SKILL.md 「목표 깊이」)
+DEPTH_OK = ['왜 그렇게 정했나 · 기각한 대안', '무엇을 기준으로 삼았나', '어떤 순서로 이어지나']
+DEPTH_NO = ['그 기준을 어떤 계산으로 재나', '무엇을 받아 무엇을 돌려주나']
+
 # 어느 화면인지 안 밝힌 맨 「화면」 — 2026-08-26 사용자 지적
 # ("여기서 말하는 화면 보조행이 실제 앱 화면인지 잠금화면인지에 대해서 표현들을 명확하게 해줘")
 # 청크 4는 같은 숫자가 러닝 탭 화면과 잠금화면에 따로 뜨므로, 그냥 「화면」이면 어느 쪽인지 안 잡힌다.
@@ -160,6 +169,11 @@ def check(text, seg_id=None):
                              '어디서 정한 말인지 이어준다 — 한 구간만 열어 보면 뜻이 안 잡힌다'))
 
     figs = re.findall(r'```.*?```', text, re.S) + re.findall(r'<svg.*?</svg>', text, re.S)
+    hashes = COMMIT_HASH.findall(text)
+    if len(hashes) >= 3:
+        hits.append(('이력 나열', ' '.join(hashes[:4]),
+                     '커밋을 늘어놓으면 작업 기록이다 — 남길 것은 「무엇이 왜 그렇게 정해졌나」 한 줄'))
+
     if figs:
         for f in figs:
             if not any(w in f for w in SCREEN_WORDS):
@@ -228,6 +242,7 @@ def check_note_by_segment(path):
         # 구간 하나만 떼면 그림이 없는 구간도 있으므로 '(없음)'은 빼고 본다
         hits = [h for h in hits if not (h[0] == '그림' and h[1] == '(없음)')]
         print(f'── {sid}  {name}')
+        depth_prompt(body, label=f' {sid}')
         if not hits:
             print('   통과\n')
             continue
@@ -240,10 +255,31 @@ def check_note_by_segment(path):
     return 1 if total else 0
 
 
+def depth_prompt(text, label=''):
+    """소제목을 뽑아 목표 깊이 표와 함께 되묻는다 — 자동 판정은 하지 않는다.
+
+    왜 출력만 하나: 「이 소제목이 목표 깊이 안인가」는 단어로 인코딩할 수 없다.
+    그런데 기준(SKILL.md 「목표 깊이」)은 있는데도 매번 안 재서 절이 쌓였다.
+    그래서 판정은 사람이 하되 **빠뜨릴 수는 없게** 눈앞에 편다.
+    """
+    heads = re.findall(r'^###\s+(.+?)\s*$', text, re.M) or \
+            [strip_tags(h) for h in re.findall(r'<h4[^>]*>(.*?)</h4>', text, re.S)]
+    if not heads:
+        return
+    print(f'── 깊이 점검{label} — 자동 판정 없음, 소제목마다 직접 답한다')
+    print('   ✅ ' + ' / '.join(DEPTH_OK))
+    print('   ❌ ' + ' / '.join(DEPTH_NO))
+    for h in heads:
+        print(f'   · {h.strip()[:70]}')
+    print('   → 각 소제목이 ✅ 셋 중 어디인가. ❌에 걸리면 뺀다.')
+    print('   → 이 절이 없어도 능력 선언에 답할 수 있으면 뺀다.\n')
+
+
 def main():
     if len(sys.argv) > 2 and sys.argv[1] == '--note':
         return check_note_by_segment(sys.argv[2])
     text = open(sys.argv[1], encoding='utf-8').read() if len(sys.argv) > 1 else sys.stdin.read()
+    depth_prompt(text)
     hits = check(text)
     if not hits:
         print('통과 — 걸린 것 없음')
