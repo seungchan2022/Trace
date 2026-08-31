@@ -551,7 +551,7 @@
     display: block; font-size: .8rem; font-weight: 800;
     color: var(--deep); margin-bottom: .55rem;
   }
-  .segmap table { border: none; background: transparent; font-size: .93rem; }
+  .segmap table { border: none; background: transparent; font-size: .93rem; width: 100%; }
   .segmap td {
     border-bottom: 1px solid var(--rule); padding: .42rem .5rem .42rem 0;
     vertical-align: baseline;
@@ -562,7 +562,7 @@
   }
   .segmap td:first-child a { color: var(--deep); text-decoration: none; border-bottom: 1px solid var(--rule); }
   .segmap td:first-child a:hover { border-bottom-color: var(--accent); }
-  .segmap td:last-child { color: var(--muted); font-size: .88rem; white-space: nowrap; }
+  .segmap td:last-child { color: var(--muted); font-size: .88rem; line-height: 1.55; word-break: keep-all; }
   .segmap .hint {
     margin: .7rem 0 0; padding-top: .6rem; border-top: 1px dashed var(--rule);
     font-size: .89rem; color: var(--muted); line-height: 1.65;
@@ -646,7 +646,7 @@
       <li class="on"><span class="k">2</span><a href="#p2">시간 — 멈춘 동안은 안 흐른다</a></li>
       <li class="on"><span class="k">3</span><a href="#p3">페이스 &#8212; 지금과 평균이 따로 있다</a></li>
       <li class="on"><span class="k">4</span><a href="#p4">고도 상승 — 평지에서 0이 된다</a></li>
-      <li class="todo"><span class="k">5</span>km별 페이스 — 기록 상세의 스플릿 표</li>
+      <li class="on"><span class="k">5</span><a href="#p5">km별 페이스 &#8212; 기록 상세의 스플릿 표</a></li>
       <li class="todo"><span class="k">6</span>목표 진행률 — 절반과 달성</li>
       <li class="todo"><span class="k">7</span>주&#183;달 합계 — 기록 탭 숫자</li>
       <li class="todo"><span class="k">마무리</span>어디를 열면 되나 &#183; 왜 이렇게 됐나 &#183; 확인 문제</li>
@@ -4750,6 +4750,54 @@
 
         </div>
       </details>
+
+    </div>
+  </details>
+
+  <details class="part" id="p5" open>
+    <summary>
+      <span class="part-tag">파트 5</span>
+      <span class="ptitle">km별 페이스 &#8212; 기록 상세의 스플릿 표</span>
+    </summary>
+    <div class="pbody">
+
+      <div class="oneline">
+        <span class="tag">이 파트가 만드는 화면</span>
+        <strong>km별 페이스 표는 뛰는 중에는 어디에도 없다.</strong> 러닝을 끝내고 기록 탭에서
+        그 러닝을 열어야 나오는 <b>기록 상세</b>의 지도&#183;요약 숫자 아래,
+        <em>「킬로미터별 페이스」</em>라는 이름의 표 하나가 전부다. 러닝 탭 화면에도
+        잠금화면에도 없고, 종료 직후의 요약 화면에도 없다.<br><br>
+        표에 뜨는 것은 한 줄에 둘씩이다 &#8212; <em>1 km &nbsp; 5&#39;38&quot;</em>처럼
+        <b>km 번호와 그 1km를 지나는 데 걸린 시간</b>. 3.42km를 뛰었으면 네 줄이 되고,
+        <b>마지막 줄만 라벨이 소수 거리다</b>(<em>0.42 km &nbsp; 5&#39;52&quot;</em>).<br><br>
+        파트 3이 같은 러닝을 <b>숫자 하나</b>로 만들었다면(활동 시간 1171초 &#247; 3.42km =
+        <em>5&#39;42&quot;</em>), 여기는 <strong>같은 재료를 1000m를 지난 자리마다 끊는다.</strong>
+        그래서 네 줄의 시간을 더하면 파트 3이 쓴 <b>1171초로 정확히 돌아온다</b>.<br><br>
+        다만 앱이 저장한 것은 5m마다 찍힌 점들뿐이고,
+        <strong>어느 점도 정확히 1000m 자리에 있지 않다.</strong> 997m에서 한 점, 1003m에서
+        다음 점이 오는 식이다. <b>끊을 자리가 점 위에 없다</b>는 것이 이 파트가 푸는 문제다.
+      </div>
+
+      <div class="goal">
+        <span class="tag">이 파트를 끝내면</span>
+        <p>km별 페이스 표의 한 줄이 <strong>무엇과 무엇 사이의 시간</strong>인지 말할 수 있고,
+          이 표를 <strong>저장해 둘지 열 때마다 다시 만들지</strong>를 그 대가와 함께 정할 수 있다.</p>
+      </div>
+
+      <div class="segmap">
+        <span class="tag">이 파트의 구간</span>
+        <table>
+          <tr><td>구간 &#9312;</td><td>1km 경계를 지난 시각을 만들어 내고, 그 사이를 활동 시간으로 잰다 &#8212; 점은 정확히 1000m 자리에 오지 않는다</td></tr>
+          <tr><td>구간 &#9313;</td><td>표는 저장하지 않고 기록 상세를 열 때마다 다시 만든다 &#8212; 그래서 시작 시각과 활동 시간을 밖에서 받고, 네 줄의 합이 요약 화면의 시간과 맞는다</td></tr>
+        </table>
+        <p class="hint">
+          <strong>&#9312;이 표의 한 줄이 만들어지는 길을 세우고, &#9313;은 그 계산을 언제 누가
+          돌리는지와 재료를 어디서 받는지를 본다.</strong>
+          코드에서 가장 먼저 걸러지는 것은 <b>점이 둘 미만이면 빈 결과를 내는 검사</b>인데,
+          그 검사는 <em>표가 아예 안 뜨는 조건</em>이라 &#9313;에 붙는다.<br>
+          <b>구간 제목에 링크가 없는 것은 아직 안 쓴 구간이라는 뜻이다</b> &#8212; 쓰는 대로 링크가 생긴다.
+        </p>
+      </div>
 
     </div>
   </details>
