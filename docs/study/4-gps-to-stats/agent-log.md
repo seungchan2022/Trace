@@ -1406,3 +1406,69 @@ advisor가 잡았다. **청크 0·1·2·3에는 다 있는데 청크 4에만 없
   **눈에 보이는 `<text>` 라벨에 넣어야 한다.**
 - **백로그 한 건을 열었다** — 「기록 상세를 다시 그릴 때마다 km 스플릿을 전량 다시 계산하는데
   그 비용을 재본 적이 없다」. trigger에 **캐시 먼저, 저장은 그다음**이라는 순서를 적었다.
+
+## 2026-08-31 — 파트 6 착수 (골격까지)
+
+브랜치 `study/chunk4-part6`. 파트 5 브랜치를 `scripts/trace-integrate.sh`로 `main`에 통합하고
+삭제한 뒤 `main` 위에서 갈라 냈다 — 파트별 브랜치를 유지하는 지금까지의 관례를 사용자가 확인했다.
+
+### `(b-4)` advisor 검토가 잡은 사실 오류 하나
+
+초안의 능력 선언과 구간 ③ 머리를 **「화면은 100%인데 세션이 아는 진행률은 1.2다」**로 세웠는데
+**틀렸다.** `updateGoalProgress`는 나눈 값을 지역 변수에 담아 boolean 둘을 세우고 버린다 —
+세션에 진행률 프로퍼티가 없다. 게다가 `guard goal != .open, goalAchieved == false`가 앞에 있어서
+**한 번 달성한 뒤에는 1.2를 계산하지도 않는다.** 결정 6의 *"초과분 기록"*은 거리가 계속 쌓인다는
+뜻이지 1을 넘는 진행률이 보존된다는 뜻이 아닌데, 둘을 뭉쳤다.
+
+**대신 얻은 축이 더 낫다 — 「진행률은 어디에도 저장되지 않는다」.** 세션은 접어서 버리고 화면은
+볼 때마다 다시 계산한다(`goalProgressFraction`이 계산 프로퍼티). `min(1,·)` 캡이 표시 경로에만
+있는 것도 **거기만 숫자를 남기기 때문**이다. 파트 5의 능력 선언(「표를 저장할지 열 때마다
+만들지」)과 같은 축이라 파트끼리도 이어진다.
+
+### 그 검토에서 따라 나온 실측 — 두 호출이 기준 시각까지 다르다
+
+- 세션: `activeElapsedSeconds(now: now)`, `now = sample.timestamp`
+- ViewModel: `session.activeElapsedSeconds()` → 기본 인자가 `Date()`(`RunSession.swift:98`)
+
+**시간 목표에서 화면의 퍼센트는 벽시계로 올라가는데 달성 판정은 마지막으로 들어온 점의 시각에
+묶여 있다.** GPS가 끊긴 동안 화면이 100%를 찍고도 달성 표시가 안 켜져 있을 수 있다.
+캡 이야기보다 이쪽이 구간 ③의 본론이고, 능력 선언 둘째(「시계가 아니라 점이 판정을 깨운다」)와
+같은 사실이다.
+
+### 문서 ↔ 코드 — 「이벤트」가 아니라 래치다
+
+설계 문서 §3.4는 *"진행률·절반·달성 이벤트를 낸다(각 1회만)"*라고 적었는데, 코드에 이벤트가
+없다. `goalHalfReached`·`goalAchieved`는 **한 번 켜지면 리셋 전까지 안 꺼지는 표시**이고,
+「각 1회만」을 지키는 것은 `RunAudioCoach`의 `goalAchievedAnnounced`·`goalHalfAnnounced` 쪽이다
+(청크 6). 노트 본문에는 래치로 쓰고, 발화 1회 보장은 청크 6 경계로 한 줄만 짚는다.
+
+### 표면 전수와 배정 (착수 메모가 아니라 코드에서 다시 뽑았다)
+
+| 표면 | 어디로 |
+|---|---|
+| `RunGoal` 3모드 · `progressFraction` | 구간 ① |
+| `RunPageViewModel.composedGoal` (`?? .open` 폴백 포함) | 구간 ① — 한 줄 |
+| `parsedGoalDistanceKm` · `parsedGoalTimeMinutes` · 입력 오류 문구 | 범위 밖 (소개 3의 「문자 파싱은 범위 밖」) |
+| `RunSession.goal` · 플래그 둘 · `updateGoalProgress` · 리셋 자리 넷 | 구간 ② |
+| `goalProgressFraction` · `RunGoalFormatter.label` · `StatsPanelComponent.goalProgress` | 구간 ③ |
+| `HistoryPage+RecordComponent`의 목표 라벨 | 구간 ③ — 한 줄, 기록 상세라 화면이 바뀐다고 밝힐 것 |
+| `startRecordSave`의 `goal:` | 청크 8 |
+| `RunAudioCoach` 소비 · `RunAnnouncementBuilder.goalAchieved` | 청크 6 |
+
+배정 안 된 줄은 없다.
+
+### `(b-3)` 걸러내기 — 첫 구간에 못 붙인 이유
+
+`updateGoalProgress`가 먼저 거르는 것은 **자유 러닝**, 그다음이 **이미 달성한 러닝**이다.
+둘 다 판정 쪽에만 걸리는 조건이라 구간 ②에 붙였다. `(b-0)`의 *"기본 동작이 걸러내기보다
+앞선다"*가 이겨서 나눗셈을 세우는 구간 ①이 먼저다.
+
+### 아직 안 쓴 「왜」 — 구간 ②가 지고 갈 것
+
+`if fraction >= 1`과 `if fraction >= 0.5`가 `else if`가 아니라 **독립된 `if` 둘**이다.
+한 샘플이 두 문턱을 한꺼번에 넘으면 플래그가 둘 다 켜져야 하기 때문이고,
+그 뒤 우선순위는 `RunAudioCoach:108-118`이 달성 쪽으로 정한다.
+
+### 검사
+
+`check-draft.py --note`는 골격 삽입 전후 모두 **24건**으로 같다(새 위반 없음).
