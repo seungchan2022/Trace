@@ -21,6 +21,11 @@ entry point small and pushing specifics into single-responsibility detail files
 - Each rule lives in exactly one file. Do not restate it in another file.
 - When another file needs a rule, link to its home file; do not copy the text.
 - Duplication wastes the always-loaded context and drifts out of sync over time.
+- 🔴 **이 원칙은 `docs/agent-rules/` 밖에도 걸린다** — 진행 상태 파일(`docs/superpowers/plans/*.md`)과
+  스킬 문서에 절차를 **옮겨 적으면 규칙을 고칠 때 그쪽이 남는다.** 2026-08-31에 실제로 그랬다:
+  아티팩트 발행을 걷어내고 `saving.md`를 고쳤는데, `2026-07-31-trace-study-catchup.md`에
+  복사돼 있던 옛 절차가 남아 **매 세션 없어진 단계를 지시하고 있었다.**
+  **규칙을 걷어낼 때는 그 문구로 저장소를 한 번 훑는다**(`grep -rn "<걷어낸 문구>" docs/ .agents/ .claude/`).
 
 Exception: safety hard-stops (no push, no commit on `main`, no force push or
 history rewrite without approval) may also appear in `AGENTS.md`, because an

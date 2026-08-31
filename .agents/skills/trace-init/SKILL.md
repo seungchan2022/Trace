@@ -11,6 +11,11 @@ description: 새 Trace 세션을 시작하거나 재개할 때 현재 브랜치,
 >
 > 목적: 세션을 차갑게 시작하지 않도록 **현재 상태를 복원**한다. 도구를 바꿔 이어받는 경우에도 동일하게 동작한다.
 > 이 스킬은 **읽기 전용** — 파일을 수정하거나 커밋하지 않는다. 수집·보고·다음 액션 제안만 한다.
+>
+> 🔴 **파일을 읽을 때 줄 번호로 자르지 않는다 — 절 단위(`sed -n '/^## 머리/,/^## 다음/p'`)나
+> `grep`을 쓴다.** 줄 번호는 파일이 자라면 그만큼 쓸데없는 것을 읽고, **정리를 해도 다른 내용이
+> 그 자리를 채운다**(2026-08-31: 끝난 항목을 아래로 내렸더니 `+25p`가 그 자리를 새로 읽어
+> 오히려 늘었다). 새 명령을 더할 때도 이 규칙이 걸린다.
 
 ## 전제
 
@@ -45,12 +50,14 @@ git log --oneline -5
 
 ```bash
 grep -n -i "undecided" docs/agent-rules/project-decisions.md          # 없으면 미결 없음
-sed -n "$(grep -n 'May Need to Make Later' docs/agent-rules/project-decisions.md | cut -d: -f1),+25p" \
-  docs/agent-rules/project-decisions.md
+sed -n '/^## Decisions the User May Need/,/^## Resolved/p' docs/agent-rules/project-decisions.md
 ```
 
 - `Current Defaults`에서 **`undecided`**로 남은 항목 (예: Persistence, 그 외)
 - `Decisions the User May Need to Make Later` 중 지금 작업과 관련돼 곧 정해야 할 것
+- 🔴 **줄 번호(`+25p`)로 자르지 않는다**(2026-08-31 개정). 정해진 항목을 아래 `## Resolved`로
+  내리면 그 자리를 Resolved가 채워서 **읽는 양이 오히려 늘었다.** 절 단위로 뽑으면
+  Resolved는 안 읽힌다 — `roadmap.md`에서와 같은 처방이다.
 
 → 이걸 "막히기 전에 정해야 할 것" 목록으로 제시한다.
 
@@ -79,9 +86,16 @@ sed -n "$(grep -n 'May Need to Make Later' docs/agent-rules/project-decisions.md
     노트를 쓸 때 `note-format.md` · 저장할 때 `saving.md`**를 읽는다. 옛 구성으로 열면 절차를 놓친다.
 - 미커밋 파일 + 최근 변경된 `docs/superpowers/specs/*`, `history/*`를 연결해 "직전에 뭘 하고 있었는지" 한 문장으로 재구성한다.
 - **MVP/마일스톤 위치 복원**: `docs/roadmap.md`에서 현재 어느 MVP의 어느 마일스톤 단계인지 (진행 중/완료/아카이빙 대기) 파악한다. 마일스톤이 전부 `[x]`인데 아카이빙 안 된 MVP가 있으면 "**trace-archive 대기**"로 보고한다. 단위·흐름 규칙은 `docs/agent-rules/workflow.md`.
-  - 🔴 **통째로 읽지 않는다** — 270줄에 **33KB**이고, 뒤쪽 대부분이 **완료·아카이빙된 MVP 기록**이다.
-    필요한 것은 앞부분(`## 진행 중 / 예정`)뿐이다: `sed -n '1,60p' docs/roadmap.md`.
-    거기가 *"현재 진행 중인 MVP 없음"*이면 **그 아래는 볼 필요가 없다.**
+  - 🔴 **줄 번호로 자르지 않는다 — 절 단위로 뽑는다**(2026-08-31 개정). 파일은 270줄에 **36KB**이고
+    뒤쪽 대부분이 **완료·아카이빙된 기록**이라, 필요한 것은 `## 진행 중 / 예정` 절뿐이다:
+
+    ```bash
+    sed -n '/^## 진행 중/,/^## 완료/p' docs/roadmap.md
+    ```
+
+    **옛 명령 `sed -n '1,60p'`은 46줄이 「2026-08-04에 끝난 정비 사이클 상세」였다** — 줄 번호로
+    자르면 완료 기록이 앞에 쌓일 때마다 읽는 양이 늘고, *"진행 중인 MVP 없음이면 그 아래는 볼
+    필요가 없다"*고 적어 둬도 이미 읽은 뒤가 된다. 절 단위면 그 절이 길어져도 잘리지 않는다.
 
 ### 5. 훅 배선 점검
 
