@@ -636,7 +636,7 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">&#8212; 소개 3절 + 파트 1&#183;2&#183;3&#183;4 완료(2026-08-31)</span></h4>
+    <h4>목차 <span class="tocnote">&#8212; 소개 3절 + 파트 1&#183;2&#183;3&#183;4&#183;5 완료(2026-08-31)</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
@@ -1135,7 +1135,22 @@
           <li>더한 차이는 <strong>쌓는 통</strong>을 하나 거친다. 3m 문턱이 &#8220;얼마나&#8221;를 재고 <strong>통을 비우는 규칙이 &#8220;연속&#8221;을 잰다</strong> &#8212; 비우는 쪽이 없으면 올라간 몫의 총합이 그대로 상승 합이 된다</li>
           <li>모인 양은 다음 점이 조금만 안 올라가도 <strong>폭과 상관없이 전부 버려진다</strong>. 3m는 <strong>러닝앱 관례 3~5m의 아래끝</strong>이고 왜 아래끝인지는 기록에 없다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">5</span><div><div class="can">km별 페이스 &#8212; 아직 안 썼다</div></div></li>
+      <li><span class="k">5</span><div>
+        <div class="can">km별 페이스 표의 한 줄이 <strong>무엇과 무엇 사이의 시간</strong>인지 말할 수 있고,
+          이 표를 <strong>저장해 둘지 열 때마다 다시 만들지</strong>를 그 대가와 함께 정할 수 있다</div>
+        <div class="sum">km별 페이스 표는 뛰는 중에는 어디에도 없다 &#8212; 러닝을 끝내고 기록 탭에서
+          그 러닝을 열어야 나오는 <strong>기록 상세</strong> 한 곳뿐이다. 뜨는 것은
+          <em>1 km &nbsp; 5&#39;38&quot;</em>처럼 km 번호와 그 1km를 지나는 데 걸린 시간이고,
+          3.42km를 뛰었으면 네 줄이 된다.</div>
+        <ul class="keys">
+          <li>저장된 어느 점도 1000m 자리에 오지 않아서 <strong>경계 통과 시각을 만들어 낸다</strong> &#8212; 두 점 사이를 <b>거리 비율</b>로 가른다</li>
+          <li>넘은 첫 점의 시각을 쓰면 정상 GPS에서는 한 줄이 1초 남짓 어긋나는 데 그치지만, <strong>한 쌍이 여러 경계를 넘으면 줄 하나가 0초로 무너진다</strong></li>
+          <li>표 한 줄은 시각 둘의 차가 아니라 <strong>경계마다 쌓인 누적 활동 시간 둘의 차</strong>다(파트 2에서 정한 활동 시간) &#8212; 「두 시각의 차이」라는 중간값은 코드에 없다</li>
+          <li>직전 경계 값이 0에서 시작해 <strong>1km 줄은 시작 버튼을 누른 자리부터</strong> 잰다. 경계 판정에 쓰는 누적 거리(파트 1 구간 &#9316;)는 <b>일시정지가 낀 쌍과 안 움직인 쌍</b>을 안 센다</li>
+          <li>표를 <strong>저장하지 않아서</strong> 기능이 없던 시절 기록에도 표가 뜨고, 계산 규칙을 고치면 <b>옛 기록에도 반영된다</b></li>
+          <li>안 저장하는 이유는 속도가 아니라 <strong>원본과 어긋나는 것과 값이 낡는 것</strong>이다. 치르는 값은 상세를 다시 그릴 때마다 계산이 다시 도는 것이고 <strong>그 비용은 재본 적이 없다</strong></li>
+          <li><strong>시작 시각과 전체 활동 시간을 밖에서 받고 마지막 줄을 역산해서</strong>, 네 줄의 합이 요약 화면의 활동 시간과 정확히 맞는다(파트 3의 1171초)</li>
+        </ul></div></li>
       <li class="pending"><span class="k">6</span><div><div class="can">목표 진행률 &#8212; 아직 안 썼다</div></div></li>
       <li class="pending"><span class="k">7</span><div><div class="can">주&#183;달 합계 &#8212; 아직 안 썼다</div></div></li>
     </ol>
@@ -4788,7 +4803,7 @@
         <span class="tag">이 파트의 구간</span>
         <table>
           <tr><td><a href="#p5s1">구간 &#9312;</a></td><td>1km 경계를 지난 시각을 만들어 내고, 그 사이를 활동 시간으로 잰다 &#8212; 점은 정확히 1000m 자리에 오지 않는다</td></tr>
-          <tr><td>구간 &#9313;</td><td>표는 저장하지 않고 기록 상세를 열 때마다 다시 만든다 &#8212; 그래서 시작 시각과 활동 시간을 밖에서 받고, 네 줄의 합이 요약 화면의 시간과 맞는다</td></tr>
+          <tr><td><a href="#p5s2">구간 &#9313;</a></td><td>표는 저장하지 않고 기록 상세를 열 때마다 다시 만든다 &#8212; 그래서 시작 시각과 활동 시간을 밖에서 받고, 네 줄의 합이 요약 화면의 시간과 맞는다</td></tr>
         </table>
         <p class="hint">
           <strong>&#9312;이 표의 한 줄이 만들어지는 길을 세우고, &#9313;은 그 계산을 언제 누가
@@ -5049,12 +5064,225 @@
         </div>
       </details>
 
+      <details class="seg" id="p5s2" open>
+        <summary>구간 &#9313; &#8212; 표는 저장하지 않고 기록 상세를 열 때마다 다시 만든다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>몇 달 전에 뛴 러닝을 오늘 기록 탭에서 <strong>다시 여는 장면</strong>이다. 그때 앱에는
+              km별 페이스 기능이 아예 없었는데도 표가 네 줄로 떠 있다. 구간 &#9312;이 표 한 줄이
+              만들어지는 길을 세웠다면, 여기서는 <b>그 계산을 언제 돌리고 재료를 어디서 받는지</b>를
+              본다. 상세를 열 때마다 계산이 다시 도는 것과 그 대가가 전부 여기 걸린다.</p>
+          </div>
+
+          <div class="mywords">
+            <span class="tag">&#128172; 한 줄로 잡으면</span>
+            <p>그러면 페이스를 보기 위해서 파일을 열때 저장된 점을 순간적으로 계산해서 화면에 계속
+              보여주는거야? 러닝이 끝나면 구간 페이스라는것을 저장해서 보여주는게 아니라?</p>
+          </div>
+
+          <h4>1. 저장된 것이 재료뿐이라, 나중에 만든 계산 규칙이 옛 기록에도 그대로 걸린다</h4>
+
+          <p>옛 러닝을 저장할 때 앱은 표를 만든 적이 없다. 대신 <strong>점 목록과 일시정지 구간을
+            통째로 남겨 뒀다.</strong> 구간 &#9312;의 계산에 필요한 재료가 그 둘이라, 규칙이 나중에
+            생겨도 옛 기록에 그대로 적용된다.</p>
+
+          <figure>
+            <svg viewBox="0 0 620 200" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p5s2a-title p5s2a-desc">
+              <title id="p5s2a-title">기능이 없던 시절 저장한 러닝에 오늘 표가 뜨는 경로</title>
+              <desc id="p5s2a-desc">2026년 3월 10일에 3.42킬로미터를 뛰고 저장했을 때 남은 것은 점 목록과 일시정지 구간과 요약뿐이고 표는 만든 적도 없다. 그 뒤 km별 페이스 계산 규칙을 만들어 넣었지만 이미 저장된 것은 건드리지 않았다. 오늘 기록 탭에서 그 러닝을 열면 남아 있던 재료에 새 규칙을 적용해 1킬로미터 5분 38초, 2킬로미터 5분 44초 같은 표가 만들어진다.</desc>
+              <rect width="620" height="200" fill="#FFFFFF"/>
+
+              <text x="100" y="28" text-anchor="middle" font-size="11" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">2026-03-10</text>
+              <text x="310" y="28" text-anchor="middle" font-size="11" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">그 뒤</text>
+              <text x="520" y="28" text-anchor="middle" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">오늘</text>
+
+              <rect x="20" y="42" width="160" height="116" rx="7" fill="#F4F8F7"/>
+              <rect x="230" y="42" width="160" height="116" rx="7" fill="#F4F8F7"/>
+              <rect x="440" y="42" width="160" height="116" rx="7" fill="#EAF5F2"/>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="middle">
+                <text x="100" y="68" font-size="11" fill="#143F3A">3.42km를 뛰고 저장했다</text>
+                <text x="100" y="94" font-size="10" fill="#93A8A4">남은 것 &#8212; 점 목록</text>
+                <text x="100" y="112" font-size="10" fill="#93A8A4">일시정지 &#183; 요약</text>
+                <text x="100" y="140" font-size="10" font-weight="700" fill="#8a5510">표는 만든 적도 없다</text>
+
+                <text x="310" y="68" font-size="11" fill="#143F3A">km별 페이스 계산 규칙을</text>
+                <text x="310" y="86" font-size="11" fill="#143F3A">만들어 넣었다</text>
+                <text x="310" y="130" font-size="10" fill="#93A8A4">저장된 것은 안 건드렸다</text>
+
+                <text x="520" y="68" font-size="11" fill="#143F3A">기록 탭에서 연다</text>
+                <text x="520" y="94" font-size="10" fill="#93A8A4">재료 + 규칙</text>
+                <text x="520" y="120" font-size="11" font-weight="700" fill="#04796E">1 km &nbsp; 5&#39;38&quot;</text>
+                <text x="520" y="140" font-size="11" font-weight="700" fill="#04796E">2 km &nbsp; 5&#39;44&quot;</text>
+              </g>
+
+              <g stroke="#7FBDB2" stroke-width="1.4" fill="none">
+                <path d="M186 100 H 218"/>
+                <path d="M396 100 H 428"/>
+              </g>
+              <g fill="#7FBDB2">
+                <path d="M216 96 L225 100 L216 104 Z"/>
+                <path d="M426 96 L435 100 L426 104 Z"/>
+              </g>
+
+              <text x="310" y="184" text-anchor="middle" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">저장해 둔 재료가 그대로 있으므로, 규칙이 나중에 생겨도 옛 기록에 그대로 걸린다</text>
+            </svg>
+            <figcaption>기능이 없던 시절에 저장한 러닝에도 표가 뜬다. 저장된 것이 재료라
+              규칙만 나중에 얹으면 되기 때문이다.</figcaption>
+          </figure>
+
+          <p>설계 문서가 그것을 그대로 적어 뒀다 &#8212; <em>&#8220;기록이 원시 샘플 5필드를 전부
+            저장하므로 이미 저장된 과거 러닝에도 스플릿 표가 그대로 나온다&#8221;</em>. 과거 기록에
+            <b>일시정지 구간이 없는 것도 문제가 안 된다.</b> 빈 목록이 들어가면 뺄 것이 없을 뿐이다.</p>
+
+          <h4>2. 저장하지 않는 이유는 속도가 아니라, 원본과 어긋나는 것과 값이 낡는 것이다</h4>
+
+          <p>Trace가 기록을 설계할 때 쓰는 기본 원칙이 <strong>「파생 가능하면 저장하지 않는다」</strong>이고,
+            파트 2 구간 &#9312;의 💡 박스에서 이미 본 것이다. 설계 문서는 km별 페이스를 그 원칙에
+            그대로 넣었다 &#8212; <em>&#8220;스플릿은 저장하지 않는다 &#8212; 샘플에서 언제든 파생
+            가능&#8221;</em>.</p>
+
+          <p>원칙이 막으려는 것은 둘이다. 하나는 저장한 값이 <strong>원본과 어긋나는 것</strong>이다.
+            표를 따로 저장해 두면 점 목록과 표라는 두 벌이 생기고, 포인트를 지우거나 기록을 손보는
+            자리에서 한쪽만 바뀔 수 있다. 다른 하나는 <b>계산 규칙이 바뀌면 저장된 값이 낡는 것</b>이다.</p>
+
+          <figure>
+            <svg viewBox="0 0 620 200" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p5s2b-title p5s2b-desc">
+              <title id="p5s2b-title">보간 규칙을 고친 뒤 옛 러닝을 열면 두 설계가 갈리는 자리</title>
+              <desc id="p5s2b-desc">보간 규칙을 고친 뒤 기록 탭에서 옛 러닝을 여는 상황이다. 표를 저장해 뒀다면 옛 기록에 표가 저장돼 있으므로 저장된 옛 값을 그대로 보여주고 2킬로미터 줄이 0초인 채로 남는다. 저장하지 않으면 옛 기록에 재료만 있으므로 새 규칙으로 다시 만들어 보여주고 2킬로미터 줄이 300초로 고쳐진다.</desc>
+              <rect width="620" height="200" fill="#FFFFFF"/>
+
+              <text x="310" y="26" text-anchor="middle" font-size="11" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">보간 규칙을 고친 뒤, 기록 탭에서 옛 러닝을 열면</text>
+
+              <rect x="20" y="44" width="280" height="140" rx="7" fill="#FDF3E8"/>
+              <rect x="320" y="44" width="280" height="140" rx="7" fill="#EAF5F2"/>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="middle">
+                <text x="160" y="70" font-size="11.5" font-weight="700" fill="#8a5510">표를 저장해 뒀다면</text>
+                <text x="160" y="100" font-size="10.5" fill="#143F3A">옛 기록에 표가 저장돼 있다</text>
+                <text x="160" y="126" font-size="12" fill="#C9A97C">&#8595;</text>
+                <text x="160" y="150" font-size="10.5" fill="#143F3A">저장된 옛 값을 그대로 보여준다</text>
+                <text x="160" y="172" font-size="11" font-weight="700" fill="#8a5510">2 km 줄이 0초인 채로 남는다</text>
+
+                <text x="460" y="70" font-size="11.5" font-weight="700" fill="#04796E">저장하지 않으면</text>
+                <text x="460" y="100" font-size="10.5" fill="#143F3A">옛 기록에 재료만 있다</text>
+                <text x="460" y="126" font-size="12" fill="#7FBDB2">&#8595;</text>
+                <text x="460" y="150" font-size="10.5" fill="#143F3A">새 규칙으로 다시 만들어 보여준다</text>
+                <text x="460" y="172" font-size="11" font-weight="700" fill="#04796E">2 km 줄이 300초로 고쳐진다</text>
+              </g>
+            </svg>
+            <figcaption>구간 ①에서 본 보간이 정확히 그런 규칙 변경이었다. 표를 저장하는 앱이었다면
+              그 개선이 새로 뛴 러닝에만 적용됐다.</figcaption>
+          </figure>
+
+          <h4>3. 치르는 값은 기록 상세를 다시 그릴 때마다 계산이 다시 도는 것이다</h4>
+
+          <p>계산기를 부르는 자리는 기록 상세를 그리는 뷰의 본문 안이고, 결과를 어디에도 담아 두지
+            않는다. SwiftUI 본문은 상태가 바뀔 때마다 다시 평가되므로 <strong>표도 그때마다 다시
+            만들어진다.</strong> 상세를 여는 순간에 한 번이 아니다.</p>
+
+          <p>본문이 다시 그려지는 데 기대는 것은 의도이기도 하다. 포인트를 지우는 자리의 코드 주석이
+            <em>&#8220;구간 표&#183;마커 재계산은 body가 파생&#8221;</em>이라고 적어 뒀는데, 여기서
+            말하는 구간 표는 <b>포인트로 나뉜 구간의 거리 표</b>이고, 따로 갱신하는 코드 없이
+            <strong>본문이 다시 그려지면서 값이 맞는다.</strong></p>
+
+          <p>km별 페이스 쪽에서는 같은 성질이 손해로 나타난다. 포인트를 지워도 <strong>점 목록과
+            일시정지 구간은 그대로라 네 줄의 값은 하나도 안 바뀌는데</strong>, 계산은 그대로 다시 돈다.</p>
+
+          <p>드는 비용은 재본 적이 없다. 수천 개의 점을 앞뒤로 짝지어 도는 계산이 상세를 다시 그릴
+            때마다 반복되는데, <strong>그것이 체감되는지는 측정된 적이 없다.</strong></p>
+
+          <h4>4. 샘플만으로는 알 수 없는 값 둘을 밖에서 받는다 &#8212; 시작 시각과 전체 활동 시간</h4>
+
+          <p>계산기가 받는 것은 점 목록과 일시정지 구간만이 아니다. <strong>세션이 시작한 시각과 전체
+            활동 시간</strong>을 따로 받는데, 둘 다 요약에 저장돼 있고 <b>점만 봐서는 알 수 없는
+            값</b>이다.</p>
+
+          <p>시작 버튼을 누르고 첫 GPS 점이 들어오기까지는 공백이 있다. 첫 점의 시각을 시작으로 삼으면
+            그 공백이 통째로 빠지고, 코드 주석이 그 결과를 적어 뒀다 &#8212; <em>&#8220;평균 페이스와
+            킬로미터별 페이스가 어긋난다&#8221;</em>. 요약 화면의 평균 페이스는 파트 3에서 본 대로 전체
+            활동 시간을 쓰는데, <strong>표만 다른 기준을 쓰면 같은 러닝의 두 숫자가 안 맞는다.</strong></p>
+
+          <h4>5. 마지막 줄을 역산해서 네 줄의 합이 요약 숫자와 정확히 맞는다</h4>
+
+          <p>마지막 줄은 1km를 못 채운 잔여라, 구간 &#9312;의 방식으로는 끝나는 시각이 없다. 여기서도
+            마지막 점의 시각을 쓰지 않고 <strong>전체 활동 시간에서 직전 경계까지의 값을 빼서</strong>
+            만든다.</p>
+
+          <figure>
+            <svg viewBox="0 0 620 212" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p5s2c-title p5s2c-desc">
+              <title id="p5s2c-title">표 네 줄을 더하면 요약의 활동 시간으로 돌아오는 모양</title>
+              <desc id="p5s2c-desc">표의 완성 구간 세 줄은 경계에서 얻은 338초와 344초와 341초다. 마지막 0.42킬로미터 줄은 전체 활동 시간 1171초에서 직전 경계까지의 1023초를 빼서 148초로 역산한다. 네 줄을 더하면 1171초가 되어 요약 화면의 활동 시간과 정확히 같다.</desc>
+              <rect width="620" height="212" fill="#FFFFFF"/>
+
+              <text x="310" y="26" text-anchor="middle" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">요약 화면의 활동 시간 &#8212; 1171초</text>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5">
+                <text x="212" y="62" text-anchor="end" fill="#93A8A4">1 km</text>
+                <text x="316" y="62" text-anchor="end" fill="#143F3A">338초</text>
+                <text x="212" y="88" text-anchor="end" fill="#93A8A4">2 km</text>
+                <text x="316" y="88" text-anchor="end" fill="#143F3A">344초</text>
+                <text x="212" y="114" text-anchor="end" fill="#93A8A4">3 km</text>
+                <text x="316" y="114" text-anchor="end" fill="#143F3A">341초</text>
+                <text x="212" y="140" text-anchor="end" fill="#93A8A4">0.42 km</text>
+                <text x="316" y="140" text-anchor="end" font-weight="700" fill="#8a5510">148초</text>
+                <text x="316" y="186" text-anchor="end" font-weight="700" fill="#04796E">1171초</text>
+                <text x="212" y="186" text-anchor="end" font-size="10.5" fill="#52625E">합계</text>
+              </g>
+
+              <text x="336" y="76" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">경계에서 얻은 값 &#8212; 구간 &#9312;</text>
+              <text x="336" y="140" font-size="9.5" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">역산 &#8212; 1171 &#8722; 1023 = 148</text>
+              <text x="336" y="186" font-size="9.5" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">요약 화면의 활동 시간과 같다</text>
+
+              <path d="M130 158 H 320" stroke="#DAE6E3" stroke-width="1.2"/>
+              <path d="M322 52 V 128" stroke="#DAE6E3" stroke-width="1"/>
+
+              <text x="310" y="206" text-anchor="middle" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">마지막 점이 찍히고 종료 버튼을 누르기까지의 공백도 마지막 줄에 흡수된다</text>
+            </svg>
+            <figcaption>완성 구간 셋은 경계에서 얻고, 마지막 줄만 전체 활동 시간에서 역산한다.
+              그래서 세로로 더한 값이 요약 숫자와 어긋나지 않는다.</figcaption>
+          </figure>
+
+          <h4>6. 점이 둘 미만이면 표 자체가 안 뜬다</h4>
+
+          <p>계산기가 가장 먼저 하는 것은 점이 둘 이상인지 보는 것이고, 아니면 빈 결과를 돌려준다.
+            거리를 재려면 점을 앞뒤로 짝지어야 하는데 <strong>짝이 하나도 안 만들어지기 때문</strong>이다.</p>
+
+          <p>실제로 걸리는 것은 신호를 못 잡은 채 곧바로 종료한 러닝이다. 그럴 때 기록 상세에는
+            <strong>「킬로미터별 페이스」 자리 자체가 나타나지 않는다.</strong></p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>km별 페이스 표는 저장되지 않고 기록 상세를 다시 그릴 때마다 재료에서 다시 만들어진다.
+              그래서 옛 기록에도 소급 적용되고 규칙을 고치면 옛 기록에도 반영되지만,
+              <strong>계산이 반복되는 비용은 재본 적이 없다.</strong> 시작 시각과 전체 활동 시간을
+              밖에서 받는 것은 요약 숫자와 표가 어긋나지 않게 하기 위해서다.</p>
+          </div>
+
+        </div>
+      </details>
+
     </div>
   </details>
 
   <div class="next">
-    <strong>파트 4까지 썼다</strong>(2026-08-31) &#8212; 거리 &#183; 시간 &#183; 페이스 &#183;
-    고도 상승. 다음은 <strong>파트 5 km별 페이스</strong>이고, 그 뒤로 목표 진행률 &#183;
+    <strong>파트 5까지 썼다</strong>(2026-08-31) &#8212; 거리 &#183; 시간 &#183; 페이스 &#183;
+    고도 상승 &#183; km별 페이스. 다음은 <strong>파트 6 목표 진행률</strong>이고, 그 뒤로
     주&#183;달 합계가 남았다.
     확인 문제와 마무리 절은 <strong>일곱 파트가 다 찬 뒤</strong>에 붙는다.
     <strong>링크는 그대로 유지된다.</strong>
