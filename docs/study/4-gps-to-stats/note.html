@@ -636,7 +636,7 @@
   </p>
 
   <nav class="toc" id="toc">
-    <h4>목차 <span class="tocnote">&#8212; 소개 3절 + 파트 1&#183;2&#183;3 완료 &#183; 파트 4는 구간 &#9313;까지 썼다(2026-08-30)</span></h4>
+    <h4>목차 <span class="tocnote">&#8212; 소개 3절 + 파트 1&#183;2&#183;3&#183;4 완료(2026-08-31)</span></h4>
     <ol>
       <li class="on"><span class="k">소개</span><a href="#intro">이 청크가 만드는 것</a></li>
       <li class="on"><span class="k">소개</span><a href="#scenes">이렇게 되게 만들 거다 — 사용자가 겪을 장면</a></li>
@@ -1119,7 +1119,22 @@
           <li>뜨는 자리는 <strong>잠금화면 하나뿐</strong>이다 &#8212; 원래 러닝 탭 화면 몫이던 것이 MVP16에서 밀려났다</li>
           <li>30초는 <strong>근거 없는 잠정값</strong>이고, 파트 1의 오차 반경 30m와 <strong>같은 줄에서 같은 방식</strong>으로 정해졌다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">4</span><div><div class="can">고도 상승 &#8212; 구간 &#9313;까지 썼다</div></div></li>
+      <li><span class="k">4</span><div>
+        <div class="can">GPS 고도를 <strong>어디까지 믿을지</strong>와 <strong>얼마나 올라야 상승으로
+          칠지</strong>를 무엇을 기준으로 정했는지 말할 수 있고, <strong>같은 점을 거리 쪽과 고도 쪽이
+          왜 다른 층에서 걸러내는지</strong> 가를 수 있다</div>
+        <div class="sum">고도 상승은 뛰는 중에는 어디에도 안 뜬다 &#8212; 러닝을 끝내야 나오는
+          <strong>요약 화면</strong>과 나중에 다시 여는 <strong>기록 상세</strong>, 두 곳뿐이다.
+          뜨는 값도 <em>고도 상승 30 m</em>처럼 러닝 내내 올라간 양을 합한 숫자 하나다.</div>
+        <ul class="keys">
+          <li>견주는 상대는 출발점이 아니라 <strong>직전에 계산에 쓴 고도</strong>다 &#8212; 올라간 차이만 더하고 내려간 차이는 빼지 않는다</li>
+          <li>그래서 상승 합은 <strong>가장 높이 올라간 높이가 아니다</strong>. 같은 언덕을 두 번 오르면 두 번 다 더해진다</li>
+          <li>정확도는 점이 자기 값을 얼마나 확신하는지이고 <strong>점마다 다르게 실려 온다</strong> &#8212; &#177;3m는 보장이 아니라 <strong>68%</strong>다</li>
+          <li>고도를 가르는 선은 <strong>10m</strong>이고 좌표를 가르는 30m와 <strong>보는 층이 다르다</strong> &#8212; 고도만 못 쓰는 점의 좌표는 경로와 거리에 그대로 쓰인다</li>
+          <li>고도만 못 쓰는 점은 <strong>견주는 상대도 쌓는 통도 안 건드려서</strong> 다음 뺄셈이 그 앞의 멀쩡한 점과 이어진다</li>
+          <li>더한 차이는 <strong>쌓는 통</strong>을 하나 거친다. 3m 문턱이 &#8220;얼마나&#8221;를 재고 <strong>통을 비우는 규칙이 &#8220;연속&#8221;을 잰다</strong> &#8212; 비우는 쪽이 없으면 올라간 몫의 총합이 그대로 상승 합이 된다</li>
+          <li>모인 양은 다음 점이 조금만 안 올라가도 <strong>폭과 상관없이 전부 버려진다</strong>. 3m는 <strong>러닝앱 관례 3~5m의 아래끝</strong>이고 왜 아래끝인지는 기록에 없다</li>
+        </ul></div></li>
       <li class="pending"><span class="k">5</span><div><div class="can">km별 페이스 &#8212; 아직 안 썼다</div></div></li>
       <li class="pending"><span class="k">6</span><div><div class="can">목표 진행률 &#8212; 아직 안 썼다</div></div></li>
       <li class="pending"><span class="k">7</span><div><div class="can">주&#183;달 합계 &#8212; 아직 안 썼다</div></div></li>
@@ -3770,14 +3785,13 @@
         <table>
           <tr><td><a href="#p4s1">구간 &#9312;</a></td><td>고도 상승은 직전에 계산에 쓴 고도와의 차이를 쌓은 값이다 &#8212; 뺄셈부터 화면 숫자까지의 길</td></tr>
           <tr><td><a href="#p4s2">구간 &#9313;</a></td><td>믿을 수 없는 고도는 계산에 안 들어간다 &#8212; 이미 들여보낸 점을 두고 고도만 건너뛴다</td></tr>
-          <tr><td>구간 &#9314;</td><td>연달아 3m를 올라야 상승으로 확정한다 &#8212; 그래서 평지에서 0이 된다</td></tr>
+          <tr><td><a href="#p4s3">구간 &#9314;</a></td><td>연달아 3m를 올라야 상승으로 확정한다 &#8212; 그래서 평지에서 0이 된다</td></tr>
         </table>
         <p class="hint">
           <strong>&#9312;이 「원래 무슨 일이 벌어지고 있나」를 깔고, &#9313;&#9314;가 그 위의 예외 둘이다.</strong>
           &#9313;&#9314;를 먼저 보면 무엇을 거르는지는 알겠는데 <em>거르기 전에 뭘 하고 있었는지</em>가
           빈칸으로 남는다. 코드에서 가장 먼저 걸러지는 것은 &#9313;의 정확도 검사이지만,
           <b>걸러내기는 기본 동작 위에 얹히는 것이라 그보다 앞설 수 없다.</b><br>
-          <em>구간 &#9312;&#9313;을 채웠다. 남은 것은 &#9314;다.</em>
         </p>
       </div>
 
@@ -4463,7 +4477,8 @@
                     font-family="-apple-system, BlinkMacSystemFont, sans-serif">이 다섯 점만 놓고 보면 종료 후 요약 화면의 「고도 상승」은 0 m다</text>
             </svg>
             <figcaption>「견주는 상대」 줄은 그 점이 뺄셈에 쓴 값이다 &#8212; 점 4가 39.5를 쓰는 것은
-              점 3이 그 자리를 갱신하지 못했기 때문이다. 통에 모인 양이 한 번도 3m에 못 닿아 상승 합은 0에 머문다.</figcaption>
+              점 3이 그 자리를 갱신하지 못했기 때문이다. 통에 모인 양이 한 번도 3m에 못 닿아 상승 합은 0에 머문다.
+              도식의 고도 값은 <b>설명용으로 지은 것</b>이고, 본문에 적은 56.2m짜리 점이 여기 그려진 것은 아니다.</figcaption>
           </figure>
 
           <p>
@@ -4492,13 +4507,257 @@
         </div>
       </details>
 
+      <details class="seg" id="p4s3" open>
+        <summary>구간 &#9314; &#8212; 연달아 3m를 올라야 상승으로 확정한다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>평평한 한강변만 30분 뛰고 <strong>종료를 누른 장면</strong>이다. 언덕이라고는
+              없었으니 요약 화면의 고도 상승 칸에는 <em>0 m</em>가 떠 있다. 계산은 러닝 내내
+              돌았다 &#8212; 점이 하나 들어올 때마다 뺄셈을 하고 통에 넣었는데도 합계가 0으로
+              남은 것이라, 안 더한 것이 아니라 <b>더한 것을 계속 버렸다.</b>
+              구간 &#9312;이 뺄셈에서 상승 합까지의 길을 깔고 구간 &#9313;가 못 믿을 고도를
+              들여보내지 않았다면, <em>여기는 들여보낸 값을 통 안에서 언제 버리고 언제
+              옮기는지를 본다.</em></p>
+          </div>
+
+          <div class="mywords">
+            <span class="tag">&#128172; 한 줄로 잡으면</span>
+            <p>계속 올라가면서 3m 이상이 되어야 추가가 되는 것이고, 3m가 되기 전에 만약
+              떨어지면 사라진다.</p>
+          </div>
+
+          <h4>1. 평지에서도 고도 값은 오르내려서, 올라간 몫을 그대로 더하면 없던 상승이 쌓인다</h4>
+
+          <p>평지를 뛰는 동안에도 GPS가 실어 오는 고도는 한 값에 머물지 않는다. 설계 문서는 GPS 고도에
+            <b>노이즈가 상시 존재한다</b>고 적었고, 실제로 오는 점들은 <em>38.0 &#8594; 38.8 &#8594;
+            38.4 &#8594; 39.1 &#8594; 38.6 &#8594; 39.3</em>처럼 위아래로 오간다. 걸음은
+            평지를 걷고 있는데 값만 오르내리는 것이다. 구간 &#9313;에서 인용한 &#177;5~15m는
+            참값에서 얼마나 벗어나 있나를 말한 폭이라, <b>이웃한 두 점의 차이와는 다른 것을 잰다.</b></p>
+
+          <p>올라간 몫만 골라 더하는 것이 구간 &#9312;에서 본 규칙이었으니, 문턱이 없다면
+            여섯 점에서 <em>+0.8 &#183; +0.7 &#183; +0.7</em>이 더해져 <b>2.2m</b>가 쌓인다.
+            30분을 뛰면 점은 수천 개가 되고, 설계 문서는 그렇게 누적한 결과를
+            <strong>&#8220;평지 러닝에서도 수백 m의 유령 상승&#8221;</strong>이라고 적었다.</p>
+
+          <figure>
+            <svg viewBox="0 0 620 244" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p4s3a-title p4s3a-desc">
+              <title id="p4s3a-title">평지에서 점 여섯 개가 지나가는 동안 통이 계속 비워지는 모양</title>
+              <desc id="p4s3a-desc">평지를 뛰는 동안 들어온 고도는 38.0에서 38.8로 올랐다가 38.4로 내리고 다시 39.1로 올랐다가 38.6으로 내린 뒤 39.3으로 오른다. 올라간 점에서는 0.8과 0.7이 쌓는 통에 모이지만, 바로 다음 점이 내려가면서 모인 양이 매번 0으로 버려진다. 통은 한 번도 3미터에 닿지 못하고 상승 합은 여섯 점 내내 0에 머물러, 종료 후 요약 화면의 고도 상승 칸에 0미터가 뜬다.</desc>
+              <rect width="620" height="244" fill="#FFFFFF"/>
+
+              <text x="112" y="18" text-anchor="end" font-size="11" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중</text>
+              <text x="126" y="18" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#8212; 평평한 길만 뛰었다</text>
+              <path d="M118 26 V 222" stroke="#DAE6E3" stroke-width="1"/>
+              <path d="M520 26 V 222" stroke="#DAE6E3" stroke-width="1"/>
+              <text x="570" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">종료 후</text>
+
+              <text x="112" y="58" text-anchor="end" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">들어온 고도</text>
+              <text x="112" y="100" text-anchor="end" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뺀 차이</text>
+              <text x="112" y="142" text-anchor="end" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">쌓는 통</text>
+              <text x="112" y="190" text-anchor="end" font-size="10.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">상승 합</text>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5" text-anchor="middle">
+                <text x="152" y="58" fill="#143F3A">38.0</text>
+                <text x="218" y="58" fill="#143F3A">38.8</text>
+                <text x="284" y="58" fill="#143F3A">38.4</text>
+                <text x="350" y="58" fill="#143F3A">39.1</text>
+                <text x="416" y="58" fill="#143F3A">38.6</text>
+                <text x="482" y="58" fill="#143F3A">39.3</text>
+
+                <text x="152" y="100" fill="#93A8A4">&#8212;</text>
+                <text x="218" y="100" fill="#04796E">+0.8</text>
+                <text x="284" y="100" fill="#8a5510">-0.4</text>
+                <text x="350" y="100" fill="#04796E">+0.7</text>
+                <text x="416" y="100" fill="#8a5510">-0.5</text>
+                <text x="482" y="100" fill="#04796E">+0.7</text>
+
+                <text x="152" y="142" fill="#93A8A4">0.0</text>
+                <text x="218" y="142" fill="#143F3A">0.8</text>
+                <text x="284" y="142" fill="#93A8A4">0.0</text>
+                <text x="350" y="142" fill="#143F3A">0.7</text>
+                <text x="416" y="142" fill="#93A8A4">0.0</text>
+                <text x="482" y="142" fill="#143F3A">0.7</text>
+
+                <text x="152" y="190" fill="#93A8A4">0.0</text>
+                <text x="218" y="190" fill="#93A8A4">0.0</text>
+                <text x="284" y="190" fill="#93A8A4">0.0</text>
+                <text x="350" y="190" fill="#93A8A4">0.0</text>
+                <text x="416" y="190" fill="#93A8A4">0.0</text>
+                <text x="482" y="190" fill="#93A8A4">0.0</text>
+              </g>
+
+              <text x="284" y="122" text-anchor="middle" font-size="9" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">0.8 버림</text>
+              <text x="416" y="122" text-anchor="middle" font-size="9" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">0.7 버림</text>
+
+              <text x="317" y="216" text-anchor="middle" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">통이 3.0에 한 번도 닿지 못한다</text>
+              <path d="M498 190 H 538" stroke="#93A8A4" stroke-width="1.4"/>
+              <path d="M536 186 L543 190 L536 194 Z" fill="#93A8A4"/>
+              <text x="570" y="186" text-anchor="middle" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">0 m</text>
+              <text x="570" y="202" text-anchor="middle" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">요약 화면</text>
+            </svg>
+            <figcaption>평지 여섯 점에서 올라간 몫은 모두 2.2m지만 상승 합은 0.0에 머문다.
+              올라간 다음 점이 내려가면서 통이 매번 비워지기 때문이다.</figcaption>
+          </figure>
+
+          <h4>2. 3m 문턱은 얼마나 올랐나를 재고, 통을 비우는 규칙은 이어서 올랐나를 잰다</h4>
+
+          <p>통에 모인 양이 상승 합으로 넘어가려면 조건 둘을 함께 넘어야 하고, 둘이 재는 것이
+            다르다. 설계 문서가 고른 방식의 이름이 <em>연속 상승</em>인데,
+            <b>&#8220;얼마나&#8221;를 3m 문턱이 맡고 &#8220;연속&#8221;을 통을 비우는 규칙이
+            맡는다.</b></p>
+
+          <p>비우는 쪽은 폭을 보지 않는다. 뺀 차이가 양수가 아니기만 하면 모여 있던 양은
+            크기와 상관없이 0이 된다. 2.9m를 어렵게 모아둔 뒤 다음 점이 <em>0.1m</em>만
+            내려가도 2.9m가 통째로 사라진다. 코드가 가르는 선은 &#8220;올라갔는가&#8221;라서
+            <b>높이가 정확히 같을 때도 비우는 쪽으로 간다.</b></p>
+
+          <p>비우는 규칙이 빠지면 3m 문턱만으로는 아무것도 걸러지지 않는다. 올라간 몫이 계속
+            더해져 통이 3m에 닿을 때마다 상승 합으로 넘어가므로, <b>러닝이 끝났을 때 상승 합은
+            올라간 몫을 전부 더한 값</b>이 된다(마지막에 통에 남은 자투리만 빠진다). 설계 문서가
+            처음에 기각한 <em>&#8220;양의 변화량을 그대로 누적&#8221;</em>하는 방식과 결과가
+            같아져, 소제목 1에서 본 평지의 수백 m가 그대로 남는다.</p>
+
+          <p>옮기는 쪽은 반대로 통을 비우되 값을 살린다 &#8212; 모인 양이 3m에 닿는 순간
+            <b>그때까지 모인 전부</b>가 상승 합으로 옮겨간다(구간 &#9312;의 3.3m가 그 예다).
+            연달아 올라가는 점들은 통을 비우지 않으므로 <strong>진짜 오르막에서는 3m까지 갈 길이
+            열려 있다.</strong> 열려 있다는 것이지 반드시 닿는다는 뜻은 아니다.</p>
+
+          <figure>
+            <svg viewBox="0 0 620 306" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p4s3b-title p4s3b-desc">
+              <title id="p4s3b-title">같은 언덕을 오르는 두 러닝에서 통이 살아남는 경우와 버려지는 경우</title>
+              <desc id="p4s3b-desc">위쪽 러닝은 고도가 38.0에서 39.2, 40.5, 41.4, 42.0, 42.6으로 계속 올라간다. 통은 1.2에서 2.5로 쌓이고 네 번째 점에서 3.4가 되어 3미터에 닿으므로 3.4가 통째로 상승 합으로 옮겨가고, 종료 후 요약 화면에 3미터가 뜬다. 이후 두 점에서 0.6과 1.2가 다시 모이지만 3미터에 닿지 못한 채 러닝이 끝난다. 아래쪽 러닝은 같은 언덕인데 네 번째 점의 고도가 40.5에서 40.3으로 0.2미터 내려간다. 그 한 점 때문에 모여 있던 2.5가 버려지고, 이후 41.4와 42.6으로 다시 올라 통에 2.3이 모이지만 3미터에 닿지 못한다. 두 러닝 모두 출발점보다 4.6미터 높은 곳에서 끝났는데 요약 화면 숫자는 3미터와 0미터로 갈린다.</desc>
+              <rect width="620" height="306" fill="#FFFFFF"/>
+
+              <text x="112" y="20" text-anchor="end" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중</text>
+              <text x="126" y="20" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#8212; 같은 언덕을 오르는 두 러닝</text>
+              <path d="M118 30 V 284" stroke="#DAE6E3" stroke-width="1"/>
+              <path d="M520 30 V 284" stroke="#DAE6E3" stroke-width="1"/>
+              <text x="570" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">종료 후</text>
+
+              <text x="126" y="52" font-size="10.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">계속 올라간 러닝</text>
+              <text x="112" y="80" text-anchor="end" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">들어온 고도</text>
+              <text x="112" y="112" text-anchor="end" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">쌓는 통</text>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5" text-anchor="middle">
+                <text x="152" y="80" fill="#143F3A">38.0</text>
+                <text x="218" y="80" fill="#143F3A">39.2</text>
+                <text x="284" y="80" fill="#143F3A">40.5</text>
+                <text x="350" y="80" fill="#143F3A">41.4</text>
+                <text x="416" y="80" fill="#143F3A">42.0</text>
+                <text x="482" y="80" fill="#143F3A">42.6</text>
+
+                <text x="152" y="112" fill="#93A8A4">0.0</text>
+                <text x="218" y="112" fill="#143F3A">1.2</text>
+                <text x="284" y="112" fill="#143F3A">2.5</text>
+                <text x="350" y="112" fill="#04796E" font-weight="700">3.4</text>
+                <text x="416" y="112" fill="#143F3A">0.6</text>
+                <text x="482" y="112" fill="#143F3A">1.2</text>
+              </g>
+              <text x="350" y="134" text-anchor="middle" font-size="9" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">3.0에 닿아 3.4 전부 옮김</text>
+              <path d="M498 108 H 538" stroke="#06B6A4" stroke-width="1.4"/>
+              <path d="M536 104 L543 108 L536 112 Z" fill="#06B6A4"/>
+              <text x="570" y="104" text-anchor="middle" font-size="11.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">3 m</text>
+              <text x="570" y="120" text-anchor="middle" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">요약 화면</text>
+
+              <path d="M118 158 H 520" stroke="#DAE6E3" stroke-width="1" stroke-dasharray="3 3"/>
+
+              <text x="126" y="184" font-size="10.5" font-weight="700" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">한 점만 내려간 러닝</text>
+              <text x="112" y="212" text-anchor="end" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">들어온 고도</text>
+              <text x="112" y="244" text-anchor="end" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">쌓는 통</text>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5" text-anchor="middle">
+                <text x="152" y="212" fill="#143F3A">38.0</text>
+                <text x="218" y="212" fill="#143F3A">39.2</text>
+                <text x="284" y="212" fill="#143F3A">40.5</text>
+                <text x="350" y="212" fill="#8a5510" font-weight="700">40.3</text>
+                <text x="416" y="212" fill="#143F3A">41.4</text>
+                <text x="482" y="212" fill="#143F3A">42.6</text>
+
+                <text x="152" y="244" fill="#93A8A4">0.0</text>
+                <text x="218" y="244" fill="#143F3A">1.2</text>
+                <text x="284" y="244" fill="#143F3A">2.5</text>
+                <text x="350" y="244" fill="#8a5510" font-weight="700">0.0</text>
+                <text x="416" y="244" fill="#143F3A">1.1</text>
+                <text x="482" y="244" fill="#143F3A">2.3</text>
+              </g>
+              <text x="350" y="266" text-anchor="middle" font-size="9" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">0.2 내려가서 2.5 버림</text>
+              <path d="M498 240 H 538" stroke="#93A8A4" stroke-width="1.4"/>
+              <path d="M536 236 L543 240 L536 244 Z" fill="#93A8A4"/>
+              <text x="570" y="236" text-anchor="middle" font-size="11.5" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">0 m</text>
+              <text x="570" y="252" text-anchor="middle" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">요약 화면</text>
+
+              <text x="317" y="296" text-anchor="middle" font-size="9.5" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">두 러닝 모두 출발점보다 4.6m 높은 곳에서 끝났는데 요약 화면 숫자는 3 m와 0 m다</text>
+            </svg>
+            <figcaption>계속 올라간 러닝은 네 번째 점에서 통이 3.4m가 되어 3m에 닿고, 모인 3.4m가
+              통째로 상승 합이 된다. 한 점만 0.2m 내려간 러닝은 그 자리에서 2.5m를 잃어 끝까지
+              3m에 닿지 못한다. 노이즈를 막는 규칙이 진짜 상승도 함께 지우는 셈이고, 실제 러닝에서
+              얼마나 자주 그렇게 되는지는 재본 적이 없다.</figcaption>
+          </figure>
+
+          <h4>3. 3m는 재서 정한 값이 아니라 러닝앱 관례 3~5m의 아래끝을 고른 값이다</h4>
+
+          <p>문턱을 얼마로 둘지는 MVP13 설계 문서에서 정해졌다. 적힌 것은
+            <em>&#8220;연속 상승이 3~5m를 넘을 때만 가산 &#8212; 러닝앱 관례, 수치는 구현 중
+              튜닝&#8221;</em>이고, <b>범위의 출처는 다른 러닝앱들이 쓰는 값</b>이다. 이 앱이
+            고른 <strong>3m는 그 범위의 아래끝</strong>인데, 왜 5m가 아니라 아래끝인지는 설계
+            문서에도 커밋 메시지에도 남아 있지 않다.</p>
+
+          <p>3m가 평지에서 값이 오가는 폭과 같은 자리라는 것은 MVP13 실기기 QA에서 함께 나왔다.
+            평지를 5분 걷고 받은 원시 기록의 고도 오르내림 폭이 <b>약 3m</b>였다. 러닝앱이 흔히
+            쓰는 문턱이 마침 평지 노이즈가 오가는 폭과 겹치는 자리인 셈이다.</p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>고도 상승은 연달아 올라간 양이 3m에 닿을 때만 확정된다. 3m 문턱이
+              &#8220;얼마나 올랐나&#8221;를 재고 통을 비우는 규칙이 &#8220;이어서 올랐나&#8221;를
+              재는데, 비우는 쪽이 없으면 올라간 몫의 총합이 그대로 상승 합이 되어 평지에서도
+              수백 m가 쌓인다. 모여 있던 양은 다음 점이 조금만 안 올라가도 폭과 상관없이 전부
+              버려지고, 3m라는 값은 러닝앱 관례 3~5m의 아래끝을 고른 것이라 왜 아래끝인지는
+              기록에 없다.</p>
+          </div>
+
+        </div>
+      </details>
+
     </div>
   </details>
 
   <div class="next">
-    <strong>파트 3까지 썼고, 파트 4는 구간 &#9313;까지 썼다</strong>(2026-08-30) &#8212;
-    거리 &#183; 시간 &#183; 페이스. 다음은 <strong>파트 4 구간 &#9314;</strong>이고, 그 뒤로
-    km별 페이스 &#183; 목표 진행률 &#183; 주&#183;달 합계가 남았다.
+    <strong>파트 4까지 썼다</strong>(2026-08-31) &#8212; 거리 &#183; 시간 &#183; 페이스 &#183;
+    고도 상승. 다음은 <strong>파트 5 km별 페이스</strong>이고, 그 뒤로 목표 진행률 &#183;
+    주&#183;달 합계가 남았다.
     확인 문제와 마무리 절은 <strong>일곱 파트가 다 찬 뒤</strong>에 붙는다.
     <strong>링크는 그대로 유지된다.</strong>
   </div>
