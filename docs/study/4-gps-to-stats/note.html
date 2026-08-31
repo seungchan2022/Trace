@@ -5321,19 +5321,21 @@
         목표가 30분이고 활동 시간이 1171초면 <b>1171 &#247; 1800 = 65%</b>.
         거리 목표는 파트 1의 <b>누적 거리</b>를, 시간 목표는 파트 2의 <b>활동 시간</b>을
         분자로 쓴다. 목표를 넘겨도 트래킹은 계속되고 종료는 사용자가 누른다.<br><br>
-        화면에 숫자로 안 나오는 것이 둘 더 있다 &#8212; <b>절반을 지났다는 표시</b>와
-        <b>목표를 채웠다는 표시</b>. <em>「절반 왔습니다」</em>&#183;<em>「목표 달성」</em>을
-        소리로 읽는 것은 <strong>청크 6</strong>이 맡고, 여기서 보는 것은 소리가 나기 전에
-        러닝 세션(<code>RunSession</code>)이 세워 두는 표시까지다.<br><br>
-        다만 <strong>68%라는 숫자는 어디에도 저장되지 않는다.</strong> 세션은 나눈 값을
-        표시 둘로 접은 뒤 숫자 자체는 버리고, 화면은 그릴 때마다 나눗셈을 다시 부른다.
+        러닝 탭 화면에 안 나오는 것이 둘 더 있다 &#8212; 러닝 세션(<code>RunSession</code>) 안에
+        <b>「절반을 넘었나」</b>와 <b>「목표를 채웠나」</b>라는 <code>true</code>/<code>false</code>
+        값이 하나씩 있다(<code>goalHalfReached</code> &#183; <code>goalAchieved</code>).
+        둘 다 러닝 탭 화면에는 안 그려지고 <em>「절반 왔습니다」</em>&#183;<em>「목표 달성」</em>이라는
+        소리로만 나가는데, 소리를 읽는 것은 <strong>청크 6</strong>이 맡고 여기서 보는 것은
+        그 값 둘이 켜지는 자리까지다.<br><br>
+        다만 <strong>68%라는 숫자는 어디에도 저장되지 않는다.</strong> 러닝 세션이 남기는 것은
+        방금 말한 값 둘뿐이고 68이라는 숫자는 버린다. 러닝 탭 화면은 그릴 때마다 나눗셈을 다시 부른다.
         <b>두 나눗셈이 같은 함수인데 기준으로 삼는 시각이 다르다</b>는 것이 이 파트가 푸는 문제다.
       </div>
 
       <div class="goal">
         <span class="tag">이 파트를 끝내면</span>
         <p>진행률을 <strong>저장해 둘지 볼 때마다 다시 만들지</strong>를 그 대가와 함께 정할 수 있고,
-          시간 목표에서 <strong>화면의 퍼센트와 달성 표시가 서로 다른 시각을 기준으로 삼는</strong>
+          시간 목표에서 <strong>화면의 퍼센트와 달성 판정이 서로 다른 시각을 기준으로 삼는</strong>
           이유를 말할 수 있다.</p>
       </div>
 
@@ -5341,11 +5343,11 @@
         <span class="tag">이 파트의 구간</span>
         <table>
           <tr><td><a href="#p6s1">구간 &#9312;</a></td><td>목표는 세 갈래 중 하나이고, 진행률은 파트 1의 누적 거리 또는 파트 2의 활동 시간을 목표로 나눈 값이다 &#8212; 1을 넘어도 자르지 않는다</td></tr>
-          <tr><td>구간 &#9313;</td><td>절반과 달성은 한 번 켜지면 안 꺼지는 표시이고, GPS 점이 들어올 때만 다시 본다 &#8212; 시간 목표인데도 시계가 아니라 점이 판정을 깨운다</td></tr>
+          <tr><td>구간 &#9313;</td><td>절반과 달성은 한 번 켜지면 안 꺼지는 <code>true</code>/<code>false</code> 값이고, GPS 점이 들어올 때만 다시 본다 &#8212; 시간 목표인데도 시계가 아니라 점이 판정을 깨운다</td></tr>
           <tr><td>구간 &#9314;</td><td>진행률은 어디에도 남지 않아서 러닝 탭 화면은 볼 때마다 나눗셈을 다시 부른다 &#8212; 그래서 화면은 지금 시각으로, 판정은 마지막 점의 시각으로 잰다</td></tr>
         </table>
         <p class="hint">
-          <strong>구간 &#9312;이 나눗셈을 세우고, 구간 &#9313;는 그 결과를 표시 둘로 접은 뒤
+          <strong>구간 &#9312;이 나눗셈을 세우고, 구간 &#9313;는 그 결과를 참/거짓 값 둘로 바꾼 뒤
           숫자를 버리고, 구간 &#9314;은 같은 나눗셈을 화면용으로 다시 부른다.</strong>
           구간 &#9313;가 숫자를 안 남긴다는 것을 먼저 봐야 구간 &#9314;이 왜 다시 계산하는지가 읽힌다.
           코드에서 가장 먼저 걸러지는 것은 <b>자유 러닝이면 아무것도 안 보는 검사</b>이고
@@ -5367,8 +5369,8 @@
               누르면 카운트다운이 지나가고, 뛰는 중 러닝 탭 화면에는 원래 없던 줄이 하나 더 붙는다 &#8212;
               왼쪽에 <em>「5 km 목표」</em>, 오른쪽에 <em>68%</em>. 여기서 따라가는 것은
               <strong>그 68%를 만들어 내는 나눗셈 하나</strong>다.
-              <em>구간 &#9313;가 나눈 결과를 표시 둘로 접고 숫자를 버리는 자리를 보므로, 먼저 나눗셈부터
-              세워 둔다.</em></p>
+              <em>구간 &#9313;가 나눈 결과를 참/거짓 값 둘로 바꾸고 숫자를 버리는 자리를 보므로,
+              먼저 나눗셈부터 세워 둔다.</em></p>
           </div>
 
           <div class="mywords">
@@ -5526,10 +5528,65 @@
             모이기 때문</strong>이다. 부르는 자리는 둘이다 &#8212; 점이 들어올 때 판정하는 러닝 세션과,
             퍼센트를 그리는 러닝 탭 화면.</p>
 
+          <figure>
+            <svg viewBox="0 0 620 236" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p6s1d-title p6s1d-desc">
+              <title id="p6s1d-title">거리냐 시간이냐를 따지는 코드가 몇 군데에 적히나</title>
+              <desc id="p6s1d-desc">지금 코드에서는 러닝 세션과 러닝 탭 화면이 둘 다 누적 거리 3420과 활동 시간 1171을 그대로 넘기고, 거리 목표라서 3420을 고르는 판단은 목표 안에서 한 번만 일어난다. 부르는 쪽이 골라 넘기게 했다면 거리면 3420 나누기 5000, 시간이면 1171 나누기 1800이라는 같은 판단이 러닝 세션과 러닝 탭 화면 두 곳에 각각 적힌다.</desc>
+              <rect width="620" height="236" fill="#FFFFFF"/>
+
+              <text x="16" y="20" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">지금 코드</text>
+              <text x="336" y="20" font-size="11" font-weight="700" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">부르는 쪽이 골라 넘기게 했다면</text>
+              <path d="M310 10 V 214" stroke="#DAE6E3" stroke-width="1"/>
+
+              <rect x="16" y="32" width="132" height="30" rx="7" fill="#F6FAF9" stroke="#DAE6E3"/>
+              <text x="82" y="52" text-anchor="middle" font-size="10.5" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">러닝 세션</text>
+              <rect x="158" y="32" width="132" height="30" rx="7" fill="#F6FAF9" stroke="#DAE6E3"/>
+              <text x="224" y="52" text-anchor="middle" font-size="10.5" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">러닝 탭 화면</text>
+              <text x="153" y="80" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">둘 다 3420 &#183; 1171 을 그대로 넘긴다</text>
+              <path d="M82 62 V 74 H 224 V 62" stroke="#04796E" stroke-width="1.1" fill="none"/>
+              <path d="M153 86 V 96" stroke="#04796E" stroke-width="1.2"/>
+              <path d="M149 94 L153 101 L157 94 Z" fill="#04796E"/>
+
+              <rect x="16" y="106" width="274" height="52" rx="8" fill="#EAF5F2"/>
+              <text x="153" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">목표 &#8212; 거리 목표라서 3420을 고른다</text>
+              <text x="153" y="147" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#9733; 갈래를 따지는 코드</text>
+
+              <rect x="336" y="32" width="268" height="52" rx="8" fill="#FAF7F4" stroke="#E3D9D0"/>
+              <text x="350" y="52" font-size="10.5" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">러닝 세션 &#8212; 거리면 3420 &#247; 5000</text>
+              <text x="350" y="70" font-size="10.5" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;시간이면 1171 &#247; 1800 &#9733;</text>
+
+              <rect x="336" y="94" width="268" height="52" rx="8" fill="#FAF7F4" stroke="#E3D9D0"/>
+              <text x="350" y="114" font-size="10.5" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">러닝 탭 화면 &#8212; 거리면 3420 &#247; 5000</text>
+              <text x="350" y="132" font-size="10.5" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;시간이면 1171 &#247; 1800 &#9733;</text>
+
+              <text x="153" y="184" text-anchor="middle" font-size="11.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">갈래를 아는 곳 &#8212; 한 군데</text>
+              <text x="470" y="184" text-anchor="middle" font-size="11.5" font-weight="700" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">갈래를 아는 곳 &#8212; 두 군데</text>
+
+              <text x="310" y="216" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">넷째 갈래가 생기는 날 왼쪽은 한 곳만 고치면 되고, 오른쪽은 두 곳을 다 고친다</text>
+            </svg>
+            <figcaption>왼쪽이 이 앱의 코드다. 재료를 둘 다 넘기는 대신 &#9733; 표가 한 군데로 모인다.
+              오른쪽은 재료를 하나만 넘기는 대신 같은 &#9733; 표가 두 벌 생긴다.</figcaption>
+          </figure>
+
           <p>부르는 쪽에서 <em>거리 목표면 거리를, 시간 목표면 시간을</em> 골라 넘기게 했다면
-            <strong>같은 갈래 판단이 두 곳에 각각 적힌다.</strong> 목표에 네 번째 갈래가 생기는 날
-            두 곳을 다 고쳐야 하고, 한 곳을 빠뜨리면 뛰는 중 러닝 탭 화면의 퍼센트와 달성 판정이
-            서로 다른 말을 하게 된다.</p>
+            어떻게 되는지가 오른쪽이다. <strong>같은 갈래 판단이 두 곳에 각각 적힌다.</strong>
+            목표에 네 번째 갈래가 생기는 날 두 곳을 다 고쳐야 하고, 한 곳을 빠뜨리면 뛰는 중
+            러닝 탭 화면의 퍼센트와 달성 판정이 서로 다른 말을 하게 된다.</p>
 
           <p>단위를 미터와 초로 맞춰 담는 것도 같은 자리에서 정해졌다. 사용자가 적는 것은 <b>5</b>(km)와
             <b>30</b>(분)인데, 시작을 누를 때 목표로 조립하면서(<code>composedGoal</code>) 5000m와
