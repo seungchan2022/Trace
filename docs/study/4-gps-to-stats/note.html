@@ -4787,7 +4787,7 @@
       <div class="segmap">
         <span class="tag">이 파트의 구간</span>
         <table>
-          <tr><td>구간 &#9312;</td><td>1km 경계를 지난 시각을 만들어 내고, 그 사이를 활동 시간으로 잰다 &#8212; 점은 정확히 1000m 자리에 오지 않는다</td></tr>
+          <tr><td><a href="#p5s1">구간 &#9312;</a></td><td>1km 경계를 지난 시각을 만들어 내고, 그 사이를 활동 시간으로 잰다 &#8212; 점은 정확히 1000m 자리에 오지 않는다</td></tr>
           <tr><td>구간 &#9313;</td><td>표는 저장하지 않고 기록 상세를 열 때마다 다시 만든다 &#8212; 그래서 시작 시각과 활동 시간을 밖에서 받고, 네 줄의 합이 요약 화면의 시간과 맞는다</td></tr>
         </table>
         <p class="hint">
@@ -4798,6 +4798,256 @@
           <b>구간 제목에 링크가 없는 것은 아직 안 쓴 구간이라는 뜻이다</b> &#8212; 쓰는 대로 링크가 생긴다.
         </p>
       </div>
+
+      <details class="seg" id="p5s1" open>
+        <summary>구간 &#9312; &#8212; 1km 경계를 지난 시각을 만들어 내고, 그 사이를 활동 시간으로 잰다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>러닝을 마치고 며칠 뒤, 기록 탭에서 그날 러닝을 눌러 <strong>기록 상세를 연 장면</strong>이다.
+              지도와 요약 숫자 아래에 「킬로미터별 페이스」 표가 네 줄로 떠 있다. 뛰는 중에는 한 번도
+              보이지 않던 표라 계산도 러닝 내내 돌지 않았다 &#8212; 뛰는 동안 저장해 둔 점으로 나중에
+              계산하고, 눈에 보이는 것은 결과인 표뿐이다. 여기서는 <b>표 한 줄이
+              만들어지는 길</b>을 따라간다. <em>구간 &#9313;가 그 계산을 언제 누가 돌리는지와 재료를
+              어디서 받는지를 보므로, 먼저 길을 세워 둔다.</em></p>
+          </div>
+
+          <h4>1. 없는 시각은 두 점 사이를 거리 비율로 나눠서 만든다</h4>
+
+          <p>저장된 점은 5m마다 찍혀 있고, 어느 점도 정확히 1000m 자리에 오지 않는다. 997m에서 한 점,
+            다음이 1003m인 식이다. 그런데 표 첫 줄이 말하는 <em>1 km &nbsp; 5&#39;38&quot;</em>은
+            <strong>출발한 자리부터 누적 거리가 1000m가 되는 자리까지 338초 걸렸다</strong>는 뜻이라,
+            앱은 1000m가 되는 순간이 몇 시 몇 분 몇 초인지를 알아야 한다.</p>
+
+          <figure>
+            <svg viewBox="0 0 620 200" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p5s1a-title p5s1a-desc">
+              <title id="p5s1a-title">1km 근처 저장된 점 넷과 그 사이에 만들어 낸 시각</title>
+              <desc id="p5s1a-desc">기록 상세 화면을 열면 저장된 점을 읽는다. 1km 근처의 점은 09시 17분 35초에 992미터, 37초에 997미터, 39초에 1003미터, 41초에 1008미터로 찍혀 있다. 1000미터 자리에는 저장된 점이 없어서, 997미터 점과 1003미터 점 사이 6미터 가운데 절반인 3미터 지점으로 보고 두 점의 시각 차이 2초의 절반인 1초를 앞 점에 더해 09시 17분 38초를 만들어 낸다.</desc>
+              <rect width="620" height="200" fill="#FFFFFF"/>
+
+              <rect x="314" y="30" width="72" height="134" rx="7" fill="#EAF5F2"/>
+
+              <text x="64" y="20" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">기록 상세 화면을 열면</text>
+              <text x="190" y="20" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#8212; 저장된 점을 읽고, 없는 자리는 만들어 낸다</text>
+
+              <text x="140" y="60" text-anchor="end" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">저장된 점 시각</text>
+              <text x="140" y="102" text-anchor="end" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">누적 거리</text>
+              <text x="140" y="152" text-anchor="end" font-size="10.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">만들어 낸 시각</text>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5" text-anchor="middle">
+                <text x="188" y="60" fill="#143F3A">09:17:35</text>
+                <text x="269" y="60" fill="#143F3A">09:17:37</text>
+                <text x="350" y="60" font-size="10" fill="#93A8A4">저장된 점 없음</text>
+                <text x="431" y="60" fill="#143F3A">09:17:39</text>
+                <text x="512" y="60" fill="#143F3A">09:17:41</text>
+
+                <text x="188" y="102" fill="#143F3A">992m</text>
+                <text x="269" y="102" fill="#143F3A">997m</text>
+                <text x="350" y="102" font-weight="700" fill="#04796E">1000m</text>
+                <text x="431" y="102" fill="#143F3A">1003m</text>
+                <text x="512" y="102" fill="#143F3A">1008m</text>
+
+                <text x="350" y="152" font-weight="700" fill="#04796E">09:17:38</text>
+              </g>
+
+              <text x="350" y="120" text-anchor="middle" font-size="9" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">1km 경계</text>
+              <path d="M350 124 V 134" stroke="#04796E" stroke-width="1.2"/>
+              <path d="M346 132 L350 139 L354 132 Z" fill="#04796E"/>
+
+              <path d="M269 72 L269 88" stroke="#DAE6E3" stroke-width="1"/>
+              <path d="M431 72 L431 88" stroke="#DAE6E3" stroke-width="1"/>
+              <text x="350" y="182" text-anchor="middle" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">997m와 1003m 사이 6m 가운데 1000m는 절반 자리 &#8594; 시각 차이 2초의 절반인 1초를 앞 점에 더한다</text>
+            </svg>
+            <figcaption>1000m 자리에는 저장된 점이 없다. 두 점 사이를 거리 비율로 갈라
+              09:17:38을 만들어 내고, 표 첫 줄은 그 시각까지를 잰다.</figcaption>
+          </figure>
+
+          <p>나누는 기준은 <strong>거리 비율</strong>이다. 두 점 사이를 몇 대 몇으로 갈랐는지가 그대로
+            시간을 가르는 비율이 된다. 바꿔 말하면 한 쌍 안에서는 속도가 일정했다고 놓는 것이다.</p>
+
+          <h4>2. 넘은 첫 점의 시각을 쓰면 GPS가 끊긴 구간에서 표가 무너진다</h4>
+
+          <p>1000m를 넘은 첫 점의 시각(<em>09:17:39</em>)을 그대로 쓰는 방법도 있다. 그러면 경계가 늘
+            조금씩 늦게 잡히는데, 점이 정상적으로 들어오는 동안에는 <strong>한 줄이 1초 남짓 어긋나는
+            데서 그친다</strong> &#8212; 경계마다 같은 방향으로 늦어지므로 앞 경계에서 늦은 만큼이 다음
+            줄에서 빠져 상쇄되기 때문이다.</p>
+
+          <p>무너지는 자리는 따로 있다. 터널이나 고층 건물 사이에서 점이 한동안 안 들어오면, 저장된 점
+            목록에는 <strong>0m 다음이 곧바로 2500m인 쌍</strong>이 생긴다. 쌍 하나가 1000m 경계와
+            2000m 경계를 함께 넘는 것이다.</p>
+
+          <figure>
+            <svg viewBox="0 0 620 214" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p5s1b-title p5s1b-desc">
+              <title id="p5s1b-title">한 쌍이 두 경계를 함께 넘을 때 두 방법이 내놓는 표</title>
+              <desc id="p5s1b-desc">뛰는 중 GPS가 끊겨 저장된 점이 0미터 다음 곧바로 2500미터로 건너뛰고 그 사이가 750초인 자리다. 넘은 첫 점의 시각을 쓰면 1000미터 경계와 2000미터 경계가 둘 다 750초를 받아 1킬로미터 줄은 750초, 2킬로미터 줄은 0초가 된다. 거리 비율로 나누면 1000미터 경계가 300초, 2000미터 경계가 600초를 받아 두 줄이 각각 300초가 된다.</desc>
+              <rect width="620" height="214" fill="#FFFFFF"/>
+
+              <text x="20" y="20" font-size="11" font-weight="700" fill="#52625E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 GPS가 끊긴 쌍</text>
+              <text x="152" y="20" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">&#8212; 0m 다음이 곧바로 2500m, 그 사이 750초</text>
+
+              <text x="250" y="50" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">1000m 경계가 받는 시각</text>
+              <text x="378" y="50" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">2000m 경계가 받는 시각</text>
+              <text x="530" y="50" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">표에 뜨는 두 줄</text>
+
+              <rect x="16" y="62" width="588" height="60" rx="7" fill="#FDF3E8"/>
+              <text x="150" y="98" text-anchor="end" font-size="11" font-weight="700" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">넘은 첫 점의 시각</text>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" text-anchor="middle">
+                <text x="250" y="98" fill="#143F3A">750초</text>
+                <text x="378" y="98" fill="#143F3A">750초</text>
+                <text x="530" y="88" fill="#143F3A">1 km &nbsp; 750초</text>
+                <text x="530" y="108" font-weight="700" fill="#8a5510">2 km &nbsp; 0초</text>
+              </g>
+              <path d="M424 92 H 462" stroke="#C9A97C" stroke-width="1.3"/>
+              <path d="M460 88 L467 92 L460 96 Z" fill="#C9A97C"/>
+              <text x="314" y="116" text-anchor="middle" font-size="9" fill="#8a5510"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">두 경계가 같은 시각을 받는다</text>
+
+              <rect x="16" y="132" width="588" height="60" rx="7" fill="#EAF5F2"/>
+              <text x="150" y="168" text-anchor="end" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">거리 비율로 나눔</text>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" text-anchor="middle">
+                <text x="250" y="168" fill="#143F3A">300초</text>
+                <text x="378" y="168" fill="#143F3A">600초</text>
+                <text x="530" y="158" fill="#143F3A">1 km &nbsp; 300초</text>
+                <text x="530" y="178" font-weight="700" fill="#04796E">2 km &nbsp; 300초</text>
+              </g>
+              <path d="M424 162 H 462" stroke="#7FBDB2" stroke-width="1.3"/>
+              <path d="M460 158 L467 162 L460 166 Z" fill="#7FBDB2"/>
+              <text x="314" y="186" text-anchor="middle" font-size="9" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">같은 쌍 안에서 서로 다른 시각을 받는다</text>
+
+              <text x="310" y="208" text-anchor="middle" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">750초를 어떻게 가르느냐가 2km 줄을 0초로 만들지 300초로 만들지를 가른다</text>
+            </svg>
+            <figcaption>한 쌍이 두 경계를 함께 넘을 때 갈린다. 넘은 첫 점의 시각을 쓰면 두 경계가
+              같은 시각을 받아 2km 줄이 0초가 되고, 거리 비율로 나누면 두 줄이 각각 300초가 된다.</figcaption>
+          </figure>
+
+          <p>그래서 보간은 정밀도를 조금 높이려는 선택이 아니라 <strong>표가 무너지는 것을 막는
+            장치</strong>다. 쌍 하나에서 경계를 하나만 만들고 넘어가지 않는 것도 같은 이유라, 누적 거리가
+            다음 경계에 못 미칠 때까지 그 자리에서 반복해 경계를 전부 만들어 낸다.</p>
+
+          <h4>3. 만들어 낸 시각은 벽시계라, 활동 시간으로 한 번 더 바꾼다</h4>
+
+          <p>09:17:38은 벽시계 시각이다. 그런데 표가 쓰는 것은 <strong>파트 2에서 정한 활동 시간</strong>,
+            곧 일시정지 동안을 빼고 센 시간이다.</p>
+
+          <p>바꾸는 법은 둘을 빼는 것이다 &#8212; 세션이 시작한 시각부터 09:17:38까지의 벽시계 경과에서,
+            그 사이에 걸친 일시정지 길이를 뺀다. 얻어지는 것은 <strong>세션 시작부터 그 경계까지의 누적
+            활동 시간</strong>이다.</p>
+
+          <p>예시 러닝은 시작이 <em>09:12:00</em>이고 일시정지가 한 번도 없어서, 벽시계 경과 338초가
+            그대로 활동 시간이 된다. 중간에 신호등에서 40초를 서 있었다면 벽시계로는 378초가 흘렀어도
+            <strong>1000m 경계의 누적 활동 시간은 그대로 338초</strong>이고, 표 첫 줄도 5&#39;38&quot;로
+            남는다.</p>
+
+          <h4>4. 표 한 줄의 시간은 누적 활동 시간 둘을 빼서 얻는다</h4>
+
+          <p>빼는 대상이 시각 둘이 아니라는 것이 중요하다. 경계마다 얻은 <b>누적</b> 활동 시간이 하나씩
+            쌓이고, 표 한 줄은 <strong>거기서 직전 경계의 누적 활동 시간을 뺀 것</strong>이다.
+            「경계 통과 시각 두 개의 차이」라는 중간 단계는 코드에 존재하지 않는다.</p>
+
+          <figure>
+            <svg viewBox="0 0 620 226" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p5s1c-title p5s1c-desc">
+              <title id="p5s1c-title">경계별 누적 활동 시간에서 표 세 줄이 나오는 마지막 단계</title>
+              <desc id="p5s1c-desc">기록 상세 화면의 표가 나오는 마지막 단계다. 경계별 누적 활동 시간은 시작 버튼 자리에서 0초, 1000미터에서 338초, 2000미터에서 682초, 3000미터에서 1023초다. 직전 경계의 값을 빼면 338초와 344초와 341초가 나오고, 표에는 1킬로미터 5분 38초, 2킬로미터 5분 44초, 3킬로미터 5분 41초로 뜬다.</desc>
+              <rect width="620" height="226" fill="#FFFFFF"/>
+
+              <text x="118" y="26" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">경계별 누적 활동 시간</text>
+              <text x="352" y="26" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">직전 경계의 값을 뺀다</text>
+              <text x="540" y="26" text-anchor="middle" font-size="10" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">기록 상세 화면의 표</text>
+
+              <path d="M118 42 V 196" stroke="#DAE6E3" stroke-width="1"/>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5">
+                <text x="108" y="62" text-anchor="end" fill="#93A8A4">0초</text>
+                <text x="128" y="62" font-size="9.5" fill="#93A8A4">시작 버튼을 누른 자리</text>
+
+                <text x="108" y="106" text-anchor="end" font-weight="700" fill="#143F3A">338초</text>
+                <text x="128" y="106" font-size="9.5" fill="#93A8A4">1000m 경계</text>
+                <text x="352" y="106" text-anchor="middle" fill="#143F3A">338 &#8722; 0 = 338초</text>
+                <text x="540" y="106" text-anchor="middle" font-weight="700" fill="#04796E">1 km &nbsp; 5&#39;38&quot;</text>
+
+                <text x="108" y="150" text-anchor="end" font-weight="700" fill="#143F3A">682초</text>
+                <text x="128" y="150" font-size="9.5" fill="#93A8A4">2000m 경계</text>
+                <text x="352" y="150" text-anchor="middle" fill="#143F3A">682 &#8722; 338 = 344초</text>
+                <text x="540" y="150" text-anchor="middle" font-weight="700" fill="#04796E">2 km &nbsp; 5&#39;44&quot;</text>
+
+                <text x="108" y="194" text-anchor="end" font-weight="700" fill="#143F3A">1023초</text>
+                <text x="128" y="194" font-size="9.5" fill="#93A8A4">3000m 경계</text>
+                <text x="352" y="194" text-anchor="middle" fill="#143F3A">1023 &#8722; 682 = 341초</text>
+                <text x="540" y="194" text-anchor="middle" font-weight="700" fill="#04796E">3 km &nbsp; 5&#39;41&quot;</text>
+              </g>
+
+              <g stroke="#7FBDB2" stroke-width="1.3" fill="none">
+                <path d="M242 102 H 268"/>
+                <path d="M242 146 H 268"/>
+                <path d="M242 190 H 268"/>
+                <path d="M436 102 H 462"/>
+                <path d="M436 146 H 462"/>
+                <path d="M436 190 H 462"/>
+              </g>
+              <g fill="#7FBDB2">
+                <path d="M266 98 L273 102 L266 106 Z"/>
+                <path d="M266 142 L273 146 L266 150 Z"/>
+                <path d="M266 186 L273 190 L266 194 Z"/>
+                <path d="M460 98 L467 102 L460 106 Z"/>
+                <path d="M460 142 L467 146 L460 150 Z"/>
+                <path d="M460 186 L467 190 L460 194 Z"/>
+              </g>
+
+              <text x="310" y="218" text-anchor="middle" font-size="9.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">직전 값이 0에서 시작하므로 첫 줄은 시작 버튼을 누른 자리부터 잰다</text>
+            </svg>
+            <figcaption>경계마다 쌓인 누적 활동 시간에서 직전 경계의 값을 빼면 표 한 줄이 나온다.
+              세 줄에 마지막 0.42km 줄까지 더하면 요약 숫자인 1171초로 돌아온다.</figcaption>
+          </figure>
+
+          <p>직전 경계의 누적 활동 시간은 <strong>0에서 시작한다.</strong> 그래서 1km 줄은 첫 점이 아니라
+            <b>시작 버튼을 누른 자리부터</b> 재고, 버튼을 누르고 첫 점이 들어오기까지의 공백이 1km 줄에
+            들어간다.</p>
+
+          <h4>5. 경계를 넘었는지 재는 누적 거리에는 세지 않는 쌍이 둘 있다</h4>
+
+          <p>경계 통과를 판정하는 재료는 <strong>파트 1 구간 &#9316;에서 쌓은 누적 거리</strong>와 같은
+            것이다. 다만 저장된 점으로 다시 계산하는 자리라, 같은 규칙이 여기에 한 번 더 적혀 있다.</p>
+
+          <p>점을 앞뒤로 짝지어 두 점 사이 거리를 더해 나가되, 두 종류는 더하지 않는다. 하나는
+            <strong>일시정지가 사이에 낀 쌍</strong>이다 &#8212; 멈춰 있는 동안 위치가 달라져도 뛴 것이
+            아니기 때문이다. 다른 하나는 <b>두 점 사이 거리가 0인 쌍</b>이다.</p>
+
+          <p>일시정지가 낀 쌍을 빼는 규칙은 뛰는 중에 라이브로 거리를 쌓을 때 쓰던 것과 같다. 러닝이 끝난 뒤
+            저장된 점으로 다시 계산하는 쪽에도 같은 규칙이 필요해서, <strong>두 곳에 각각 적혀 있다.</strong></p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>표 한 줄은 거리 비율로 만들어 낸 경계 통과 시각을 활동 시간으로 바꾼 값 둘을 뺀 것이고,
+              보간을 쓰는 이유는 정밀도가 아니라 <strong>한 쌍이 여러 경계를 넘을 때 줄 하나가 0초로
+              무너지는 것을 막기 위해서</strong>다.</p>
+          </div>
+
+        </div>
+      </details>
 
     </div>
   </details>
