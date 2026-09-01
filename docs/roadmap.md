@@ -12,7 +12,7 @@
 ## 진행 중 / 예정
 
 - 사용자용 현황판: [`docs/current-mvp.md`](current-mvp.md)
-- MVP 밖 문서 정비(다음 세션): [현재 기능 전수 문서의 방향 확정 및 작성](superpowers/plans/2026-09-01-current-feature-inventory.md)
+- MVP 밖 문서 정비(다음 세션): [확정된 계획에 따라 현재 기능 전수 문서 작성](superpowers/plans/2026-09-01-current-feature-inventory.md)
 (현재 진행 중인 MVP 없음 — 다음 MVP는 `docs/backlog.md`에서 스코핑 예정)
 
 ## 완료 · MVP 밖 독립 사이클
