@@ -88,6 +88,7 @@
 - [ ] 현재 제공 / 조건부·실험 / 확인 필요로 분류하고, 교체·삭제 기능을 현재 목록에서 분리한다.
 - [ ] 위 형식으로 `docs/current-features.md`를 작성한다.
 - [ ] `docs/product-baseline.md`의 도입부에서 현재 기능 전수 문서를 찾을 수 있게 링크한다.
+- [ ] `docs/roadmap.md`의 진행 중 항목을 제거하고, `완료 · MVP 밖 독립 사이클`에 완료일·결과 문서·이 계획 링크를 남긴다.
 - [ ] 아래 검증을 실행하고 결과를 직접 확인한다.
 - [ ] 이 계획의 체크박스를 모두 완료로 갱신하고 관련 문서만 명시적으로 스테이징해 한 번 커밋한다.
 
@@ -100,9 +101,10 @@ test -f docs/current-features.md
 rg -n '^## ' docs/current-features.md
 rg -n '현재 제공|조건부·실험|확인 필요' docs/current-features.md
 rg -n 'current-features.md' docs/product-baseline.md docs/agent-rules/product-visibility.md
+rg -n 'current-feature-inventory|current-features.md' docs/roadmap.md
 git diff --check
 git status --short
-git diff -- docs/current-features.md docs/product-baseline.md docs/superpowers/plans/2026-09-01-current-feature-inventory.md
+git diff -- docs/current-features.md docs/product-baseline.md docs/roadmap.md docs/superpowers/plans/2026-09-01-current-feature-inventory.md
 ```
 
 커밋 전에는 문서 변경이어도 저장소의 공통 정책을 따라 `docs/agent-rules/testing.md`의 Baseline
@@ -123,6 +125,7 @@ build·test·lint를 모두 실행한다. 명령은 계획에 복사하지 않�
 
 - `docs/current-features.md`
 - `docs/product-baseline.md`
+- `docs/roadmap.md`
 - `docs/superpowers/plans/2026-09-01-current-feature-inventory.md`
 
 다른 파일 변경이 발견되면 섞지 않는다. 커밋 후 push하거나 `main`에 통합하지 않는다.
