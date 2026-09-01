@@ -1152,7 +1152,24 @@
           <li><strong>시작 시각과 전체 활동 시간을 밖에서 받고 마지막 구간을 역산해서</strong>, 구간 시간 넷의 합이 요약 화면의 활동 시간과 정확히 맞는다(파트 3의 1171초)</li>
           <li>완성된 1km 줄은 구간 시간이 그대로 페이스지만, <strong>마지막 줄에 뜨는 값은 1km당 환산이다</strong> &#8212; 0.42km에 148초 걸린 것이 <b>5&#39;52&quot;</b>로 뜬다</li>
         </ul></div></li>
-      <li class="pending"><span class="k">6</span><div><div class="can">목표 진행률 &#8212; 아직 안 썼다</div></div></li>
+      <li><span class="k">6</span><div>
+        <div class="can">진행률을 <strong>저장해 둘지 볼 때마다 다시 만들지</strong>를 그 대가와 함께
+          정할 수 있고, 시간 목표에서 <strong>러닝 탭 화면의 퍼센트와 달성 판정이 서로 다른 시각을
+          기준으로 삼는</strong> 이유를 말할 수 있다</div>
+        <div class="sub">목표 진행률은 <strong>러닝 탭 화면에만</strong> 있다. 시작 전 러닝 탭 화면에서
+          <b>자유&#183;거리&#183;시간</b> 중 하나를 고르고, 거리나 시간을 골랐을 때만 뛰는 중 화면의
+          숫자들 아래에 줄 하나가 더 붙는다 &#8212; 왼쪽에 <em>「5 km 목표」</em>, 오른쪽에 <em>68%</em>,
+          그 아래 가로 막대 하나. 자유를 고르면 목표 줄이 통째로 없다.</div>
+        <ul class="keys">
+          <li>진행률은 <strong>분자 하나를 목표로 나눈 값</strong>이고, 분자는 거리 목표면 파트 1의 누적 거리, 시간 목표면 파트 2의 활동 시간이다</li>
+          <li>부르는 쪽은 <strong>분자 후보 둘을 다 넘기고</strong> 분모는 목표가 시작할 때부터 들고 있어서, <b>갈래를 따지는 코드가 목표 한 곳에만</b> 있다</li>
+          <li>자유 목표와 0 이하 목표값은 <code>nil</code>이 나오고, 1을 넘는 값은 <strong>나눗셈에서 자르지 않는다</strong></li>
+          <li>판정은 <strong>GPS 점을 받는 함수 끝에 한 줄로</strong> 얹혀 있다 &#8212; 시계가 아니라 점이 판정을 다시 돌린다. 점이 <b>거리 기준(5m마다)</b>이라 서 있는 동안에는 판정이 늦어진다</li>
+          <li>남는 것은 <code>true</code>/<code>false</code> 값 둘(<code>goalHalfReached</code>&#183;<code>goalAchieved</code>)뿐이고 <strong>진행률 숫자는 사라진다</strong></li>
+          <li>0.5와 1을 <strong>따로 봐서 한 점에서 둘 다 켜질 수 있다</strong> &#8212; <code>else if</code>였다면 한 점이 두 기준을 넘을 때 절반이 끝까지 안 켜진다. 끄는 자리는 러닝 바깥에 넷</li>
+          <li>터널에서 <strong>거리 목표는 68%에 멈추고 시간 목표는 100%까지 올라간다</strong> &#8212; 분자를 <b>점으로 만드느냐 시계로 만드느냐</b>가 갈린다</li>
+          <li>러닝 탭 화면이 먼저 100%가 되고 <strong>달성은 다음 점이 와야 켜진다.</strong> 1을 넘는 값을 자르는 곳은 <b>숫자가 사람에게 보이는 자리 하나뿐</b>이다</li>
+        </ul></div></li>
       <li class="pending"><span class="k">7</span><div><div class="can">주&#183;달 합계 &#8212; 아직 안 썼다</div></div></li>
     </ol>
   </div>
@@ -5344,7 +5361,7 @@
         <table>
           <tr><td><a href="#p6s1">구간 &#9312;</a></td><td>목표는 세 갈래 중 하나이고, 진행률은 파트 1의 누적 거리 또는 파트 2의 활동 시간을 목표로 나눈 값이다 &#8212; 1을 넘어도 자르지 않는다</td></tr>
           <tr><td><a href="#p6s2">구간 &#9313;</a></td><td>절반과 달성은 한 번 켜지면 안 꺼지는 <code>true</code>/<code>false</code> 값이고, GPS 점이 들어올 때만 다시 본다 &#8212; 시간 목표인데도 시계가 아니라 점이 판정을 깨운다</td></tr>
-          <tr><td>구간 &#9314;</td><td>진행률은 어디에도 남지 않아서 러닝 탭 화면은 볼 때마다 나눗셈을 다시 부른다 &#8212; 그래서 화면은 지금 시각으로, 판정은 마지막 점의 시각으로 잰다</td></tr>
+          <tr><td><a href="#p6s3">구간 &#9314;</a></td><td>진행률은 어디에도 남지 않아서 러닝 탭 화면은 볼 때마다 나눗셈을 다시 부른다 &#8212; 그래서 화면은 지금 시각으로, 판정은 마지막 점의 시각으로 잰다</td></tr>
         </table>
         <p class="hint">
           <strong>구간 &#9312;이 무엇을 무엇으로 나누는지 정하고, 구간 &#9313;는 그 결과를 참/거짓 값 둘로 바꾼 뒤
@@ -5919,13 +5936,240 @@
         </div>
       </details>
 
+      <details class="seg" id="p6s3" open>
+        <summary>구간 &#9314; &#8212; 진행률은 어디에도 남지 않아서 러닝 탭 화면은 볼 때마다 나눗셈을 다시 부른다 &#8212; 그래서 화면은 지금 시각으로, 판정은 마지막 점의 시각으로 잰다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>시간 목표 <b>30분</b>으로 뛰다가 <strong>터널에 들어가 GPS가 3분 동안 끊긴 장면</strong>이다.
+              터널을 나와 러닝 탭 화면을 보니 목표 줄이 <em>100%</em>로 꽉 차 있는데,
+              <b>「목표 달성」 소리는 아직 안 났다.</b> 앞 구간에서 판정 쪽을 봤으니, 여기서는
+              같은 나눗셈을 러닝 탭 화면이 어떻게 쓰는지를 본다.
+              <em>판정과 러닝 탭 화면이 같은 나눗셈을 부르는데도 결과가 갈리는 자리라, 파트 6은 여기서 닫힌다.</em></p>
+          </div>
+
+          <div class="mywords">
+            <span class="tag">&#128172; 한 줄로 잡으면</span>
+            <p>GPS가 끊겼을 때, 시간이 목표이면 퍼센트가 계속 올라가고 거리가 목표이면 멈춘다.</p>
+          </div>
+
+          <h4>1. 화면은 진행률을 읽어올 데가 없어서 그릴 때마다 나눗셈을 다시 부른다</h4>
+
+          <p>앞 구간에서 러닝 세션이 나눈 값을 <code>true</code>/<code>false</code> 둘로 바꾸고 숫자를
+            버린다는 것을 봤다. 그래서 러닝 탭 화면에는 <strong>읽어올 진행률이 없다.</strong>
+            대신 그릴 때마다 나눗셈을 직접 부른다 &#8212; <code>goalProgressFraction</code>은 값을
+            담아 두는 자리가 아니라 <b>부를 때마다 계산해서 돌려주는 자리다.</b></p>
+
+          <p>부를 때 넘기는 재료가 판정 쪽과 다르다. 활동 시간을 재는 함수는
+            <code>func activeElapsedSeconds(now: Date = Date())</code>처럼 <strong>기준 시각을 인자로
+            받는데, 러닝 탭 화면은 그것을 안 넘긴다.</strong> 안 넘기면 기본값인 지금 시각이 쓰인다.
+            파트 5에서 km별 페이스 표를 저장하지 않고 기록 상세를 열 때마다 만들었던 것과 같은
+            선택이고, 대가도 여기서 나온다.</p>
+
+          <h4>2. 분자가 어디서 오느냐가 갈려서, 터널에서 거리 목표는 멈추고 시간 목표는 올라간다</h4>
+
+          <figure>
+            <svg viewBox="0 0 620 240" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p6s3a-title p6s3a-desc">
+              <title id="p6s3a-title">터널에서 GPS가 끊겼을 때 거리 목표와 시간 목표의 퍼센트</title>
+              <desc id="p6s3a-desc">거리 목표의 분자인 누적 거리는 점이 들어와야 늘어난다. 터널에서 점이 없으면 3420미터에서 멈추고 퍼센트도 68퍼센트에 멈춘다. 시간 목표의 분자인 활동 시간은 지금 시각에서 시작 시각과 일시정지 합을 뺀 값이라 점이 없어도 늘어난다. 1790초에서 1970초로 늘어나 1을 넘고 러닝 탭 화면에는 100퍼센트가 뜬다.</desc>
+              <rect width="620" height="240" fill="#FFFFFF"/>
+
+              <text x="16" y="20" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 &#8212; 터널에서 GPS 점이 3분 동안 안 들어온다</text>
+
+              <rect x="16" y="32" width="288" height="164" rx="9" fill="#F6FAF9" stroke="#DAE6E3"/>
+              <rect x="332" y="32" width="272" height="164" rx="9" fill="#EAF5F2"/>
+
+              <text x="34" y="56" font-size="11.5" font-weight="700" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">거리 목표 5 km</text>
+              <text x="350" y="56" font-size="11.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">시간 목표 30분</text>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5">
+                <text x="34" y="82" fill="#93A8A4">분자 &#8212; 파트 1의 누적 거리</text>
+                <text x="34" y="102" fill="#143F3A">앞 점과의 거리를 더해서 만든다</text>
+                <text x="34" y="126" font-weight="700" fill="#93A8A4">점이 없으면 안 늘어난다</text>
+                <text x="34" y="150" fill="#143F3A">3420 m 에서 멈춘다</text>
+                <text x="34" y="176" font-size="12" font-weight="700" fill="#143F3A">3420 &#247; 5000 = 68% 에서 멈춤</text>
+
+                <text x="350" y="82" fill="#93A8A4">분자 &#8212; 파트 2의 활동 시간</text>
+                <text x="350" y="102" fill="#143F3A">지금 시각 &#8722; 시작 시각 &#8722; 일시정지 합</text>
+                <text x="350" y="126" font-weight="700" fill="#04796E">점이 없어도 늘어난다</text>
+                <text x="350" y="150" fill="#143F3A">1790 초 &#8594; 1970 초</text>
+                <text x="350" y="176" font-size="12" font-weight="700" fill="#04796E">1970 &#247; 1800 = 109% &#8594; 100%</text>
+              </g>
+
+              <text x="310" y="222" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">같은 나눗셈이고 같은 러닝 탭 화면인데, 분자를 어디서 만드느냐가 달라서 한쪽만 올라간다</text>
+            </svg>
+            <figcaption>거리 목표의 분자는 점으로 만들고, 시간 목표의 분자는 시계로 만든다.
+              터널에서 갈리는 것은 그 차이 하나다.</figcaption>
+          </figure>
+
+          <p>구간 &#9312;에서 <strong>분자가 목표 종류마다 갈린다</strong>고 했던 것이 여기서 눈에
+            보이는 차이로 나온다. 파트 1의 누적 거리는 점이 들어와야 늘어나므로, 터널에서는 3420m에
+            멈추고 퍼센트도 68%에 멈춘다.</p>
+
+          <p>반면 파트 2의 활동 시간은 <strong>지금 시각에서 시작 시각과 일시정지 합을 뺀 값</strong>이다.
+            시작 시각은 러닝 세션이 이미 들고 있으므로 <b>점이 하나도 안 들어와도 계속 늘어난다.</b>
+            터널에 있는 3분 동안 1790초가 1970초가 되고, 나눈 값이 1을 넘어 러닝 탭 화면에는 100%가 뜬다.</p>
+
+          <h4>3. 판정이 안 따라오는 이유는 두 겹이다 &#8212; 점이 없으면 안 돌고, 돌 때도 그 점의 시각으로 잰다</h4>
+
+          <figure>
+            <svg viewBox="0 0 620 226" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p6s3b-title p6s3b-desc">
+              <title id="p6s3b-title">터널을 지나는 동안 화면과 판정이 각각 몇 번 도는가</title>
+              <desc id="p6s3b-desc">29분 50초에 점이 들어와 판정이 돌고 1790초로 재서 아직 달성이 아니다. 터널에 있는 30분 20초와 31분 40초에는 점이 없어서 판정이 아예 돌지 않는다. 그동안 러닝 탭 화면은 계속 다시 그려지며 퍼센트가 99에서 100으로 올라간다. 32분 50초에 점이 들어와 판정이 다시 돌고 1970초로 재서 그때 달성이 켜진다.</desc>
+              <rect width="620" height="226" fill="#FFFFFF"/>
+
+              <text x="16" y="20" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 &#8212; 시간 목표 30분(1800초)</text>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" text-anchor="middle" fill="#93A8A4">
+                <text x="120" y="46">29:50</text>
+                <text x="270" y="46">30:20</text>
+                <text x="410" y="46">31:40</text>
+                <text x="550" y="46">32:50</text>
+              </g>
+
+              <rect x="200" y="56" width="280" height="140" rx="8" fill="#F6FAF9"/>
+              <text x="340" y="74" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">터널 &#8212; 점이 안 들어온다</text>
+
+              <path d="M60 100 H 590" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="16" y="104" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">판정</text>
+              <circle cx="120" cy="100" r="5" fill="#04796E"/>
+              <circle cx="550" cy="100" r="5" fill="#04796E"/>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" text-anchor="middle">
+                <text x="120" y="122" fill="#04796E" font-weight="700">돈다 &#183; 1790초</text>
+                <text x="270" y="122" fill="#93A8A4">안 돈다</text>
+                <text x="410" y="122" fill="#93A8A4">안 돈다</text>
+                <text x="550" y="122" fill="#04796E" font-weight="700">돈다 &#183; 1970초</text>
+              </g>
+
+              <path d="M60 158 H 590" stroke="#DAE6E3" stroke-width="1.2"/>
+              <text x="16" y="162" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면</text>
+              <g fill="#8A6B4F">
+                <circle cx="120" cy="158" r="3.5"/><circle cx="190" cy="158" r="3.5"/>
+                <circle cx="270" cy="158" r="3.5"/><circle cx="340" cy="158" r="3.5"/>
+                <circle cx="410" cy="158" r="3.5"/><circle cx="480" cy="158" r="3.5"/>
+                <circle cx="550" cy="158" r="3.5"/>
+              </g>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" text-anchor="middle" fill="#8A6B4F">
+                <text x="120" y="180">99%</text>
+                <text x="270" y="180">100%</text>
+                <text x="410" y="180">100%</text>
+                <text x="550" y="180">100%</text>
+              </g>
+
+              <text x="550" y="200" text-anchor="middle" font-size="10.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">여기서 달성이 켜진다</text>
+              <text x="310" y="220" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">화면은 다시 그릴 때마다 돌고, 판정은 점이 올 때만 돈다</text>
+            </svg>
+            <figcaption>터널을 지나는 동안 화면은 여러 번 다시 그려지지만 판정은 한 번도 돌지 않는다.
+              어긋남의 크기를 만드는 것은 그 횟수 차이다.</figcaption>
+          </figure>
+
+          <p>첫째 겹은 <strong>판정이 아예 안 도는 것</strong>이다. 앞 구간에서 본 대로 판정은 점을 받는
+            함수 끝에 얹혀 있어서, 점이 안 들어오면 그 함수 자체가 안 불린다. 터널에 있는 동안
+            러닝 탭 화면은 여러 번 다시 그려지지만 <b>판정은 한 번도 돌지 않는다.</b></p>
+
+          <p>둘째 겹은 <strong>판정이 돌 때 쓰는 시각이 조금 과거라는 것</strong>이다. 러닝 세션은
+            <code>activeElapsedSeconds(now: sample.timestamp)</code>로 그 점에 찍힌 시각을 넘기고,
+            러닝 탭 화면은 아무것도 안 넘겨 지금 시각을 쓴다. <b>점은 찍힌 시각과 앱에 도착한 시각이
+            다를 수 있다</b> &#8212; 러닝을 시작하자마자 시작 전에 찍힌 옛 점이 도착하는 경우를 따로
+            걸러내는 줄이 있어서, 코드가 그 차이를 이미 알고 있다. 도착한 순간의 시계로 재면 실제보다
+            길게 재게 되므로 판정은 점에 찍힌 시각을 쓴다.</p>
+
+          <p>두 겹을 합치면 방향이 한쪽으로 고정된다. <strong>판정이 쓰는 시각은 화면이 쓰는 시각보다
+            항상 같거나 과거라, 화면이 먼저 100%가 되고 달성이 나중에 켜진다.</strong> 반대로 달성이
+            먼저 켜지고 화면이 99%인 일은 일어나지 않는다.</p>
+
+          <h4>4. 1을 넘는 값을 자르는 곳은 숫자가 사람에게 보이는 자리 하나뿐이다</h4>
+
+          <figure>
+            <svg viewBox="0 0 620 190" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p6s3c-title p6s3c-desc">
+              <title id="p6s3c-title">1.09를 받는 쪽 둘 중 자르는 곳은 어디인가</title>
+              <desc id="p6s3c-desc">나눗셈은 1.09를 그대로 돌려준다. 러닝 세션은 1.09가 1 이상이므로 달성을 켜고 숫자는 버리는데, 자르든 안 자르든 결과가 같다. 러닝 탭 화면은 1로 잘라서 100퍼센트로 그린다. 자르는 줄은 여기 하나뿐이다.</desc>
+              <rect width="620" height="190" fill="#FFFFFF"/>
+
+              <text x="16" y="20" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 &#8212; 30분 목표에 32분 50초를 뛴 순간</text>
+
+              <rect x="16" y="34" width="150" height="44" rx="8" fill="#EAF5F2"/>
+              <text x="91" y="53" text-anchor="middle" font-size="10.5" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">나눗셈이 돌려준 값</text>
+              <text x="91" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">1.09</text>
+
+              <path d="M166 56 H 196 V 108 H 226" stroke="#DAE6E3" stroke-width="1.2" fill="none"/>
+              <path d="M196 56 H 226" stroke="#DAE6E3" stroke-width="1.2"/>
+              <path d="M224 52 L231 56 L224 60 Z" fill="#DAE6E3"/>
+              <path d="M224 104 L231 108 L224 112 Z" fill="#DAE6E3"/>
+
+              <rect x="236" y="34" width="368" height="44" rx="8" fill="#F6FAF9" stroke="#DAE6E3"/>
+              <text x="252" y="52" font-size="10.5" font-weight="700" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">러닝 세션 &#8212; 1.09 &#8805; 1 이므로 달성을 켜고 숫자는 버린다</text>
+              <text x="252" y="69" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">자르든 안 자르든 판정 결과가 같다 &#8212; 자를 이유가 없다</text>
+
+              <rect x="236" y="86" width="368" height="44" rx="8" fill="#EAF5F2"/>
+              <text x="252" y="104" font-size="10.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">러닝 탭 화면 &#8212; 1로 잘라서 100%로 그린다</text>
+              <text x="252" y="121" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">안 자르면 109%가 뜨고 막대가 칸을 넘어간다 &#8212; 자르는 줄은 여기 하나뿐</text>
+
+              <text x="310" y="160" text-anchor="middle" font-size="10.5" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">「목표의 1.09배를 뛰었다」는 사실이고, 「100%로 보여준다」는 표현이다</text>
+              <text x="310" y="178" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">사실을 만드는 곳이 아니라 표현을 정하는 곳에서 자른다</text>
+            </svg>
+            <figcaption>같은 1.09를 둘이 받는데 자르는 쪽은 하나뿐이다.
+              나중에 초과분을 보여주기로 바꾸려면 그 한 줄만 손대면 된다.</figcaption>
+          </figure>
+
+          <p>30분 목표에 32분 50초를 뛰면 나눗셈은 <strong>1.09</strong>를 돌려준다. 구간 &#9312;에서 본
+            대로 나눗셈은 1.09를 안 자르고, 자르는 일은 받는 쪽 둘 중 <b>러닝 탭 화면에서만</b> 일어난다
+            (<code>min(1, fraction)</code>).</p>
+
+          <p>러닝 세션 쪽은 자를 이유가 없다. <strong>1.09를 1로 잘라도 <code>&gt;= 1</code> 판정이
+            똑같고</strong>, 어차피 숫자를 버린다. 러닝 탭 화면 쪽은 자르지 않으면 109%가 그대로 뜨고
+            막대가 칸을 넘어간다.</p>
+
+          <p>가르는 선은 <strong>사실과 표현</strong>이다. <em>목표의 1.09배를 뛰었다</em>는 사실이고
+            <em>100%로 보여준다</em>는 표현인데, 사실을 만드는 곳에서 자르면 나눈 값을 쓰는 쪽이 모두
+            잘린 것만 보게 된다. <b>표현을 정하는 곳에서 자르면 나중에 초과분을 보여주기로 바꿀 때
+            그 한 줄만 손대면 된다.</b></p>
+
+          <p>같은 목표 라벨이 기록 탭의 <strong>기록 상세 화면</strong>에도 뜬다. 그쪽은 이미 끝난
+            러닝이라 퍼센트 없이 목표 자체만 보여 준다.</p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>진행률은 저장되지 않아서 러닝 탭 화면이 그릴 때마다 나눗셈을 다시 부른다.
+              <strong>터널에서 거리 목표는 68%에 멈추고 시간 목표는 100%까지 올라가는데, 분자를
+              점으로 만드느냐 시계로 만드느냐가 다르기 때문이다.</strong> 판정은 점이 올 때만 돌고
+              그 점의 시각으로 재므로, 시간 목표에서는 러닝 탭 화면이 먼저 100%가 되고 달성이 나중에 켜진다.
+              1을 넘는 값을 자르는 곳은 숫자가 사람에게 보이는 자리 하나뿐이다.</p>
+          </div>
+
+        </div>
+      </details>
+
     </div>
   </details>
 
   <div class="next">
-    <strong>파트 5까지 썼다</strong>(2026-08-31) &#8212; 거리 &#183; 시간 &#183; 페이스 &#183;
-    고도 상승 &#183; km별 페이스. 다음은 <strong>파트 6 목표 진행률</strong>이고, 그 뒤로
-    주&#183;달 합계가 남았다.
+    <strong>파트 6까지 썼다</strong>(2026-09-01) &#8212; 거리 &#183; 시간 &#183; 페이스 &#183;
+    고도 상승 &#183; km별 페이스 &#183; 목표 진행률. 다음은 <strong>파트 7 주&#183;달 합계</strong>
+    하나만 남았다.
     확인 문제와 마무리 절은 <strong>일곱 파트가 다 찬 뒤</strong>에 붙는다.
     <strong>링크는 그대로 유지된다.</strong>
   </div>
