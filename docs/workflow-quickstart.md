@@ -10,6 +10,7 @@
 ## 사용자가 먼저 볼 파일
 
 - 지금 진행 상황과 다음 확인: [`docs/current-mvp.md`](current-mvp.md)
+- 지금 앱이 무엇을 제공하는지 확인할 때: [`docs/current-features.md`](current-features.md) — 사용자 흐름별 기능과 그 근거를 모은 사실 원본이며, 새 MVP 범위가 이미 있는 기능과 겹치는지 대조할 때 먼저 본다
 - Trace 전체 제품 방향이 필요할 때만: [`docs/product-baseline.md`](product-baseline.md)
 
 상세 구현은 기존 spec·plan·roadmap이 담당한다. 현황판은 사용자가 이해하고 판단하기 위한 요약이다.

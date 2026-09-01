@@ -12,10 +12,27 @@
 ## 진행 중 / 예정
 
 - 사용자용 현황판: [`docs/current-mvp.md`](current-mvp.md)
-- MVP 밖 문서 정비(다음 세션): [확정된 계획에 따라 현재 기능 전수 문서 작성](superpowers/plans/2026-09-01-current-feature-inventory.md)
+- 지금 제공 중인 기능 목록: [`docs/current-features.md`](current-features.md)
 (현재 진행 중인 MVP 없음 — 다음 MVP는 `docs/backlog.md`에서 스코핑 예정)
 
 ## 완료 · MVP 밖 독립 사이클
+
+### 문서 정비 `current-feature-inventory` (MVP 밖 · 독립)   (상태: ✅ 완료 2026-09-01)
+
+> **아카이빙 대상이 아니다** — MVP가 아니므로 `trace-archive`가 돌지 않는다.
+> 계획 문서는 `docs/superpowers/plans/`에 그대로 둔다.
+>
+> **결과: [`docs/current-features.md`](current-features.md) 신설.** 현재 checkout에서 사용자가
+> 실제로 할 수 있는 일을 사용자 흐름 5개로 정리하고, 각 항목에 `현재 제공` · `조건부·실험` ·
+> `확인 필요` 상태와 코드·테스트 근거를 붙였다. 교체·삭제된 기능(러닝 탭 지도, 이번 주 요약 줄,
+> 코스 초안 자동 저장, 두 손가락 팬 그리기)은 목록에서 분리해 회고 링크만 남겼다.
+> 사용자용 색인(`current-mvp.md` · `product-baseline.md` · `workflow-quickstart.md`)에서
+> 이 문서를 찾을 수 있게 연결했다.
+>
+> 검증: Debug 빌드 · 테스트 383개 통과 · `swiftlint` 5건(0 serious, 모두 기존 구조 경고).
+>
+> 실행 계획: [`2026-09-01-current-feature-inventory.md`](superpowers/plans/2026-09-01-current-feature-inventory.md) ·
+> 갱신 경계: [`product-visibility.md`](agent-rules/product-visibility.md)
 
 ### 정비 사이클 `study-chunk-0-cleanup` (MVP 밖 · 독립)   (상태: ✅ 완료 2026-08-04)
 
