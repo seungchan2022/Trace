@@ -1154,8 +1154,8 @@
         </ul></div></li>
       <li><span class="k">6</span><div>
         <div class="can">진행률을 <strong>저장해 둘지 볼 때마다 다시 만들지</strong>를 그 대가와 함께
-          정할 수 있고, 시간 목표에서 <strong>러닝 탭 화면의 퍼센트와 달성 판정이 서로 다른 시각을
-          기준으로 삼는</strong> 이유를 말할 수 있다</div>
+          정할 수 있고, 시간 목표에서 <strong>러닝 탭 화면의 퍼센트와 달성 판정이 어긋나는</strong>
+          이유를 두 겹으로 말할 수 있다</div>
         <div class="sub">목표 진행률은 <strong>러닝 탭 화면에만</strong> 있다. 시작 전 러닝 탭 화면에서
           <b>자유&#183;거리&#183;시간</b> 중 하나를 고르고, 거리나 시간을 골랐을 때만 뛰는 중 화면의
           숫자들 아래에 줄 하나가 더 붙는다 &#8212; 왼쪽에 <em>「5 km 목표」</em>, 오른쪽에 <em>68%</em>,
@@ -5346,14 +5346,15 @@
         그 값 둘이 켜지는 자리까지다.<br><br>
         다만 <strong>68%라는 숫자는 어디에도 저장되지 않는다.</strong> 러닝 세션이 남기는 것은
         방금 말한 값 둘뿐이고 68이라는 숫자는 버린다. 러닝 탭 화면은 그릴 때마다 나눗셈을 다시 부른다.
-        <b>두 나눗셈이 같은 함수인데 기준으로 삼는 시각이 다르다</b>는 것이 이 파트가 푸는 문제다.
+        <b>판정은 점이 올 때만 돌고 러닝 탭 화면은 그릴 때마다 도는데, 도는 횟수도 기준으로 삼는
+        시각도 달라서 둘이 어긋난다</b>는 것이 이 파트가 푸는 문제다.
       </div>
 
       <div class="goal">
         <span class="tag">이 파트를 끝내면</span>
         <p>진행률을 <strong>저장해 둘지 볼 때마다 다시 만들지</strong>를 그 대가와 함께 정할 수 있고,
-          시간 목표에서 <strong>화면의 퍼센트와 달성 판정이 서로 다른 시각을 기준으로 삼는</strong>
-          이유를 말할 수 있다.</p>
+          시간 목표에서 <strong>러닝 탭 화면의 퍼센트와 달성 판정이 어긋나는</strong>
+          이유를 두 겹으로 말할 수 있다.</p>
       </div>
 
       <div class="segmap">
@@ -5537,7 +5538,7 @@
                     font-family="-apple-system, BlinkMacSystemFont, sans-serif">거리 목표라서 3420을 골랐다 &#8212; 넘어온 1171은 쓰지 않는다</text>
             </svg>
             <figcaption>넘기는 둘은 분자 후보이고, 분모는 목표가 시작할 때부터 들고 있다.
-              고르는 일은 목표 안에서 한 번만 일어난다.</figcaption>
+              그래서 부르는 쪽은 분모가 얼마인지 몰라도 된다.</figcaption>
           </figure>
 
           <p>넘기는 값이 하나가 아니라 둘인 것은 낭비로 보인다. 한 번 부를 때마다 재료 하나는 반드시
@@ -5789,7 +5790,7 @@
             <code>updateGoalProgress(now: sample.timestamp)</code>가 <code>track.append</code> 세 줄
             아래에 있다. <b>시간을 재는 장치를 따로 만들지 않았다.</b></p>
 
-          <p>시간 목표(30분)도 같은 자리에서 판정한다. 점에 시각이 찍혀 있어서, 그 시각으로 파트 2가
+          <p>시간 목표도 같은 자리에서 판정한다. 점에 시각이 찍혀 있어서, 그 시각으로 파트 2가
             정한 활동 시간을 재면 되기 때문이다. <strong>거리 목표에는 선택지가 없었다는 것이 이 결정을
             끌고 갔다</strong> &#8212; 파트 1이 만드는 누적 거리는 점이 와야 늘어나므로 거리 목표는
             어차피 점에 묶인다. 시간 목표만 시간 장치를 따로 두면 판정하는 자리가 둘로 갈린다.</p>
@@ -5800,20 +5801,20 @@
           <figure>
             <svg viewBox="0 0 620 216" width="100%" style="max-width:620px;display:block;margin:0 auto"
                  role="img" aria-labelledby="p6s2b-title p6s2b-desc">
-              <title id="p6s2b-title">시간 목표 30분인데 신호등에서 서 있는 동안 벌어지는 일</title>
-              <desc id="p6s2b-desc">시간 목표 30분으로 뛰다가 29분 50초에 점이 들어온다. 그 뒤 신호등에서 서 있는 동안 일시정지를 안 눌러서 활동 시간은 계속 늘어나지만, 5미터를 안 움직여서 점이 오지 않고 판정도 다시 돌지 않는다. 30분 40초에 다시 뛰어 5미터를 움직인 순간 점이 들어오고 그때 달성이 켜진다.</desc>
+              <title id="p6s2b-title">시간 목표 20분인데 신호등에서 서 있는 동안 벌어지는 일</title>
+              <desc id="p6s2b-desc">시간 목표 20분으로 뛰다가 19분 20초에 점이 들어온다. 그 뒤 신호등에서 서 있는 동안 일시정지를 안 눌러서 활동 시간은 계속 늘어나지만, 5미터를 안 움직여서 점이 오지 않고 판정도 다시 돌지 않는다. 20분 10초에 다시 뛰어 5미터를 움직인 순간 점이 들어오고 그때 달성이 켜진다.</desc>
               <rect width="620" height="216" fill="#FFFFFF"/>
 
               <text x="16" y="20" font-size="11" font-weight="700" fill="#04796E"
-                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 &#8212; 시간 목표 30분(1800초)</text>
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 &#8212; 시간 목표 20분(1200초)</text>
 
               <path d="M70 74 H 580" stroke="#DAE6E3" stroke-width="1.4"/>
 
               <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" text-anchor="middle">
-                <text x="110" y="48" fill="#93A8A4">29:50</text>
-                <text x="250" y="48" fill="#93A8A4">30:05</text>
-                <text x="390" y="48" fill="#93A8A4">30:20</text>
-                <text x="530" y="48" fill="#93A8A4">30:40</text>
+                <text x="110" y="48" fill="#93A8A4">19:20</text>
+                <text x="250" y="48" fill="#93A8A4">19:35</text>
+                <text x="390" y="48" fill="#93A8A4">19:50</text>
+                <text x="530" y="48" fill="#93A8A4">20:10</text>
               </g>
 
               <circle cx="110" cy="74" r="5" fill="#04796E"/>
@@ -5834,9 +5835,9 @@
 
               <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">
                 <text x="70" y="164" fill="#93A8A4">활동 시간</text>
-                <text x="180" y="164" fill="#143F3A">1790초</text>
-                <text x="320" y="164" text-anchor="middle" fill="#143F3A">1800초를 넘어간다 &#8212; 그래도 판정은 다시 안 돈다</text>
-                <text x="530" y="164" text-anchor="middle" font-weight="700" fill="#04796E">1840초</text>
+                <text x="180" y="164" fill="#143F3A">1160초</text>
+                <text x="320" y="164" text-anchor="middle" fill="#143F3A">1200초를 넘어간다 &#8212; 그래도 판정은 다시 안 돈다</text>
+                <text x="530" y="164" text-anchor="middle" font-weight="700" fill="#04796E">1210초</text>
               </g>
 
               <text x="530" y="188" text-anchor="middle" font-size="10.5" font-weight="700" fill="#04796E"
@@ -6002,7 +6003,7 @@
               </g>
 
               <text x="310" y="222" text-anchor="middle" font-size="10" fill="#93A8A4"
-                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">같은 나눗셈이고 같은 러닝 탭 화면인데, 분자를 어디서 만드느냐가 달라서 한쪽만 올라간다</text>
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">서로 다른 두 번의 러닝이다 &#8212; 같은 나눗셈인데 분자를 어디서 만드느냐가 달라서 한쪽만 올라간다</text>
             </svg>
             <figcaption>거리 목표의 분자는 점으로 만들고, 시간 목표의 분자는 시계로 만든다.
               터널에서 갈리는 것은 그 차이 하나다.</figcaption>
