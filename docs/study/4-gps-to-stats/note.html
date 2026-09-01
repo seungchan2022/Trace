@@ -5343,11 +5343,11 @@
         <span class="tag">이 파트의 구간</span>
         <table>
           <tr><td><a href="#p6s1">구간 &#9312;</a></td><td>목표는 세 갈래 중 하나이고, 진행률은 파트 1의 누적 거리 또는 파트 2의 활동 시간을 목표로 나눈 값이다 &#8212; 1을 넘어도 자르지 않는다</td></tr>
-          <tr><td>구간 &#9313;</td><td>절반과 달성은 한 번 켜지면 안 꺼지는 <code>true</code>/<code>false</code> 값이고, GPS 점이 들어올 때만 다시 본다 &#8212; 시간 목표인데도 시계가 아니라 점이 판정을 깨운다</td></tr>
+          <tr><td><a href="#p6s2">구간 &#9313;</a></td><td>절반과 달성은 한 번 켜지면 안 꺼지는 <code>true</code>/<code>false</code> 값이고, GPS 점이 들어올 때만 다시 본다 &#8212; 시간 목표인데도 시계가 아니라 점이 판정을 깨운다</td></tr>
           <tr><td>구간 &#9314;</td><td>진행률은 어디에도 남지 않아서 러닝 탭 화면은 볼 때마다 나눗셈을 다시 부른다 &#8212; 그래서 화면은 지금 시각으로, 판정은 마지막 점의 시각으로 잰다</td></tr>
         </table>
         <p class="hint">
-          <strong>구간 &#9312;이 나눗셈을 세우고, 구간 &#9313;는 그 결과를 참/거짓 값 둘로 바꾼 뒤
+          <strong>구간 &#9312;이 무엇을 무엇으로 나누는지 정하고, 구간 &#9313;는 그 결과를 참/거짓 값 둘로 바꾼 뒤
           숫자를 버리고, 구간 &#9314;은 같은 나눗셈을 화면용으로 다시 부른다.</strong>
           구간 &#9313;가 숫자를 안 남긴다는 것을 먼저 봐야 구간 &#9314;이 왜 다시 계산하는지가 읽힌다.
           코드에서 가장 먼저 걸러지는 것은 <b>자유 러닝이면 아무것도 안 보는 검사</b>이고
@@ -5370,7 +5370,7 @@
               왼쪽에 <em>「5 km 목표」</em>, 오른쪽에 <em>68%</em>. 여기서 따라가는 것은
               <strong>그 68%를 만들어 내는 나눗셈 하나</strong>다.
               <em>구간 &#9313;가 나눈 결과를 참/거짓 값 둘로 바꾸고 숫자를 버리는 자리를 보므로,
-              먼저 나눗셈부터 세워 둔다.</em></p>
+              먼저 나눗셈이 무엇을 나누는지부터 본다.</em></p>
           </div>
 
           <div class="mywords">
@@ -5683,6 +5683,237 @@
               누적 거리, 시간 목표면 파트 2의 활동 시간이다. 넘기는 것은 분자 후보 둘뿐이고 분모는
               목표가 시작할 때부터 들고 있어서, 갈래를 따지는 코드가 목표 한 곳에만 있다. 자유 목표와
               0 이하 목표값은 <code>nil</code>이 나오고, 1을 넘는 값은 나눗셈에서 자르지 않는다.</p>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="seg" id="p6s2" open>
+        <summary>구간 &#9313; &#8212; 절반과 달성은 한 번 켜지면 안 꺼지는 <code>true</code>/<code>false</code> 값이고, GPS 점이 들어올 때만 다시 본다</summary>
+        <div class="segbody">
+
+          <div class="segintro">
+            <span class="tag">이 구간이 다루는 것</span>
+            <p>5km 목표로 나가서 뛰는 중에 <strong>2.5km를 지나는 순간 이어폰에서 「절반 왔습니다」가
+              나오는 장면</strong>이다. 그때 러닝 탭 화면에는 아무 변화가 없다 &#8212; 퍼센트가 50%를
+              지날 뿐이고 「절반」이라는 글자는 어디에도 안 뜬다. <b>눈에 보이는 것 없이 소리만 나는
+              일이라 러닝 탭 화면에서 찾으면 못 찾는다.</b> 소리를 실제로 읽는 일은 <strong>청크 6</strong>이
+              맡고, 여기서 보는 것은 소리가 나기 직전까지다.
+              <em>앞 구간에서 진행률이 무엇을 무엇으로 나눈 값인지 봤으므로, 이제 그 나눈 값이
+              누구 손에 들어가 무엇으로 바뀌는지를 따라간다.</em></p>
+          </div>
+
+          <div class="mywords">
+            <span class="tag">&#128172; 한 줄로 잡으면</span>
+            <p>결국 GPS는 시간과 거리에 대한 정보를 둘 다 받을 수 있어서, 이것으로 한 곳에서 상태에
+              따라 처리만 하면 된다.</p>
+          </div>
+
+          <figure>
+            <svg viewBox="0 0 620 262" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p6s2a-title p6s2a-desc">
+              <title id="p6s2a-title">점 하나가 도착해서 「절반 왔습니다」가 나오기까지</title>
+              <desc id="p6s2a-desc">뛰는 중에 GPS 점 하나가 도착하면 러닝 세션이 점을 검사하고 쌓아서 누적 거리가 2503미터가 된다. 그 자리에서 나눗셈을 불러 2503을 5000으로 나눈 0.50을 얻고, 0.50을 보고 goalHalfReached를 참으로 켠다. 0.50이라는 숫자는 거기서 사라진다. 소리를 맡은 쪽이 그 값이 켜진 것을 보고 절반 왔습니다를 읽는다.</desc>
+              <rect width="620" height="262" fill="#FFFFFF"/>
+
+              <text x="16" y="20" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 &#8212; 러닝 세션 안에서 일어나는 일</text>
+              <text x="470" y="20" font-size="11" font-weight="700" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">청크 6</text>
+
+              <rect x="16" y="32" width="430" height="176" rx="9" fill="#F6FAF9" stroke="#DAE6E3"/>
+              <rect x="462" y="32" width="142" height="176" rx="9" fill="#FAF7F4" stroke="#E3D9D0"/>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif">
+                <text x="36" y="60" font-size="11.5" font-weight="700" fill="#143F3A">GPS 점 하나가 도착한다</text>
+                <text x="300" y="60" font-size="10" fill="#93A8A4">5m를 움직였다</text>
+
+                <text x="36" y="98" font-size="11.5" fill="#143F3A">러닝 세션이 점을 검사하고 쌓는다</text>
+                <text x="300" y="98" font-size="10.5" font-weight="700" fill="#04796E">누적 거리 2503 m</text>
+
+                <text x="36" y="136" font-size="11.5" fill="#143F3A">그 자리에서 나눗셈을 부른다</text>
+                <text x="300" y="136" font-size="10.5" font-weight="700" fill="#04796E">2503 &#247; 5000 = 0.50</text>
+
+                <text x="36" y="174" font-size="11.5" fill="#143F3A">0.50을 보고 값 하나를 켠다</text>
+                <text x="300" y="174" font-size="10.5" font-weight="700" fill="#04796E">goalHalfReached = true</text>
+                <text x="300" y="190" font-size="9.5" fill="#93A8A4">0.50은 여기서 사라진다</text>
+
+                <text x="533" y="106" text-anchor="middle" font-size="11" fill="#93A8A4">켜진 값을 보고</text>
+                <text x="533" y="128" text-anchor="middle" font-size="11.5" font-weight="700" fill="#8A6B4F">「절반 왔습니다」</text>
+                <text x="533" y="148" text-anchor="middle" font-size="11" fill="#93A8A4">를 읽는다</text>
+              </g>
+
+              <path d="M26 66 V 84" stroke="#04796E" stroke-width="1.1"/>
+              <path d="M22 82 L26 89 L30 82 Z" fill="#04796E"/>
+              <path d="M26 104 V 122" stroke="#04796E" stroke-width="1.1"/>
+              <path d="M22 120 L26 127 L30 120 Z" fill="#04796E"/>
+              <path d="M26 142 V 160" stroke="#04796E" stroke-width="1.1"/>
+              <path d="M22 158 L26 165 L30 158 Z" fill="#04796E"/>
+              <path d="M446 120 H 456" stroke="#93A8A4" stroke-width="1.1"/>
+              <path d="M454 116 L461 120 L454 124 Z" fill="#93A8A4"/>
+
+              <text x="310" y="234" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">러닝 탭 화면은 이 동안 아무것도 바뀌지 않는다 &#8212; 퍼센트가 50%를 지날 뿐이다</text>
+              <text x="310" y="252" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">나눗셈이 무엇을 나누는지는 구간 &#9312;에서 봤다</text>
+            </svg>
+            <figcaption>점 하나가 도착하는 것에서 소리가 나오는 것까지. 러닝 세션이 맡는 것은
+              값을 켜는 자리까지이고, 소리는 청크 6이 읽는다.</figcaption>
+          </figure>
+
+          <h4>1. 판정은 점을 받는 함수의 마지막 줄에 얹혀 있다 &#8212; 새로 만든 것이 없다</h4>
+
+          <p>점이 주는 것은 <strong>찍힌 시각과 좌표뿐이다.</strong> 누적 거리와 활동 시간은 그것으로
+            앱이 만든다 &#8212; 파트 1이 앞 점과의 거리를 더하고, 파트 2가 시작 시각에서 일시정지 합을
+            빼낸다. 점 하나가 도착하면 두 재료가 함께 최신이 된다.</p>
+
+          <p>GPS 점이 도착하면 러닝 세션이 그것을 검사하고 쌓는 함수가 <strong>원래부터 돌고
+            있었다.</strong> 목표 판정은 그 함수의 끝에 한 줄로 붙었다 &#8212;
+            <code>updateGoalProgress(now: sample.timestamp)</code>가 <code>track.append</code> 세 줄
+            아래에 있다. <b>시간을 재는 장치를 따로 만들지 않았다.</b></p>
+
+          <p>시간 목표(30분)도 같은 자리에서 판정한다. 점에 시각이 찍혀 있어서, 그 시각으로 파트 2가
+            정한 활동 시간을 재면 되기 때문이다. <strong>거리 목표에는 선택지가 없었다는 것이 이 결정을
+            끌고 갔다</strong> &#8212; 파트 1이 만드는 누적 거리는 점이 와야 늘어나므로 거리 목표는
+            어차피 점에 묶인다. 시간 목표만 시간 장치를 따로 두면 판정하는 자리가 둘로 갈린다.</p>
+
+          <p>얹힌 줄 위에는 점을 걸러내는 검사들이 있다. 그래서 <strong>버려지는 점은 판정도
+            안 부른다</strong> &#8212; 정확도가 기준에 못 미치는 점, 일시정지 중에 들어온 점이 그렇다.</p>
+
+          <figure>
+            <svg viewBox="0 0 620 216" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p6s2b-title p6s2b-desc">
+              <title id="p6s2b-title">시간 목표 30분인데 신호등에서 서 있는 동안 벌어지는 일</title>
+              <desc id="p6s2b-desc">시간 목표 30분으로 뛰다가 29분 50초에 점이 들어온다. 그 뒤 신호등에서 서 있는 동안 일시정지를 안 눌러서 활동 시간은 계속 늘어나지만, 5미터를 안 움직여서 점이 오지 않고 판정도 다시 돌지 않는다. 30분 40초에 다시 뛰어 5미터를 움직인 순간 점이 들어오고 그때 달성이 켜진다.</desc>
+              <rect width="620" height="216" fill="#FFFFFF"/>
+
+              <text x="16" y="20" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 &#8212; 시간 목표 30분(1800초)</text>
+
+              <path d="M70 74 H 580" stroke="#DAE6E3" stroke-width="1.4"/>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" text-anchor="middle">
+                <text x="110" y="48" fill="#93A8A4">29:50</text>
+                <text x="250" y="48" fill="#93A8A4">30:05</text>
+                <text x="390" y="48" fill="#93A8A4">30:20</text>
+                <text x="530" y="48" fill="#93A8A4">30:40</text>
+              </g>
+
+              <circle cx="110" cy="74" r="5" fill="#04796E"/>
+              <circle cx="530" cy="74" r="5" fill="#04796E"/>
+              <circle cx="250" cy="74" r="4" fill="#FFFFFF" stroke="#DAE6E3" stroke-width="1.4"/>
+              <circle cx="390" cy="74" r="4" fill="#FFFFFF" stroke="#DAE6E3" stroke-width="1.4"/>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" text-anchor="middle">
+                <text x="110" y="98" fill="#04796E" font-weight="700">점 들어옴</text>
+                <text x="250" y="98" fill="#93A8A4">점 없음</text>
+                <text x="390" y="98" fill="#93A8A4">점 없음</text>
+                <text x="530" y="98" fill="#04796E" font-weight="700">점 들어옴</text>
+              </g>
+
+              <rect x="180" y="112" width="280" height="30" rx="7" fill="#F6FAF9" stroke="#DAE6E3"/>
+              <text x="320" y="132" text-anchor="middle" font-size="10.5" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">신호등에서 서 있다 &#8212; 일시정지는 안 눌렀다</text>
+
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">
+                <text x="70" y="164" fill="#93A8A4">활동 시간</text>
+                <text x="180" y="164" fill="#143F3A">1790초</text>
+                <text x="320" y="164" text-anchor="middle" fill="#143F3A">1800초를 넘어간다 &#8212; 그래도 판정은 다시 안 돈다</text>
+                <text x="530" y="164" text-anchor="middle" font-weight="700" fill="#04796E">1840초</text>
+              </g>
+
+              <text x="530" y="188" text-anchor="middle" font-size="10.5" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">여기서 달성이 켜진다</text>
+              <text x="310" y="208" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">점이 거리 기준(5m마다)이라, 서 있는 동안에는 다음 점이 오지 않는다</text>
+            </svg>
+            <figcaption>시간 목표인데도 판정을 다시 돌리는 것은 시계가 아니라 점이다.
+              서 있는 동안 활동 시간은 늘지만 판정은 멈춰 있다.</figcaption>
+          </figure>
+
+          <p>대가는 여기서 나온다. <strong>점은 시간이 아니라 거리 기준으로 들어온다</strong>
+            (5m마다 &#8212; 파트 1). 코드 주석은 <em>"지연 &#8804; 샘플 간격"</em>이라고 적어 두었는데,
+            <b>그 간격이 시간이 아니라 거리라서 서 있으면 길어진다.</b> 얼마나 길어지는지는 재보지 않았다.</p>
+
+          <h4>2. 0.5와 1을 각각 따로 보기 때문에 한 점에서 둘 다 켜질 수 있다</h4>
+
+          <p>나눗셈이 돌려준 값을 받아서 켜는 줄이 둘인데, <strong>나란히 놓여 있다.</strong>
+            <code>if fraction &gt;= 1</code>이 달성을 켜고, 그 아래 <code>if fraction &gt;= 0.5</code>가
+            절반을 켠다. <b><code>else if</code>가 아니라는 것이 이 자리에서 정한 것이다.</b></p>
+
+          <figure>
+            <svg viewBox="0 0 620 200" width="100%" style="max-width:620px;display:block;margin:0 auto"
+                 role="img" aria-labelledby="p6s2c-title p6s2c-desc">
+              <title id="p6s2c-title">한 점에서 진행률이 0.4에서 1.05로 건너뛰었을 때</title>
+              <desc id="p6s2c-desc">뛰는 중에 GPS가 끊겼다가 돌아오면 한 점에서 진행률이 0.4에서 1.05로 건너뛴다. 지금 코드는 두 줄이 나란히 있어서 달성과 절반이 둘 다 켜진다. else if였다면 달성만 켜지고 절반은 거짓으로 남는다.</desc>
+              <rect width="620" height="200" fill="#FFFFFF"/>
+
+              <text x="16" y="20" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">뛰는 중 &#8212; GPS가 끊겼다가 돌아온 점 하나</text>
+
+              <text x="16" y="46" font-size="11.5" fill="#143F3A"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">진행률이 <tspan font-weight="700">0.4</tspan>(2000m)에서 <tspan font-weight="700" fill="#04796E">1.05</tspan>(5250m)로 건너뛴 한 점</text>
+
+              <rect x="16" y="62" width="288" height="104" rx="9" fill="#EAF5F2"/>
+              <text x="34" y="86" font-size="11" font-weight="700" fill="#04796E"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">지금 코드 &#8212; 줄 둘이 나란히</text>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" fill="#143F3A">
+                <text x="34" y="110">1.05 &#8805; 1 이므로</text>
+                <text x="180" y="110" font-weight="700" fill="#04796E">달성 = true</text>
+                <text x="34" y="132">1.05 &#8805; 0.5 이므로</text>
+                <text x="180" y="132" font-weight="700" fill="#04796E">절반 = true</text>
+                <text x="34" y="154" font-size="10" fill="#93A8A4">두 줄을 다 지나간다</text>
+              </g>
+
+              <rect x="332" y="62" width="272" height="104" rx="9" fill="#FAF7F4" stroke="#E3D9D0"/>
+              <text x="350" y="86" font-size="11" font-weight="700" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">else if 였다면</text>
+              <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" fill="#143F3A">
+                <text x="350" y="110">1.05 &#8805; 1 이므로</text>
+                <text x="490" y="110" font-weight="700" fill="#8A6B4F">달성 = true</text>
+                <text x="350" y="132">아래 줄은 안 본다</text>
+                <text x="490" y="132" font-weight="700" fill="#8A6B4F">절반 = false</text>
+                <text x="350" y="154" font-size="10" fill="#93A8A4">5.25km를 뛰었는데 절반이 거짓이다</text>
+              </g>
+
+              <text x="310" y="190" text-anchor="middle" font-size="10" fill="#93A8A4"
+                    font-family="-apple-system, BlinkMacSystemFont, sans-serif">한 점이 두 기준을 한꺼번에 넘는 일이 있어서 두 줄을 나란히 놓았다</text>
+            </svg>
+            <figcaption>GPS가 끊겼다 돌아오면 한 점에서 0.4가 1.05가 된다.
+              줄 둘이 나란히 있어야 그 점에서 절반도 함께 켜진다.</figcaption>
+          </figure>
+
+          <p>건너뛰는 일이 실제로 생긴다는 것이 두 줄을 나란히 놓은 이유다. <code>else if</code>였다면
+            달성만 켜지고 <strong>「절반을 넘었나」는 <code>false</code>로 남는다.</strong> 5.25km를 뛴
+            사람의 값이 사실과 어긋나게 된다.</p>
+
+          <h4>3. 한 번 켜진 값은 안 꺼지고, 달성한 뒤에는 나눗셈까지 가지도 않는다</h4>
+
+          <p>판정 함수의 첫 줄은 <code>guard goal != .open, goalAchieved == false else { return }</code>이다.
+            <strong>자유 러닝이면 안 보고, 이미 달성했으면 더 안 본다.</strong> 점이 들어와도 나눗셈 앞에서
+            돌아 나가므로, <b>달성한 뒤에는 진행률을 계산조차 하지 않는다.</b></p>
+
+          <p>바로 앞 소제목과 방금 본 첫 줄이 짝이다. <code>else if</code>여서 절반이 안 켜진 채 달성만 켜졌다면,
+            다음 점부터는 그 첫 줄에 막혀 <strong>절반이 끝까지 안 켜진다.</strong> 되돌릴 기회가 없어서
+            그 한 점에서 둘 다 켜야 한다.</p>
+
+          <p>그리고 <code>true</code>가 된 값은 스스로 <code>false</code>로 돌아가지 않는다.
+            끄는 자리는 <strong>러닝 바깥에 넷</strong>이다 &#8212; 시작을 눌러 카운트다운이 뜰 때
+            새 목표를 받으면서 함께 끄고(<code>prepareStart</code>), 카운트다운 중에 취소했을 때
+            (<code>cancelPreparation</code>), 신호를 못 잡은 채 취소했을 때
+            (<code>finishAcquiringCancelled</code>), 요약 화면을 닫을 때
+            (<code>dismissSummary</code>) 각각 끈다.</p>
+
+          <p>러닝이 시작되거나 끝나는 길이 넷이라 끄는 자리도 넷이다. <strong>하나라도 빠지면 다음 러닝이
+            지난 러닝의 「달성」을 켜진 채로 물려받는다.</strong></p>
+
+          <div class="takeaway">
+            <span class="tag">이 구간에서 알고 갈 것</span>
+            <p>판정은 GPS 점을 받는 함수 끝에 한 줄로 얹혀 있어서, <strong>시계가 아니라 점이 판정을
+              다시 돌린다.</strong> 점이 거리 기준이라 서 있는 동안에는 판정이 늦어진다. 결과로 남는 것은
+              <code>true</code>/<code>false</code> 값 둘뿐이고 진행률 숫자는 사라진다. 0.5와 1을 따로 봐서
+              한 점에서 둘 다 켜질 수 있고, 달성한 뒤에는 첫 줄에서 돌아 나간다.
+              끄는 자리는 러닝 바깥에 넷이다.</p>
           </div>
 
         </div>
