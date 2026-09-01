@@ -26,7 +26,7 @@ This file records defaults until the user chooses otherwise.
 - Authentication: none by default
 - Analytics: none by default
 - Monetization: none by default
-- Product focus: plan a running route before the run, not record completed runs
+- Product direction: [`docs/product-baseline.md`](../product-baseline.md) is the single source of truth for the current product direction; this file retains technical defaults and historical decision evidence.
 - First MVP: tap start and destination on a map, show an actual walking route and total distance
 - Course planning provider for MVP: Apple `MapKit` / `MKDirections` with `.walking`
 - Course planning provider architecture: port-and-adapter via `CoursePlanningServiceProtocol`
