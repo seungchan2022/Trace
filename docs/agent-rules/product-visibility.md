@@ -27,7 +27,12 @@ AI 구현의 정본과 사용자용 요약을 분리해, 현황판이 구현을 
 
 코드 파일, 함수 시그니처, 구현 Task, 커밋별 진행은 복사하지 않는다.
 
-진행 중인 MVP가 없으면 현재 상태, `product-baseline.md`, 마지막 완료 MVP, `docs/backlog.md` 링크만 둔다.
+진행 중인 MVP가 없으면 현재 상태, `product-baseline.md`, `current-features.md`, 마지막 완료 MVP,
+`docs/backlog.md` 링크만 둔다.
+
+새 MVP를 스코핑할 때는 `current-features.md`를 확인해 이미 제공 중인 사용자 경험, 조건부 기능,
+확인되지 않은 기능과 후보 범위가 겹치는지 먼저 대조한다. 이 확인은 기능 아이디어를 막는 승인이 아니라
+중복 구현과 현재 상태 오해를 피하기 위한 입력이다.
 
 ## 갱신 경계
 

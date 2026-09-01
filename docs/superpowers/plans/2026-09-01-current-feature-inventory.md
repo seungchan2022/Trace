@@ -26,12 +26,14 @@
 
 1. Codex는 `$trace-init`, Claude Code는 `/trace-init`을 실행한다.
 2. `trace-init`이 이 계획을 재개 작업으로 보여주면, 이 파일을 읽고 아래 체크리스트를 사용자 재승인 없이 끝까지 수행한다.
-3. `docs/current-features.md` 작성과 문서 검증, 계획 체크박스 갱신, 한 작업 단위 커밋까지 마치고 세션을 종료한다.
-4. 같은 세션에서 다음 MVP를 고르거나 개발을 시작하지 않는다. push와 `main` 통합도 하지 않는다.
+3. `docs/current-features.md` 작성과 관련 문서 갱신, 검증, 계획 체크박스 갱신, 한 작업 단위 커밋까지 사용자 확인 없이 수행한다.
+4. 커밋 뒤 현재 작업 브랜치를 로컬 `main`에 fast-forward 통합하고 작업 브랜치를 삭제한다.
+5. `main`의 working tree가 깨끗한지 확인하고 다음 MVP 세션용 요청문을 남긴 뒤 종료한다.
+6. 같은 세션에서 다음 MVP를 고르거나 개발을 시작하지 않는다. push는 하지 않는다.
 
 새 세션에 붙여넣을 권장 요청은 다음 한 줄이다.
 
-> `$trace-init`을 실행하고 현재 기능 전수 문서 계획을 그대로 수행해 `docs/current-features.md` 작성과 검증, 커밋까지 완료해줘. 다음 MVP 개발은 시작하지 마.
+> `$trace-init`을 실행하고 현재 기능 전수 문서 계획을 그대로 수행해 `docs/current-features.md` 작성부터 관련 문서 갱신, 검증, 커밋, 로컬 main 통합과 브랜치 정리까지 완료해줘. 다음 MVP 개발은 시작하지 마.
 
 ## 이 작업에서 사용하는 스킬
 
@@ -88,6 +90,8 @@
 - [ ] 현재 제공 / 조건부·실험 / 확인 필요로 분류하고, 교체·삭제 기능을 현재 목록에서 분리한다.
 - [ ] 위 형식으로 `docs/current-features.md`를 작성한다.
 - [ ] `docs/product-baseline.md`의 도입부에서 현재 기능 전수 문서를 찾을 수 있게 링크한다.
+- [ ] `docs/current-mvp.md`의 진행 중 MVP 없음 화면에서 현재 기능 전수 문서를 찾을 수 있게 링크한다.
+- [ ] `docs/workflow-quickstart.md`의 사용자용 문서 목록에 현재 기능 전수 문서의 역할을 한 줄로 추가한다.
 - [ ] `docs/roadmap.md`의 진행 중 항목을 제거하고, `완료 · MVP 밖 독립 사이클`에 완료일·결과 문서·이 계획 링크를 남긴다.
 - [ ] 아래 검증을 실행하고 결과를 직접 확인한다.
 - [ ] 이 계획의 체크박스를 모두 완료로 갱신하고 관련 문서만 명시적으로 스테이징해 한 번 커밋한다.
@@ -100,11 +104,11 @@
 test -f docs/current-features.md
 rg -n '^## ' docs/current-features.md
 rg -n '현재 제공|조건부·실험|확인 필요' docs/current-features.md
-rg -n 'current-features.md' docs/product-baseline.md docs/agent-rules/product-visibility.md
+rg -n 'current-features.md' docs/product-baseline.md docs/current-mvp.md docs/workflow-quickstart.md docs/agent-rules/product-visibility.md
 rg -n 'current-feature-inventory|current-features.md' docs/roadmap.md
 git diff --check
 git status --short
-git diff -- docs/current-features.md docs/product-baseline.md docs/roadmap.md docs/superpowers/plans/2026-09-01-current-feature-inventory.md
+git diff -- docs/current-features.md docs/product-baseline.md docs/current-mvp.md docs/workflow-quickstart.md docs/roadmap.md docs/superpowers/plans/2026-09-01-current-feature-inventory.md
 ```
 
 커밋 전에는 문서 변경이어도 저장소의 공통 정책을 따라 `docs/agent-rules/testing.md`의 Baseline
@@ -119,13 +123,34 @@ build·test·lint를 모두 실행한다. 명령은 계획에 복사하지 않�
 - 과거 변경 이유는 중복 서술하지 않고 history 링크로 연결한다.
 - 새 MVP 범위, 포트폴리오 최종 문구, 광범위한 코드 학습이 추가되지 않는다.
 
+## 커밋 뒤 자동 마무리
+
+커밋이 끝나고 working tree가 깨끗하면 다음을 수행한다.
+
+```bash
+scripts/trace-integrate.sh docs/feature-inventory
+git branch --show-current
+git status --short
+git log -1 --oneline
+```
+
+완료 상태는 현재 브랜치가 `main`, `git status --short` 출력이 없음, 마지막 로그에 기능 전수 문서
+커밋이 포함된 상태다. rebase 충돌이나 통합 실패가 발생하면 destructive 명령으로 우회하지 않고 정확한
+상태를 보고한다. 원격 push는 수행하지 않는다.
+
+최종 응답에는 생성·갱신한 문서, 검증 결과, 커밋, 로컬 통합 결과와 함께 다음 세션 요청문을 남긴다.
+
+> `$trace-init`을 실행하고 `docs/current-features.md`, `docs/product-baseline.md`, `docs/backlog.md`를 기준으로 다음 MVP 킥오프를 진행해줘.
+
 ## 커밋 범위
 
 한 문서 작업 단위로 다음 파일만 커밋한다.
 
 - `docs/current-features.md`
 - `docs/product-baseline.md`
+- `docs/current-mvp.md`
+- `docs/workflow-quickstart.md`
 - `docs/roadmap.md`
 - `docs/superpowers/plans/2026-09-01-current-feature-inventory.md`
 
-다른 파일 변경이 발견되면 섞지 않는다. 커밋 후 push하거나 `main`에 통합하지 않는다.
+다른 파일 변경이 발견되면 섞지 않는다. 커밋 후에는 위 자동 마무리만 수행하고 push하지 않는다.
