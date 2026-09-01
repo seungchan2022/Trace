@@ -13,6 +13,7 @@
 | 진입 파일 | `CLAUDE.md` → `AGENTS.md` 심볼릭 | Claude Code가 세션 시작 시 `CLAUDE.md`를 자동 로드 → Codex와 **완전히 동일한 룰**을 본다. AGENTS.md만 고치면 양쪽 반영. |
 | `/trace-init` | `.claude/skills/trace-init` → `../../.agents/skills/trace-init` 심볼릭 | Codex와 공통 `SKILL.md`를 쓰는 세션 상태 복원 스킬. 복사 불필요. |
 | `/daily-retro` | `.claude/skills/daily-retro` → `../../.agents/skills/daily-retro` 심볼릭 | 하루 회고 공용 스킬. 복사 불필요. |
+| `/milestone-retro` | `.claude/skills/milestone-retro` → `../../.agents/skills/milestone-retro` 심볼릭 | 마일스톤 종료 시 사용자 판단과 제품 기준선 영향을 남기는 공용 스킬. |
 | `/trace-archive` | `.claude/skills/trace-archive` → `../../.agents/skills/trace-archive` 심볼릭 | MVP 아카이빙 공용 스킬. 복사 불필요. |
 | `/trace-study` | `.claude/skills/trace-study` → `../../.agents/skills/trace-study` 심볼릭 | 기능 단위 학습 공용 스킬. 복사 불필요. |
 | `/trace-video-review` | `.claude/skills/trace-video-review` → `../../.agents/skills/trace-video-review` 심볼릭 | 외부 영상/콘텐츠 팁 리뷰 공용 스킬. 복사 불필요. |
@@ -25,13 +26,15 @@
 
 1. 새 세션을 열고 — Claude가 `AGENTS.md`의 git 안전 규칙을 인지하는지(예: "main에서 커밋 금지") 물어 본다.
    진입 파일이 literal `CLAUDE.md` 텍스트가 아니라 **AGENTS.md 내용**으로 로드됐는지 확인하는 것.
-2. `/trace-init` 입력 → 세션 상태 요약이 나오는지 확인.
+2. `/trace-init` 입력 → `docs/current-mvp.md`의 현재 MVP·다음 사용자 확인이 플랜보다 먼저 나오고,
+   `상태: 중단`인 학습 플랜이 활성 작업으로 제시되지 않는지 확인.
 3. 안 되면: 심볼릭이 깨졌는지 `ls -la CLAUDE.md .claude/skills/` 로 점검하고 재생성:
    ```bash
    ln -sf AGENTS.md CLAUDE.md
    mkdir -p .claude/skills
    ln -sfn ../../.agents/skills/trace-init .claude/skills/trace-init
    ln -sfn ../../.agents/skills/daily-retro .claude/skills/daily-retro
+   ln -sfn ../../.agents/skills/milestone-retro .claude/skills/milestone-retro
    ln -sfn ../../.agents/skills/trace-archive .claude/skills/trace-archive
    ln -sfn ../../.agents/skills/trace-study .claude/skills/trace-study
    ln -sfn ../../.agents/skills/trace-video-review .claude/skills/trace-video-review
@@ -72,7 +75,9 @@ claude mcp add XcodeBuildMCP -s project \
 
 두 도구를 번갈아 쓸 때의 상태 인계 규칙은 `docs/agent-rules/dual-tool.md`에 정의돼 있다. 요지:
 
-- 인계 상태는 **git + `project-decisions.md` + 플랜 체크박스**에만 둔다. Claude/Codex **메모리는 상대가 못 보므로** 신뢰하지 않는다.
+- 인계 상태는 **git + `current-mvp.md` + `roadmap.md` + `project-decisions.md` + 플랜 체크박스**에 둔다.
+  Claude/Codex **메모리는 상대가 못 보므로** 신뢰하지 않는다.
+- 사용자가 기본적으로 볼 곳은 `current-mvp.md`이고, 제품 전체 방향을 확인할 때만 `product-baseline.md`를 본다.
 - 플랜 체크박스(`- [ ]` → `- [x]`)는 **작업 중 실시간 갱신**한다. 세션은 토큰 소진으로 갑자기 죽으므로 이게 유일한 인계 메모다.
 
 ## 컨텍스트 보존 (컴팩션)
@@ -82,4 +87,9 @@ Codex(`setup-codex.md` §2)와 달리 Claude Code는 컴팩션을 거의 설정�
 - **자동 압축: 기본 ON** (`autoCompactEnabled`, 컨텍스트가 한계에 근접하면 자동 요약). 압축 시점을 바꾸는 임계값 설정은 없다(켜기/끄기만). 끄려면 `settings.json`에 `"autoCompactEnabled": false` 또는 env `DISABLE_AUTO_COMPACT`. Sonnet은 200K 창이라 Opus(1M)보다 압축이 자주 걸린다.
 - **트랜스크립트: 네이티브 자동 저장**(`~/.claude/projects/...`, `--resume`/`--continue`로 복원). 별도 백업 훅 불필요 — frank의 PreCompact 백업 훅 동기는 이미 충족된다.
 - **압축 시 보존 지시(Codex `compact_prompt` 대응): 네이티브 미지원.** settings의 `compactPrompt`는 공식 스키마에 없어 무시된다(오픈 이슈 #14160). frank에서 복사하지 말 것.
-- 그래서 보존은 압축 요약에 기대지 않고 **상태 외부화**로 한다: 진행은 플랜 체크박스, 결정·피드백은 `project-decisions.md`, 현재 위치는 `docs/roadmap.md`. 압축/새 세션 후 `CLAUDE.md`가 재로드되고 `/trace-init`으로 복원한다. frank는 `active_*.txt` + UserPromptSubmit 훅으로 이 재진입을 자동화했으나, Trace는 그 훅 묶음을 의도적으로 버리고 `/trace-init` 수동 호출로 대체했다(`history`의 2026-06-22 회고). 상세 `docs/agent-rules/dual-tool.md`.
+- 그래서 보존은 압축 요약에 기대지 않고 **상태 외부화**로 한다: 사용자가 보는 현재 상태는
+  `docs/current-mvp.md`, 구현 진행은 플랜 체크박스, 기술·정책 결정은 `project-decisions.md`,
+  MVP 위치는 `docs/roadmap.md`에 둔다. 압축/새 세션 후 `CLAUDE.md`가 재로드되고 `/trace-init`으로 복원한다.
+  frank는 `active_*.txt` + UserPromptSubmit 훅으로 이 재진입을 자동화했으나, Trace는 그 훅 묶음을
+  의도적으로 버리고 `/trace-init` 수동 호출로 대체했다(`history`의 2026-06-22 회고).
+  상세 `docs/agent-rules/dual-tool.md`.

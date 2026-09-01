@@ -40,6 +40,7 @@ Read the relevant rule file before making changes:
 - Testing and verification rules: `docs/agent-rules/testing.md`
 - Skill and plugin usage rules: `docs/agent-rules/skills.md`
 - Current project decisions and defaults: `docs/agent-rules/project-decisions.md`
+- Product baseline and user-facing current MVP dashboard: `docs/agent-rules/product-visibility.md`
 - Documentation and rule-file authoring: `docs/agent-rules/authoring.md`
 - Working across Codex and Claude Code (handoff, shared vs tool-specific setup): `docs/agent-rules/dual-tool.md`
 - Documented solutions and reusable learnings (bugs, design patterns, workflow gotchas): `docs/solutions/` — organized by category with YAML frontmatter (`module`, `tags`, `problem_type`); relevant when implementing or debugging in a documented area, maintained via `ce-compound`.

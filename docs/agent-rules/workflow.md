@@ -3,6 +3,7 @@
 Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐름.
 이 파일은 superpowers 워크플로 **위에 얹는 얇은 레이어**(단위 명명 + 아카이빙 + 학습)만
 규정한다. spec/plan/구현/리뷰 자체는 superpowers가 수행하며, 이 파일이 그것을 대체하지 않는다.
+제품 기준선과 사용자용 MVP 현황판의 역할·갱신 경계는 `docs/agent-rules/product-visibility.md`가 소유한다.
 
 ## 작업 단위 (5계층)
 
@@ -60,6 +61,8 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
 1. **MVP 킥오프** — 새 MVP는 "무엇을 만들지"부터 정한다.
    `superpowers:brainstorming`의 decompose 기능으로 MVP 범위를 마일스톤들로 쪼개고,
    `docs/roadmap.md`에 "MVP-N + 마일스톤 체크리스트"로 등록한다.
+   킥오프를 마치는 같은 작업에서 `docs/current-mvp.md`를 활성 MVP 현황판으로 갱신한다
+   (`docs/agent-rules/product-visibility.md`).
    목록은 **잠정** — 진행하며 조정 가능(빡빡하게 다 확정하지 않는다).
    - 킥오프 문서(`docs/superpowers/specs/<날짜>-mvpN-<슬러그>-kickoff-design.md`)에 아래 표를 넣는다.
      `trace-init`이 이 표를 읽어 "지금 할 수 있는 것"을 만든다.
@@ -101,7 +104,8 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
         (기준 원문은 `testing.md`, 분류 절차는 아래 "버그 처리 경로" 1항).
      4. 수용된 경우에만 `docs/roadmap.md`의 마일스톤을 `[x]`로 갱신한다
         (사이클에 여러 개가 묶여 있으면 끝난 것부터 개별로 켠다).
-     5. 같은 시점에 `milestone-retro` 실행을 **제안**한다(강제 아님. 상세는 `skills.md`).
+     5. 같은 시점에 `docs/current-mvp.md`의 마일스톤 결과와 다음 사용자 확인을 갱신한다.
+     6. `milestone-retro` 실행을 **제안**한다(강제 아님. 상세는 `skills.md`).
    - **plan 체크박스는 그 Task의 커밋에 함께 담는다** (2026-07-30 개정). Task 리뷰가 끝나
      커밋할 때, 코드 변경과 **같은 커밋에** plan 파일의 그 Task 체크박스 변경을 스테이징한다.
      체크박스만 고치는 별도 커밋을 만들지 않는다.
@@ -120,6 +124,7 @@ Trace의 작업 단위 정의와 "진행 → 완료 → 정리 → 학습" 흐�
      이 항목은 원래 "MVP 단위 필수"로 적혀 있었으나 실제로는 마일스톤 단위로 운영돼 왔다 —
      MVP17은 마일스톤 4개에 체크리스트 3개를 만들고 정비 마일스톤 하나를 면제했다.)
    - `trace-archive` 공용 스킬 — spec+plan을 `history/<mvp>/`로 아카이빙 (Codex `$trace-archive`, Claude Code `/trace-archive`).
+     이때 활성 현황판도 `history/mvpN/overview.md`로 보존하고 no-active 현황판을 다시 만든다.
    - `trace-study MVP{N}` 공용 스킬 — 그 MVP가 바꾼 부분을 학습 노트에 덧씀 (선택, 권장;
      Codex `$trace-study MVP{N}`, Claude Code `/trace-study MVP{N}`). 단위는 MVP가 아니라 기능이다 — 아래 "학습" 절.
 
@@ -252,8 +257,9 @@ superpowers / compound-engineering을 해당 지점에서 호출한다. 강제(�
   폴더이고, 그 안에 `note.html`(사용자·발행 대상)과 `agent-log.md`(에이전트)가 있다.
 - 목표 깊이는 **C**(각 부품이 무엇을 보장하는가 + 어떤 순서로 이어지는가). 코드 한 줄 수준은 필요할 때 연다.
   UI·레이아웃과 테스트 작성법은 범위 밖 — 그 화면을 건드리는 MVP가 올 때 배운다.
-- 두 모드: **따라잡기**(밀린 9덩어리, 일회성) / **따라가기**(MVP 종료 직후 그 MVP 분량을 덧씀).
-  진행 상태는 `docs/superpowers/plans/*-trace-study-catchup.md` 체크박스에 둬서 `trace-init`이 복원한다.
+- 두 모드: **따라잡기**(밀린 9덩어리, 현재 중단 상태이며 사용자가 명시적으로 재개할 때만) /
+  **따라가기**(MVP 종료 직후 사용자가 선택하면 그 MVP 분량을 덧씀).
+  중단된 따라잡기 플랜은 `trace-init`의 활성 작업으로 복원하지 않는다.
 - 범위·덩어리 목록·기각한 대안: `docs/superpowers/specs/2026-07-31-trace-study-scope-design.md`
 
 ## frank에서 가져오지 않은 것 (의도적 제외)

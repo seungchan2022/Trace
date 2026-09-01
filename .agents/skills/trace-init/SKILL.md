@@ -21,7 +21,7 @@ description: 새 Trace 세션을 시작하거나 재개할 때 현재 브랜치,
 
 - 두 도구 모두 세션 시작 시 진입 파일을 자동 로드한다 (Codex `AGENTS.md`, Claude Code `CLAUDE.md` → `AGENTS.md` 심볼릭).
   따라서 init은 규칙을 다시 읽지 않고, 진입 파일이 다루지 않는 **동적 상태(git·미결 결정·진행 중 작업)**만 복원한다.
-- Trace의 상태는 frank식 KPI/상태머신 파일이 아니라 **git + `docs/agent-rules/project-decisions.md` + `docs/roadmap.md`(MVP/마일스톤 위치) + 진행 중 플랜의 체크박스**에 있다.
+- Trace의 상태는 frank식 KPI/상태머신 파일이 아니라 **git + `docs/current-mvp.md`(사용자용 현황판) + `docs/agent-rules/project-decisions.md` + `docs/roadmap.md`(MVP/마일스톤 위치) + 진행 중 플랜의 체크박스**에 있다.
   도구별 메모리(Claude `~/.claude/.../memory/`, Codex `~/.codex/memories`)는 **상대 도구가 못 보므로 핸드오프 상태로 신뢰하지 않는다.**
 
 ## 수행 절차
@@ -63,6 +63,12 @@ sed -n '/^## Decisions the User May Need/,/^## Resolved/p' docs/agent-rules/proj
 
 ### 4. 진행 중 작업 감지 (resume) — 핸드오프의 핵심
 
+- **먼저 `docs/current-mvp.md`를 읽는다.** 이 파일에서 현재 MVP, 현재 단계, 사용자가 결정한 것,
+  아직 확인할 것, 다음 사용자 확인을 복원한다. 문서 역할과 stale 판정 기준은
+  `docs/agent-rules/product-visibility.md`를 따른다.
+  - `docs/roadmap.md`의 진행 중 MVP·마일스톤과 이름이나 상태가 다르면 **현황판 stale**로 보고한다.
+  - 이 스킬은 읽기 전용이므로 고치지 않는다. 어떤 정본과 어긋났는지와 갱신 필요만 알린다.
+  - 진행 중인 MVP가 없으면 `없음`으로 표시하고, 현황판의 마지막 완료 MVP와 backlog 링크를 따른다.
 - 브랜치명에서 작업 키워드 추출 (예: `feature/login-view` → 로그인 화면).
 - **진행 중 플랜의 체크박스를 읽는다**: `docs/superpowers/plans/*.md`에서 `- [x]`(완료)와 `- [ ]`(미완료)를 세어 "Task N까지 완료, 다음은 Task N+1" 형태로 복원한다. 이게 도구를 바꿔 이어받을 때의 **1차 인수인계 채널**이다.
 - ⚠️ 코드는 작성됐는데 체크박스가 안 켜져 있는 등 **플랜과 워킹 트리가 어긋나면 경고**한다 (상대 도구가 장님 상태로 재시작하는 원인).
@@ -73,7 +79,11 @@ sed -n '/^## Decisions the User May Need/,/^## Resolved/p' docs/agent-rules/proj
   - **"지금 할 수 있는 것" 목록의 A 항목**으로 올린다(다른 선택지보다 위).
   - 여러 개면 전부 싣는다. **요약하지 말고 원문을 살린다** — 앞 세션이 좁혀둔 확인 대상이
     거기 적혀 있고, 그게 이 표시의 존재 이유다.
-- 📚 **학습(`trace-study`) 진행 상태도 같이 복원한다.** `docs/superpowers/plans/2026-07-31-trace-study-catchup.md`의
+- 📚 **학습(`trace-study`) 진행 상태는 활성 상태일 때만 복원한다.** 먼저
+  `docs/superpowers/plans/2026-07-31-trace-study-catchup.md`의 `상태:`를 확인한다.
+  `중단`이면 체크박스와 착수 메모를 읽거나 활성 작업·다음 선택지로 제시하지 않는다.
+  사용자가 `trace-study`를 명시적으로 호출한 경우에만 보존된 재개 지점을 사용한다.
+  활성 상태라면 해당 파일의
   체크박스가 그 채널이다 — "청크 N까지 완료, 다음은 청크 N+1" 형태로 보고하고, **그 청크 줄에 달린
   착수 메모(`🔑`·`⚠️`·`📌`)가 있으면 함께 싣는다.** 학습은 MVP가 아니라서 `roadmap.md`에 안 잡히고,
   이 파일을 안 보면 **"진행 중인 것 없음"으로 잘못 보고된다.**
@@ -174,6 +184,13 @@ C. 사이클 '<슬러그>' 목록·분류    — 정비. 설계 문서 불필요
 - 훅: {core.hooksPath 값 — .githooks면 ✅}
 - 최근 커밋: {1줄}
 
+# 현재 MVP
+- MVP: {current-mvp.md 기준 이름 / 없으면 "없음"}
+- 현재 단계: {기획 / 구현 / 실기기 QA / 완료 대기 / 없음}
+- 사용자가 결정할 것: {항목 / 없음}
+- 다음 사용자 확인: {항목 / 없음}
+- 현황판: docs/current-mvp.md {roadmap과 다르면 ⚠️ stale}
+
 # 재개 지점
 - 진행 중: {브랜치+변경+플랜 체크박스로 재구성한 한 문장}
 - 플랜 진행률: {Task N/M 완료, 다음 단계 / 플랜 없으면 "없음", 플랜↔코드 불일치 시 ⚠️}
@@ -185,4 +202,5 @@ C. 사이클 '<슬러그>' 목록·분류    — 정비. 설계 문서 불필요
 {5.5의 선택지 목록. 킥오프 표가 없으면 "종류·의존 정보 없음" + 다음 액션 1개}
 ```
 
+`# 현재 MVP`를 플랜·학습 진행률보다 먼저 보여준다. 중단된 학습은 출력하지 않는다.
 마지막에 한국어로 "이어서 진행할까요, 아니면 다른 작업을 시작할까요?"로 닫는다.

@@ -7,6 +7,15 @@
 
 ---
 
+## 사용자가 먼저 볼 파일
+
+- 지금 진행 상황과 다음 확인: [`docs/current-mvp.md`](current-mvp.md)
+- Trace 전체 제품 방향이 필요할 때만: [`docs/product-baseline.md`](product-baseline.md)
+
+상세 구현은 기존 spec·plan·roadmap이 담당한다. 현황판은 사용자가 이해하고 판단하기 위한 요약이다.
+
+---
+
 ## 세션을 어떻게 나누나
 
 ```
@@ -41,6 +50,7 @@
    - 의존 칸은 **잠정**이다. 실기기 QA가 앞 마일스톤의 처방을 뒤집으면 그때 갱신한다.
    - **킥오프 문서는 사이클 설계를 겸하지 않는다.** 마일스톤 목록과 종류만 담는다.
 5. `docs/roadmap.md`에 등록
+6. 같은 작업에서 `docs/current-mvp.md`에 문제·사용자 변화·완료 기준·다음 확인을 요약
 
 ---
 
@@ -91,13 +101,14 @@
 2. 사용자에게 제시 → 결과를 한 번에 받는다
 3. 결과를 가른다 — 진짜 고장은 지금, 개선은 `docs/backlog.md`
 4. `docs/roadmap.md` 마일스톤 `[x]`
-5. **`milestone-retro` 제안** (넘겨도 된다)
+5. `docs/current-mvp.md`에 결과·다음 사용자 확인 갱신
+6. **`milestone-retro` 제안** (넘겨도 된다)
 
 ---
 
 ## 5. MVP 완료
 
-- `trace-archive` — 설계·계획·QA·회고를 `history/mvpN/`으로
+- `trace-archive` — 설계·계획·QA·회고와 현황판을 `history/mvpN/`으로 보존하고 빈 현황판 재생성
 - `trace-study MVP{N}` — 그 MVP가 바꾼 부분을 학습 노트에 덧씀 (선택)
   - 인자 없이 `trace-study`를 부르면 **밀린 것 따라잡기**(기능 9덩어리)로 간다 — MVP 완료와 무관하게 아무 때나
 
@@ -127,7 +138,7 @@
 | 하루 정리 | `/daily-retro` | ⌨️ | 직접 부를 때만 |
 | MVP 완료 | `/trace-archive` | ⌨️ | 문서를 `history/mvpN/`으로 |
 | MVP 완료 | `/trace-study MVP{N}` | ⌨️ | 그 MVP가 바꾼 부분을 학습 노트에 덧씀 (선택) |
-| 공부하고 싶을 때 | `/trace-study` | ⌨️ | 밀린 것 따라잡기 — 다음 덩어리부터 |
+| 중단한 따라잡기를 다시 하고 싶을 때 | `/trace-study` | ⌨️ | 보존된 재개 지점에서 선택적으로 계속 |
 | 외부 팁 검토 | `/trace-video-review` | ⌨️ | 도입할지 판단 |
 
 **사용자가 쳐야 하는 건 7개뿐이다.** 나머지는 자동으로 돈다.

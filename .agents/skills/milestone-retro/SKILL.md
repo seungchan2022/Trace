@@ -44,6 +44,8 @@ git diff {첫커밋}^..{마지막커밋} --stat
 - 플랜 문서 (`docs/superpowers/plans/`) — Task별 진행, 리뷰에서 나온 지적
 - 실기기 QA 체크리스트 (`docs/qa/`) — 통과·실패 항목과 사용자 판정
 - 진행 원장 (`.git/sdd/progress.md`) — Task별 리뷰 결과
+- 사용자용 현황판 (`docs/current-mvp.md`) — 사용자가 결정한 것과 다음 확인 항목
+- 제품 기준선 (`docs/product-baseline.md`) — 이번 결과가 현재 제품 방향을 바꾸는지 판단할 기준
 
 정리 결과(Phase 2 전에 내부적으로):
 
@@ -87,6 +89,11 @@ Phase 1의 **실제 데이터로만** 선택지를 만든다. "뭐가 어려웠�
 
 ## 다음 마일스톤에 넘기는 것
 (미해결 항목 → `docs/backlog.md` 연결)
+
+## 제품 기준선 영향
+없음 / 변경 후보
+
+근거: (실제 사용·QA·사용자 판단에서 무엇이 달라졌는가)
 ```
 
 - 일기체로 — 딱딱하지 않게, 설명하듯.
@@ -112,6 +119,8 @@ Phase 1의 **실제 데이터로만** 선택지를 만든다. "뭐가 어려웠�
 
 - 저장 위치: `docs/retro/{YYMMDD}-{마일스톤슬러그}-retro.md`
 - MVP가 끝나 `trace-archive`를 돌릴 때 `history/mvpN/`으로 함께 옮긴다.
+- 같은 작업에서 `docs/current-mvp.md`의 완료 결과·다음 사용자 확인·제품 기준선 영향을 갱신한다.
+  `변경 후보`를 `docs/product-baseline.md`에 자동 반영하지 않는다. 승인 시점은 `trace-archive`다.
 - 저장 후 파일 경로와 Phase 4 제안 항목을 함께 보고한다.
 
 ## 출력 규칙

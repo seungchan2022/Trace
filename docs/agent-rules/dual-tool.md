@@ -10,6 +10,7 @@ Shared (lives in the repo, both tools see it — never duplicate per tool):
 
 - Rule manuals: `docs/agent-rules/*.md`
 - Shared skills: `.agents/skills/*/SKILL.md` (`trace-init`, `daily-retro`, `milestone-retro`, `trace-archive`, `trace-study`, `trace-video-review`)
+- Product visibility: `docs/product-baseline.md`, `docs/current-mvp.md`
 - Git history, `.githooks`, plans (`docs/superpowers/plans/`), specs, `project-decisions.md`
 
 Tool-specific (thin adapters; each tool only reads its own):
@@ -48,10 +49,11 @@ adapter only to wire a tool up.
 
 ## Handoff state lives in the repo, never in tool memory
 
-- The next tool resumes only from **git + `project-decisions.md` + plan checkboxes**.
+- The next tool resumes only from **git + `current-mvp.md` + `roadmap.md` + `project-decisions.md` + plan checkboxes**.
 - Claude memory (`~/.claude/.../memory/`) and Codex memory (`~/.codex/memories`) are
   invisible to the other tool. Do not put anything the other tool needs to resume there.
-- Record a decision the moment it is made (in `project-decisions.md`), not at session end.
+- 현재 MVP의 사용자 결정과 다음 확인은 `current-mvp.md`, 제품 전체 방향 변화는 `product-baseline.md`,
+  기술·정책 기본값은 `project-decisions.md`에 기록한다. 문서 역할은 `product-visibility.md`를 따른다.
 
 ## Subagent and review model policy
 
