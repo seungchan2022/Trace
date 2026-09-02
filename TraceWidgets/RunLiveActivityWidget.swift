@@ -50,15 +50,23 @@ struct RunLiveActivityWidget: Widget {
             preparingView()
         } else {
             VStack(spacing: 10) {
+                // 첫 행은 넷(아이콘·거리·시간·현재 페이스)만 둔다 — 일시정지·10km+ 같은 넓은
+                // 상태에서 다섯 요소가 잘리는 것을 최종 브랜치 리뷰가 실측으로 확인했다. 평균
+                // 페이스는 아래 둘째 행으로 내린다(플랜 Task 5 Step 4가 남긴 대비책).
                 HStack(spacing: 14) {
                     Image(systemName: context.state.isPaused ? "pause.circle.fill" : "figure.run")
                         .font(.title2)
                     metric(distanceText(context), label: "거리")
                     timeView(context, fontSize: 20)
                     metric(paceText(context), label: "현재 페이스")
-                    metric(averagePaceText(context), label: "평균 페이스")
                 }
                 HStack {
+                    // 평균 페이스는 항상 보인다(경유점과 달리 첫 포인트 전에도 값이 있다 — 스펙 §2).
+                    Text("평균 페이스 \(averagePaceText(context))")
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                     if let waypoint = context.state.lastWaypoint {
                         // 첫 포인트 전에는 줄 자체를 표시하지 않는다(스펙 §2.3)
                         Text(String(format: "P%d · %.2f km", waypoint.index, waypoint.segmentMeters / 1000))
@@ -104,14 +112,20 @@ struct RunLiveActivityWidget: Widget {
                     .font(.system(size: fontSize, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             } else {
                 Text(timerInterval: context.state.timerStart...Date.distantFuture, countsDown: false)
                     .font(.system(size: fontSize, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
             Text(context.state.isPaused ? "일시정지" : "시간")
                 .font(.caption2).foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
     }
 
@@ -129,7 +143,11 @@ struct RunLiveActivityWidget: Widget {
             Text(value)
                 .font(.system(size: 20, weight: .bold, design: .rounded))
                 .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
             Text(label).font(.caption2).foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
     }
 
