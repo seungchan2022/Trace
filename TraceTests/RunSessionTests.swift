@@ -481,6 +481,28 @@ extension RunSessionTests {
         XCTAssertEqual(session.state, .idle)
         XCTAssertEqual(session.lastStartFailure, .permissionDenied)
     }
+
+    func test_평균페이스는_일시정지를_제외한_활동시간_기준이다() async throws {
+        await session.start()
+        let base = Date()
+        stream.yield(sample(at: base))
+        await waitUntil { session.state == .tracking }
+        stream.yield(sample(at: base.addingTimeInterval(10), latOffsetMeters: 100))
+        await waitUntil { session.track.totalDistanceMeters > 50 }
+
+        let started = try XCTUnwrap(session.startedAt)
+        session.pause(now: started.addingTimeInterval(20))
+        session.resume(now: started.addingTimeInterval(80))
+
+        // 벽시계 120초 − 일시정지 60초 = 활동 60초, 거리 약 100m → 60 / 0.1 = 600초/km
+        let pace = try XCTUnwrap(session.averagePaceSecondsPerKm(now: started.addingTimeInterval(120)))
+        XCTAssertEqual(pace, 600, accuracy: 20)
+    }
+
+    func test_거리가_없으면_평균페이스는_nil이다() async {
+        await session.start()
+        XCTAssertNil(session.averagePaceSecondsPerKm())
+    }
 }
 
 final class MockRunLocationStream: RunLocationStreamProtocol {

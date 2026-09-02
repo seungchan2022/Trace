@@ -114,6 +114,20 @@ final class RunSession {
         return endedAt.timeIntervalSince(startedAt) - totalPausedSeconds(now: endedAt)
     }
 
+    /// 평균 페이스(초/km) — 활동 시간(일시정지 제외) ÷ 거리.
+    /// 발화(`RunAudioCoach`)·요약 화면·저장된 기록과 **같은 기준**이다(MVP14 §3.1).
+    /// `RunTrack.averagePaceSecondsPerKm`는 GPS 샘플 구간(일시정지 포함) 기준이라 값이 다르므로
+    /// 화면·발화용으로 쓰지 않는다.
+    ///
+    /// 같은 식이 지금 네 곳에 복사돼 있고, 다음 사이클 `pace-dedup`이 그것들을 이 자리로 모은다
+    /// (근거: docs/superpowers/specs/2026-09-02-pace-definition-design.md §2-2).
+    func averagePaceSecondsPerKm(now: Date = Date()) -> Double? {
+        let distanceMeters = track.totalDistanceMeters
+        guard distanceMeters > 0,
+              let elapsed = activeElapsedSeconds(now: now), elapsed > 0 else { return nil }
+        return elapsed / (distanceMeters / 1000)
+    }
+
     private let locationStream: RunLocationStreamProtocol
     private let recordRepository: RunRecordRepositoryProtocol
     private var streamTask: Task<Void, Never>?

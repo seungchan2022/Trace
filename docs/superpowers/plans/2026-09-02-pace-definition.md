@@ -123,7 +123,7 @@ refactor: 현재 페이스 창을 10초로 줄인다
 - Produces: `func averagePaceSecondsPerKm(now: Date = Date()) -> Double?` — Task 4가 이것을 쓴다.
   다음 사이클 `pace-dedup`이 나머지 네 곳을 이 자리로 모아 온다
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [x] **Step 1: 실패하는 테스트를 쓴다**
 
 `TraceTests/RunSessionTests.swift`에 아래 두 테스트를 추가한다.
 
@@ -151,7 +151,7 @@ refactor: 현재 페이스 창을 10초로 줄인다
     }
 ```
 
-- [ ] **Step 2: 테스트가 실패하는지 확인한다**
+- [x] **Step 2: 테스트가 실패하는지 확인한다**
 
 Baseline의 테스트 명령을 `-only-testing:TraceTests/RunSessionTests`로 좁혀 실행한다.
 기대: **컴파일 실패** — `value of type 'RunSession' has no member 'averagePaceSecondsPerKm'`.
@@ -161,7 +161,7 @@ Baseline의 테스트 명령을 `-only-testing:TraceTests/RunSessionTests`로 �
 > 따라오는 `beginTracking(now:)` 시점에 잡힌다. 어긋나면 `accuracy`를 넓히지 말고
 > **실제 거리·활동 시간을 출력해 기댓값 쪽을 맞춘다** — 정확도를 낮추면 회귀를 못 잡는다.
 
-- [ ] **Step 3: 계산 지점을 추가한다**
+- [x] **Step 3: 계산 지점을 추가한다**
 
 `RunSession.swift`의 `summaryActiveElapsedSeconds` 아래에 넣는다.
 
@@ -181,11 +181,11 @@ Baseline의 테스트 명령을 `-only-testing:TraceTests/RunSessionTests`로 �
     }
 ```
 
-- [ ] **Step 4: 테스트가 통과하는지 확인한다**
+- [x] **Step 4: 테스트가 통과하는지 확인한다**
 
 같은 명령을 다시 실행한다. 기대: `RunSessionTests` 전부 **PASS**.
 
-- [ ] **Step 5: 커밋한다**
+- [x] **Step 5: 커밋한다**
 
 ```bash
 git add Trace/Application/RunTracking/RunSession.swift TraceTests/RunSessionTests.swift \
