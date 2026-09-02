@@ -61,18 +61,21 @@ struct RunLiveActivityWidget: Widget {
                     metric(paceText(context), label: "현재 페이스")
                 }
                 HStack {
-                    // 평균 페이스는 항상 보인다(경유점과 달리 첫 포인트 전에도 값이 있다 — 스펙 §2).
+                    // 평균 페이스는 항상 보인다(경유점과 달리 첫 포인트 전에도 값이 있다).
                     Text("평균 페이스 \(averagePaceText(context))")
                         .font(.caption)
                         .monospacedDigit()
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.75)
                     if let waypoint = context.state.lastWaypoint {
                         // 첫 포인트 전에는 줄 자체를 표시하지 않는다(스펙 §2.3)
                         Text(String(format: "P%d · %.2f km", waypoint.index, waypoint.segmentMeters / 1000))
                             .font(.caption)
                             .monospacedDigit()
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                     }
                     Spacer()
                     Button(intent: MarkRunWaypointIntent()) {
