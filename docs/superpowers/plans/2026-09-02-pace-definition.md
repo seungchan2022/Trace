@@ -332,7 +332,7 @@ feat: 트래킹 화면에 현재 페이스를 함께 보여준다
 - Consumes: `RunSession.averagePaceSecondsPerKm(now:)` (Task 2)
 - Produces: `RunActivityAttributes.ContentState.averagePaceSecondsPerKm: Double?` — Task 5가 표시한다
 
-- [ ] **Step 1: 상태에 필드를 추가한다**
+- [x] **Step 1: 상태에 필드를 추가한다**
 
 `RunActivityAttributes.swift`의 `paceSecondsPerKm` 아래에 넣는다.
 
@@ -348,7 +348,7 @@ feat: 트래킹 화면에 현재 페이스를 함께 보여준다
 > 위 `paceSecondsPerKm` 줄에 주석이 이미 없다면 함께 붙인다 — 두 필드가 나란히 놓이면
 > 이름만으로는 구분되지 않는다.
 
-- [ ] **Step 2: 컨트롤러가 값을 넘기게 한다**
+- [x] **Step 2: 컨트롤러가 값을 넘기게 한다**
 
 `RunActivityController.swift`의 `currentState()`를 교체한다.
 
@@ -370,7 +370,7 @@ feat: 트래킹 화면에 현재 페이스를 함께 보여준다
     }
 ```
 
-- [ ] **Step 3: 빌드가 통과하는지 확인한다**
+- [x] **Step 3: 빌드가 통과하는지 확인한다**
 
 Baseline의 빌드 명령을 실행한다. 기대: **성공.** `ContentState`를 만드는 다른 자리가 있으면
 컴파일러가 인자 누락으로 잡아 주므로, 그때 같은 방식으로 값을 넘긴다.
@@ -378,7 +378,7 @@ Baseline의 빌드 명령을 실행한다. 기대: **성공.** `ContentState`를
 > `RunActivityController`에는 단위 테스트가 없다. ActivityKit이 실기기·시뮬레이터 런타임에
 > 의존해서다. 값이 맞는지는 Task 5의 시뮬레이터 확인과 실기기 QA에서 본다.
 
-- [ ] **Step 4: 커밋한다**
+- [x] **Step 4: 커밋한다**
 
 ```bash
 git add Trace/Domain/RunTracking/RunActivityAttributes.swift \

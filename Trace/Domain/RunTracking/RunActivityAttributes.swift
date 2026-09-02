@@ -4,7 +4,12 @@ import Foundation
 struct RunActivityAttributes: ActivityAttributes {
     struct ContentState: Codable, Hashable {
         var distanceMeters: Double
+        /// 현재 페이스(초/km) — 최근 `RunTrack.currentPaceWindowSeconds`초의 GPS 속도 평균
         var paceSecondsPerKm: Double?
+        /// 평균 페이스(초/km) — 활동 시간 기준. 현재 페이스와 나란히 두어 어느 지표인지 구분한다
+        /// (근거: docs/superpowers/specs/2026-09-02-pace-definition-design.md §2).
+        /// Live Activity 상태는 휘발성이라(디스크에 남는 blob이 아니다) 저장 포맷 호환 문제가 없다.
+        var averagePaceSecondsPerKm: Double?
         var isPaused: Bool
         /// 카운트다운~GPS 확보 중(트래킹 시작 전) — 이 동안엔 위 수치 대신 "준비 중" 문구를 보여준다.
         /// Live Activity는 앱이 포그라운드일 때만 새로 시작할 수 있어(ActivityKit 제약),

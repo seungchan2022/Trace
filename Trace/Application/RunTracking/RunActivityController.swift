@@ -87,6 +87,8 @@ final class RunActivityController {
         RunActivityAttributes.ContentState(
             distanceMeters: session.track.totalDistanceMeters,
             paceSecondsPerKm: session.track.currentPaceSecondsPerKm,
+            // 🔴 식을 여기 적지 않는다 — 세션의 계산 지점을 쓴다(설계 §2-2)
+            averagePaceSecondsPerKm: session.averagePaceSecondsPerKm(),
             isPaused: session.isPaused,
             isPreparing: session.state == .countingDown || session.state == .acquiring,
             timerStart: session.displayTimerStart ?? session.startedAt ?? Date(),
