@@ -292,8 +292,16 @@ Baseline의 테스트 명령을 `-only-testing:TraceTests/RunPageViewModelTests`
 라벨을 「평균」·「현재」로 짧게 바꾼다. **거리(주인공)의 크기와 위치는 바꾸지 않는다.**
 
 > 실측 결과: `spacing: 24`(출발값) 그대로 시간·평균 페이스·현재 페이스 세 항목이 잘리거나
-> 겹치지 않고 표시됐다(2026-09-02, iPhone 17 Pro/iOS 26.5 시뮬레이터, `history/mvp17/
-> trace-history-tab-5km-1min-pace.gpx` 경로로 위치 시뮬레이션). 조정 불필요.
+> 겹치지 않고 표시됐다(2026-09-02, iPhone 17 Pro/iOS 26.5 시뮬레이터). 조정 불필요.
+> **위치 시뮬레이션 경로 주의**: 문서 절차(`project.pbxproj` 파일 참조 + 스킴
+> `LocationScenarioReference`)를 그대로 배선했으나, 이 세션의 실행 경로(XcodeBuildMCP →
+> `xcodebuild`+`simctl`, Xcode IDE 아님)에서는 스킴의 `LocationScenarioReference`가 적용되지
+> 않았다(`simctl location <udid> list`가 내장 시나리오만 보여주고 이 GPX를 노출하지 않음 — IDE
+> 전용 기능으로 보인다). 대신 같은 GPX의 좌표·페이스(37.566500,126.978000 →
+> 37.611415,126.978000, 100m/6초=16.6667 m/s, 전 구간 동일 경도라 직선)를
+> `xcrun simctl location <udid> start --speed=16.6667 --distance=100 <시작> <끝>`으로 재현해
+> 확인했다 — GPX 재생과 동일한 CoreLocation 입력이지만, 스킴 배선 자체가 이 실행 경로에서
+> 동작하는지는 검증하지 못했다. Xcode IDE로 직접 실행하는 세션에서 재확인 필요.
 
 - [x] **Step 7: 커밋한다**
 
