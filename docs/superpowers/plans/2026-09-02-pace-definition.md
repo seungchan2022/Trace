@@ -42,7 +42,7 @@
 - Consumes: 없음
 - Produces: `RunTrack.currentPaceWindowSeconds: TimeInterval = 10` — Task 3의 주석이 이 값을 가리킨다
 
-- [ ] **Step 1: 기존 테스트를 10초 기준으로 다시 쓴다**
+- [x] **Step 1: 기존 테스트를 10초 기준으로 다시 쓴다**
 
 `TraceTests/RunTrackTests.swift:50`의 `test_현재페이스는_최근30초_유효속도의_평균이다`를
 아래로 **교체한다**(이름과 본문을 함께 바꾼다 — 지금 샘플 배치가 30초 창을 전제한다).
@@ -69,13 +69,13 @@
     }
 ```
 
-- [ ] **Step 2: 테스트가 실패하는지 확인한다**
+- [x] **Step 2: 테스트가 실패하는지 확인한다**
 
 Baseline의 테스트 명령을 `-only-testing:TraceTests/RunTrackTests`로 좁혀 실행한다.
 기대: 첫 테스트가 **FAIL** — 30초 창이면 25초 샘플(speed 8)이 포함돼 평균이 `(8+2+4)/3 ≈ 4.67 m/s`,
 페이스가 약 214초/km로 나와 기댓값 333과 어긋난다.
 
-- [ ] **Step 3: 창 상수를 10으로 바꾸고 근거를 남긴다**
+- [x] **Step 3: 창 상수를 10으로 바꾸고 근거를 남긴다**
 
 `RunTrack.swift:8`을 교체한다.
 
@@ -89,11 +89,11 @@ Baseline의 테스트 명령을 `-only-testing:TraceTests/RunTrackTests`로 좁�
     static let currentPaceWindowSeconds: TimeInterval = 10
 ```
 
-- [ ] **Step 4: 테스트가 통과하는지 확인한다**
+- [x] **Step 4: 테스트가 통과하는지 확인한다**
 
 같은 명령을 다시 실행한다. 기대: `RunTrackTests` 전부 **PASS**.
 
-- [ ] **Step 5: 커밋한다**
+- [x] **Step 5: 커밋한다**
 
 Baseline 3종(빌드·테스트·린트)을 통과시키고 검증 스탬프를 찍은 뒤 커밋한다.
 

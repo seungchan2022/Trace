@@ -5,7 +5,13 @@ import Foundation
 struct RunTrack: Equatable, Sendable {
     static let elevationRiseThresholdMeters: Double = 3
     static let maxValidVerticalAccuracyMeters: Double = 10
-    static let currentPaceWindowSeconds: TimeInterval = 30
+    /// 현재 페이스 창(초). 이 지표는 「지금 얼마나 빠른가」를 말하므로 최신성이 먼저다 —
+    /// 창이 길면 이미 지나간 속도가 섞여 오르막·내리막 전환을 늦게 따라온다.
+    /// 업계 관행은 5~10초다(Garmin 약 5초, Timex Global Trainer 5초 평균).
+    /// 더 줄이지 않는 이유: `RunLocationTracker`가 `distanceFilter = 5`(m)를 써서 러닝 중 샘플
+    /// 간격이 약 2초이고, 5초 창이면 평균 낼 샘플이 2~3개뿐이라 GPS 오차가 상쇄되지 않는다.
+    /// 근거: docs/superpowers/specs/2026-09-02-pace-definition-design.md §3
+    static let currentPaceWindowSeconds: TimeInterval = 10
 
     private(set) var samples: [RunSample] = []
     private(set) var totalDistanceMeters: Double = 0

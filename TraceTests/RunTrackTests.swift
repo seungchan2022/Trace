@@ -47,13 +47,23 @@ final class RunTrackTests: XCTestCase {
         XCTAssertNil(track.averagePaceSecondsPerKm)
     }
 
-    func test_현재페이스는_최근30초_유효속도의_평균이다() {
+    func test_현재페이스는_최근10초_유효속도의_평균이다() {
         var track = RunTrack()
-        track.append(sample(at: 0, speed: 10))            // 윈도 밖(마지막 기준 40초 전)
-        track.append(sample(at: 20, speed: -1))           // 음수 속도는 무시
-        track.append(sample(at: 30, speed: 2))
+        track.append(sample(at: 0, speed: 10))   // 윈도 밖(마지막 기준 40초 전)
+        track.append(sample(at: 25, speed: 8))   // 윈도 밖(15초 전) — 30초 창이었다면 포함됐다
+        track.append(sample(at: 32, speed: -1))  // 음수 속도는 무시
+        track.append(sample(at: 35, speed: 2))
         track.append(sample(at: 40, speed: 4))
         // 유효 속도 = [2, 4] → 평균 3m/s → 1000/3 ≈ 333초/km
+        XCTAssertEqual(track.currentPaceSecondsPerKm ?? -1, 1000.0 / 3.0, accuracy: 1)
+    }
+
+    func test_현재페이스_윈도_경계에_걸친_샘플은_포함된다() {
+        var track = RunTrack()
+        track.append(sample(at: 29, speed: 10))  // 마지막 기준 11초 전 — 밖
+        track.append(sample(at: 30, speed: 2))   // 마지막 기준 정확히 10초 전 — 경계, 포함
+        track.append(sample(at: 40, speed: 4))
+        // 유효 속도 = [2, 4] → 평균 3m/s
         XCTAssertEqual(track.currentPaceSecondsPerKm ?? -1, 1000.0 / 3.0, accuracy: 1)
     }
 
