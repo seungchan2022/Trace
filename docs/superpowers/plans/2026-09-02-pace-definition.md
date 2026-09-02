@@ -156,6 +156,11 @@ refactor: 현재 페이스 창을 10초로 줄인다
 Baseline의 테스트 명령을 `-only-testing:TraceTests/RunSessionTests`로 좁혀 실행한다.
 기대: **컴파일 실패** — `value of type 'RunSession' has no member 'averagePaceSecondsPerKm'`.
 
+> ⚠️ Step 4에서 처음 통과시킬 때 **기댓값 600이 실제 계산과 맞는지 확인한다.**
+> `latOffsetMeters: 100`은 위도 환산이라 정확히 100m가 아닐 수 있고, `startedAt`은 첫 샘플 도착에
+> 따라오는 `beginTracking(now:)` 시점에 잡힌다. 어긋나면 `accuracy`를 넓히지 말고
+> **실제 거리·활동 시간을 출력해 기댓값 쪽을 맞춘다** — 정확도를 낮추면 회귀를 못 잡는다.
+
 - [ ] **Step 3: 계산 지점을 추가한다**
 
 `RunSession.swift`의 `summaryActiveElapsedSeconds` 아래에 넣는다.
