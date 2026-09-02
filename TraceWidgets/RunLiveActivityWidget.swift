@@ -24,7 +24,12 @@ struct RunLiveActivityWidget: Widget {
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     if context.state.isPreparing == false {
-                        metric(paceText(context), label: "페이스")
+                        metric(paceText(context), label: "현재 페이스")
+                    }
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    if context.state.isPreparing == false {
+                        metric(averagePaceText(context), label: "평균 페이스")
                     }
                 }
             } compactLeading: {
@@ -45,12 +50,13 @@ struct RunLiveActivityWidget: Widget {
             preparingView()
         } else {
             VStack(spacing: 10) {
-                HStack(spacing: 20) {
+                HStack(spacing: 14) {
                     Image(systemName: context.state.isPaused ? "pause.circle.fill" : "figure.run")
                         .font(.title2)
                     metric(distanceText(context), label: "거리")
                     timeView(context, fontSize: 20)
-                    metric(paceText(context), label: "페이스")
+                    metric(paceText(context), label: "현재 페이스")
+                    metric(averagePaceText(context), label: "평균 페이스")
                 }
                 HStack {
                     if let waypoint = context.state.lastWaypoint {
@@ -136,6 +142,14 @@ struct RunLiveActivityWidget: Widget {
     // 정의한다. RunPaceFormatter.string(secondsPerKm:)을 고치면 이 함수도 같이 고칠 것.
     private func paceText(_ context: ActivityViewContext<RunActivityAttributes>) -> String {
         guard let pace = context.state.paceSecondsPerKm, pace > 0, pace < 3600 else { return "--'--\"" }
+        return String(format: "%d'%02d\"", Int(pace) / 60, Int(pace) % 60)
+    }
+
+    // 주의: paceText와 같은 이유로 앱 타깃 RunPaceFormatter의 로직을 여기 중복 정의한다.
+    private func averagePaceText(_ context: ActivityViewContext<RunActivityAttributes>) -> String {
+        guard let pace = context.state.averagePaceSecondsPerKm, pace > 0, pace < 3600 else {
+            return "--'--\""
+        }
         return String(format: "%d'%02d\"", Int(pace) / 60, Int(pace) % 60)
     }
 }
