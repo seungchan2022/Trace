@@ -135,7 +135,6 @@ This file records defaults until the user chooses otherwise.
 - App icon/name/subtitle
 - Whether TestFlight, App Store release, or private use is the target
 - When to replace `MapKit` with a Korea-focused map/routing provider — trigger is a *measured* quality gap (render real Korean walking routes and compare against Naver/Kakao), not an untested assumption. Provider choice (Naver/Kakao/Tmap) is a separate later decision; pedestrian routing availability differs by provider. 60초당 50요청이라는 `MKDirections` 한계의 근본책(맵매칭 제공자)도 이 결정에 묶여 있다.
-- **SwiftUI Map → MKMapView 교체 시점** — 그리기 중 지도 이동(2손가락 패닝)을 위해 필요. SwiftUI Map 위 오버레이로는 UIKit 제스처 전달 불가 (hit-test 소유권 문제). 교체 시 MapPolyline/Marker/UserAnnotation을 MKOverlay/MKAnnotation delegate 방식으로 전환. 리서치 완료(2026-06-25).
 
 ## Resolved — 정해졌거나 착수된 것
 
@@ -145,6 +144,7 @@ This file records defaults until the user chooses otherwise.
 - **코스 저장 시점** — MVP11(2026-07-07)에서 착수. 백로그에서 뺐던 것(2026-07-04)은 기능이 불필요해서가 아니라 *"방향성 없는 자동 1순위"*를 막으려던 것이었고, 브레인스토밍으로 러닝 전→중→후 그림을 세운 뒤 착수했다. 기록은 `docs/roadmap.md`의 MVP11 항목.
 - **MKDirections 스로틀 완화** — MVP3(2026-06-25)에서 증분 계산으로 전환했으나 **2026-08-06 실측은 반대로 나왔다**(전체 재계산 7건 대 증분 8건). 요청을 막고 있던 것은 캐시였다. 60초당 50요청 한계는 그대로이고, 근본책은 위 「MapKit 교체」 결정에 묶였다. 경위는 `docs/study/1-drawn-path-to-route/note.html` 파트 2.
 - **iOS 18.x `@Observable` malloc 크래시** — Apple 런타임 버그(swiftlang/swift#87316, #85663). **iOS 26+ 시뮬레이터 사용이 근본 우회책**이고, iOS 18에서 테스트해야 하면 ViewModel에 `nonisolated deinit { }`을 넣는다. 상세는 `docs/solutions/workflow-issues/ios18-observable-malloc-crash.md`.
+- **SwiftUI Map → MKMapView 교체** — MVP4(2026-06-27 완료 · 아카이빙됨)에서 끝났다. 그리기 화면은 `Trace/Pages/CoursePlannerPage/MapViewRepresentable.swift`가 `MKMapView`를 감싸고, 기록·러닝 화면은 표시 전용이라 위 「러닝 지도」 결정대로 SwiftUI `Map`을 그대로 쓴다. 기록은 `docs/roadmap.md`의 MVP4 항목과 `history/mvp4/260627_mvp4_completion_retro.md`.
 
 ## Decision Policy
 
