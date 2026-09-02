@@ -100,10 +100,22 @@ iPhone 세로 폭에서 좁아질 수 있다. 시뮬레이터로 확인하고 �
 위젯 타깃은 `session`을 볼 수 없어 값을 계산할 수 없으므로 앱이 넘겨야 한다.
 Live Activity 상태는 휘발성이라(디스크에 남는 blob이 아니다) 저장 포맷 호환 문제는 없다.
 
-🔴 **`RunActivityController`는 평균 페이스 식을 새로 적지 않는다.** 이미 있는 계산 지점 하나를
-참조한다. 새로 적으면 같은 식의 **다섯 번째 복사**가 되어 `pace-dedup`이 치울 대상이 늘어난다.
-어느 지점을 참조할지는 `pace-dedup`이 한 곳으로 모을 때 그 한 곳으로 갈아끼운다.
-기준은 활동 시간(일시정지 제외)이며 `RunAudioCoach.averagePace`·요약 화면과 같다(MVP14 §3.1).
+🔴 **`RunActivityController`는 평균 페이스 식을 새로 적지 않는다.** 새로 적으면 같은 식의
+**다섯 번째 복사**가 되어 `pace-dedup`이 치울 대상이 늘어난다.
+
+다만 지금 **참조할 수 있는 공개 지점이 없다**(2026-09-02 계획 작성 중 확인). 네 소비자가 각자
+`session.activeElapsedSeconds()`와 `session.track.totalDistanceMeters`를 나누고 있고,
+`RunAudioCoach.averagePace`는 `private`이며 `RunTrack.averagePaceSecondsPerKm`는 GPS 샘플 구간
+기준(일시정지 포함)이라 기준 자체가 다르다.
+
+**그래서 `RunSession`에 활동 시간 기준 평균 페이스 계산 프로퍼티를 하나 만들고
+`RunActivityController`가 그것을 쓴다.** 기준은 `RunAudioCoach.averagePace`·요약 화면과 같다
+(MVP14 §3.1). `RunSession`은 이미 `activeElapsedSeconds(now:)`·`summaryActiveElapsedSeconds` 같은
+파생 계산을 들고 있어 같은 성격이며, 새 레이어가 아니다.
+
+**이 프로퍼티가 `pace-dedup`이 나머지 네 곳을 모아 올 목적지가 된다** — 복사를 늘리는 것이 아니라
+합칠 자리를 먼저 만드는 것이라, 다음 사이클의 범위는 「한 곳을 만들고 네 곳을 옮긴다」에서
+「네 곳을 옮긴다」로 줄어든다.
 
 **2-3. 배치** — 지금 잠금화면 본문은 `HStack(spacing: 20)`에 아이콘·거리·시간·페이스로 이미
 네 요소이고, Dynamic Island 확장은 leading·center·trailing 세 영역이 모두 찼다.
