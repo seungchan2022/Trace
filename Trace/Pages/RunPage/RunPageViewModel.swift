@@ -123,6 +123,13 @@ final class RunPageViewModel {
         return elapsed / (distanceMeters / 1000)
     }
 
+    /// 트래킹 화면 현재 페이스 — 최근 `RunTrack.currentPaceWindowSeconds`초의 GPS 속도 평균.
+    /// 평균 페이스와 나란히 두어 두 지표를 한 화면에서 비교할 수 있게 한다
+    /// (근거: docs/superpowers/specs/2026-09-02-pace-definition-design.md §1).
+    var currentPaceSecondsPerKm: Double? {
+        session.track.currentPaceSecondsPerKm
+    }
+
     init(
         session: RunSession,
         announcer: VoiceAnnouncerProtocol,

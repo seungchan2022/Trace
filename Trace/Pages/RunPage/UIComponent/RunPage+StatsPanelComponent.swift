@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 트래킹 중 전체화면: 거리가 주인공, 보조 행(시간·평균 페이스) 위에 배치(ui-direction §3)
+/// 트래킹 중 전체화면: 거리가 주인공, 보조 행(시간·평균 페이스·현재 페이스) 위에 배치(ui-direction §3)
 struct RunStatsPanel: View {
     let viewModel: RunPageViewModel
     @State private var isPressingEnd = false
@@ -9,11 +9,17 @@ struct RunStatsPanel: View {
         VStack(spacing: 0) {
             Spacer()
 
-            // 보조 행: 시간 · 평균 페이스 (ui-direction §3)
-            HStack(spacing: 36) {
+            // 보조 행: 시간 · 평균 페이스 · 현재 페이스 (ui-direction §3의 보조 행을 셋으로 늘린다)
+            HStack(spacing: 24) {
                 secondaryStat(label: "시간") { elapsedText }
                 secondaryStat(label: "평균 페이스") {
                     Text(RunPaceFormatter.string(secondsPerKm: viewModel.liveAveragePaceSecondsPerKm))
+                        .font(DesignToken.Typography.runSecondaryStat)
+                        .monospacedDigit()
+                        .foregroundStyle(DesignToken.Color.ink)
+                }
+                secondaryStat(label: "현재 페이스") {
+                    Text(RunPaceFormatter.string(secondsPerKm: viewModel.currentPaceSecondsPerKm))
                         .font(DesignToken.Typography.runSecondaryStat)
                         .monospacedDigit()
                         .foregroundStyle(DesignToken.Color.ink)

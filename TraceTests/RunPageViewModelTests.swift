@@ -175,6 +175,22 @@ final class RunPageViewModelTests: XCTestCase {
         )
     }
 
+    /// 트래킹 화면 현재 페이스는 새 계산 없이 `RunTrack.currentPaceSecondsPerKm`을 그대로 노출해야 한다
+    /// (Task 1이 정한 10초 창을 그대로 쓴다 — 평균 페이스와는 다른 지표, 스펙 §1).
+    func test_현재페이스는_트랙의_값을_그대로_노출한다() async {
+        await session.start()
+        let base = Date()
+        stream.yield(sample(at: base))
+        await waitUntil { session.state == .tracking }
+        stream.yield(sample(at: base.addingTimeInterval(5), latOffsetMeters: 20))
+        await waitUntil { session.track.samples.count == 2 }
+        XCTAssertEqual(viewModel.currentPaceSecondsPerKm, session.track.currentPaceSecondsPerKm)
+    }
+
+    func test_샘플이_없으면_현재페이스는_nil이다() {
+        XCTAssertNil(viewModel.currentPaceSecondsPerKm)
+    }
+
     /// 격리된 UserDefaults suite — 프리필/저장 테스트가 .standard나 서로를 오염시키지 않게 한다.
     private func makeIsolatedDefaults(name: String) -> UserDefaults {
         guard let defaults = UserDefaults(suiteName: name) else { return .standard }

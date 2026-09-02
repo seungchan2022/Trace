@@ -213,7 +213,7 @@ feat: 활동 시간 기준 평균 페이스 계산 지점을 만든다
 - Consumes: `RunTrack.currentPaceSecondsPerKm` (Task 1이 창을 정한 그 값)
 - Produces: `RunPageViewModel.currentPaceSecondsPerKm: Double?`
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [x] **Step 1: 실패하는 테스트를 쓴다**
 
 `TraceTests/RunPageViewModelTests.swift`에 추가한다.
 
@@ -236,12 +236,12 @@ feat: 활동 시간 기준 평균 페이스 계산 지점을 만든다
 > `waitUntil` 헬퍼는 이 파일 `:43`에 이미 있고, `await session.start()` → `stream.yield(...)` →
 > `await waitUntil { session.state == .tracking }` 패턴도 `:62` 이하 기존 테스트들과 같다.
 
-- [ ] **Step 2: 테스트가 실패하는지 확인한다**
+- [x] **Step 2: 테스트가 실패하는지 확인한다**
 
 Baseline의 테스트 명령을 `-only-testing:TraceTests/RunPageViewModelTests`로 좁혀 실행한다.
 기대: **컴파일 실패** — `has no member 'currentPaceSecondsPerKm'`.
 
-- [ ] **Step 3: 뷰모델에 프로퍼티를 추가한다**
+- [x] **Step 3: 뷰모델에 프로퍼티를 추가한다**
 
 `RunPageViewModel.swift`의 `summaryAveragePaceSecondsPerKm` 아래에 넣는다.
 
@@ -254,11 +254,11 @@ Baseline의 테스트 명령을 `-only-testing:TraceTests/RunPageViewModelTests`
     }
 ```
 
-- [ ] **Step 4: 테스트가 통과하는지 확인한다**
+- [x] **Step 4: 테스트가 통과하는지 확인한다**
 
 같은 명령을 다시 실행한다. 기대: **PASS**.
 
-- [ ] **Step 5: 보조 행에 세 번째 항목을 넣는다**
+- [x] **Step 5: 보조 행에 세 번째 항목을 넣는다**
 
 `RunPage+StatsPanelComponent.swift:12-21`을 교체한다.
 
@@ -283,7 +283,7 @@ Baseline의 테스트 명령을 `-only-testing:TraceTests/RunPageViewModelTests`
 
 > `spacing`을 36에서 24로 줄인 것은 출발값이다. 다음 Step에서 실제로 보고 정한다.
 
-- [ ] **Step 6: 시뮬레이터로 배치를 확인한다**
+- [x] **Step 6: 시뮬레이터로 배치를 확인한다**
 
 빌드·설치·실행 후 러닝을 시작해 트래킹 화면을 본다(XcodeBuildMCP의 빌드·실행·스크린샷은 사용
 가능하다 — 금지된 것은 테스트 실행뿐이다).
@@ -291,7 +291,11 @@ Baseline의 테스트 명령을 `-only-testing:TraceTests/RunPageViewModelTests`
 확인할 것: **세 항목의 숫자와 라벨이 잘리거나 겹치지 않는가.** 좁으면 `spacing`을 더 줄이거나
 라벨을 「평균」·「현재」로 짧게 바꾼다. **거리(주인공)의 크기와 위치는 바꾸지 않는다.**
 
-- [ ] **Step 7: 커밋한다**
+> 실측 결과: `spacing: 24`(출발값) 그대로 시간·평균 페이스·현재 페이스 세 항목이 잘리거나
+> 겹치지 않고 표시됐다(2026-09-02, iPhone 17 Pro/iOS 26.5 시뮬레이터, `history/mvp17/
+> trace-history-tab-5km-1min-pace.gpx` 경로로 위치 시뮬레이션). 조정 불필요.
+
+- [x] **Step 7: 커밋한다**
 
 ```bash
 git add Trace/Pages/RunPage/RunPageViewModel.swift \
