@@ -1,0 +1,818 @@
+<title>Trace 기능 지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+
+<style>
+:root {
+  color-scheme: light;
+
+  /* 앱 애셋 Seg0~Seg5에서 그대로 가져온 코스 구간 색 */
+  --seg-0: #0284C7;
+  --seg-1: #06B6A4;
+  --seg-2: #059669;
+  --seg-3: #0891B2;
+  --seg-4: #0E9488;
+  --seg-5: #0D9488;
+
+  --ground:  #F5F8F9;
+  --surface: #FFFFFF;
+  --raised:  #EDF3F4;
+  --sunk:    #E3ECEE;
+  --ink:     #0E1D21;
+  --ink-2:   #35494E;
+  --muted:   #64797E;
+  --line:    #D9E4E7;
+  --line-2:  #C3D3D7;
+
+  --warn:    #A2590B;
+  --warn-bg: #FBF1E2;
+
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --sans: "IBM Plex Sans KR", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page { max-width: 980px; margin: 0 auto; padding: 56px 24px 96px; }
+
+/* ---------- 머리 ---------- */
+
+.masthead {
+  display: flex; flex-direction: column; gap: 16px;
+  padding-bottom: 30px; border-bottom: 1px solid var(--line);
+}
+.eyebrow {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 500;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+}
+h1 {
+  font-family: var(--mono); font-size: clamp(30px, 6vw, 46px); font-weight: 700;
+  letter-spacing: -.022em; line-height: 1.1; margin: 0; text-wrap: balance;
+}
+h1 .dim { color: var(--muted); font-weight: 400; }
+.lede { max-width: 62ch; font-size: 16px; color: var(--ink-2); margin: 0; }
+.stamp {
+  display: flex; flex-wrap: wrap; gap: 6px 20px;
+  font-family: var(--mono); font-size: 12px; color: var(--muted);
+}
+.stamp b { font-weight: 500; color: var(--ink-2); }
+
+/* ---------- 수치 요약 ---------- */
+
+.tally {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  margin: 28px 0 6px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 3px; overflow: hidden;
+}
+.tally div { background: var(--surface); padding: 15px 18px; display: flex; flex-direction: column; gap: 2px; }
+.tally .n { font-family: var(--mono); font-size: 27px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.tally .k { font-size: 12.5px; color: var(--muted); }
+.tally .n.ok { color: var(--seg-1); }
+.tally .n.cond { color: var(--ink-2); }
+.tally .n.unk { color: var(--warn); }
+.tally-note { font-size: 12.5px; color: var(--muted); margin: 0 0 4px; }
+
+/* ---------- 도식 ---------- */
+
+.canvas {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 6px 4px;
+  margin-bottom: 22px;
+}
+.canvas svg { display: block; min-width: 760px; width: 100%; height: auto; }
+
+.d-screen { font-family: var(--sans); font-size: 11.5px; fill: var(--muted); }
+.d-num    { font-family: var(--mono); font-size: 11.5px; font-weight: 600; fill: #FFFFFF; }
+.d-act    { font-family: var(--sans); font-size: 13px; font-weight: 600; fill: var(--ink); }
+.d-sub    { font-family: var(--sans); font-size: 11.5px; fill: var(--muted); }
+.d-branch { font-family: var(--sans); font-size: 11.5px; fill: var(--muted); }
+.d-lane   { font-family: var(--mono); font-size: 10px; fill: var(--line-2); letter-spacing: .1em; }
+
+/* ---------- 여정 머리 도식 ---------- */
+
+.journey { margin: 44px 0 8px; }
+.journey .canvas svg { min-width: 700px; }
+
+.section-title {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 500;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 3px;
+}
+.section-note { font-size: 13.5px; color: var(--muted); margin: 0 0 14px; max-width: 66ch; }
+
+/* ---------- 흐름 ---------- */
+
+.leg { margin-top: 56px; padding-top: 26px; border-top: 2px solid var(--dot); }
+
+.leg-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 2px; }
+.leg-phase {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 500;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--dot);
+}
+.leg-count { font-family: var(--mono); font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.leg h2 { font-size: 21px; font-weight: 600; letter-spacing: -.014em; margin: 0 0 14px; line-height: 1.35; text-wrap: balance; }
+
+/* ---------- 정거장별 묶음 ---------- */
+
+.stops { display: flex; flex-direction: column; gap: 16px; }
+
+.stop {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 0 14px;
+  align-items: start;
+}
+
+.stop-num {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  color: #FFFFFF; background: var(--dot);
+  width: 42px; height: 24px; border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-variant-numeric: tabular-nums; letter-spacing: .02em;
+  margin-top: 2px;
+}
+.stop-num.branch { background: var(--surface); color: var(--muted); border: 1px dashed var(--line-2); }
+
+.stop-body { display: flex; flex-direction: column; gap: 6px; }
+.stop-title { font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+
+.acts {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--line); border-radius: 3px;
+  background: var(--surface); overflow: hidden;
+}
+.act {
+  padding: 8px 14px 8px 28px; position: relative;
+  font-size: 13.5px; line-height: 1.6; color: var(--ink-2);
+  border-top: 1px solid var(--line);
+}
+.act:first-child { border-top: none; }
+.act::before {
+  content: ""; position: absolute; left: 14px; top: 1.05em;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--dot);
+}
+.act b { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.act .sep { color: var(--line-2); margin: 0 5px; }
+
+/* ---------- 조건부 ---------- */
+
+.lane-box {
+  margin-top: 56px; padding: 22px 22px 24px;
+  border: 1px dashed var(--line-2); border-radius: 3px; background: var(--raised);
+  --dot: var(--muted);
+}
+.lane-box h2 { font-size: 19px; font-weight: 600; margin: 0 0 5px; letter-spacing: -.012em; }
+.lane-box .why { font-size: 13.5px; color: var(--muted); margin: 0 0 14px; max-width: 64ch; }
+.lane-box .acts { border-color: var(--line-2); }
+.lane-box .act { border-top-color: var(--line-2); }
+.act.unknown::before { background: var(--warn); }
+
+.flag {
+  display: inline-block; font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: .07em; padding: 1px 7px; border-radius: 2px;
+  background: var(--warn-bg); color: var(--warn); margin-left: 7px;
+  vertical-align: 1px; white-space: nowrap;
+}
+
+/* ---------- 없는 것 ---------- */
+
+.absent { margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--line); }
+.absent h2 { font-size: 18px; font-weight: 600; margin: 0 0 4px; letter-spacing: -.012em; }
+.absent .why { font-size: 13.5px; color: var(--muted); margin: 0 0 18px; max-width: 66ch; }
+.gone {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(256px, 1fr));
+  gap: 10px; list-style: none; padding: 0; margin: 0;
+}
+.gone li { padding: 11px 14px; border-left: 2px solid var(--line-2); background: var(--surface); border-radius: 0 3px 3px 0; }
+.gone .t {
+  font-size: 13px; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 1px;
+  text-decoration: line-through; text-decoration-color: var(--line-2); text-decoration-thickness: 1px;
+}
+.gone .r { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+/* ---------- 꼬리 ---------- */
+
+.colophon {
+  margin-top: 52px; padding-top: 20px; border-top: 1px solid var(--line);
+  font-size: 12.5px; color: var(--muted);
+  display: flex; flex-direction: column; gap: 7px;
+}
+.colophon code {
+  font-family: var(--mono); font-size: 11.5px; background: var(--raised);
+  padding: 1px 5px; border-radius: 2px; color: var(--ink-2);
+}
+.swatches { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.swatches i { width: 15px; height: 15px; border-radius: 2px; display: inline-block; }
+
+@media (max-width: 640px) {
+  .page { padding: 40px 16px 72px; }
+  .tally { grid-template-columns: 1fr; }
+  .stop { grid-template-columns: 1fr; gap: 8px; }
+  .stop-num { margin-top: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">iOS · 러닝 기록 앱</div>
+    <h1>Trace <span class="dim">기능 지도</span></h1>
+    <p class="lede">
+      지금 앱에서 사용자가 실제로 할 수 있는 일 전부를, 달리기 전·중·후라는 시간 순서로 늘어놓았다.
+      흐름마다 그림을 먼저 놓고, 그림의 번호가 아래 목록의 번호와 이어진다.
+    </p>
+    <div class="stamp">
+      <span>기준 <b>main / 780a4ca</b></span>
+      <span>작성 <b>2026-09-01</b></span>
+      <span>정본 <b>docs/current-features.md</b></span>
+    </div>
+  </header>
+
+  <!-- ===== 여정 도식 ===== -->
+  <section class="journey">
+    <div class="section-title">한눈에 — 하루의 여정</div>
+    <p class="section-note">
+      앱은 탭 세 개로 나뉘고, 각 탭이 달리기 전·중·후를 하나씩 맡는다.
+      아래 흐름 ①~④가 이 선 위의 구간이다.
+    </p>
+    <div class="canvas">
+      <svg viewBox="0 0 880 232" role="img" aria-label="코스를 그리고, 달리고, 기록을 보는 하루의 여정">
+        <defs>
+          <marker id="jar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#C3D3D7"/>
+          </marker>
+        </defs>
+
+        <!-- 탭 구간 배경 -->
+        <rect x="28"  y="24" width="316" height="130" rx="4" fill="#EDF3F4"/>
+        <rect x="360" y="24" width="270" height="130" rx="4" fill="#EDF3F4"/>
+        <rect x="646" y="24" width="206" height="130" rx="4" fill="#EDF3F4"/>
+
+        <text class="d-lane" x="40"  y="42" fill="#06B6A4">코스 탭</text>
+        <text class="d-lane" x="372" y="42" fill="#059669">러닝 탭</text>
+        <text class="d-lane" x="658" y="42" fill="#0891B2">기록 탭</text>
+
+        <!-- 여정 선 -->
+        <line x1="52" y1="98" x2="836" y2="98" stroke="#C3D3D7" stroke-width="2" marker-end="url(#jar)"/>
+
+        <!-- 정거장 -->
+        <g>
+          <circle cx="110" cy="98" r="15" fill="#06B6A4"/>
+          <text class="d-num" x="110" y="102" text-anchor="middle">②</text>
+          <text class="d-act" x="110" y="136" text-anchor="middle">코스를 그린다</text>
+          <text class="d-sub" x="110" y="74"  text-anchor="middle">지도에 찍고 잇는다</text>
+        </g>
+        <g>
+          <circle cx="266" cy="98" r="15" fill="#06B6A4"/>
+          <text class="d-num" x="266" y="102" text-anchor="middle">②</text>
+          <text class="d-act" x="266" y="136" text-anchor="middle">이름 붙여 저장한다</text>
+          <text class="d-sub" x="266" y="74"  text-anchor="middle">다음에 다시 꺼내 쓴다</text>
+        </g>
+        <g>
+          <circle cx="432" cy="98" r="15" fill="#059669"/>
+          <text class="d-num" x="432" y="102" text-anchor="middle">③</text>
+          <text class="d-act" x="432" y="136" text-anchor="middle">목표를 정한다</text>
+          <text class="d-sub" x="432" y="74"  text-anchor="middle">자유 · 거리 · 시간</text>
+        </g>
+        <g>
+          <circle cx="576" cy="98" r="15" fill="#059669"/>
+          <text class="d-num" x="576" y="102" text-anchor="middle">③</text>
+          <text class="d-act" x="576" y="136" text-anchor="middle">달린다</text>
+          <text class="d-sub" x="576" y="74"  text-anchor="middle">기록은 자동 저장</text>
+        </g>
+        <g>
+          <circle cx="748" cy="98" r="15" fill="#0891B2"/>
+          <text class="d-num" x="748" y="102" text-anchor="middle">④</text>
+          <text class="d-act" x="748" y="136" text-anchor="middle">돌아본다</text>
+          <text class="d-sub" x="748" y="74"  text-anchor="middle">거리 · 페이스 · 지도</text>
+        </g>
+
+        <!-- 아래 주석 -->
+        <text class="d-branch" x="28" y="184">코스와 러닝은 서로 독립돼 있다 — 저장한 코스를 골라 그대로 달리는 길은 아직 없다.</text>
+        <text class="d-branch" x="28" y="206">달리는 동안에는 화면 아래 탭바가 사라져서, 다른 탭으로 새지 않는다.</text>
+      </svg>
+    </div>
+  </section>
+
+  <p class="tally-note">항목 47개를 상태로 나누면 이렇다.</p>
+  <div class="tally">
+    <div><span class="n ok">39</span><span class="k">현재 제공 — 지금 앱에서 바로 쓸 수 있다</span></div>
+    <div><span class="n cond">7</span><span class="k">조건부 — 권한·기기·시스템 설정이 맞아야 쓸 수 있다</span></div>
+    <div><span class="n unk">1</span><span class="k">확인 필요 — 실기기에서 직접 확인해야 확정된다</span></div>
+  </div>
+
+  <!-- ===== 흐름 ① 진입 ===== -->
+  <section class="leg" style="--dot: var(--seg-0)">
+    <div class="leg-head"><span class="leg-phase">① 달리기 전 · 진입</span><span class="leg-count">4</span></div>
+    <h2>앱에 들어와 목적을 고른다</h2>
+    <p class="section-note" style="margin-bottom:16px">
+      위 여정 그림의 탭 세 칸이 그대로 이 흐름이다. 여기서 하는 일은 어느 탭에 있을지 고르는 것뿐이라 따로 그림을 두지 않았다.
+    </p>
+    <div class="acts">
+      <div class="act"><b>앱을 처음 연다</b><span class="sep">/</span>코스 화면이 먼저 열려서, 오늘 어디를 뛸지 정하는 일부터 시작한다</div>
+      <div class="act"><b>화면 아래 탭바를 누른다</b><span class="sep">/</span>코스·러닝·기록 세 화면을 오가며 달리기 전·중·후의 목적을 직접 고른다</div>
+      <div class="act"><b>러닝을 시작한 뒤 화면을 본다</b><span class="sep">/</span>카운트다운부터 요약을 닫을 때까지 탭바가 사라져, 달리는 동안 다른 화면으로 새지 않는다</div>
+      <div class="act"><b>러닝 탭에서 지난 기록을 찾는다</b><span class="sep">/</span>러닝 탭에는 기록으로 가는 진입점이 없다. 러닝 화면은 지금 시작하는 일만 다룬다</div>
+    </div>
+  </section>
+
+  <!-- ===== 흐름 ② 코스 계획 ===== -->
+  <section class="leg" style="--dot: var(--seg-1)">
+    <div class="leg-head"><span class="leg-phase">② 달리기 전 · 계획</span><span class="leg-count">15</span></div>
+    <h2>달리기 전 코스를 계획하고 관리한다</h2>
+
+    <div class="canvas">
+      <svg viewBox="0 0 880 250" role="img" aria-label="코스를 찍고 그리고 늘리고 확인해 저장하기까지의 흐름">
+        <defs>
+          <marker id="ar2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#C3D3D7"/>
+          </marker>
+        </defs>
+
+        <text class="d-lane" x="28" y="34">화면</text>
+        <text class="d-lane" x="28" y="106">하는 일</text>
+        <text class="d-lane" x="28" y="196">언제든</text>
+
+        <line x1="100" y1="20" x2="100" y2="230" stroke="#EDF3F4" stroke-width="1"/>
+
+        <!-- 화면 레인 -->
+        <text class="d-screen" x="180" y="34" text-anchor="middle">지도</text>
+        <text class="d-screen" x="345" y="34" text-anchor="middle">지도</text>
+        <text class="d-screen" x="510" y="34" text-anchor="middle">지도 + 구간 패널</text>
+        <text class="d-screen" x="675" y="34" text-anchor="middle">아래 시트</text>
+        <text class="d-screen" x="825" y="34" text-anchor="middle">저장 목록</text>
+
+        <line x1="120" y1="48" x2="240" y2="48" stroke="#E3ECEE" stroke-width="6"/>
+        <line x1="285" y1="48" x2="405" y2="48" stroke="#E3ECEE" stroke-width="6"/>
+        <line x1="440" y1="48" x2="580" y2="48" stroke="#E3ECEE" stroke-width="6"/>
+        <line x1="615" y1="48" x2="735" y2="48" stroke="#E3ECEE" stroke-width="6"/>
+        <line x1="775" y1="48" x2="860" y2="48" stroke="#E3ECEE" stroke-width="6"/>
+
+        <!-- 시간축 -->
+        <line x1="120" y1="82" x2="862" y2="82" stroke="#C3D3D7" stroke-width="2" marker-end="url(#ar2)"/>
+
+        <!-- 정거장 -->
+        <g>
+          <circle cx="180" cy="82" r="14" fill="#06B6A4"/>
+          <text class="d-num" x="180" y="86" text-anchor="middle">2-1</text>
+          <text class="d-act" x="180" y="118" text-anchor="middle">지점을 찍는다</text>
+          <text class="d-sub" x="180" y="136" text-anchor="middle">찍으면 도보 경로가 생긴다</text>
+        </g>
+        <g>
+          <circle cx="345" cy="82" r="14" fill="#06B6A4"/>
+          <text class="d-num" x="345" y="86" text-anchor="middle">2-2</text>
+          <text class="d-act" x="345" y="118" text-anchor="middle">손으로 그린다</text>
+          <text class="d-sub" x="345" y="136" text-anchor="middle">그린 선이 도로에 맞춰진다</text>
+        </g>
+        <g>
+          <circle cx="510" cy="82" r="14" fill="#06B6A4"/>
+          <text class="d-num" x="510" y="86" text-anchor="middle">2-3</text>
+          <text class="d-act" x="510" y="118" text-anchor="middle">거리를 맞춘다</text>
+          <text class="d-sub" x="510" y="136" text-anchor="middle">왕복으로 늘린다</text>
+        </g>
+        <g>
+          <circle cx="675" cy="82" r="14" fill="#06B6A4"/>
+          <text class="d-num" x="675" y="86" text-anchor="middle">2-4</text>
+          <text class="d-act" x="675" y="118" text-anchor="middle">목록에서 확인한다</text>
+          <text class="d-sub" x="675" y="136" text-anchor="middle">구간별·누적 거리</text>
+        </g>
+        <g>
+          <circle cx="825" cy="82" r="14" fill="#06B6A4"/>
+          <text class="d-num" x="825" y="86" text-anchor="middle">2-5</text>
+          <text class="d-act" x="825" y="118" text-anchor="middle">저장한다</text>
+          <text class="d-sub" x="825" y="136" text-anchor="middle">다시 꺼내 쓴다</text>
+        </g>
+
+        <!-- 갈래 레인 -->
+        <line x1="120" y1="168" x2="862" y2="168" stroke="#E3ECEE" stroke-width="1" stroke-dasharray="4 4"/>
+        <line x1="180" y1="96" x2="180" y2="168" stroke="#E3ECEE" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="510" y1="96" x2="510" y2="168" stroke="#E3ECEE" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="825" y1="96" x2="825" y2="168" stroke="#E3ECEE" stroke-width="1" stroke-dasharray="3 3"/>
+
+        <g>
+          <rect x="120" y="180" width="164" height="26" rx="3" fill="#FFFFFF" stroke="#C3D3D7" stroke-width="1" stroke-dasharray="3 3"/>
+          <text class="d-branch" x="202" y="197" text-anchor="middle">2-A  되돌리기 · 지우기</text>
+        </g>
+        <g>
+          <rect x="300" y="180" width="164" height="26" rx="3" fill="#FFFFFF" stroke="#C3D3D7" stroke-width="1" stroke-dasharray="3 3"/>
+          <text class="d-branch" x="382" y="197" text-anchor="middle">2-B  현재 위치로</text>
+        </g>
+        <g>
+          <rect x="480" y="180" width="164" height="26" rx="3" fill="#FFFFFF" stroke="#C3D3D7" stroke-width="1" stroke-dasharray="3 3"/>
+          <text class="d-branch" x="562" y="197" text-anchor="middle">2-C  껐다 다시 열기</text>
+        </g>
+        <g>
+          <rect x="660" y="180" width="164" height="26" rx="3" fill="#FFFFFF" stroke="#C3D3D7" stroke-width="1" stroke-dasharray="3 3"/>
+          <text class="d-branch" x="742" y="197" text-anchor="middle">2-D  경로를 못 찾을 때</text>
+        </g>
+
+        <text class="d-branch" x="120" y="232">아래 네 가지는 순서가 없다 — 코스를 만드는 어느 시점에서든 일어난다.</text>
+      </svg>
+    </div>
+
+    <div class="stops">
+      <div class="stop">
+        <div class="stop-num">2-1</div>
+        <div class="stop-body">
+          <div class="stop-title">지도에 지점을 찍는다</div>
+          <div class="acts">
+            <div class="act"><b>지도에서 두 지점을 찍는다</b><span class="sep">/</span>직선이 아니라 실제로 걸을 수 있는 도보 경로와 그 거리를 확인한다</div>
+            <div class="act"><b>이미 만든 경로에 지점을 더 찍는다</b><span class="sep">/</span>가까운 쪽 끝점에 자동으로 이어붙어서, 어디에 붙일지 매번 지정하지 않아도 코스가 자란다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">2-2</div>
+        <div class="stop-body">
+          <div class="stop-title">머릿속 코스를 손으로 그린다</div>
+          <div class="acts">
+            <div class="act"><b>지도를 꾹 눌러 선을 긋는다</b><span class="sep">/</span>머릿속에 있는 코스를 손으로 그리면 실제 도로에 맞춰진 경로로 바뀐다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">2-3</div>
+        <div class="stop-body">
+          <div class="stop-title">왕복으로 거리를 맞춘다</div>
+          <div class="acts">
+            <div class="act"><b>출발 핀을 탭한다</b><span class="sep">/</span>지금까지 만든 코스를 출발점으로 되돌아오는 왕복으로 닫는다</div>
+            <div class="act"><b>한 구간의 왕복 버튼을 누른다</b><span class="sep">/</span>코스 전체를 다시 그리지 않고 특정 구간만 왕복으로 늘려 거리를 맞춘다</div>
+            <div class="act"><b>시트에서 전체 왕복을 누른다</b><span class="sep">/</span>만든 코스 전체를 한 번에 왕복으로 만들어 거리를 두 배로 잡는다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">2-4</div>
+        <div class="stop-body">
+          <div class="stop-title">구간 목록에서 확인한다</div>
+          <div class="acts">
+            <div class="act"><b>지도 아래 시트를 편다</b><span class="sep">/</span>총거리와 구간별 거리·누적 거리를 한 목록에서 보고, 구간을 골라 지도에서 확인한다</div>
+            <div class="act"><b>구간 목록을 아래로 끌어내린다</b><span class="sep">/</span>리스트 스크롤이 끝에 닿으면 그대로 시트가 접혀서, 손을 떼고 다시 잡지 않아도 된다</div>
+            <div class="act"><b>왕복 구간이 같은 길 위에 겹친다</b><span class="sep">/</span>겹친 경로를 조금 벌려 그려서 어느 구간이 몇 번 지나가는지 눈으로 구분한다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">2-5</div>
+        <div class="stop-body">
+          <div class="stop-title">저장하고 다시 꺼낸다</div>
+          <div class="acts">
+            <div class="act"><b>코스에 이름을 붙여 저장한다</b><span class="sep">/</span>자주 뛰는 코스를 다음에 다시 만들지 않고 꺼내 쓴다</div>
+            <div class="act"><b>저장한 코스 목록을 연다</b><span class="sep">/</span>이름·거리·저장일로 고르고, 불러오거나 스와이프로 지운다. 작업 중인 코스가 있으면 교체 여부를 먼저 묻는다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num branch">2-A</div>
+        <div class="stop-body">
+          <div class="stop-title">순서 없이 언제든 일어나는 것</div>
+          <div class="acts">
+            <div class="act"><b>방금 붙인 구간이 마음에 안 든다</b><span class="sep">/</span>되돌리기·다시하기·전체 지우기로 모드와 무관하게 편집을 취소한다</div>
+            <div class="act"><b>지도를 옮기다 현재 위치를 놓친다</b><span class="sep">/</span>현재 위치 버튼으로 지도를 지금 있는 곳으로 되돌린다</div>
+            <div class="act"><b>앱을 껐다 다시 연다</b><span class="sep">/</span>마지막으로 보던 지도 위치에서 이어서 계획한다</div>
+            <div class="act"><b>경로 계산이 실패한다</b><span class="sep">/</span>도보 경로가 없는 상황과 요청이 몰린 상황을 화면 위 안내로 구분해서 알려준다</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 흐름 ③ 러닝 ===== -->
+  <section class="leg" style="--dot: var(--seg-2)">
+    <div class="leg-head"><span class="leg-phase">③ 달리는 중</span><span class="leg-count">12</span></div>
+    <h2>코스 없이 러닝을 준비하고 기록한다</h2>
+
+    <div class="canvas">
+      <svg viewBox="0 0 880 268" role="img" aria-label="목표를 정하고 카운트다운을 거쳐 달리고 요약을 보기까지의 흐름">
+        <defs>
+          <marker id="ar3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#C3D3D7"/>
+          </marker>
+          <marker id="ar3d" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#C3D3D7"/>
+          </marker>
+        </defs>
+
+        <text class="d-lane" x="28" y="34">화면</text>
+        <text class="d-lane" x="28" y="106">하는 일</text>
+        <text class="d-lane" x="28" y="212">되돌아가는 길</text>
+
+        <line x1="100" y1="20" x2="100" y2="248" stroke="#EDF3F4" stroke-width="1"/>
+
+        <!-- 탭바 사라짐 구간 -->
+        <rect x="248" y="18" width="560" height="120" rx="4" fill="#EDF3F4"/>
+        <text class="d-lane" x="258" y="34" fill="#C3D3D7">여기서부터 탭바가 사라진다</text>
+
+        <!-- 화면 레인 -->
+        <text class="d-screen" x="175" y="58" text-anchor="middle">대기 화면</text>
+        <text class="d-screen" x="310" y="58" text-anchor="middle">숫자 화면</text>
+        <text class="d-screen" x="445" y="58" text-anchor="middle">신호 대기</text>
+        <text class="d-screen" x="600" y="58" text-anchor="middle">달리는 화면</text>
+        <text class="d-screen" x="770" y="58" text-anchor="middle">요약 화면</text>
+
+        <!-- 시간축 -->
+        <line x1="120" y1="88" x2="856" y2="88" stroke="#C3D3D7" stroke-width="2" marker-end="url(#ar3)"/>
+
+        <g>
+          <circle cx="175" cy="88" r="14" fill="#059669"/>
+          <text class="d-num" x="175" y="92" text-anchor="middle">3-1</text>
+          <text class="d-act" x="175" y="124" text-anchor="middle">목표를 정한다</text>
+          <text class="d-sub" x="175" y="142" text-anchor="middle">자유 · 거리 · 시간</text>
+        </g>
+        <g>
+          <circle cx="310" cy="88" r="14" fill="#059669"/>
+          <text class="d-num" x="310" y="92" text-anchor="middle">3-2</text>
+          <text class="d-act" x="310" y="124" text-anchor="middle">3 · 2 · 1 센다</text>
+          <text class="d-sub" x="310" y="142" text-anchor="middle">음성과 진동</text>
+        </g>
+        <g>
+          <circle cx="445" cy="88" r="14" fill="#059669"/>
+          <text class="d-num" x="445" y="92" text-anchor="middle">3-3</text>
+          <text class="d-act" x="445" y="124" text-anchor="middle">신호를 찾는다</text>
+          <text class="d-sub" x="445" y="142" text-anchor="middle">GPS를 기다린다</text>
+        </g>
+        <g>
+          <circle cx="600" cy="88" r="14" fill="#059669"/>
+          <text class="d-num" x="600" y="92" text-anchor="middle">3-4</text>
+          <text class="d-act" x="600" y="124" text-anchor="middle">달린다</text>
+          <text class="d-sub" x="600" y="142" text-anchor="middle">거리 · 시간 · 페이스</text>
+        </g>
+        <g>
+          <circle cx="770" cy="88" r="14" fill="#059669"/>
+          <text class="d-num" x="770" y="92" text-anchor="middle">3-6</text>
+          <text class="d-act" x="770" y="124" text-anchor="middle">요약을 본다</text>
+          <text class="d-sub" x="770" y="142" text-anchor="middle">기록은 자동 저장</text>
+        </g>
+
+        <!-- 잠깐 멈춤 (달리는 중 위로 올라가는 곁가지) -->
+        <path d="M578,102 L560,168 L640,168" fill="none" stroke="#C3D3D7" stroke-width="1.4"/>
+        <path d="M640,168 L622,102" fill="none" stroke="#C3D3D7" stroke-width="1.4" marker-end="url(#ar3)"/>
+        <rect x="546" y="156" width="108" height="26" rx="3" fill="#FFFFFF" stroke="#059669" stroke-width="1.4"/>
+        <text class="d-branch" x="600" y="173" text-anchor="middle" fill="#0E1D21">3-5  잠깐 멈춤</text>
+        <text class="d-sub" x="600" y="200" text-anchor="middle">멈춘 시간과 거리는 기록에서 빠진다</text>
+
+        <!-- 되돌아가는 길 -->
+        <path d="M310,102 L310,238 L162,238 L162,102" fill="none" stroke="#C3D3D7" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ar3d)"/>
+        <path d="M445,102 L445,222 L188,222 L188,102" fill="none" stroke="#C3D3D7" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ar3d)"/>
+        <path d="M770,150 L770,254 L136,254 L136,102" fill="none" stroke="#C3D3D7" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ar3d)"/>
+
+        <text class="d-branch" x="330" y="234">잘못 눌렀으면 화면을 탭해 취소한다</text>
+        <text class="d-branch" x="462" y="218">신호를 못 찾으면 취소하고 돌아온다</text>
+        <text class="d-branch" x="480" y="250">요약을 닫으면 대기 화면으로 돌아온다</text>
+      </svg>
+    </div>
+
+    <div class="stops">
+      <div class="stop">
+        <div class="stop-num">3-1</div>
+        <div class="stop-body">
+          <div class="stop-title">목표를 정하고 출발선에 선다</div>
+          <div class="acts">
+            <div class="act"><b>러닝 탭을 연다</b><span class="sep">/</span>코스를 고르지 않아도 목표를 정하고 바로 달리기 시작한다</div>
+            <div class="act"><b>목표를 고른다</b><span class="sep">/</span>자유·거리·시간 중에서 오늘의 기준을 정한다. 직전에 쓴 값이 다시 채워진다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">3-2</div>
+        <div class="stop-body">
+          <div class="stop-title">3·2·1을 센다</div>
+          <div class="acts">
+            <div class="act"><b>시작 버튼을 누른다</b><span class="sep">/</span>3·2·1 숫자 음성과 햅틱으로 출발 시점을 맞추고, 잘못 눌렀으면 화면을 탭해 취소한다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">3-3</div>
+        <div class="stop-body">
+          <div class="stop-title">GPS 신호를 찾는다</div>
+          <div class="acts">
+            <div class="act"><b>GPS 신호를 기다린다</b><span class="sep">/</span>신호를 찾는 중임을 화면에서 보고, 오래 걸리면 취소해서 대기 화면으로 돌아온다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">3-4</div>
+        <div class="stop-body">
+          <div class="stop-title">달린다</div>
+          <div class="acts">
+            <div class="act"><b>달리는 중에 화면을 본다</b><span class="sep">/</span>거리·활동 시간·평균 페이스를 크게 보고, 목표를 정했으면 진행률까지 본다</div>
+            <div class="act"><b>달리다가 포인트 버튼을 누른다</b><span class="sep">/</span>지금 지점을 표시하고, 직전 포인트에서 여기까지의 구간 거리를 화면 카드와 음성으로 바로 확인한다</div>
+            <div class="act"><b>화면을 보지 않고 달린다</b><span class="sep">/</span>1킬로미터마다, 목표 절반과 달성 시점에, 종료할 때 거리·시간·평균 페이스를 음성으로 듣는다</div>
+            <div class="act"><b>GPS가 흔들린다</b><span class="sep">/</span>정확도가 낮은 위치는 거리 적산에서 빠지고, 신호가 약해지면 화면에 표시된다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">3-5</div>
+        <div class="stop-body">
+          <div class="stop-title">잠깐 멈춘다</div>
+          <div class="acts">
+            <div class="act"><b>신호등에서 멈춘다</b><span class="sep">/</span>일시정지한 시간과 거리가 기록에서 빠져서, 실제로 달린 시간 기준의 페이스가 유지된다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">3-6</div>
+        <div class="stop-body">
+          <div class="stop-title">끝내고 요약을 본다</div>
+          <div class="acts">
+            <div class="act"><b>러닝을 끝낸다</b><span class="sep">/</span>종료 버튼을 길게 눌러야 끝나서, 달리는 중에 실수로 종료되지 않는다</div>
+            <div class="act"><b>요약 화면을 본다</b><span class="sep">/</span>방금 달린 거리·시간·평균 페이스를 보고, 기록이 자동 저장된 것을 그 자리에서 확인한다</div>
+            <div class="act"><b>저장이 실패한다</b><span class="sep">/</span>실패 사실을 요약 화면에서 보고 다시 저장한다. 재시도해도 기록이 중복되지 않는다</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 흐름 ④ 기록 ===== -->
+  <section class="leg" style="--dot: var(--seg-3)">
+    <div class="leg-head"><span class="leg-phase">④ 달린 뒤</span><span class="leg-count">8</span></div>
+    <h2>지난 러닝을 돌아보고 관리한다</h2>
+
+    <div class="canvas">
+      <svg viewBox="0 0 880 208" role="img" aria-label="대시보드에서 기록 하나를 열어 상세를 보고 정리하기까지의 흐름">
+        <defs>
+          <marker id="ar4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#C3D3D7"/>
+          </marker>
+        </defs>
+
+        <text class="d-lane" x="28" y="34">화면</text>
+        <text class="d-lane" x="28" y="106">하는 일</text>
+        <text class="d-lane" x="28" y="182">들어오는 길</text>
+
+        <line x1="100" y1="20" x2="100" y2="192" stroke="#EDF3F4" stroke-width="1"/>
+
+        <text class="d-screen" x="215" y="42" text-anchor="middle">기록 탭 대시보드</text>
+        <text class="d-screen" x="440" y="42" text-anchor="middle">기록 목록</text>
+        <text class="d-screen" x="670" y="42" text-anchor="middle">기록 상세 · 지도</text>
+
+        <line x1="140" y1="56" x2="290" y2="56" stroke="#E3ECEE" stroke-width="6"/>
+        <line x1="380" y1="56" x2="500" y2="56" stroke="#E3ECEE" stroke-width="6"/>
+        <line x1="580" y1="56" x2="760" y2="56" stroke="#E3ECEE" stroke-width="6"/>
+
+        <line x1="140" y1="88" x2="856" y2="88" stroke="#C3D3D7" stroke-width="2" marker-end="url(#ar4)"/>
+
+        <g>
+          <circle cx="215" cy="88" r="14" fill="#0891B2"/>
+          <text class="d-num" x="215" y="92" text-anchor="middle">4-1</text>
+          <text class="d-act" x="215" y="124" text-anchor="middle">전체를 훑는다</text>
+          <text class="d-sub" x="215" y="142" text-anchor="middle">기간별 합계와 8주 그래프</text>
+        </g>
+        <g>
+          <circle cx="440" cy="88" r="14" fill="#0891B2"/>
+          <text class="d-num" x="440" y="92" text-anchor="middle">4-2</text>
+          <text class="d-act" x="440" y="124" text-anchor="middle">하나를 연다</text>
+          <text class="d-sub" x="440" y="142" text-anchor="middle">그날 달린 경로를 지도에서</text>
+        </g>
+        <g>
+          <circle cx="670" cy="88" r="14" fill="#0891B2"/>
+          <text class="d-num" x="670" y="92" text-anchor="middle">4-3</text>
+          <text class="d-act" x="670" y="124" text-anchor="middle">자세히 본다</text>
+          <text class="d-sub" x="670" y="142" text-anchor="middle">킬로미터별 페이스 · 포인트</text>
+        </g>
+        <g>
+          <circle cx="832" cy="88" r="14" fill="#0891B2"/>
+          <text class="d-num" x="832" y="92" text-anchor="middle">4-4</text>
+          <text class="d-act" x="832" y="124" text-anchor="middle">지운다</text>
+        </g>
+
+        <path d="M215,168 L215,102" fill="none" stroke="#C3D3D7" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ar4)"/>
+        <text class="d-branch" x="230" y="182">러닝을 마치면 그 기록이 이미 목록에 들어와 있다 — 따로 저장하지 않는다</text>
+      </svg>
+    </div>
+
+    <div class="stops">
+      <div class="stop">
+        <div class="stop-num">4-1</div>
+        <div class="stop-body">
+          <div class="stop-title">전체를 훑는다</div>
+          <div class="acts">
+            <div class="act"><b>기록 탭을 연다</b><span class="sep">/</span>이번 주·이번 달·전체 중 기간을 골라 총거리·횟수·총시간을 한눈에 본다</div>
+            <div class="act"><b>대시보드의 그래프를 본다</b><span class="sep">/</span>최근 8주 주간 거리 막대로 추이를 본다. 막대 수는 기간 선택과 무관하게 고정이다</div>
+            <div class="act"><b>아직 기록이 없다</b><span class="sep">/</span>빈 화면 대신, 러닝을 마치면 기록이 자동 저장된다는 안내를 본다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">4-2</div>
+        <div class="stop-body">
+          <div class="stop-title">기록 하나를 연다</div>
+          <div class="acts">
+            <div class="act"><b>목록에서 기록 하나를 연다</b><span class="sep">/</span>그날 달린 경로를 지도 위에서 다시 보고, 거리·시간·평균 페이스를 확인한다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">4-3</div>
+        <div class="stop-body">
+          <div class="stop-title">자세히 들여다본다</div>
+          <div class="acts">
+            <div class="act"><b>기록 상세를 내려본다</b><span class="sep">/</span>킬로미터별 페이스 표로 어느 구간에서 빨라지고 느려졌는지 확인한다</div>
+            <div class="act"><b>달리면서 찍은 포인트를 확인한다</b><span class="sep">/</span>지도 위 번호 마커와 구간 표로 거리를 보고, 잘못 찍은 포인트를 지우면 그 거리가 앞뒤 구간에 합쳐진다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num">4-4</div>
+        <div class="stop-body">
+          <div class="stop-title">정리한다</div>
+          <div class="acts">
+            <div class="act"><b>기록을 지운다</b><span class="sep">/</span>목록에서 스와이프해 지우되, 되돌릴 수 없다는 확인을 한 번 거친다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stop">
+        <div class="stop-num branch">4-A</div>
+        <div class="stop-body">
+          <div class="stop-title">들어오는 길</div>
+          <div class="acts">
+            <div class="act"><b>러닝을 마치고 기록 탭으로 간다</b><span class="sep">/</span>방금 저장된 기록이 목록에 이미 들어와 있다</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 조건부 -->
+  <section class="lane-box">
+    <div class="leg-head"><span class="leg-phase" style="color: var(--muted)">전 구간에 걸침</span><span class="leg-count">8</span></div>
+    <h2>권한과 기기 사정에 걸린 것들</h2>
+    <p class="why">
+      위 흐름 어디에서든 나타날 수 있지만, 권한·기기·시스템 설정에 따라 있을 수도 없을 수도 있다.
+      일반 기능과 섞어 읽지 않는다.
+    </p>
+    <div class="acts">
+      <div class="act"><b>위치 권한을 아직 안 줬다</b><span class="sep">/</span>왜 위치가 필요한지 보고 설정으로 바로 간다. 권한이 없어도 코스 화면은 서울 기준 위치로 열린다</div>
+      <div class="act"><b>정확한 위치가 꺼져 있다</b><span class="sep">/</span>이번 러닝에 한해 정확한 위치를 요청받고, 거부하면 시작하지 않고 이유를 안내받는다</div>
+      <div class="act"><b>달리는 중에 화면을 잠근다</b><span class="sep">/</span>잠금화면과 다이내믹 아일랜드에서 거리·시간·페이스를 본다. 이 카드를 껐으면 카드 없이 진행된다</div>
+      <div class="act"><b>잠금화면에서 포인트를 찍는다</b><span class="sep">/</span>앱을 열지 않고 카드의 버튼으로 포인트를 찍는다. 그 카드가 없으면 이 버튼도 없다</div>
+      <div class="act"><b>음악을 들으며 달린다</b><span class="sep">/</span>안내 음성이 나올 때만 음악이 잠깐 작아지고 다시 돌아온다</div>
+      <div class="act"><b>달리는 중에 위치 권한이 회수된다</b><span class="sep">/</span>그때까지 모은 경로를 버리지 않고 요약과 저장으로 넘어간다. 한 점도 못 모았으면 대기 화면으로 돌아간다</div>
+      <div class="act"><b>앱을 강제 종료한 뒤 다시 연다</b><span class="sep">/</span>이전 러닝은 복구되지 않고 대기 상태로 시작하며, 잠금화면에 남아 있던 카드는 정리된다</div>
+      <div class="act unknown"><b>화면을 끄거나 앱을 내린다</b><span class="flag">확인 필요</span><span class="sep">/</span>백그라운드에서 계속 기록하도록 준비는 돼 있으나, 실제로 이어지는지는 실기기에서만 확정된다</div>
+    </div>
+  </section>
+
+  <!-- 없는 것 -->
+  <section class="absent">
+    <h2>지금 없는 것</h2>
+    <p class="why">만들었다가 걷어낸 것과 아직 없는 것이다. 무엇을 뺐는지가 남긴 것만큼 이 앱의 방향을 말해 준다.</p>
+    <ul class="gone">
+      <li><span class="t">러닝 탭의 지도</span><span class="r">러닝 화면에서 지도를 완전히 제거했다</span></li>
+      <li><span class="t">러닝 탭의 이번 주 요약 줄</span><span class="r">넣었다가 실기기 확인을 거쳐 철회하고 목표 설정 흐름으로 바꿨다</span></li>
+      <li><span class="t">코스 초안 자동 저장·복원</span><span class="r">넣었다가 제거해, 완전 종료 뒤에는 빈 상태로 시작한다</span></li>
+      <li><span class="t">그리기 중 두 손가락 지도 이동</span><span class="r">그리기 동작을 꾹 눌러 끄는 방식으로 바꾸면서 없앴다</span></li>
+      <li><span class="t">홈 화면 위젯</span><span class="r">잠금화면 러닝 카드만 있고 홈 화면 위젯은 없다</span></li>
+      <li><span class="t">저장한 코스로 달리기</span><span class="r">코스 계획과 러닝은 서로 독립된 기둥이고, 둘을 잇는 경험은 아직 없다</span></li>
+      <li><span class="t">러닝 요약의 샘플 내보내기</span><span class="r">개발용 빌드에만 있어서 실제 사용자에게는 안 보이는 확인 도구다</span></li>
+    </ul>
+  </section>
+
+  <footer class="colophon">
+    <div>이 페이지의 사실 원본은 <code>docs/current-features.md</code>이고, 내용이 어긋나면 그쪽을 따른다.</div>
+    <div>흐름 ③의 단계와 되돌아가는 길은 <code>RunSession.swift</code>의 실제 코드에서 확인해 제품 언어로 옮긴 것이다.</div>
+    <div class="swatches">
+      흐름 색은 앱 애셋 <code>Seg0</code>–<code>Seg5</code>에서 가져왔다 —
+      <i style="background: var(--seg-0)"></i>
+      <i style="background: var(--seg-1)"></i>
+      <i style="background: var(--seg-2)"></i>
+      <i style="background: var(--seg-3)"></i>
+      <i style="background: var(--seg-4)"></i>
+      <i style="background: var(--seg-5)"></i>
+      <span>코스 구간마다 순서대로 도는 그 색이다.</span>
+    </div>
+  </footer>
+
+</div>

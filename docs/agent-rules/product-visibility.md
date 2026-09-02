@@ -8,6 +8,9 @@ AI 구현의 정본과 사용자용 요약을 분리해, 현황판이 구현을 
 - `docs/product-baseline.md`: 현재 제품 문제·약속·기둥·원칙의 정본이다. 기능 목록이나 구현 상세를 넣지 않는다.
 - `docs/current-features.md`: 현재 사용자가 할 수 있는 일을 사용자 시나리오 순서로 정리한 사실 원본이다.
   현재 제공·조건부·확인 필요 상태와 근거 링크를 담고, 포트폴리오 최종 문구는 별도로 작성한다.
+- `docs/current-features.html`: 위 문서의 시각판이다. 사용자 흐름을 그림으로 먼저 보여주고
+  번호로 항목 목록과 잇는다. **정본이 아니다** — 내용이 어긋나면 `current-features.md`를 따르고,
+  그 문서를 갱신할 때 이 파일도 함께 본다. 브라우저는 Chrome으로 연다.
 - `docs/current-mvp.md`: 사용자가 현재 MVP를 이해하고 확인할 일을 찾는 현황판이다. 저장소에 항상 존재한다.
 - 구현 요구사항과 진행 상태의 정본은 `docs/superpowers/specs/`, `docs/superpowers/plans/`,
   `docs/roadmap.md`, `docs/qa/`다. 충돌하면 이 정본을 따르고 현황판을 고친다.

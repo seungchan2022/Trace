@@ -6,6 +6,8 @@
 
 - 기준 checkout: `main`의 `780a4ca` (이 문서를 추가한 커밋)
 - 작성일: 2026-09-01
+- 같은 내용의 시각판: [`current-features.html`](current-features.html) — 사용자 흐름을 그림으로
+  보여주고 번호로 아래 항목과 잇는다. 정본은 이 문서이고, 그쪽은 읽기 편하게 만든 것이다.
 - 제품 방향의 정본은 [제품 기준선](product-baseline.md), 진행 상태의 정본은 [로드맵](roadmap.md)이다.
 - 갱신 시점: 마일스톤 실기기 QA 결과를 사용자가 수용했을 때 해당 흐름만 갱신하고,
   MVP 아카이빙 때 누락 여부를 마지막으로 확인한다. 규칙은 [제품 가시성 규칙](agent-rules/product-visibility.md)에 있다.
