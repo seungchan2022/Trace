@@ -103,14 +103,9 @@ final class RunPageViewModel {
         return min(1, fraction)
     }
 
-    /// 트래킹 화면 평균 페이스 — 활동 시간(일시정지 제외) 기준.
-    /// `RunTrack.averagePaceSecondsPerKm`은 GPS 샘플 구간(일시정지 포함) 기준이라
-    /// 같은 러닝의 요약 화면·발화(RunAudioCoach.averagePace)와 값이 어긋난다(MVP14 §3.1).
+    /// 트래킹 화면 평균 페이스 — 기준과 계산식은 `RunSession.averagePaceSecondsPerKm(now:)`가 갖는다.
     var liveAveragePaceSecondsPerKm: Double? {
-        let distanceMeters = session.track.totalDistanceMeters
-        guard distanceMeters > 0,
-              let elapsed = session.activeElapsedSeconds(), elapsed > 0 else { return nil }
-        return elapsed / (distanceMeters / 1000)
+        session.averagePaceSecondsPerKm()
     }
 
     /// 요약 화면에 보여줄 평균 페이스 — 활동 시간(`summaryElapsedSeconds`) 기준.

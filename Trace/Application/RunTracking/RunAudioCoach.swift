@@ -99,7 +99,7 @@ final class RunAudioCoach {
         announcer.announce(RunAnnouncementBuilder.kilometer(
             km: km,
             totalSeconds: elapsed,
-            averagePaceSecondsPerKm: averagePace(elapsed: elapsed)
+            averagePaceSecondsPerKm: session.averagePaceSecondsPerKm()
         ), pace: .measured, kind: .data)
     }
 
@@ -113,7 +113,7 @@ final class RunAudioCoach {
             announcer.announce(RunAnnouncementBuilder.goalAchieved(
                 distanceMeters: session.track.totalDistanceMeters,
                 totalSeconds: elapsed,
-                averagePaceSecondsPerKm: averagePace(elapsed: elapsed)
+                averagePaceSecondsPerKm: session.averagePaceSecondsPerKm()
             ), pace: .measured, kind: .data)
         } else if session.goalHalfReached, goalHalfAnnounced == false {
             goalHalfAnnounced = true

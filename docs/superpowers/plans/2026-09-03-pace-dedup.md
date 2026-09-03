@@ -43,12 +43,12 @@
 - Consumes: `RunSession.averagePaceSecondsPerKm(now:) -> Double?` (이미 존재)
 - Produces: 없음 — 소비 지점만 바꾼다.
 
-- [ ] **Step 1: 기존 테스트가 통과하는 상태를 먼저 확인한다**
+- [x] **Step 1: 기존 테스트가 통과하는 상태를 먼저 확인한다**
 
 Baseline의 테스트 명령을 그대로 실행한다(`testing.md`). 여기서 실패가 있으면 이 계획을 시작하기 전
 문제이므로 멈추고 보고한다.
 
-- [ ] **Step 2: 트래킹 화면 평균 페이스를 위임으로 바꾼다**
+- [x] **Step 2: 트래킹 화면 평균 페이스를 위임으로 바꾼다**
 
 `RunPageViewModel.swift`의 `liveAveragePaceSecondsPerKm`을 통째로 교체한다.
 
@@ -59,7 +59,7 @@ Baseline의 테스트 명령을 그대로 실행한다(`testing.md`). 여기서 
     }
 ```
 
-- [ ] **Step 3: km 발화와 목표 달성 발화를 위임으로 바꾼다**
+- [x] **Step 3: km 발화와 목표 달성 발화를 위임으로 바꾼다**
 
 `RunAudioCoach.swift`의 `announceKilometerIfNeeded()`에서 인자 한 줄만 바꾼다.
 
@@ -84,12 +84,12 @@ Baseline의 테스트 명령을 그대로 실행한다(`testing.md`). 여기서 
 ⚠️ `let elapsed = session.activeElapsedSeconds() ?? 0` 줄은 **지우지 않는다** — `totalSeconds:`가
 그대로 쓴다. `private func averagePace(elapsed:)`도 아직 남는다(Task 3에서 마지막 소비자가 사라질 때 지운다).
 
-- [ ] **Step 4: 빌드·테스트·린트를 돌린다**
+- [x] **Step 4: 빌드·테스트·린트를 돌린다**
 
 Baseline 세 명령을 순서대로 실행하고 스탬프를 남긴다(`testing.md`). 값이 바뀌지 않는 변경이므로
 **기존 테스트가 전부 그대로 통과해야 한다.** 하나라도 실패하면 위임이 등가가 아니라는 뜻이므로 멈추고 조사한다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add Trace/Pages/RunPage/RunPageViewModel.swift \
