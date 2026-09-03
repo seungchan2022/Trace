@@ -114,18 +114,25 @@ final class RunSession {
         return endedAt.timeIntervalSince(startedAt) - totalPausedSeconds(now: endedAt)
     }
 
-    /// 평균 페이스(초/km) — 활동 시간(일시정지 제외) ÷ 거리.
+    /// 평균 페이스(초/km) — 활동 시간(일시정지 제외) ÷ 거리. 러닝이 진행 중일 때 쓴다.
     /// 발화(`RunAudioCoach`)·요약 화면·저장된 기록과 **같은 기준**이다(MVP14 §3.1).
     /// `RunTrack.averagePaceSecondsPerKm`는 GPS 샘플 구간(일시정지 포함) 기준이라 값이 다르므로
     /// 화면·발화용으로 쓰지 않는다.
-    ///
-    /// 같은 식이 지금 네 곳에 복사돼 있고, 다음 사이클 `pace-dedup`이 그것들을 이 자리로 모은다
-    /// (근거: docs/superpowers/specs/2026-09-02-pace-definition-design.md §2-2).
     func averagePaceSecondsPerKm(now: Date = Date()) -> Double? {
+        paceSecondsPerKm(activeSeconds: activeElapsedSeconds(now: now))
+    }
+
+    /// 요약 화면·종료 발화용 평균 페이스 — 종료 시각에 고정된 활동 시간 기준이라 종료 후에도 자라지 않는다.
+    /// 아직 끝나지 않은 러닝에서는 nil이다(`summaryActiveElapsedSeconds`가 nil이므로).
+    var summaryAveragePaceSecondsPerKm: Double? {
+        paceSecondsPerKm(activeSeconds: summaryActiveElapsedSeconds)
+    }
+
+    /// 페이스 계산식이 사는 유일한 자리 — 위 두 진입점이 재료(활동 시간)만 달리해서 쓴다.
+    private func paceSecondsPerKm(activeSeconds: TimeInterval?) -> Double? {
         let distanceMeters = track.totalDistanceMeters
-        guard distanceMeters > 0,
-              let elapsed = activeElapsedSeconds(now: now), elapsed > 0 else { return nil }
-        return elapsed / (distanceMeters / 1000)
+        guard distanceMeters > 0, let activeSeconds, activeSeconds > 0 else { return nil }
+        return activeSeconds / (distanceMeters / 1000)
     }
 
     private let locationStream: RunLocationStreamProtocol
@@ -236,10 +243,10 @@ final class RunSession {
         self.pausedAt = nil
     }
 
-    func finish() {
+    func finish(now: Date = Date()) {
         guard isActive else { return }
         stopStream()
-        let end = Date()
+        let end = now
         closeOpenPause(at: end)
         endedAt = end
         state = .summary

@@ -119,7 +119,7 @@ MSG
 - Consumes: `RunSession.summaryActiveElapsedSeconds -> TimeInterval?` · `RunTrack.totalDistanceMeters` (이미 존재)
 - Produces: `RunSession.summaryAveragePaceSecondsPerKm -> Double?` — Task 3의 뷰모델과 오디오 코치가 쓴다.
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [x] **Step 1: 실패하는 테스트를 쓴다**
 
 `RunSessionTests.swift`의 `test_거리가_없으면_평균페이스는_nil이다` 바로 뒤, 클래스 닫는 괄호 앞에 넣는다.
 
@@ -171,12 +171,12 @@ MSG
     }
 ```
 
-- [ ] **Step 2: 실패를 확인한다**
+- [x] **Step 2: 실패를 확인한다**
 
 Baseline의 테스트 명령을 실행한다. **컴파일 실패**가 예상 결과다 —
 `value of type 'RunSession' has no member 'summaryAveragePaceSecondsPerKm'`.
 
-- [ ] **Step 3: 계산식을 한 자리로 모으고 진입점 둘을 만든다**
+- [x] **Step 3: 계산식을 한 자리로 모으고 진입점 둘을 만든다**
 
 `RunSession.swift`에서 기존 `averagePaceSecondsPerKm(now:)` 블록(주석 포함)을 아래로 통째로 교체한다.
 
@@ -206,16 +206,16 @@ Baseline의 테스트 명령을 실행한다. **컴파일 실패**가 예상 결
 ⚠️ 기존 주석 중 *"같은 식이 지금 네 곳에 복사돼 있고, 다음 사이클 `pace-dedup`이 그것들을 이
 자리로 모은다"* 문단은 **삭제한다** — 지금 그 사이클을 하고 있으므로 예고가 아니라 거짓말이 된다.
 
-- [ ] **Step 4: 통과를 확인한다**
+- [x] **Step 4: 통과를 확인한다**
 
 Baseline 세 명령을 실행하고 스탬프를 남긴다. 새 테스트 둘이 통과하고 기존 테스트가 전부 그대로여야 한다.
 
-- [ ] **Step 5: `type_body_length` 수치를 확인해 아래 「구현 중 기록」에 적는다**
+- [x] **Step 5: `type_body_length` 수치를 확인해 아래 「구현 중 기록」에 적는다**
 
 린트 출력에서 `RunSession.swift`의 `type_body_length` 줄 수를 읽어 적는다. 300을 크게 넘으면
 그 사실을 사용자에게 보고한다(해소는 이 사이클의 범위가 아니다 — 백로그에 별도 항목이 있다).
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 git add Trace/Application/RunTracking/RunSession.swift \
@@ -529,7 +529,10 @@ MSG
 
 ## 구현 중 기록
 
-(구현하면서 채운다 — 예상이 빗나간 지점, `type_body_length` 실측치, 두 타깃 빌드 결과)
+Task 2 완료:
+- `RunSession.swift` type_body_length: 308줄 (이전 303줄, +5줄)
+- finish() 메서드에 now: Date 파라미터 추가하여 테스트 시간 제어 가능하게 함
+- 두 새 테스트 모두 통과
 
 ## 종료
 

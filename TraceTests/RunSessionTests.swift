@@ -503,6 +503,52 @@ extension RunSessionTests {
         await session.start()
         XCTAssertNil(session.averagePaceSecondsPerKm())
     }
+
+    /// 요약용 평균 페이스는 종료 시각에 고정된 활동 시간 기준이라, 종료 후 시간이 흘러도 자라지 않는다.
+    /// 트래킹 중에는 아직 끝나지 않았으므로 nil이다(pace-dedup 설계 §1).
+    func test_요약_평균페이스는_종료시각에_고정된다() async throws {
+        await session.start()
+        let base = Date()
+        stream.yield(sample(at: base))
+        await waitUntil { session.state == .tracking }
+        stream.yield(sample(at: base.addingTimeInterval(10), latOffsetMeters: 100))
+        await waitUntil { session.track.totalDistanceMeters > 50 }
+
+        XCTAssertNil(session.summaryAveragePaceSecondsPerKm, "트래킹 중에는 값이 없어야 한다")
+
+        session.finish()
+        stream.finish() // 스트림 태스크를 확실히 끝낸다 — 아래 비교 중에 거리가 변하지 않게
+        let distanceAtFinish = session.track.totalDistanceMeters
+        let first = try XCTUnwrap(session.summaryAveragePaceSecondsPerKm)
+        try await Task.sleep(nanoseconds: 30_000_000) // 30ms — 종료 후 시간이 흐르게 둔다
+
+        // 거리가 변하면 아래 비교가 「자라지 않는다」를 검증하지 못하므로 먼저 못박는다
+        XCTAssertEqual(session.track.totalDistanceMeters, distanceAtFinish, accuracy: 0.0001)
+        let second = try XCTUnwrap(session.summaryAveragePaceSecondsPerKm)
+
+        XCTAssertEqual(first, second, accuracy: 0.0001, "종료 후에는 값이 자라면 안 된다")
+    }
+
+    /// 일시정지한 시간은 요약 평균 페이스에서도 빠진다 — 종료 발화·요약 화면이 같은 기준이어야 한다.
+    func test_요약_평균페이스도_일시정지를_제외한다() async throws {
+        await session.start()
+        let base = Date()
+        stream.yield(sample(at: base))
+        await waitUntil { session.state == .tracking }
+        stream.yield(sample(at: base.addingTimeInterval(10), latOffsetMeters: 100))
+        await waitUntil { session.track.totalDistanceMeters > 50 }
+
+        let started = try XCTUnwrap(session.startedAt)
+        session.pause(now: started.addingTimeInterval(1))
+        session.resume(now: started.addingTimeInterval(61)) // 60초 정지
+        session.finish(now: started.addingTimeInterval(70))
+
+        let withPause = try XCTUnwrap(session.summaryAveragePaceSecondsPerKm)
+        let elapsed = try XCTUnwrap(session.summaryActiveElapsedSeconds)
+        let expected = elapsed / (session.track.totalDistanceMeters / 1000)
+
+        XCTAssertEqual(withPause, expected, accuracy: 0.0001)
+    }
 }
 
 final class MockRunLocationStream: RunLocationStreamProtocol {
