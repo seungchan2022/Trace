@@ -427,7 +427,7 @@ MSG
 - Consumes: `RunPaceFormatter.string(secondsPerKm:) -> String` (이미 존재, 시그니처 변경 없음)
 - Produces: 없음.
 
-- [ ] **Step 1: 프로젝트 파일에 위젯 타깃 멤버십을 더한다**
+- [x] **Step 1: 프로젝트 파일에 위젯 타깃 멤버십을 더한다**
 
 `project.pbxproj`의 `Exceptions for "Trace" folder in "TraceWidgetsExtension" target` 블록에서
 `membershipExceptions` 목록에 한 줄을 더한다.
@@ -443,7 +443,7 @@ MSG
 🔴 **경로는 동기화 루트 그룹(`Trace`) 기준 상대 경로다.** 앞에 `Trace/`를 붙이면 오류 없이 조용히
 아무 일도 일어나지 않는다. 기존 두 줄과 같은 형태인지 눈으로 확인한다.
 
-- [ ] **Step 2: 위젯의 복사본 둘을 공유 구현 호출로 바꾼다**
+- [x] **Step 2: 위젯의 복사본 둘을 공유 구현 호출로 바꾼다**
 
 `RunLiveActivityWidget.swift`에서 두 함수를 주석까지 통째로 교체한다.
 
@@ -460,7 +460,7 @@ MSG
 ⚠️ 바로 위의 `pausedElapsedText`와 그 주석은 **건드리지 않는다** — `RunDurationFormatter`의 같은
 중복이지만 이번 범위가 아니다(설계 「범위 밖」).
 
-- [ ] **Step 3: 포맷터에 상한 근거와 공유 사실을 적는다**
+- [x] **Step 3: 포맷터에 상한 근거와 공유 사실을 적는다**
 
 `RunPaceFormatter.swift`의 주석 블록을 교체한다. 본문 로직은 그대로 둔다.
 
@@ -486,7 +486,7 @@ enum RunPaceFormatter {
 }
 ```
 
-- [ ] **Step 4: 두 타깃을 각각 빌드해서 확인한다**
+- [x] **Step 4: 두 타깃을 각각 빌드해서 확인한다**
 
 🔴 **읽어서 판정하지 않는다.** 유닛 테스트는 타깃 멤버십 변경을 전혀 덮지 않는다.
 
@@ -502,11 +502,11 @@ xcodebuild -project Trace.xcodeproj -scheme TraceWidgetsExtension \
 `SIM_UDID`는 `testing.md`의 「기준 시뮬레이터 선택 절차」에서 고정한 값을 쓴다.
 위젯 쪽에서 `cannot find 'RunPaceFormatter' in scope`가 나오면 Step 1의 경로가 틀린 것이다.
 
-- [ ] **Step 5: 테스트·린트를 돌린다**
+- [x] **Step 5: 테스트·린트를 돌린다**
 
 Baseline의 나머지 두 명령을 실행하고 스탬프를 남긴다. `RunPaceFormatterTests`가 그대로 통과해야 한다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ⚠️ `.xcodeproj` 변경이 포함되므로 pre-commit이 검증 스탬프 세 개를 모두 요구한다(`testing.md`).
 Step 4·5를 건너뛰면 커밋이 막힌다.

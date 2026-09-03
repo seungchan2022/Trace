@@ -158,19 +158,11 @@ struct RunLiveActivityWidget: Widget {
         String(format: "%.2fkm", context.state.distanceMeters / 1000)
     }
 
-    // 주의: 앱 타깃의 RunPaceFormatter(Trace/Pages/RunPage/RunPaceFormatter.swift)와 로직이
-    // 동일해야 한다. 위젯 타깃은 앱 타깃 타입을 볼 수 없어(Target Membership 추가가 필요) 여기 중복
-    // 정의한다. RunPaceFormatter.string(secondsPerKm:)을 고치면 이 함수도 같이 고칠 것.
     private func paceText(_ context: ActivityViewContext<RunActivityAttributes>) -> String {
-        guard let pace = context.state.paceSecondsPerKm, pace > 0, pace < 3600 else { return "--'--\"" }
-        return String(format: "%d'%02d\"", Int(pace) / 60, Int(pace) % 60)
+        RunPaceFormatter.string(secondsPerKm: context.state.paceSecondsPerKm)
     }
 
-    // 주의: paceText와 같은 이유로 앱 타깃 RunPaceFormatter의 로직을 여기 중복 정의한다.
     private func averagePaceText(_ context: ActivityViewContext<RunActivityAttributes>) -> String {
-        guard let pace = context.state.averagePaceSecondsPerKm, pace > 0, pace < 3600 else {
-            return "--'--\""
-        }
-        return String(format: "%d'%02d\"", Int(pace) / 60, Int(pace) % 60)
+        RunPaceFormatter.string(secondsPerKm: context.state.averagePaceSecondsPerKm)
     }
 }

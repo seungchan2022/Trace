@@ -71,6 +71,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/MarkRunWaypointIntent.swift,
+				DesignSystem/Formatter/RunPaceFormatter.swift,
 				Domain/RunTracking/RunActivityAttributes.swift,
 			);
 			target = EC23B80F30053150005A586D /* TraceWidgetsExtension */;
