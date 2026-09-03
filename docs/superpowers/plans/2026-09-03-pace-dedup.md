@@ -137,8 +137,13 @@ MSG
         XCTAssertNil(session.summaryAveragePaceSecondsPerKm, "트래킹 중에는 값이 없어야 한다")
 
         session.finish()
+        stream.finish() // 스트림 태스크를 확실히 끝낸다 — 아래 비교 중에 거리가 변하지 않게
+        let distanceAtFinish = session.track.totalDistanceMeters
         let first = try XCTUnwrap(session.summaryAveragePaceSecondsPerKm)
         try await Task.sleep(nanoseconds: 30_000_000) // 30ms — 종료 후 시간이 흐르게 둔다
+
+        // 거리가 변하면 아래 비교가 「자라지 않는다」를 검증하지 못하므로 먼저 못박는다
+        XCTAssertEqual(session.track.totalDistanceMeters, distanceAtFinish, accuracy: 0.0001)
         let second = try XCTUnwrap(session.summaryAveragePaceSecondsPerKm)
 
         XCTAssertEqual(first, second, accuracy: 0.0001, "종료 후에는 값이 자라면 안 된다")
@@ -342,6 +347,11 @@ Baseline의 테스트 명령을 실행한다. 예상 결과는 `test_권한회�
 
 ⚠️ 두 줄은 **스냅샷 방식이라서 필요했던 방어 코드**다. 세션에서 직접 읽으면 `dismissSummary()`가
 `endedAt`을 지울 때 값이 함께 사라지므로 낡은 값이 다음 러닝에 새지 않는다.
+
+**「요약을 닫지 않고 다음 러닝을 시작하면 낡은 값이 남지 않나」는 코드가 이미 막고 있다**
+(2026-09-03 확인) — `prepareStart()`가 `guard state == .idle`로 시작하고, `.summary`에서 `.idle`로
+가는 유일한 경로가 `dismissSummary()`이며 거기서 `endedAt = nil`이 된다. 그래도 이 논리에 기대지
+말고 `test_다음_러닝을_시작하면_이전_요약_경과시간이_초기화된다`가 통과하는 것으로 확인한다.
 
 - [ ] **Step 5: 종료 발화를 세션 값으로 바꾸고 죽은 헬퍼를 지운다**
 
