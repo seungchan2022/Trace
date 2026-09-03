@@ -27,6 +27,12 @@ struct RunTrack: Equatable, Sendable {
         return last.timestamp.timeIntervalSince(first.timestamp)
     }
 
+    /// GPS 샘플 구간(첫~마지막 타임스탬프, 일시정지 **포함**) 기준 평균 페이스.
+    ///
+    /// **프로덕션 화면·발화는 이 값을 쓰지 않는다** — 그쪽은 활동 시간 기준인
+    /// `RunSession.averagePaceSecondsPerKm(now:)`를 쓴다(MVP14 §3.1).
+    /// **그렇다고 지우지 말 것**: `RunPageViewModelTests`가 이 값을 `buggyPace` 대조군으로 삼아
+    /// 「뷰모델이 GPS 구간 기준을 쓰지 않는다」를 증명한다. 지우면 그 회귀 가드가 함께 사라진다.
     var averagePaceSecondsPerKm: Double? {
         guard totalDistanceMeters > 0, duration > 0 else { return nil }
         return duration / (totalDistanceMeters / 1000)

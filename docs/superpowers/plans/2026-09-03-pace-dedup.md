@@ -252,7 +252,7 @@ MSG
 - Produces: `RunPageViewModel.summaryElapsedSeconds`가 저장 프로퍼티에서 **계산 프로퍼티**로 바뀐다.
   타입(`TimeInterval?`)과 이름은 그대로라 화면 코드는 손대지 않는다.
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [x] **Step 1: 실패하는 테스트를 쓴다**
 
 `RunPageViewModelTests.swift`의 `test_요약_평균_페이스는_일시정지를_제외한_활동시간_기준이다` 뒤에 넣는다.
 
@@ -299,12 +299,12 @@ MSG
     }
 ```
 
-- [ ] **Step 2: 실패를 확인한다**
+- [x] **Step 2: 실패를 확인한다**
 
 Baseline의 테스트 명령을 실행한다. 예상 결과는 `test_권한회수로_끝난_러닝도_...`가
 `XCTUnwrap` 실패로 떨어지는 것이다 — 스냅샷이 채워지지 않아 평균 페이스가 nil이다.
 
-- [ ] **Step 3: 뷰모델의 스냅샷을 세션 위임으로 바꾼다**
+- [x] **Step 3: 뷰모델의 스냅샷을 세션 위임으로 바꾼다**
 
 `RunPageViewModel.swift`에서 저장 프로퍼티 선언(주석 세 줄 포함)을 지운다.
 
@@ -331,7 +331,7 @@ Baseline의 테스트 명령을 실행한다. 예상 결과는 `test_권한회�
     }
 ```
 
-- [ ] **Step 4: 스냅샷을 쓰고 지우던 두 줄을 없앤다**
+- [x] **Step 4: 스냅샷을 쓰고 지우던 두 줄을 없앤다**
 
 `endRun()`에서 이 줄을 지운다.
 
@@ -353,7 +353,7 @@ Baseline의 테스트 명령을 실행한다. 예상 결과는 `test_권한회�
 가는 유일한 경로가 `dismissSummary()`이며 거기서 `endedAt = nil`이 된다. 그래도 이 논리에 기대지
 말고 `test_다음_러닝을_시작하면_이전_요약_경과시간이_초기화된다`가 통과하는 것으로 확인한다.
 
-- [ ] **Step 5: 종료 발화를 세션 값으로 바꾸고 죽은 헬퍼를 지운다**
+- [x] **Step 5: 종료 발화를 세션 값으로 바꾸고 죽은 헬퍼를 지운다**
 
 `RunAudioCoach.swift`의 `.summary` 분기에서 인자를 바꾼다.
 
@@ -369,7 +369,7 @@ Baseline의 테스트 명령을 실행한다. 예상 결과는 `test_권한회�
 
 마지막 소비자가 사라졌으므로 `private func averagePace(elapsed:)`를 **주석까지 통째로 지운다**.
 
-- [ ] **Step 6: `RunTrack`의 대조군 프로퍼티에 존재 이유를 적는다**
+- [x] **Step 6: `RunTrack`의 대조군 프로퍼티에 존재 이유를 적는다**
 
 `RunTrack.swift`의 `averagePaceSecondsPerKm` 위에 주석을 단다.
 
@@ -383,7 +383,7 @@ Baseline의 테스트 명령을 실행한다. 예상 결과는 `test_권한회�
     var averagePaceSecondsPerKm: Double? {
 ```
 
-- [ ] **Step 7: 통과를 확인한다**
+- [x] **Step 7: 통과를 확인한다**
 
 Baseline 세 명령을 실행하고 스탬프를 남긴다. 새 테스트 둘이 통과하고, **기존 요약 테스트 다섯
 개가 그대로 통과해야 한다** — `test_종료하면_시작시각부터의_벽시계_경과시간을_캡처한다` ·
@@ -392,7 +392,7 @@ Baseline 세 명령을 실행하고 스탬프를 남긴다. 새 테스트 둘이
 `test_종료시_요약_시간은_일시정지를_제외한_활동시간이다` ·
 `test_요약_평균_페이스는_일시정지를_제외한_활동시간_기준이다`. 여기가 회귀를 잡는 자리다.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 git add Trace/Pages/RunPage/RunPageViewModel.swift \
@@ -533,6 +533,31 @@ Task 2 완료:
 - `RunSession.swift` type_body_length: 308줄 (이전 303줄, +5줄)
 - **finish() 메서드에 now: Date 파라미터 추가** — 선언 스코프 117-129를 벗어나는 변경. 원인: 테스트의 일시정지 재개 로직(60초 정지 간격을 pause/resume 호출로 표현)이 실제 벽시계 시간(밀리초)과 맞지 않으면 summaryActiveElapsedSeconds가 깊게 음수가 되어 activeSeconds > 0 가드를 통과하지 못하고 XCTUnwrap이 throw한다. 안전성: 기존 규칙(pause(now:) · resume(now:) · totalPausedSeconds(now:) · activeElapsedSeconds(now:))을 따르고, 모든 다른 호출처(RunPageViewModel.swift:214 · 테스트 ~20곳)는 인자 없이 호출하므로 기본값 도입이 역호환성을 보존하며, 비파괴 확인됨.
 - 두 새 테스트 모두 통과
+
+Task 3 완료:
+- **`test_요약의_시간과_평균페이스는_같은_출처를_쓴다`의 종료 호출을 `viewModel.endRun()`에서
+  `session.finish(now: started.addingTimeInterval(70))`로 바꿈** — 선언 스코프(Test:
+  `TraceTests/RunPageViewModelTests.swift`) 안이지만 브리프가 준 테스트 코드의 리터럴과 다르다.
+  원인: Task 2와 같은 패턴의 지연 버그. 이 테스트가 만드는 60초짜리 가상 정지 구간
+  (`started+1` ~ `started+61`)은 `viewModel.endRun()`이 인자 없이 부르는 `session.finish()`가
+  기본값 `Date()`(실제 벽시계, 테스트 실행 중 수 ms)를 종료 시각으로 쓰기 때문에, 종료 시각이 정지
+  구간보다 훨씬 앞서 활동 시간이 깊은 음수가 된다 — `RunSession.paceSecondsPerKm`의
+  `activeSeconds > 0` 가드에 걸려 `summaryAveragePaceSecondsPerKm`이 nil이 되고 `XCTUnwrap`이
+  던진다(2줄 위 `summaryElapsedSeconds` unwrap은 통과 — 음수도 non-nil이라서 실패 지점이 갈린다).
+  안전성: `RunPageViewModel.endRun()`은 이번 Task가 시그니처를 바꾸지 않았고(브리프 범위 준수),
+  `RunSession`은 이미 모든 시간 관련 API(`pause(now:)`·`resume(now:)`·`finish(now:)`·
+  `activeElapsedSeconds(now:)`)가 `now:` 주입을 지원하므로 테스트에서 `session`(뷰모델의 공개
+  프로퍼티)을 통해 직접 `finish(now:)`를 부르는 것은 기존 관례를 그대로 따른 것이다. 커밋
+  `5f57684`·`3c42e33`이 `RunSessionTests.test_요약_평균페이스도_일시정지를_제외한다`에서 같은
+  `+1`/`+61` 오프셋을 `finish(now: started.addingTimeInterval(70))`로 고친 것과 동일한 대응이며,
+  값(+70)도 그대로 맞췄다. `endRun()`은 이 Task의 Step 4로 스냅샷 대입 두 줄만 사라졌을 뿐 이미
+  인자를 받지 않았으므로 프로덕션 시그니처 변경은 없다.
+- 새 테스트 둘, 기존 요약 회귀 테스트 다섯 개(`test_종료하면_시작시각부터의_벽시계_경과시간을_캡처한다`·
+  `test_시작하지_않은_상태에서_종료해도_크래시_없이_nil로_남는다`·
+  `test_다음_러닝을_시작하면_이전_요약_경과시간이_초기화된다`·
+  `test_종료시_요약_시간은_일시정지를_제외한_활동시간이다`·
+  `test_요약_평균_페이스는_일시정지를_제외한_활동시간_기준이다`) 모두 통과, 전체 385개 유닛 테스트 +
+  UI 테스트 8개 무실패
 
 ## 종료
 

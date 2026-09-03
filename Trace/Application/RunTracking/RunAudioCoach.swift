@@ -67,7 +67,7 @@ final class RunAudioCoach {
             announcer.announce(RunAnnouncementBuilder.finish(
                 distanceMeters: session.track.totalDistanceMeters,
                 totalSeconds: elapsed,
-                averagePaceSecondsPerKm: averagePace(elapsed: elapsed)
+                averagePaceSecondsPerKm: session.summaryAveragePaceSecondsPerKm
             ))
         default:
             break // acquiring→tracking(첫 샘플), 취소/권한회수로 인한 →idle 등은 발화 없음
@@ -119,12 +119,5 @@ final class RunAudioCoach {
             goalHalfAnnounced = true
             announcer.announce(RunAnnouncementBuilder.goalHalf, pace: .measured, kind: .data)
         }
-    }
-
-    /// 평균 페이스 = 활동 시간 / 거리 — 요약 화면(summaryAveragePaceSecondsPerKm)과 같은 기준(MVP14 §3.1)
-    private func averagePace(elapsed: TimeInterval) -> Double? {
-        let distance = session.track.totalDistanceMeters
-        guard distance > 0, elapsed > 0 else { return nil }
-        return elapsed / (distance / 1000)
     }
 }

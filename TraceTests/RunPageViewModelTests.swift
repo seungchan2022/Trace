@@ -153,6 +153,52 @@ final class RunPageViewModelTests: XCTestCase {
         XCTAssertLessThan(actualPace, buggyPace)
     }
 
+    /// 위치 권한이 회수돼 종료 버튼 없이 끝난 러닝에서도 요약의 시간·평균 페이스가 채워져야 한다.
+    /// 종료 버튼 경로와 같은 기준(활동 시간)을 써야 같은 화면의 두 값이 어긋나지 않는다.
+    /// 바꾸기 전에는 스냅샷이 채워지지 않아 페이스가 nil이고 시간은 GPS 구간 값으로 폴백됐다
+    /// (pace-dedup 설계 §2).
+    func test_권한회수로_끝난_러닝도_요약_시간과_페이스가_채워진다() async throws {
+        await viewModel.startTapped()
+        let base = Date()
+        stream.yield(sample(at: base))
+        await waitUntil { session.state == .tracking }
+        stream.yield(sample(at: base.addingTimeInterval(10), latOffsetMeters: 100))
+        await waitUntil { session.track.totalDistanceMeters > 50 }
+
+        stream.finish() // 권한 회수 등으로 스트림 종료 — endRun()을 거치지 않는다
+        await waitUntil { session.state == .summary }
+
+        let elapsed = try XCTUnwrap(viewModel.summaryElapsedSeconds)
+        let pace = try XCTUnwrap(viewModel.summaryAveragePaceSecondsPerKm)
+        XCTAssertEqual(pace, elapsed / (session.track.totalDistanceMeters / 1000), accuracy: 0.0001)
+    }
+
+    /// 요약 화면의 시간과 평균 페이스가 같은 출처에서 나온다 — 하나만 세션으로 옮기면
+    /// 두 값이 서로 다른 기준을 쓰게 되고, 그것이 MVP14 §3.1이 잡은 불일치다.
+    func test_요약의_시간과_평균페이스는_같은_출처를_쓴다() async throws {
+        await viewModel.startTapped()
+        let base = Date()
+        stream.yield(sample(at: base))
+        await waitUntil { session.state == .tracking }
+        stream.yield(sample(at: base.addingTimeInterval(10), latOffsetMeters: 100))
+        await waitUntil { session.track.totalDistanceMeters > 50 }
+
+        let started = try XCTUnwrap(session.startedAt)
+        session.pause(now: started.addingTimeInterval(1))
+        session.resume(now: started.addingTimeInterval(61)) // 60초 정지
+        // viewModel.endRun()은 now를 받지 않아 실제 벽시계로 종료한다 — 위에서 만든 60초짜리
+        // 가상 정지 구간이 실제 경과 시간(수 ms)보다 커져 활동 시간이 음수가 되고 만다.
+        // RunSession은 이미 모든 지점에서 now를 주입받으므로(session.finish도 포함) 여기서도
+        // 논리 시간에 맞춰 직접 종료시킨다 — Task 2가 같은 문제를 finish(now:)로 고친 것과 동일한 대응
+        // (커밋 5f57684, 3c42e33; RunSessionTests.test_요약_평균페이스도_일시정지를_제외한다).
+        session.finish(now: started.addingTimeInterval(70))
+
+        let elapsed = try XCTUnwrap(viewModel.summaryElapsedSeconds)
+        let pace = try XCTUnwrap(viewModel.summaryAveragePaceSecondsPerKm)
+        XCTAssertEqual(pace, elapsed / (session.track.totalDistanceMeters / 1000), accuracy: 0.0001)
+        XCTAssertEqual(elapsed, session.summaryActiveElapsedSeconds ?? -1, accuracy: 0.0001)
+    }
+
     func test_라이브_평균_페이스는_활동_시간_기준이다() async throws {
         // RunTrack.averagePaceSecondsPerKm(GPS 샘플 구간 = 일시정지 포함)을 쓰면
         // 같은 러닝의 요약 화면·발화와 값이 어긋난다(MVP14 §3.1) — 활동 시간 기준이어야 한다

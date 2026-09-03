@@ -38,9 +38,6 @@ final class RunPageViewModel {
     private(set) var countdown: Int?
     /// 취소 감지 플래그 — cancelCountdown()이 내리면 진행 중인 startTapped 루프가 중단된다
     private var countdownActive = false
-    /// 요약 화면에 보여줄 활동 시간(일시정지 제외) — 트래킹 화면·Live Activity가 보여준 시간과 같은 기준(MVP14 §3.1).
-    /// `RunTrack.duration`(GPS 샘플 구간)과는 다른 측정치라 별도로 종료 시점에 캡처해 둔다.
-    private(set) var summaryElapsedSeconds: TimeInterval?
     /// 몇 초 표시 후 사라지는 포인트 확인 카드 — nil = 표시 안 함(스펙 §2.2)
     private(set) var waypointCard: WaypointCard?
     private var waypointCardDismissTask: Task<Void, Never>?
@@ -108,14 +105,16 @@ final class RunPageViewModel {
         session.averagePaceSecondsPerKm()
     }
 
-    /// 요약 화면에 보여줄 평균 페이스 — 활동 시간(`summaryElapsedSeconds`) 기준.
-    /// `RunTrack.averagePaceSecondsPerKm`(GPS 샘플 구간, 일시정지 포함)을 쓰면 같은 화면의 시간 필드·
-    /// 저장된 기록의 페이스(`SavedRunSummary.averagePaceSecondsPerKm`)와 값이 어긋난다(MVP14 §3.1, 최종 브랜치 리뷰).
+    /// 요약 화면에 보여줄 활동 시간(일시정지 제외) — 세션이 종료 시각 기준으로 고정해 둔 값이다.
+    /// 종료 버튼을 거치지 않고 끝난 러닝(권한 회수 등)에서도 같은 기준으로 채워진다.
+    var summaryElapsedSeconds: TimeInterval? {
+        session.summaryActiveElapsedSeconds
+    }
+
+    /// 요약 화면 평균 페이스 — 기준과 계산식은 `RunSession.summaryAveragePaceSecondsPerKm`가 갖는다.
+    /// 위 시간과 **같은 출처**여서 한 화면의 두 값이 어긋나지 않는다(MVP14 §3.1).
     var summaryAveragePaceSecondsPerKm: Double? {
-        guard let elapsed = summaryElapsedSeconds, elapsed > 0 else { return nil }
-        let distanceMeters = session.track.totalDistanceMeters
-        guard distanceMeters > 0 else { return nil }
-        return elapsed / (distanceMeters / 1000)
+        session.summaryAveragePaceSecondsPerKm
     }
 
     /// 트래킹 화면 현재 페이스 — 최근 `RunTrack.currentPaceWindowSeconds`초의 GPS 속도 평균.
@@ -173,7 +172,6 @@ final class RunPageViewModel {
             presentStartFailure()
             return
         }
-        summaryElapsedSeconds = nil
     }
 
     /// 카운트다운 중 화면 탭 → 취소(스펙 §1.1). 백그라운드 진입은 취소가 아니다 — 계속 진행.
@@ -210,7 +208,6 @@ final class RunPageViewModel {
     func endRun() {
         waypointCardDismissTask?.cancel()
         waypointCard = nil
-        summaryElapsedSeconds = session.activeElapsedSeconds()
         session.finish()
     }
 
