@@ -530,12 +530,15 @@ feat: 잠금화면 상태에 평균 페이스를 싣는다
 >   13'53″"(현재 페이스 두 자리 분)와 둘째 행 "평균 페이스 24'24″  P1 · 0.00 km  [포인트]"가
 >   모두 축소 없이 원래 크기로 한 줄에 들어갔다 — 이 폭에서는 `minimumScaleFactor`가 아예
 >   발동하지 않아 흔들림 우려 자체가 없다.
-> - **주의(실기기 QA로 넘김)**: `metric(_:label:)`은 잠금화면과 Dynamic Island 확장
->   (`.leading`/`.trailing`/`.bottom`)이 공유한다. 이번 조치로 이 함수에 붙인
->   `.lineLimit(1).minimumScaleFactor(0.75)`가 Dynamic Island 쪽 잘림 동작도
+> - **주의(실기기 QA로 넘김) — 결과로 닫음(2026-09-03)**: `metric(_:label:)`은 잠금화면과
+>   Dynamic Island 확장(`.leading`/`.trailing`/`.bottom`)이 공유한다. 이번 조치로 이
+>   함수에 붙인 `.lineLimit(1).minimumScaleFactor(0.75)`가 Dynamic Island 쪽 잘림 동작도
 >   "줄바꿈"에서 "축소 후 말줄임"으로 바꿔 놓았는데, 이 시뮬레이터에서는 확장 영역
->   자체가 빈 화면으로 렌더링돼(백로그 항목 참고) 실제로 확인하지 못했다. 실기기 QA
->   체크리스트 항목 2(넓은 상태에서 라벨·숫자가 안 잘리는지)가 이 변경도 함께 덮는다.
+>   자체가 빈 화면으로 렌더링돼(백로그 항목 참고) 실제로 확인하지 못했다. 실기기에서
+>   확인한 결과 잠금화면·Dynamic Island 양쪽 모두 라벨이 잘리지 않고 정상 렌더링됐다 —
+>   이 변경 자체는 문제없음. (단, Dynamic Island는 러닝 중 leading/trailing 영역 자체가
+>   안 보이는 별개의 사전 존재 문제가 있다 — `docs/backlog.md` 참고, 잘림과 무관한
+>   문제라 이 메모의 걱정과는 다른 사안이다.)
 
 - [x] **Step 5: 커밋한다**
 
