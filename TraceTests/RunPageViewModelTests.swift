@@ -171,6 +171,8 @@ final class RunPageViewModelTests: XCTestCase {
         let elapsed = try XCTUnwrap(viewModel.summaryElapsedSeconds)
         let pace = try XCTUnwrap(viewModel.summaryAveragePaceSecondsPerKm)
         XCTAssertEqual(pace, elapsed / (session.track.totalDistanceMeters / 1000), accuracy: 0.0001)
+        // 옛 폴백 값(RunTrack.duration, GPS 구간)이 아니라 활동 시간이어야 한다
+        XCTAssertLessThan(elapsed, session.track.duration)
     }
 
     /// 요약 화면의 시간과 평균 페이스가 같은 출처에서 나온다 — 하나만 세션으로 옮기면

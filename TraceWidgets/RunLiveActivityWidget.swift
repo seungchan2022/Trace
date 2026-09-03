@@ -132,9 +132,11 @@ struct RunLiveActivityWidget: Widget {
         }
     }
 
-    // 주의: 앱 타깃의 RunDurationFormatter(Trace/Pages/RunPage/RunDurationFormatter.swift)와
-    // 로직이 동일해야 한다 — 위젯 타깃은 앱 타깃 타입을 볼 수 없어 여기 중복 정의한다(paceText와
-    // 같은 이유). 원본 포맷은 항상 "H:MM:SS"(1시간 미만도 시 자리 유지, 예: 65초 → "0:01:05") —
+    // 주의: 앱 타깃의 RunDurationFormatter(Trace/DesignSystem/Formatter/RunDurationFormatter.swift)와
+    // 로직이 동일해야 한다 — 이 파일은 위젯 타깃 멤버십을 받지 않아 여기 중복 정의한다.
+    // (RunPaceFormatter는 pace-dedup에서 멤버십 예외로 공유했다 — 같은 방법으로 합칠 수 있고,
+    //  pace-dedup 종료 체크리스트에 백로그 등록 대상으로 올라 있다.) 원본 포맷은 항상 "H:MM:SS"
+    //  (1시간 미만도 시 자리 유지, 예: 65초 → "0:01:05") —
     // 원본을 고치면 같이 고칠 것.
     private func pausedElapsedText(_ context: ActivityViewContext<RunActivityAttributes>) -> String {
         let total = Int(context.state.elapsedSecondsAtPause ?? 0)

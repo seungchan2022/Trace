@@ -98,10 +98,15 @@ final class RunAudioCoachTests: XCTestCase {
 
     func test_종료하면_러닝종료_발화() async {
         await startTracking()
+        // 거리 0이면 평균 페이스가 nil이 되어 발화에서 절 자체가 생략된다(RunAnnouncementBuilder.finish) —
+        // 아래 "평균 페이스" 검증이 실제로 뭔가를 검증하려면 이동 샘플이 필요하다.
+        stream.yield(sample(at: Date(), metersNorth: 100))
+        await waitUntil { session.track.totalDistanceMeters > 50 }
         session.finish()
         coach.sync()
         XCTAssertEqual(announcer.announced.count, 1)
         XCTAssertTrue(announcer.announced[0].hasPrefix("러닝을 종료합니다. 총 "))
+        XCTAssertTrue(announcer.announced[0].contains("평균 페이스"))
     }
 
     func test_새러닝을_시작하면_km카운터가_리셋된다() async {
