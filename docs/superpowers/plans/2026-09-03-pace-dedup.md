@@ -531,7 +531,7 @@ MSG
 
 Task 2 완료:
 - `RunSession.swift` type_body_length: 308줄 (이전 303줄, +5줄)
-- finish() 메서드에 now: Date 파라미터 추가하여 테스트 시간 제어 가능하게 함
+- **finish() 메서드에 now: Date 파라미터 추가** — 선언 스코프 117-129를 벗어나는 변경. 원인: 테스트의 일시정지 재개 로직(60초 정지 간격을 pause/resume 호출로 표현)이 실제 벽시계 시간(밀리초)과 맞지 않으면 summaryActiveElapsedSeconds가 깊게 음수가 되어 activeSeconds > 0 가드를 통과하지 못하고 XCTUnwrap이 throw한다. 안전성: 기존 규칙(pause(now:) · resume(now:) · totalPausedSeconds(now:) · activeElapsedSeconds(now:))을 따르고, 모든 다른 호출처(RunPageViewModel.swift:214 · 테스트 ~20곳)는 인자 없이 호출하므로 기본값 도입이 역호환성을 보존하며, 비파괴 확인됨.
 - 두 새 테스트 모두 통과
 
 ## 종료
