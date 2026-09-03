@@ -536,9 +536,9 @@ Task 2 완료:
 
 Task 3 완료:
 - **`test_요약의_시간과_평균페이스는_같은_출처를_쓴다`의 종료 호출을 `viewModel.endRun()`에서
-  `session.finish(now: started.addingTimeInterval(70))`로 바꿈** — 선언 스코프(Test:
-  `TraceTests/RunPageViewModelTests.swift`) 안이지만 브리프가 준 테스트 코드의 리터럴과 다르다.
-  원인: Task 2와 같은 패턴의 지연 버그. 이 테스트가 만드는 60초짜리 가상 정지 구간
+  `session.finish(now: started.addingTimeInterval(70))`로 바꿈** — 브리프 Step 1이 준 테스트 코드의
+  리터럴을 한 줄 벗어나는 변경(파일은 이미 Test 선언 스코프인 `TraceTests/RunPageViewModelTests.swift`
+  안). 원인: Task 2와 같은 패턴의 지연 버그. 이 테스트가 만드는 60초짜리 가상 정지 구간
   (`started+1` ~ `started+61`)은 `viewModel.endRun()`이 인자 없이 부르는 `session.finish()`가
   기본값 `Date()`(실제 벽시계, 테스트 실행 중 수 ms)를 종료 시각으로 쓰기 때문에, 종료 시각이 정지
   구간보다 훨씬 앞서 활동 시간이 깊은 음수가 된다 — `RunSession.paceSecondsPerKm`의
@@ -552,6 +552,8 @@ Task 3 완료:
   `+1`/`+61` 오프셋을 `finish(now: started.addingTimeInterval(70))`로 고친 것과 동일한 대응이며,
   값(+70)도 그대로 맞췄다. `endRun()`은 이 Task의 Step 4로 스냅샷 대입 두 줄만 사라졌을 뿐 이미
   인자를 받지 않았으므로 프로덕션 시그니처 변경은 없다.
+  **리뷰어가 판단할 지점**: `viewModel.endRun()` 대신 `session.finish(now:)`로 직접 종료시키는
+  방식이 이 테스트의 의도(뷰모델의 두 프로퍼티가 같은 출처를 쓰는지 확인)를 그대로 담는지 여부.
 - 새 테스트 둘, 기존 요약 회귀 테스트 다섯 개(`test_종료하면_시작시각부터의_벽시계_경과시간을_캡처한다`·
   `test_시작하지_않은_상태에서_종료해도_크래시_없이_nil로_남는다`·
   `test_다음_러닝을_시작하면_이전_요약_경과시간이_초기화된다`·
